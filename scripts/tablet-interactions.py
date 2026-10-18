@@ -31,9 +31,9 @@ with sync_playwright() as p:
         ready()
 
     def click(action):
-        button=page.locator('[data-action="'+action+'"]').first
-        button.evaluate("e=>{for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}")
-        button.click()
+        selector='[data-action="'+action+'"]'
+        page.locator(selector).evaluate_all("es=>es.forEach(e=>{for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;})")
+        page.locator(selector+':visible').first.click()
 
     def value(selector,number):
         page.locator(selector).evaluate("(e,n)=>{e.value=String(n);e.dispatchEvent(new Event('change',{bubbles:true}));}",number)
@@ -64,7 +64,7 @@ with sync_playwright() as p:
     click('act-complete-1')
     assert read('state.completed.includes(1) && state.evidence[1].records.length===6')
     click('reward-map')
-    print('PASS: pouring, ice, cloth and six canvas classifications earn the first record',flush=True)
+    print('PASS: pouring, ice, cloth and mixed canvas/button classifications earn the first record',flush=True)
 
     setup(5)
     page.mouse.move(*point(70,100));page.mouse.down()
