@@ -1,0 +1,12 @@
+dist/
+node_modules/
+.env*
+*.log
+artifacts/
+tmp/
+files/
+image/
+samplepages/
+__pycache__/
+*.pyc
+docs/reviews/screenshots/

@@ -1,0 +1,528 @@
+{
+  "project": {
+    "titleKo": "물방울 연구실",
+    "titleEn": "Water Drop Lab",
+    "repository": "science-world-water-drop-lab",
+    "description": "An interactive Grade 4 science game for exploring water state changes through observation, measurement, simulation, evidence-based reasoning, and iterative device design.",
+    "grade": 4,
+    "subject": "과학",
+    "unit": "물의 상태 변화",
+    "topicId": "topic-10-water-state",
+    "screenCount": 10,
+    "stageCount": 5,
+    "aspectRatio": "16:9 landscape",
+    "backend": "none",
+    "curriculumStandards": [
+      {
+        "code": "4과10-01",
+        "text": "물이 세 가지 상태로 변할 수 있음을 알고, 우리 주변에서 예를 찾을 수 있다."
+      },
+      {
+        "code": "4과10-02",
+        "text": "물이 얼 때, 얼음이 녹을 때, 물이 증발할 때와 끓을 때, 수증기가 응결할 때의 변화를 관찰할 수 있다."
+      },
+      {
+        "code": "4과10-03",
+        "text": "물의 상태 변화를 이용하여 물을 얻을 수 있는 장치를 설계하고 만들 수 있다."
+      }
+    ],
+    "benchmarkPolicy": "첨부 수업자료는 학습효과와 상호작용 아이디어를 높이기 위한 벤치마킹으로만 사용한다. 캐릭터, 레이아웃, 문항, 게임 규칙, 문구를 직접 복제하지 않는다."
+  },
+  "globalDesignSystem": {
+    "concept": "Miniature Glass Water Laboratory. 투명 유리 돔과 수로, 반투명 얼음, 정교한 과학 장치가 결합된 밝고 세련된 프리미엄 교육 게임. 초등 4학년에게 친근하지만 유아용처럼 단순하거나 과장되지 않는다.",
+    "palette": [
+      "aqua",
+      "cyan",
+      "deep teal",
+      "ice blue",
+      "warm white",
+      "restrained gold",
+      "warning orange"
+    ],
+    "learningLoop": [
+      "관찰",
+      "예상",
+      "직접 조작",
+      "측정 또는 기록",
+      "비교",
+      "근거 판단",
+      "수정 또는 재실험",
+      "적용"
+    ],
+    "uiRules": [
+      "한국어 텍스트는 이미지에 굽지 않고 HTML/CSS/SVG로 구현",
+      "16:9 가로형, safe area 6%",
+      "최소 터치 44px, 권장 48px",
+      "한 화면 핵심 CTA 최대 2개",
+      "색만으로 상태 구분 금지",
+      "실패 시 정답 대신 다시 관찰할 지점을 강조",
+      "페이지마다 대표 제스처를 다르게 설계",
+      "이미지는 배경/소품 중심, 학습 UI와 문장은 코드로 구현",
+      "3D는 공간 관계가 학습목표와 직접 연결되는 화면에만 사용"
+    ],
+    "forbidden": [
+      "OX 퀴즈만으로 스테이지 완료",
+      "객관식 연속 페이지",
+      "같은 모양끼리 단순 드래그 앤 드롭만 반복",
+      "정답 즉시 공개 후 다음 버튼",
+      "10페이지 모두 동일한 드래그 조작",
+      "수증기와 하얀 김을 같은 것으로 표현",
+      "입자나 분자 캐릭터로 상태 변화 원인을 설명",
+      "첨부 수업자료의 화면, 캐릭터, 문항, 점수 규칙 직접 복제",
+      "유아용 스티커북 스타일",
+      "이모지 중심 UI",
+      "어두운 SF 연구실",
+      "과학적으로 의미 없는 장식용 3D"
+    ]
+  },
+  "pages": [
+    {
+      "pageNumber": 1,
+      "pageId": "p01",
+      "stage": 0,
+      "stageName": "MAIN",
+      "title": "물방울 연구실",
+      "standardCodes": [],
+      "runtime": "three-dom-hybrid",
+      "threeDLevel": "light",
+      "learningGoal": "학습 스테이지를 선택하고 연구 진행 상황을 확인한다.",
+      "studentMission": "고장 난 연구실의 5개 구역을 하나씩 복구하고 중앙 물방울 코어를 완성한다.",
+      "coreInteractions": [
+        "3D 연구실 구역 탭 선택",
+        "완료 구역 확인",
+        "연구노트 열기",
+        "이어하기"
+      ],
+      "layout": {
+        "top": "제목, 0/5 진행도, 설정",
+        "center": "고정 카메라 3D 유리돔 연구실과 중앙 물방울 코어",
+        "left": "연구노트 바로가기",
+        "right": "선택한 스테이지 이름과 한 줄 목표",
+        "bottom": "시작/이어하기와 공통 내비게이션"
+      },
+      "gameLogic": [
+        "초기에는 Stage 1만 활성화하고 완료 시 다음 Stage를 순차 해금한다.",
+        "각 Stage 완료 시 해당 구역 조명과 파이프가 복구되고 중앙 코어에 연구 결정이 추가된다.",
+        "3D 카메라는 고정하고 raycast로 구역만 선택하게 하여 조작 부담을 낮춘다."
+      ],
+      "feedback": {
+        "locked": "앞 단계의 연구 기록이 아직 필요해.",
+        "ready": "이 구역의 실험을 시작할 수 있어."
+      },
+      "visualPrompt": "투명 유리돔 안에 5개의 실험 구역이 방사형으로 연결된 밝은 미니어처 과학 연구실. 중앙에는 아직 완성되지 않은 맑은 물방울 코어, 청록과 아이스블루 수로, 크림 화이트 바닥, 절제된 금속과 금색 포인트. 어린이용이지만 유아적 캐릭터 장식은 없고 프리미엄 과학 게임 디오라마 느낌. 고정 3/4 아이소메트릭에 가까운 카메라. 텍스트는 장면에 포함하지 않는다.",
+      "implementationPrompt": "Three.js로 경량 hub GLB를 로드하고 stage zone node에 raycast hitbox를 연결한다. 완료 상태에 따라 emissive와 간단한 파이프 흐름 애니메이션만 켠다. DOM overlay에서 진행도와 CTA를 표시하고 EventBus로 NAVIGATE 이벤트를 보낸다."
+    },
+    {
+      "pageNumber": 2,
+      "pageId": "p02",
+      "stage": 1,
+      "stageName": "세 가지 상태 판별실",
+      "title": "같은 물, 다른 모습",
+      "standardCodes": [
+        "4과10-01"
+      ],
+      "runtime": "phaser-dom-hybrid",
+      "threeDLevel": "none",
+      "learningGoal": "물의 세 가지 상태와 우리 주변의 사례를 관찰 가능한 특징을 근거로 판단한다.",
+      "studentMission": "실험대의 물컵, 얼음, 젖은 천, 차가운 캔 등을 직접 조작해 각 상태를 판단하고 관찰 근거를 기록한다.",
+      "coreInteractions": [
+        "물을 다른 용기에 붓기",
+        "얼음 drag/rotate",
+        "젖은 천 시간 변화 관찰",
+        "차가운 캔 표면 wipe",
+        "스캐너 이동",
+        "상태+근거 선택"
+      ],
+      "layout": {
+        "top": "Stage 1과 미션 한 줄",
+        "center": "넓은 실험대와 4~5개 관찰 대상",
+        "left": "상태 스캐너/도구",
+        "right": "선택한 대상의 관찰 기록",
+        "bottom": "상태 판단과 근거 제출"
+      },
+      "gameLogic": [
+        "대상마다 반드시 1개 이상의 조작을 수행해야 상태 판단 UI가 열린다.",
+        "상태 선택만 맞아도 근거가 틀리면 완료되지 않는다.",
+        "최소 4개 사례를 완료하면 Stage 성공.",
+        "하얀 김을 기체 수증기 자체로 정답 처리하지 않는다."
+      ],
+      "feedback": {
+        "needObservation": "먼저 직접 움직이거나 시간 변화를 살펴봐.",
+        "weakEvidence": "상태는 맞게 봤어. 그런데 어떤 관찰이 그 판단을 뒷받침할까?"
+      },
+      "visualPrompt": "밝은 유리 실험대가 있는 물방울 연구실 내부. 서로 다른 모양의 투명 용기, 반투명 얼음, 젖은 천, 차가운 금속 캔이 충분히 크게 배치된다. 청록/아이스블루 중심, 과학 도구는 실제 형태를 단순화한 교육용 디자인. 캐릭터나 정답 아이콘이 화면을 지배하지 않게 한다.",
+      "implementationPrompt": "Phaser drag와 mask 기반 pour/wipe 효과를 구현한다. 각 object는 requiredAction metadata를 갖고, action 완료 후 claim panel을 활성화한다. 상태 판단과 selectedReasonIds를 store에 저장하고 ResearchNotebook으로 전송한다."
+    },
+    {
+      "pageNumber": 3,
+      "pageId": "p03",
+      "stage": 2,
+      "stageName": "얼음 변화 실험실",
+      "title": "얼기 전후를 재어라",
+      "standardCodes": [
+        "4과10-02"
+      ],
+      "runtime": "phaser-svg-dom",
+      "threeDLevel": "none",
+      "learningGoal": "물이 얼거나 얼음이 녹을 때의 변화를 관찰하고 얼기 전후를 비교한다.",
+      "studentMission": "물높이와 무게를 먼저 기록하고 얼고 난 뒤를 예상한 다음 냉각해 실제 결과와 비교한다.",
+      "coreInteractions": [
+        "초기 수위선 긋기",
+        "전자저울 영점 확인",
+        "초기값 저장",
+        "예상선 긋기",
+        "냉각 레버",
+        "결과선 확인",
+        "예상/실제 겹쳐보기"
+      ],
+      "layout": {
+        "top": "Stage 2 진행 1/2",
+        "left": "눈금관과 수위 표시",
+        "center": "냉각 챔버",
+        "right": "전자저울과 기록값",
+        "bottom": "예상선/실제선 비교 패널"
+      },
+      "gameLogic": [
+        "초기선, 예상선, 결과선이 모두 있어야 비교 버튼을 활성화한다.",
+        "영점 확인 전 측정하면 측정 조건을 다시 보게 한다.",
+        "공식 계산은 사용하지 않는다.",
+        "학생의 예상이 틀려도 감점하지 않고 실제 결과와의 차이를 연구노트에 기록한다."
+      ],
+      "feedback": {
+        "beforeFreeze": "얼리기 전에 먼저 기준을 남겨야 비교할 수 있어.",
+        "afterFreeze": "네 예상선과 실제 얼음 높이를 겹쳐서 비교해 봐."
+      },
+      "visualPrompt": "정밀하지만 친근한 냉각 실험대. 큰 눈금관, 투명한 물, 반투명 얼음, 디지털 저울이 한눈에 비교되도록 배치. 정보 위계가 명확하고 배경 장식은 최소화. 실험값과 선은 CSS/SVG로 구현하므로 이미지 안에 숫자나 한글은 넣지 않는다.",
+      "implementationPrompt": "수위선을 normalized y coordinate로 저장하고 SVG overlay로 그린다. freeze animation은 sprite/mask morph로 처리한다. 저울 DOM과 Phaser scene은 EventBus로 동기화한다."
+    },
+    {
+      "pageNumber": 4,
+      "pageId": "p04",
+      "stage": 2,
+      "stageName": "얼음 변화 실험실",
+      "title": "얼음 배관을 지켜라",
+      "standardCodes": [
+        "4과10-02"
+      ],
+      "runtime": "three-dom-hybrid",
+      "threeDLevel": "core",
+      "learningGoal": "물이 얼 때 관찰한 부피 변화를 생활 속 배관 문제 해결에 적용한다.",
+      "studentMission": "투명 3D 배관에 서로 다른 양의 물을 채워 냉각하고, 얼음이 차지하는 공간과 배관 상태를 비교해 안전한 조건을 찾는다.",
+      "coreInteractions": [
+        "1손가락 카메라 회전",
+        "수위 슬라이더",
+        "냉각 실행",
+        "배관 내부 확대",
+        "다른 조건 재실험",
+        "근거와 함께 조건 선택"
+      ],
+      "layout": {
+        "top": "Stage 2 진행 2/2와 현재 실험 조건",
+        "center": "회전 가능한 투명 3D 배관",
+        "left": "수위 조절",
+        "right": "관찰 기록과 위험 상태",
+        "bottom": "냉각 시작/다시 실험"
+      },
+      "gameLogic": [
+        "fillRatio에 따라 내부 water/frozen mesh가 변한다.",
+        "위험은 실제 압력 공식이 아니라 교육용 질적 preset으로 계산한다.",
+        "최소 서로 다른 두 조건을 실행해야 제출 가능.",
+        "파손 결과보다 얼음이 차지한 공간과 남은 여유 공간을 근거로 선택한다."
+      ],
+      "feedback": {
+        "risk": "배관 안쪽의 남은 공간을 돌려서 확인해 봐.",
+        "compare": "한 번의 결과만으로 결정하지 말고 다른 수위도 시험해 보자."
+      },
+      "visualPrompt": "투명한 곡선 배관과 냉각 챔버가 중심인 밝은 3D 실험실. 배관 내부의 물과 얼음이 명확하게 구분되고, 학생이 회전해 어느 방향에서도 내부 공간을 볼 수 있는 구조. 과장된 폭발 없이 미세 변형과 경고 조명만 사용한다.",
+      "implementationPrompt": "Three.js OrbitControls는 rotate만 허용하고 pan은 금지한다. 수위는 DOM slider, 내부 볼륨은 clip/scale mesh로 표현한다. 냉각 후 risk tier를 store에 기록한다. 투명 material 겹침을 최소화한다."
+    },
+    {
+      "pageNumber": 5,
+      "pageId": "p05",
+      "stage": 3,
+      "stageName": "물이 없어지는 실험실",
+      "title": "물그림의 시간을 돌려라",
+      "standardCodes": [
+        "4과10-02"
+      ],
+      "runtime": "phaser-canvas-dom",
+      "threeDLevel": "none",
+      "learningGoal": "물의 증발을 시간에 따른 물 흔적의 변화로 관찰한다.",
+      "studentMission": "직접 물그림을 그리고 물 양과 붓 굵기 조건을 바꾼 뒤 타임라인을 움직여 어느 흔적이 먼저 사라지는지 비교한다.",
+      "coreInteractions": [
+        "자유 드로잉",
+        "물 양 조절",
+        "붓 굵기 조절",
+        "타임라인 scrub",
+        "관찰 핀",
+        "조건 A/B 비교"
+      ],
+      "layout": {
+        "top": "Stage 3 진행 1/2",
+        "center": "넓은 물그림 실험 바닥",
+        "left": "물붓 조건",
+        "right": "실험 A/B 미니 기록",
+        "bottom": "시간 타임라인과 관찰 핀"
+      },
+      "gameLogic": [
+        "학생 stroke 데이터를 저장하고 결정론적으로 fade replay한다.",
+        "최소 두 조건을 만들어야 비교 가능.",
+        "상대적 가상 시간으로 표현하며 실제 증발 속도 예측으로 제시하지 않는다.",
+        "정답 그림을 따라 그리게 하지 않고 자유 드로잉을 허용한다."
+      ],
+      "feedback": {
+        "needSecondTrial": "비교하려면 조건을 하나 바꾼 두 번째 실험이 필요해.",
+        "observe": "어느 부분부터 흐려지는지 시간 막대를 천천히 움직여 봐."
+      },
+      "visualPrompt": "밝은 방수 실험 바닥 위에 학생이 물로 자유롭게 그릴 수 있는 넓은 공간. 물자국의 젖은 광택이 시간에 따라 옅어지는 것이 잘 보이도록 단순한 배경과 측면 조명. 장식보다 드로잉 영역을 크게 확보한다.",
+      "implementationPrompt": "Phaser RenderTexture에 pointer stroke를 그린다. stroke point는 downsample해 저장하고 timeline scrub 시 deterministic fade state를 재생성한다. A/B trial state를 별도로 유지한다."
+    },
+    {
+      "pageNumber": 6,
+      "pageId": "p06",
+      "stage": 3,
+      "stageName": "물이 없어지는 실험실",
+      "title": "증발과 끓음을 비교하라",
+      "standardCodes": [
+        "4과10-02"
+      ],
+      "runtime": "phaser-dom-svg",
+      "threeDLevel": "none",
+      "learningGoal": "물이 증발할 때와 끓을 때의 변화를 관찰하고 공통점과 차이점을 비교한다.",
+      "studentMission": "가열하지 않은 물과 가열한 물을 동시에 관찰하며 변화가 나타나는 곳, 물의 양, 기포 등을 표시한다.",
+      "coreInteractions": [
+        "가열 레버",
+        "확대경 이동",
+        "수위선 기록",
+        "타임라인",
+        "표면/내부 관찰 핀",
+        "비교 보드 생성"
+      ],
+      "layout": {
+        "top": "Stage 3 진행 2/2",
+        "left": "증발 관찰 용기",
+        "center": "공통 도구와 시간",
+        "right": "끓음 관찰 용기",
+        "bottom": "학생 관찰을 기반으로 생성되는 공통점/차이점"
+      },
+      "gameLogic": [
+        "관찰 핀 좌표를 surface/inside zone으로 quantize한다.",
+        "끓음 쪽은 내부 기포 애니메이션을 제공한다.",
+        "증발 쪽 내부에 끓음과 같은 기포를 만들지 않는다.",
+        "최소 3개 관찰 근거를 확보해야 비교 보드가 완성된다."
+      ],
+      "feedback": {
+        "surface": "두 용기에서 물이 변하는 곳을 다시 확대해서 비교해 봐.",
+        "bubble": "물속에서 보이는 변화도 관찰 기록에 남겨 보자."
+      },
+      "visualPrompt": "좌우 비교가 명확한 과학 관찰실. 두 개의 동일한 투명 용기를 같은 크기로 배치하고, 오른쪽에만 가열 장치가 있다. 확대경과 수위 표시가 잘 보이도록 배경은 단순하게. 결과표는 이미지가 아니라 DOM/SVG로 구현한다.",
+      "implementationPrompt": "Phaser split scene으로 두 vessel을 동시에 렌더한다. magnifier는 camera/zoom window 또는 mask로 구현한다. observationPins를 zone으로 변환하고 학생 데이터로 comparison model을 생성한다."
+    },
+    {
+      "pageNumber": 7,
+      "pageId": "p07",
+      "stage": 4,
+      "stageName": "물방울 사건 분석실",
+      "title": "컵 바깥의 물을 조사하라",
+      "standardCodes": [
+        "4과10-02"
+      ],
+      "runtime": "phaser-dom-hybrid",
+      "threeDLevel": "none",
+      "learningGoal": "차가운 물체 표면에서 수증기가 응결해 물방울이 되는 현상을 관찰한다.",
+      "studentMission": "차가운 비커를 닦고 밀봉한 뒤 전자저울과 시간가속을 사용해 바깥 표면의 물방울이 어떻게 생기고 변하는지 조사한다.",
+      "coreInteractions": [
+        "표면 wipe",
+        "입구 seal",
+        "전자저울 zero",
+        "초기값 기록",
+        "시간 가속",
+        "확대경",
+        "나중값 기록",
+        "스냅샷 저장"
+      ],
+      "layout": {
+        "top": "Stage 4 진행 1/2",
+        "center": "차가운 투명 비커와 페트리 접시",
+        "left": "닦기/밀봉 도구",
+        "right": "전자저울과 관찰 스냅샷",
+        "bottom": "시간 조절과 기록"
+      },
+      "gameLogic": [
+        "비커를 닦은 뒤 초기 조건을 설정해야 time run 가능.",
+        "droplet state는 none→tiny→growing→merged→flowing으로 진행.",
+        "초기와 나중의 측정값과 물방울 관찰 스냅샷이 모두 있어야 완료.",
+        "학생이 다음 페이지에서 사용할 증거를 이 페이지 데이터로 자동 생성한다."
+      ],
+      "feedback": {
+        "setup": "실험 전 조건을 먼저 맞춰야 나중 변화와 비교할 수 있어.",
+        "measure": "물방울 모습만 보지 말고 처음과 나중의 측정값도 남겨 보자."
+      },
+      "visualPrompt": "차가운 투명 비커 표면에 작은 물방울이 점차 생기고 커지는 것을 집중해서 관찰할 수 있는 밝은 실험실. 확대했을 때 물방울의 크기 변화와 흘러내림이 선명하다. 과한 안개나 흰 구름으로 수증기를 시각화하지 않는다.",
+      "implementationPrompt": "Phaser surface mask와 deterministic droplet seed를 사용한다. scale은 DOM component. seal/zero/initial record gating을 적용하고 snapshots를 stage4 state에 저장한다."
+    },
+    {
+      "pageNumber": 8,
+      "pageId": "p08",
+      "stage": 4,
+      "stageName": "물방울 사건 분석실",
+      "title": "증거로 물방울을 설명하라",
+      "standardCodes": [
+        "4과10-02"
+      ],
+      "runtime": "dom-svg",
+      "threeDLevel": "none",
+      "learningGoal": "관찰한 증거를 이용해 응결 현상을 설명하고 생활 속 사례에 적용한다.",
+      "studentMission": "앞 실험에서 얻은 증거 카드를 원인-변화-결과로 연결하고, 생활 속 세 장면에서 같은 원리를 설명한다.",
+      "coreInteractions": [
+        "증거 카드 선택/drag",
+        "SVG 연결선",
+        "원인-변화-결과 구조화",
+        "생활 사례 hotspot",
+        "근거 문장 완성"
+      ],
+      "layout": {
+        "top": "Stage 4 진행 2/2",
+        "left": "실험에서 자동 생성된 증거 카드",
+        "center": "원인→변화→결과 보드",
+        "right": "생활 사례 3개",
+        "bottom": "연구 결론 제출"
+      },
+      "gameLogic": [
+        "핵심 관계는 공기 중 수증기→차가운 표면→물방울.",
+        "증거 카드 최소 2개를 사용해야 제출 가능.",
+        "정해진 카드 순서 한 개만 인정하지 않고 필수 관계 graph를 검증한다.",
+        "생활 사례는 차가운 음료 용기, 아침 풀잎, 냄비 뚜껑 안쪽 등 첨부자료의 맥락만 참고하고 화면/문항은 새로 설계한다."
+      ],
+      "feedback": {
+        "weakCase": "결론만 놓지 말고 네가 직접 얻은 증거를 두 개 이상 연결해 봐.",
+        "wrongLink": "이 증거가 말해 주는 '어디에서 어떤 변화가 일어났는지' 다시 생각해 봐."
+      },
+      "visualPrompt": "깔끔한 과학 증거 분석 보드. 왼쪽에 실험 기록 카드, 중앙에 세 단계 논리 흐름, 오른쪽에 생활 장면이 배치된다. 탐정 놀이 장식보다 실제 연구 기록 느낌을 강조하고 연결 관계가 한눈에 읽히게 한다.",
+      "implementationPrompt": "DOM cards와 SVG path를 사용해 connection graph를 구현한다. exact order가 아닌 required edge set을 검증한다. Screen 07 state에서 evidence cards를 생성한다."
+    },
+    {
+      "pageNumber": 9,
+      "pageId": "p09",
+      "stage": 5,
+      "stageName": "물방울 수집 장치 공방",
+      "title": "물을 모으는 장치를 설계하라",
+      "standardCodes": [
+        "4과10-03"
+      ],
+      "runtime": "three-dom-builder",
+      "threeDLevel": "core",
+      "learningGoal": "물의 상태 변화를 이용해 물을 얻는 장치를 설계하고 만들며, 시험 결과를 바탕으로 개선한다.",
+      "studentMission": "냉각판, 경사판, 깔때기, 관, 물통 등을 3D 공간에 배치해 물방울을 모으는 장치를 만들고 시험한 뒤 손실 지점을 수정한다.",
+      "coreInteractions": [
+        "3D part drag/place",
+        "1축 rotate",
+        "높이 slider",
+        "경사 조절",
+        "connector snap",
+        "시험 가동",
+        "물방울 경로 관찰",
+        "leak hotspot",
+        "undo",
+        "재설계"
+      ],
+      "layout": {
+        "top": "Stage 5와 가상 시험 목표",
+        "left": "부품 팔레트",
+        "center": "3D 조립 작업대",
+        "right": "선택 부품의 회전/높이/경사 조절",
+        "bottom": "시험 가동, 되돌리기, 가상 시험 결과"
+      },
+      "gameLogic": [
+        "coolingPlate가 유효하면 droplet source를 생성한다.",
+        "경사 방향과 connector graph로 물방울 이동 경로를 결정한다.",
+        "연결 끊김, 역경사, 물통 미정렬은 leak point로 표시한다.",
+        "실제 CFD를 사용하지 않고 교육용 결정론적 규칙 기반 시뮬레이션을 사용한다.",
+        "결과 수치는 '가상 시험'임을 명시한다.",
+        "설계→시험→수정→재시험 과정이 학습의 핵심이며 첫 시도 통과 여부보다 개선 기록을 우선한다."
+      ],
+      "feedback": {
+        "leak": "물방울이 생기기는 했어. 어디에서 수집 경로를 벗어났는지 3D 화면에서 확인해 봐.",
+        "improve": "각도나 높이, 연결 위치 중 하나를 바꾸고 결과가 어떻게 달라지는지 비교해 보자.",
+        "success": "설계한 경로를 따라 물방울이 수집 용기까지 도착했어."
+      },
+      "visualPrompt": "밝은 3D 메이커 공방. 투명 작업대 위에 냉각판, 경사판, 깔때기, 연결관, 물통 등 형태가 명확한 부품을 배치한다. 물방울이 표면을 따라 이동하는 경로를 가까이서 볼 수 있고, 학생이 회전·높이·경사를 조절하기 쉬운 단순한 공간 구조. 장식용 로봇이나 복잡한 기계는 최소화한다.",
+      "implementationPrompt": "Three.js raycast selection + 단순 Transform UI를 구현한다. 정밀 gizmo 대신 1축 회전 ring, 높이 slider, snap connector를 사용한다. connector graph와 downhill vector로 rule-based droplet path를 계산하고 leak point를 표시한다. design version과 trial result를 store에 저장한다."
+    },
+    {
+      "pageNumber": 10,
+      "pageId": "p10",
+      "stage": 0,
+      "stageName": "FINAL",
+      "title": "물방울 코어 복구",
+      "standardCodes": [
+        "4과10-01",
+        "4과10-02",
+        "4과10-03"
+      ],
+      "runtime": "three-dom-hybrid",
+      "threeDLevel": "light",
+      "learningGoal": "단원에서 관찰하고 설계한 내용을 하나의 연구 결과로 통합한다.",
+      "studentMission": "5개의 연구 결정을 중앙 코어에 연결해 연구실을 다시 가동하고 자신의 관찰·측정·추론·설계 결과를 확인한다.",
+      "coreInteractions": [
+        "연구 결정 배치",
+        "코어 가동",
+        "연구실 복구 애니메이션",
+        "학습 영역 결과 확인",
+        "인증서 저장/출력",
+        "다시 연구하기"
+      ],
+      "layout": {
+        "top": "연구 완료 헤더",
+        "center": "3D 물방울 코어와 복구된 연구실",
+        "left": "5개 연구 결정",
+        "right": "관찰/측정/비교/증거/설계 결과",
+        "bottom": "인증서, 다시 연구, Science World로"
+      },
+      "gameLogic": [
+        "completedStages 1~5가 모두 있어야 진입.",
+        "결정 배치는 학습 개념 확인용이지만 반복 객관식으로 만들지 않는다.",
+        "완료 후 5개 학습 영역을 표시하고 retry 횟수는 감점하지 않는다.",
+        "Stage 5 수정 설계 기록을 긍정적인 학습 행동으로 표시한다."
+      ],
+      "feedback": {
+        "complete": "다섯 연구 기록이 연결되면서 물방울 연구실이 다시 가동됐어.",
+        "review": "원하는 실험실을 다시 열어 다른 조건으로 재실험할 수 있어."
+      },
+      "visualPrompt": "완전히 복구된 유리돔 물방울 연구실. 중앙의 맑은 3D 코어에서 아이스블루와 아쿠아 빛이 파이프를 따라 각 연구실로 퍼지고, 얼음·물·응결 물방울의 변화가 관찰 가능한 수준으로 연결된다. 과도한 파티클과 입자 캐릭터 표현 없이 성취감 있는 프리미엄 엔딩 장면.",
+      "implementationPrompt": "Three.js fixed cinematic camera와 stage completion state 기반 zone animation sequence를 사용한다. DOM 결과 패널은 관찰/측정/비교/증거/설계 5개 영역을 표시한다. 인증서는 CSS print 또는 canvas export로 생성하되 학생 이름은 직접 입력하게 한다."
+    }
+  ],
+  "sourceBenchmarkNotes": [
+    {
+      "source": "아이스크림_4-1-2_물의상태변화_1차시_얼음속인형구출하기_나무쌤이_콩순추가.pptx",
+      "usedFor": "문제 상황→방법 선택→변화 관찰의 탐구 구조만 참고",
+      "notCopied": "인형 구출 활동, 화면 구성, 문구"
+    },
+    {
+      "source": "지학사_4-2-2_물의상태변화_2차시_물의 상태변화를 관찰해 봅시다.pptx",
+      "usedFor": "물·얼음·수증기의 상태와 변화 관찰 요소",
+      "notCopied": "글겹 게임, 슬라이드 레이아웃, 문항"
+    },
+    {
+      "source": "지학사_4-2-2_물의상태변화_1차시_사라지는 그림 알아맞히기_인디용.pptx",
+      "usedFor": "물그림의 시간 변화라는 학습 경험",
+      "notCopied": "놀이 규칙, 단어 맞히기, 슬라이드 디자인"
+    },
+    {
+      "source": "4-2-2. 물의 상태 변화 정리학습지.pdf",
+      "usedFor": "얼기 전후 변화, 증발/끓음 비교, 응결 사례의 핵심 학습 요소",
+      "notCopied": "붙임딱지 형식, 빈칸 학습지 레이아웃"
+    },
+    {
+      "source": "아이스크림_4-1-2_물의상태변화_6차시_차가운물체표면에서는어떤일이일어날까_나무쌤이_콩순추가.pptx",
+      "usedFor": "닦기→시간 관찰→전후 무게 비교→물방울 출처 추론의 증거 기반 탐구",
+      "notCopied": "수업 슬라이드, 캐릭터, 문장"
+    },
+    {
+      "source": "4학년 2학기 2단원 물의 상태 변화인생 게임.pptx",
+      "usedFor": "수도관·얼음틀·차가운 컵 등 생활 적용 맥락",
+      "notCopied": "2지선다, 점수 증감, 인생게임 규칙"
+    }
+  ]
+}
