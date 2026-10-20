@@ -4,7 +4,7 @@ import path from 'node:path';
 const built = process.argv.includes('--dist');
 const root = built ? path.join(process.cwd(),'dist') : process.cwd();
 const port = Number(process.env.PORT || (built ? 4317 : 4316));
-const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.json':'application/json'};
+const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.json':'application/json','.woff2':'font/woff2'};
 http.createServer((req,res)=>{
   let relative;
   try { relative = decodeURIComponent(new URL(req.url,'http://localhost').pathname); } catch { res.writeHead(400).end();return; }

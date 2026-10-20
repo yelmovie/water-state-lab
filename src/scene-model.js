@@ -24,6 +24,10 @@ export function pointOnRoute(points,fraction){
  for(let i=0;i<lengths.length;i++){if(d<=lengths[i]||i===lengths.length-1){const t=lengths[i]?d/lengths[i]:0;return points[i].map((v,k)=>v+(points[i+1][k]-v)*t);}d-=lengths[i];}
  return [...points.at(-1)];
 }
+export function routeDistance(points){return points.slice(1).reduce((sum,p,i)=>sum+Math.hypot(p[0]-points[i][0],p[1]-points[i][1]),0);}
+export function freezeLevel(phase){return phase==='ice'?65.4:60;}
+export function lensRegion(x,y){return x<350?'surface':y>218?'level':'inside';}
+export function rampEndpoint(position,angle,scale=.64,offset=10){return {x:position.x+180,y:(position.y+angle*2)*scale+offset};}
 export function discoveryStars(m,s){
  const a=s.activities;
  return ({

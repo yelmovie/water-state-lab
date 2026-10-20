@@ -1,8 +1,9 @@
 import {initialInquiry,sanitizeInquiry} from './inquiry-model.js';
 import {initialActivities,validateActivities} from './activity-model.js';
 import {defaultParts,canEnter} from './domain.js';
+import {initialFieldwork,cleanFieldwork} from './fieldwork-model.js';
 export const KEY='water-drop-lab:v1';
-export function initialState(){return {schemaVersion:2,inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],evidence:{},restored:false,settings:{reduced:false,sound:true,adminUnlock:false},lab:{
+export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:false,sfx:true,bgmVolume:35,adminUnlock:false},lab:{
   observe:{selected:0,seen:[],pour:0,ice:false,cloth:0,wipe:0,canTime:0},
   classify:{current:0,records:[],type:'',proof:false},
   freeze:{initial:false,tare:false,prediction:65,phase:'water',measured:false,melted:false,compared:false},
@@ -22,7 +23,9 @@ export function readState(storage){
   const raw=JSON.parse(storage.getItem(KEY));
   if(!raw||![1,2].includes(raw.schemaVersion)||!raw.lab)return fallback;
   const s={...fallback,...raw,settings:{...fallback.settings,...raw.settings},lab:{...fallback.lab}};
-  s.schemaVersion=2;s.inquiry=sanitizeInquiry(raw.inquiry);
+  s.schemaVersion=2;s.inquiry=sanitizeInquiry(raw.inquiry);s.fieldwork=cleanFieldwork(raw.fieldwork);
+  s.settings.sfx=typeof raw.settings?.sfx==='boolean'?raw.settings.sfx:s.settings.sound;
+  s.settings.bgmVolume=Number.isFinite(s.settings.bgmVolume)?Math.max(0,Math.min(100,s.settings.bgmVolume)):35;
   s.activities={...fallback.activities,...raw.activities};
   for(const k of Object.keys(fallback.activities)){if(typeof fallback.activities[k]==='object')s.activities[k]={...fallback.activities[k],...raw.activities?.[k]};}
   if(!validateActivities(s.activities))s.activities=initialActivities();
@@ -48,5 +51,10 @@ export function readState(storage){
  }catch{return fallback;}
 }
 export let state=readState();
-export function save(){try{globalThis.localStorage.setItem(KEY,JSON.stringify(state));return true;}catch{if(typeof document!=='undefined'){const el=document.querySelector('#toast');if(el){el.textContent='이 기기에 저장하지 못했어. 창을 닫기 전에 선생님께 알려 줘.';el.classList.add('show');}}return false;}}
-export function reset(){state=initialState();save();}
+let previewStudent=null;
+export function setPreviewMode(enabled){
+ if(enabled&&!previewStudent){previewStudent=structuredClone(Object.fromEntries(Object.entries(state).filter(([k])=>k!=='settings')));}
+ if(!enabled&&previewStudent){Object.assign(state,previewStudent);previewStudent=null;}
+}
+export function save(){try{const saved=previewStudent?{...previewStudent,settings:state.settings}:state;globalThis.localStorage.setItem(KEY,JSON.stringify(saved));return true;}catch{if(typeof document!=='undefined'){const el=document.querySelector('#toast');if(el){el.textContent='이 기기에 저장하지 못했어. 창을 닫기 전에 선생님께 알려 줘.';el.classList.add('show');}}return false;}}
+export function reset(){const audio={sound:state.settings.sound,bgm:state.settings.bgm,sfx:state.settings.sfx,bgmVolume:state.settings.bgmVolume};previewStudent=null;state=initialState();Object.assign(state.settings,audio);save();}
