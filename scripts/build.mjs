@@ -12,7 +12,7 @@ await mkdir(path.join(output,'assets/v2'),{recursive:true});
 await cp(path.join(root,'src'),path.join(output,'src'),{recursive:true});
 await cp(path.join(root,'public/assets/vendor'),path.join(output,'assets/vendor'),{recursive:true});
 await cp(path.join(root,'public/assets/fonts'),path.join(output,'assets/fonts'),{recursive:true});
-for(const folder of ['audio','concepts','learning'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),{recursive:true});
+for(const folder of ['audio','concepts','learning','stages'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),{recursive:true});
 for(const file of await readdir(path.join(root,'public/assets/v2'))){
  if(file.endsWith('.webp'))await copyFile(path.join(root,'public/assets/v2',file),path.join(output,'assets/v2',file));
 }

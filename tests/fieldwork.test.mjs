@@ -11,7 +11,7 @@ function solve(n){let c=chapterState(n);const act=(a,p)=>c=fieldAction(n,c,a,p),
  if(n===5){for(let cell=0;cell<16;cell++)act('spread',{cell});act('test');put('destination','air');}
  if(n===6){for(const site of ['surface','inside','level'])act('inspect',{site});put('A','air');put('B','air');}
  if(n===7){put('pack','A');act('test');put('pack','B');act('test');put('condition','cold');}
- if(n===8){act('test');put('cold','plate');put('tray','under');act('test');}
+ if(n===8){put('tray','under');act('test');put('cold','plate');act('test');}
  if(n===9)for(let from=0;from<4;from++)act('connect',{from,to:from+1});
  return c;
 }
@@ -42,6 +42,22 @@ test('swapped cup identities still need the shared cold-surface explanation',()=
 });
 test('an uphill or skipped water connection gives feedback without awarding it',()=>{
  for(const [from,to] of [[2,1],[0,4]]){const c=fieldAction(9,chapterState(9),'connect',{from,to});assert.deepEqual(c.lines,[]);assert.ok(c.message.length>5);}
+});
+
+test('cooling comparison keeps the receiver fixed and names the missing condition',()=>{
+ let c=chapterState(8);
+ c=fieldAction(8,c,'test');assert.equal(c.tested.length,0);assert.match(c.message,/받이/);
+ c=fieldAction(8,c,'place',{item:'tray',target:'under'});
+ c=fieldAction(8,c,'place',{item:'cold',target:'plate'});
+ c=fieldAction(8,c,'test');assert.equal(c.tested.length,0);assert.match(c.message,/냉각 전/);
+ c=fieldAction(8,c,'place',{item:'cold',target:'removed'});
+ c=fieldAction(8,c,'test');assert.equal(c.tested[0].cold,0);assert.equal(fieldReady(8,c),false);
+ c=fieldAction(8,c,'place',{item:'cold',target:'plate'});
+ c=fieldAction(8,c,'test');assert.equal(fieldReady(8,c),true);assert.equal(c.moves.tray,'under');
+ const raw=initialFieldwork();raw.chapters[8]={...c,rulesVersion:undefined,tested:[{ok:false},{cold:1,amount:20,ok:true}],done:true};
+ assert.equal(cleanFieldwork(raw).chapters[8].done,true,'previously completed comparisons stay completed');
+ raw.chapters[8].done=false;
+ assert.equal(cleanFieldwork(raw).chapters[8].done,false,'unfinished old data still needs a measured baseline');
 });
 test('save cleaning retains actual evidence, ignores a forged done flag, and isolates damaged field records',()=>{
  const raw=initialFieldwork();raw.chapters[4]=solve(4);raw.chapters[2]={...chapterState(2),done:true};raw.chapters[7]={tested:[null,{cold:NaN,ok:true}],moves:null};

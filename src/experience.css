@@ -10,7 +10,7 @@ body{line-break:strict}h1,h2,h3{text-wrap:balance}button{word-break:keep-all;lin
 .activity-tools details p,.control-panel details p{font-size:18px}.activity-tools summary,.control-panel summary{font-size:18px;min-height:48px;display:flex;align-items:center}
 .activity-tools .extra-explanation{margin-top:0}.quest-prize{display:none}
 .stage-forward{position:sticky;bottom:-16px;z-index:3;box-shadow:0 4px 0 #98702f,0 -8px 12px var(--color-panel);margin-top:4px}
-.next-action,.current-action{outline:2px solid #b78b36;outline-offset:3px}.next-action::after{content:' →';white-space:pre}
+.next-action,.current-action{outline:2px solid #b78b36;outline-offset:3px}.next-action::after{content:none}
 .compact-guide{padding-left:122px;padding-top:10px;padding-bottom:10px;gap:12px}.compact-guide p{font-size:clamp(20px,1.5vw,27px);line-height:1.4;padding-top:18px}
 .compact-guide .buddy-name{font-size:16px;left:124px;top:8px}.compact-guide .hint-button{font-size:20px;min-width:100px;min-height:52px;padding:10px}
 .compact-guide .concept-revisit{flex-shrink:0;font-size:18px;min-height:52px;padding:8px 12px}
@@ -20,7 +20,7 @@ body{line-break:strict}h1,h2,h3{text-wrap:balance}button{word-break:keep-all;lin
 .scene-6 .lens-window{display:flex;align-items:center;gap:12px;font-size:20px;min-height:84px;padding:8px 12px;margin-top:8px}.scene-6 .lens-window>b{flex:0 0 100px;font-size:18px}.scene-6 .lens-window p{flex:1;min-width:0;font-size:20px}.scene-6 .lens-window .beaker{height:76px;width:96px;flex:none}.scene-6 .lens-window .record-pair{flex:0 0 180px;width:180px}.scene-6 .phaser-stage{min-height:190px}
 .activity-stage-caption,.lab-stage>.stage-tag{font-size:18px}.activity-record,.picture-record>span,.record-pair b,.inquiry-options .btn{font-size:18px}.activity-trial small,.activity-seal,.pins-log span{font-size:16px}
 .activity-5 .activity-drawing-pair canvas{height:clamp(150px,22vh,240px)}.time-controls{column-gap:8px;row-gap:8px}.time-controls .time-mode{display:none}.time-controls #time-description{font-size:18px}
-.fieldwork-activity .challenge-status{display:none}.fieldwork-activity .activity-science{font-size:16px}.fieldwork-activity .activity-tools .eyebrow{display:none}.fieldwork-activity .activity-tools h3{font-size:25px}.fieldwork-activity .challenge-goal{padding:4px 0;margin:0}
+.fieldwork-activity .challenge-status{display:block}.fieldwork-activity .activity-science{font-size:16px}.fieldwork-activity .activity-tools .eyebrow{display:none}.fieldwork-activity .activity-tools h3{font-size:25px}.fieldwork-activity .challenge-goal{padding:4px 0;margin:0}
 .expedition-choices label,.expedition-choices select{font-size:20px}.expedition-choices .btn{margin:4px 0}
 dialog{position:fixed;inset:0;margin:auto;max-height:calc(100dvh - 48px);box-sizing:border-box;line-height:1.5}
 dialog::backdrop{background:#153c3ab3;backdrop-filter:none}
@@ -101,6 +101,29 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .scene-workspace{position:relative;grid-template-rows:minmax(0,1fr);gap:0}
 .activity-area{grid-row:1}
 .activity-scene,.lab-stage{box-shadow:var(--panel-highlight),var(--shadow-card)}
+
+/* Each region keeps its own place while the experiment geometry stays 2D. */
+.scene-1,.scene-2{--stage-art:url('/assets/stages/spring-terrace.webp')}
+.scene-3,.scene-4{--stage-art:url('/assets/stages/winter-waterworks.webp')}
+.scene-5,.scene-6{--stage-art:url('/assets/stages/sun-courtyard.webp')}
+.scene-7,.scene-8{--stage-art:url('/assets/stages/dew-greenhouse.webp')}
+.experiment-shell:has(.activity){background-image:linear-gradient(#eef7ee30,#f7f0d62a),var(--stage-art,url('/assets/v2/experiment-table-v3.webp'))}
+.scene-1 .phaser-stage,.scene-3 .phaser-stage,.scene-4 .phaser-stage,.scene-5 .phaser-stage,.scene-6 .phaser-stage,.scene-7 .phaser-stage,.scene-8 .phaser-stage{background-image:linear-gradient(#fffaf089,#fffaf05c),var(--stage-art);background-size:cover;background-position:center}
+.field-now{flex:none;margin:4px 0 8px;padding:9px 12px;background:#fff3c9;border-left:4px solid #b38837;border-radius:8px;font-size:18px;line-height:1.4}
+.fieldwork-activity .challenge-status{flex:none;margin:8px 0 0;font-size:18px!important;line-height:1.4}
+@media(min-width:801px){.fieldwork-activity .challenge-status{margin-left:96px}}
+.spread-coverage,.cooling-checks{display:flex;align-items:center;flex-wrap:wrap;gap:8px;flex:none;font-size:17px;margin-bottom:6px}
+.spread-coverage meter{flex:1;min-width:90px;height:20px}.cooling-checks span{padding:6px 10px;border:1px solid #b4bdb2;border-radius:8px}.cooling-checks .done{background:#dceddc;border-color:#5c8969}
+.model-goal{flex:none;margin:2px 0 6px;font-size:18px}.model-goal small,.prediction-record small{display:block;font-size:16px;line-height:1.4}
+.prediction-record{padding:10px;background:#edf3e5;border:1px solid #afc2a4;border-radius:10px;font-size:19px}
+.essential-controls{flex:none}.essential-controls>summary{font-weight:bold}.essential-controls .btn{min-height:48px}.essential-controls select{min-height:48px;width:100%;font-size:19px}
+.workshop-keyboard .part-arrows{display:grid;grid-template-columns:1fr 1fr;gap:6px}.workshop-keyboard label{display:block;margin:5px 0}
+.part.active .part-grip{stroke:#bd8b2b;stroke-width:5px}.part svg{pointer-events:none}
+.learning-save-notice{position:fixed;left:12px;right:12px;bottom:8px;z-index:80;display:flex;gap:10px;align-items:center;justify-content:center;padding:8px 12px;border:2px solid #b77e38;border-radius:10px;background:#fff2d3;color:#583e24;font-size:16px;line-height:1.35;box-shadow:0 3px 10px #0002}
+.learning-save-notice[hidden]{display:none}.learning-save-notice button{flex:none;min-height:44px;border:1px solid #91682c;border-radius:7px;background:#fffdf2;padding:5px 12px;color:inherit;font:inherit}
+.save-warning-visible .experiment-main{padding-bottom:70px}
+@media(min-width:801px){.scene-4 .activity-scene,.scene-8 .activity-scene,.scene-10 .lab-stage{padding-bottom:100px}}
+@media(orientation:portrait){.learning-save-notice{align-items:flex-start;flex-direction:column;font-size:15px}.save-warning-visible .experiment-main{padding-bottom:150px}}
 .activity-tools,.control-panel{
  border-color:var(--surface-border);background:#fff9eaf5;
  box-shadow:var(--panel-highlight),0 5px 0 #5d54352b,0 12px 28px #3249301c;

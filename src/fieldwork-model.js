@@ -1,3 +1,4 @@
+import {pipeAssessment,pipeFinding} from './activity-model.js';
 // Field applications follow an observed experiment. No speed, precision or click-count score.
 export const experimentTitles=['','옮겨 담기','생활 속 세 상태','얼기·녹기','얼 때의 공간','물그림 마르기','증발과 끓음','컵 바깥 물방울','내 증거로 설명','물 모으는 장치','마지막 물길 복구'];
 export const experimentQuestions=['','물과 얼음의 모양은 어떻게 달라질까?','생활 속 물은 어떤 상태일까?','얼고 녹으면 높이와 무게는?','물이 얼 때 공간이 충분할까?','물의 양이 다르면 마르는 순서는?','증발과 끓음은 무엇이 같을까?','컵 바깥 물방울은 어디서 왔을까?','내 증거로 물방울을 설명할까?','어떻게 고치면 물이 모일까?','내 기록과 장치로 물길을 고칠까?'];
@@ -14,7 +15,7 @@ export const fieldMissions=[null,
  {title:'마지막 순환 회로',problem:'물이 모자란 온실에 물을 다시 보낼 수 있을까?',goal:'물 → 수증기 → 물방울의 길에 알맞은 도구를 연결해 봐.',type:'final',reward:'연구섬 복구 코어',ability:'증발과 응결을 이용한 물 수집 방법을 설명할 수 있어',next:'내 연구 기록과 복구 인증서가 남아요',standard:'4과10-03'}
 ];
 export function initialFieldwork(){return {version:1,introSeen:false,active:0,pending:'',chapters:{},ability:''};}
-export function chapterState(n){return {moves:{},tested:[],marks:[],lines:[],spread:[],setting:100,selected:'',message:'',done:false};}
+export function chapterState(n){return {rulesVersion:2,moves:{},tested:[],marks:[],lines:[],spread:[],setting:100,selected:'',message:'',done:false};}
 const clone=v=>JSON.parse(JSON.stringify(v));
 export function cleanFieldwork(raw){
  const f=initialFieldwork();if(!raw||typeof raw!=='object')return f;
@@ -23,17 +24,18 @@ export function cleanFieldwork(raw){
  f.ability=['observe','compare','design'].includes(raw.ability)?raw.ability:'';
  for(let n=1;n<=10;n++){
   const c=raw.chapters?.[n];if(!c||typeof c!=='object')continue;
-  const next=chapterState(n);next.setting=Number.isFinite(c.setting)?Math.max(40,Math.min(100,c.setting)):95;
+  const next=chapterState(n);next.rulesVersion=c.rulesVersion===2?2:1;next.setting=Number.isFinite(c.setting)?Math.max(40,Math.min(100,c.setting)):95;
   next.selected=typeof c.selected==='string'?c.selected.slice(0,40):'';
   next.message=typeof c.message==='string'?c.message.slice(0,200):'';
   for(const key of ['marks','spread'])if(Array.isArray(c[key]))next[key]=[...new Set(c[key].filter(v=>key==='marks'?typeof v==='string'&&v.length<40:Number.isInteger(v)&&v>=0&&v<48))].slice(0,48);
   if(Array.isArray(c.lines))next.lines=c.lines.filter(v=>typeof v==='string'&&/^\d-\d$/.test(v)).slice(0,8);
   if(c.moves&&typeof c.moves==='object'&&!Array.isArray(c.moves))for(const [key,val] of Object.entries(c.moves).slice(0,12))if(typeof val==='string'&&key.length<30&&val.length<30)next.moves[key]=val;
   if(Array.isArray(c.tested))next.tested=c.tested.filter(t=>t&&typeof t==='object'&&['value','cold','amount','spread'].every(k=>t[k]===undefined||Number.isFinite(t[k]))&&typeof t.ok==='boolean').slice(-8).map(t=>({value:t.value,cold:t.cold,amount:t.amount,spread:t.spread,ok:t.ok}));
-  next.done=fieldReady(n,next);f.chapters[n]=next;
+  next.done=c.done===true;next.done=fieldReady(n,next);f.chapters[n]=next;
  }
  return f;
 }
+export function coolingBaseline(c){return c.tested.some(t=>t.cold===0&&!t.ok)||(c.rulesVersion===1&&c.done&&c.tested.some(t=>!t.ok));}
 export function fieldReady(n,c){
  if(!c)return false;
  switch(n){
@@ -44,7 +46,7 @@ export function fieldReady(n,c){
  case 5:return c.spread.length>=12&&c.tested.at(-1)?.spread===c.spread.length&&c.tested.at(-1)?.ok===true&&c.moves.destination==='air';
  case 6:return ['surface','inside','level'].every(k=>c.marks.includes(k))&&c.moves.A==='air'&&c.moves.B==='air';
  case 7:return [0,1].every(k=>c.tested.some(t=>t.cold===k))&&c.moves.condition==='cold';
- case 8:return c.tested.some(t=>!t.ok)&&c.tested.at(-1)?.ok===true&&c.moves.cold==='plate'&&c.moves.tray==='under';
+ case 8:return coolingBaseline(c)&&c.tested.at(-1)?.ok===true&&c.moves.cold==='plate'&&c.moves.tray==='under';
  case 9:return ['0-1','1-2','2-3','3-4'].every(k=>c.lines.includes(k));
  case 10:return ['evaporate','condense'].every(k=>c.marks.includes(k));
  default:return false;
@@ -59,14 +61,14 @@ export function fieldProgress(n,c){
  if(n===5)checks=[c.spread.length>=12,c.tested.at(-1)?.spread===c.spread.length&&c.tested.at(-1)?.ok,c.moves.destination==='air'];
  if(n===6)checks=['surface','inside','level'].map(k=>c.marks.includes(k)).concat(c.moves.A==='air',c.moves.B==='air');
  if(n===7)checks=[c.tested.some(t=>t.cold===0),c.tested.some(t=>t.cold===1),c.moves.condition==='cold'];
- if(n===8)checks=[c.tested.some(t=>!t.ok),c.moves.cold==='plate'&&c.moves.tray==='under',c.tested.at(-1)?.ok];
+ if(n===8)checks=[coolingBaseline(c),c.moves.cold==='plate'&&c.moves.tray==='under',c.tested.at(-1)?.ok];
  if(n===9)checks=['0-1','1-2','2-3','3-4'].map(k=>c.lines.includes(k));
  if(n===10)checks=['evaporate','condense'].map(k=>c.marks.includes(k));
  return [checks.filter(Boolean).length,checks.length];
 }
 const routes={freeze:['cold'],melt:['warm'],evaporate:['time','warm'],condense:['cold']};
 export function fieldAction(n,current,action,payload={}){
- const c=clone(current||chapterState(n));c.message='';
+ const c=clone(current||chapterState(n));if(!c.done)c.rulesVersion=2;
  if(action==='place'){
   const {item,target}=payload;
   if(typeof item!=='string'||typeof target!=='string')return c;
@@ -78,8 +80,8 @@ export function fieldAction(n,current,action,payload={}){
   if(n===7&&item==='condition')c.message=target==='cold'?'컵 이름을 바꿔도 차가운 표면에 물방울이 생겼어.':'냉각팩을 옮기면 물방울이 생긴 컵도 바뀌었어. 두 기록의 같은 조건을 찾아봐.';
   if(n===8)c.message='배치를 바꿨어. 앞 시험과 같은 조건에서 다시 관찰하자.';
  }
- if(action==='setting'&&Number.isFinite(payload.value))c.setting=Math.max(40,Math.min(100,Math.round(payload.value)));
- if(action==='spread'&&Number.isInteger(payload.cell)&&payload.cell>=0&&payload.cell<48)c.spread=[...new Set([...c.spread,payload.cell])];
+ if(action==='setting'&&Number.isFinite(payload.value)){c.setting=Math.max(40,Math.min(100,Math.round(payload.value)));c.message=`물 ${c.setting}%로 바꿨어. 이 조건으로 얼려서 결과를 확인해 봐.`;}
+ if(action==='spread'&&Number.isInteger(payload.cell)&&payload.cell>=0&&payload.cell<48){c.spread=[...new Set([...c.spread,payload.cell])];c.message=`B를 ${c.spread.length}칸으로 펼쳤어. 같은 시간 뒤 비교하기로 변화를 시험해 봐.`;}
  if(action==='inspect'&&['surface','inside','level'].includes(payload.site))c.marks=[...new Set([...c.marks,payload.site])];
  if(action==='connect'){
   const {from,to}=payload;
@@ -91,12 +93,12 @@ export function fieldAction(n,current,action,payload={}){
  if(action==='test'){
   if([2,10].includes(n)){
    const keys=n===2?Object.keys(routes):['evaporate','condense'];
-   c.marks=keys.filter(k=>routes[k].includes(c.moves[k]));c.message=c.marks.length===keys.length?'상태가 바뀌는 길이 이어졌어! 가열하지 않아도 물은 증발해. 수증기는 눈에 보이지 않아.':'어느 길에서 멈췄는지 봐. 결과를 보고 도구를 바꿔 다시 시험해.';
+   c.marks=keys.filter(k=>routes[k].includes(c.moves[k]));c.message=c.marks.length===keys.length?'상태가 바뀌는 길이 이어졌어! 가열하지 않아도 물은 증발해. 수증기는 눈에 보이지 않아.':`${keys.filter(k=>!c.marks.includes(k)).map(k=>({freeze:'물 → 얼음',melt:'얼음 → 물',evaporate:'물 → 수증기',condense:'수증기 → 물'})[k]).join(' · ')} 길의 조건 도구를 확인하고 다시 시험해 줘.`;
   }
-  if(n===4){const expanded=c.setting*1.09,ok=expanded<=100;c.tested.push({value:c.setting,amount:Math.round(expanded*10)/10,ok});c.message=ok?'얼음이 차지할 자리가 통 안에 남아 있어. 가득 담은 시험과 비교해 봐.':'얼음이 차지할 공간이 통보다 커졌어. 물의 양을 줄여서 다시 비교해 봐.';}
+  if(n===4){const result=pipeAssessment(c.setting,'capacity');c.tested.push({value:c.setting,amount:result.expanded,ok:result.met});c.message=pipeFinding(c.setting)+(result.met?' · 이번 목표인 넘치지 않기를 충족했어.':' · 물의 양을 줄이고 다시 비교해 봐.');}
   if(n===5){c.tested.push({spread:c.spread.length,ok:c.spread.length>=12});c.message=c.spread.length>=12?'같은 양을 넓게 편 B의 물자국이 더 많이 옅어졌어. 물은 어디로 갔을까?':'B의 물자국이 아직 좁아. 손가락을 움직여 더 넓게 펴 보자.';}
   if(n===7){if(!['A','B'].includes(c.selected)){c.message='먼저 냉각팩을 한 컵에 붙여 줘.';return c;}c.tested.push({cold:c.selected==='A'?0:1,amount:20,ok:true});c.message=`닦아 준비한 같은 시간 비교: ${c.selected}컵 바깥에 물방울이 생겼어. 냉각팩을 다른 컵으로 옮겨 봐.`;}
-  if(n===8){const ok=c.moves.cold==='plate'&&c.moves.tray==='under';c.tested.push({cold:c.moves.cold==='plate'?1:0,amount:ok?20:0,ok});c.message=ok?'공기 중 수증기가 찬 판에서 물방울이 되어 받이에 모였어.':'물이 어디서 멈췄을까? 판이 차가운지, 받이가 아래에 있는지 살펴봐.';}
+   if(n===8){if(c.moves.tray!=='under'){c.message='두 조건을 비교하려면 물 받이를 먼저 판 아래에 놓아 줘.';return c;}if(!coolingBaseline(c)&&c.moves.cold==='plate'){c.message='아직 냉각 전 기록이 없어. 냉각팩을 떼고 받이는 그대로 둔 채 먼저 시험해 줘.';return c;}const ok=c.moves.cold==='plate';c.tested.push({cold:ok?1:0,amount:ok?20:0,ok});c.message=ok?'받이는 같은 자리야. 판을 차갑게 하자 물방울이 받이에 모였어.':'냉각 전에는 받이가 있어도 새 물방울이 모이지 않았어. 이번에는 냉각팩을 붙여 봐.';}
   if(n===6)c.message=fieldReady(6,c)?'두 물 모두 눈에 보이지 않는 수증기로 변했어. 끓는 물속에서는 기포도 보였지.':'세 곳을 확대하고, 줄어든 두 물의 행방을 각각 연결해 줘.';
   if(n===3)c.message=fieldReady(3,c)?'얼면 높이는 올라가고, 녹으면 돌아와. 같은 물의 무게는 같았어.':'사진의 시간 순서와 저울의 무게를 다시 비교해 봐.';
  }

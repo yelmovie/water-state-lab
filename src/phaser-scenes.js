@@ -1,3 +1,5 @@
+import {partPosition} from './workshop-controls.js';
+import {resetDrawingExperiment} from './drawing-records.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
 import {sortCards,dryTrace,heatingTrial} from './activity-model.js';
@@ -31,6 +33,8 @@ function makeScene(P,route,ctx,host,hidden){
     this.load.image('workshop','/assets/v2/workshop-atlas.webp');
     if(route===3)this.load.image('learning-scale','/assets/learning/scale.webp');
     if(route===4)this.load.image('learning-tank','/assets/learning/tank-frame.webp');
+    if(route===2)this.load.image('water-search','/assets/stages/water-search.webp');
+    if(route===8)this.load.image('drink-bottle','/assets/stages/drink-bottle.webp');
    }
   }
   create(){
@@ -91,6 +95,8 @@ function makeScene(P,route,ctx,host,hidden){
    for(const dx of [-6,0,6]){g.fillStyle(0x617e76).fillCircle(x+dx,y-5,1.6).fillCircle(x+dx,y+5,1.6);}return g;
   }
   createBuddy(){
+   // These experiments use the Bangul guide outside the observation surface.
+   if([4,8,10].includes(route))return;
    const seats={1:[55,312],2:[655,165],3:[80,313],4:[650,314],5:[674,326],6:[54,318],7:[670,318],8:[47,318],9:[660,126],10:[657,120]},[x,y]=seats[route];
    this.buddyHome={x,y};this.buddyShadow=this.add.ellipse(x,y-3,43,12,0x39616b,.16).setDepth(10);
    this.buddy=this.prop(x,y,0,96,'buddy').setOrigin(.5,1).setDepth(11).setInteractive({useHandCursor:true});
@@ -186,14 +192,17 @@ function makeScene(P,route,ctx,host,hidden){
    }
   }
   sortScene(){
-   const card=sortCards.find(c=>!a().sort.placed[c.id]);
-   ['solid','liquid','gas'].forEach((key,i)=>{const x=130+i*230;this.panel(x-100,175,200,135);this.text(x,202,['고체','액체','기체'][i],24);this.text(x,275,sortCards.filter(c=>a().sort.placed[c.id]===key).map(c=>c.id==='vapor'?'천에서 공기로 간 물':c.id==='laundry'?'빨래에서 공기로 간 물':c.name).join('\n'),14);});
-   if(!card){this.text(360,90,'관찰한 물의 모습을 모두 연결했어!',26);this.prop(360,100,14,90,'buddy');return;}
+   const card=sortCards.find(c=>c.id===q().sortProof)||sortCards.find(c=>!a().sort.placed[c.id]);
+   this.add.image(245,150,'water-search').setDisplaySize(460,259);
+   const sites=[[91,106],[226,93],[391,125],[91,197],[226,197],[405,210]];
+   sortCards.forEach((c,i)=>{const [x,y]=sites[i],done=!!a().sort.placed[c.id];const marker=this.add.circle(x,y,26,done?0xd3ecd9:card?.id===c.id?0xffdc84:0xfff8df,.95).setStrokeStyle(3,0x477d79).setInteractive({useHandCursor:true});this.text(x,y,done?'✓':String(i+1),23).setDepth(2);marker.on('pointerdown',()=>this.action('ix-sort-card-'+c.id));});
+   ['solid','liquid','gas'].forEach((key,i)=>{const y=65+i*84;this.panel(490,y-30,215,72);this.text(600,y-8,['고체','액체','기체'][i],23);this.text(600,y+19,`${sortCards.filter(c=>a().sort.placed[c.id]===key).length}개 확인`,16);const bin=this.add.rectangle(600,y+5,210,68,0xffffff,0).setInteractive({useHandCursor:true});bin.on('pointerdown',()=>this.action('ix-sort-place-'+key));});
+   if(!card){this.text(245,300,'여섯 장면의 물을 모두 찾았어!',22);return;}
    const idx=['beaker','jug','ice','cloth','can','icepack','thermometer','magnifier','seedling'].indexOf(card.art);
-   const obj=this.prop(360,74,idx,100,'equipment',true);this.text(360,139,card.name,23);
-   if(['vapor','laundry'].includes(card.id))this.text(360,28,'천이 아니라, 마르면서 공기로 간 물이야',17);
-   obj.onRelease=()=>{if(obj.y<175){obj.setPosition(360,74);return;}const key=['solid','liquid','gas'][clamp(Math.round((obj.x-130)/230),0,2)];q().sortProof=card.id;q().sortDraft[card.id]=key;this.action('ix-sort-check');};
+   const obj=this.prop(458,35,idx,66,'equipment',true);this.text(245,300,card.name+' · 장면을 고르고 상태에 놓아 봐',18);
+   obj.onRelease=()=>{if(obj.x<490){obj.setPosition(458,35);return;}const key=['solid','liquid','gas'][clamp(Math.round((obj.y-65)/84),0,2)];q().sortProof=card.id;q().sortDraft[card.id]=key;this.action('ix-sort-check');};
   }
+
   freezeScene(){
    const s=a().freeze;
    this.panel(180,20,300,295);
@@ -240,7 +249,7 @@ function makeScene(P,route,ctx,host,hidden){
    this.text(185,23,'A · 물을 조금');this.text(535,23,'B · 물을 많이');this.text(360,314,'A에 그리면 방울이가 B에 같은 그림을 그려 줘',18);
    let stroke=null;
    const point=p=>{if(stroke&&stroke.length<400)stroke.push([clamp((p.x-25)/320*500,0,500),clamp((p.y-50)/230*310,0,310)]);};
-   this.input.on('pointerdown',p=>{if(p.x<20||p.x>350||p.y<45||p.y>290||d.strokes.length>=35)return;stopClock();if(d.records.length){q().drawArchive.push({strokes:structuredClone(d.strokes),records:structuredClone(d.records)});q().drawArchive=q().drawArchive.slice(-6);d.records=[];d.faster='';d.destination='';q().drawCompared=false;}d.time=0;stroke=[];d.strokes.push(stroke);point(p);});
+   this.input.on('pointerdown',p=>{if(p.x<20||p.x>350||p.y<45||p.y>290||d.strokes.length>=35)return;stopClock();if(d.records.length||q().drawPredictionLocked)resetDrawingExperiment(q(),d);d.time=0;stroke=[];d.strokes.push(stroke);point(p);});
    this.input.on('pointermove',p=>{if(p.isDown)point(p);});this.finishPointer=()=>{if(stroke){stroke=null;this.commit();}};
    this.tick=()=>{this.dynamic.clear();for(const [i,key] of ['thin','thick'].entries()){this.dynamic.lineStyle(12,0x278ba6,dryTrace(key,observationTime(5)));for(const line of d.strokes){if(line.length<2)continue;this.dynamic.beginPath();line.forEach(([x,y],j)=>{x=x/500*320+25+i*350;y=y/310*230+50;j?this.dynamic.lineTo(x,y):this.dynamic.moveTo(x,y);});this.dynamic.strokePath();}}};
   }
@@ -289,7 +298,7 @@ function makeScene(P,route,ctx,host,hidden){
   explainScene(){
    const s=a().explain;
    if(s.chain.length===3){
-    this.text(205,22,'차가운 음료병');this.text(510,22,'실온 음료병');this.prop(205,160,4,265);this.prop(510,160,4,265);
+    this.text(205,22,'차가운 음료병');this.text(510,22,'실온 음료병');this.learningSprite('drink-bottle',205,166,185,278);this.learningSprite('drink-bottle',510,166,185,278);
     const rubbed={cold:0,room:0};let last=null,starting=false;
     this.input.on('pointerdown',()=>{last=null;});this.finishPointer=()=>{last=null;};
     this.input.on('pointermove',p=>{if(!p.isDown||p.y<50||p.y>280||s.bottleWiped||starting){last=null;return;}if(!q().transferPrediction){this.cue('어느 병에 물방울이 생길지 예상부터 해 보자.');return;}const key=Math.abs(p.x-205)<95?'cold':Math.abs(p.x-510)<95?'room':null;if(key&&last?.key===key)rubbed[key]+=Math.hypot(p.x-last.x,p.y-last.y);last={key,x:p.x,y:p.y};if(rubbed.cold>85&&rubbed.room>85){starting=true;this.action('ix-bottle-start');}else if(rubbed[key]>85)this.cue('이 병은 닦았어. 다른 병도 문질러 줘.');});
@@ -300,33 +309,46 @@ function makeScene(P,route,ctx,host,hidden){
     const keys=['drops','air','cold'],labels={air:'공기 중 수증기',cold:'차가운 표면',drops:'물방울'};
     for(let i=0;i<3;i++){this.panel(30+i*235,205,190,105);this.text(125+i*235,260,s.chain[i]?labels[s.chain[i]]:['어디에서?','무엇을 만나?','어떤 모습으로?'][i],20);}
     keys.filter(k=>!s.chain.includes(k)).forEach((k,i)=>{const x=130+i*230;const obj=k==='cold'?this.prop(x,85,5,100,'equipment',true):this.add.container(x,85,[this.add.circle(0,0,42,k==='air'?0xeaf2e9:0xa3e1ee,.9).setStrokeStyle(3,0x8cb8ad),this.text(0,0,k==='air'?'공기':'물',25)]).setSize(105,105).setInteractive({useHandCursor:true});
-     if(k!=='cold')this.input.setDraggable(obj);this.text(x,150,labels[k],19);obj.onRelease=()=>{const slot=clamp(Math.round((obj.x-125)/235),0,2);if(obj.y>200&&slot===s.chain.length)this.action('ix-chain-'+k);else{obj.setPosition(x,85);this.cue('왼쪽부터, 물이 어디에서 와서 어떻게 바뀌었는지 이어 봐.');}};});
+     if(k!=='cold')this.input.setDraggable(obj);this.text(x,150,labels[k],19);let tapStart;obj.on('pointerdown',p=>{tapStart={x:p.x,y:p.y};});obj.on('pointerup',p=>{if(tapStart&&Math.hypot(p.x-tapStart.x,p.y-tapStart.y)<12)this.action('ix-chain-'+k);tapStart=null;});obj.onRelease=()=>{const slot=clamp(Math.round((obj.x-125)/235),0,2);if(obj.y>200&&slot===s.chain.length)this.action('ix-chain-'+k);else{obj.setPosition(x,85);this.cue('왼쪽부터, 물이 어디에서 와서 어떻게 바뀌었는지 이어 봐.');}};});
     this.text(360,25,'설명 그림 · 수증기는 눈에 보이지 않아',16);return;
    }
    const proofs=[['sealed','입구를 막았어',4],['contrast','차가운 컵에 생겼어',5],['again','닦아도 다시 생겼어',3]];
    this.panel(180,195,360,110);this.text(360,248,'내 설명에 쓸 증거 놓는 곳',20);
-   proofs.forEach(([key,label,index],i)=>{const x=130+i*230,obj=this.prop(x,85,index,100,'equipment',true);this.text(x,153,label,17);if(s.evidence.includes(key)){obj.setTint(0xa9e9cf);this.text(x,27,'✓ 연결한 증거',17,'#21785d');}obj.onRelease=()=>{if(obj.y>190&&!s.evidence.includes(key))this.action('ix-evidence-'+key);else obj.setPosition(x,85);};});
+   proofs.forEach(([key,label,index],i)=>{const x=130+i*230,obj=this.prop(x,85,index,100,'equipment',true);this.text(x,153,label,17);if(s.evidence.includes(key)){obj.setTint(0xa9e9cf);this.text(x,27,'✓ 연결한 증거',17,'#21785d');}let tapStart;obj.on('pointerdown',p=>{tapStart={x:p.x,y:p.y};});obj.on('pointerup',p=>{if(tapStart&&Math.hypot(p.x-tapStart.x,p.y-tapStart.y)<12)this.action('ix-evidence-'+key);tapStart=null;});obj.onRelease=()=>{if(obj.y>190&&!s.evidence.includes(key))this.action('ix-evidence-'+key);else obj.setPosition(x,85);};});
   }
   workshopScene(){
    const final=route===10,context=final?finalContext():null,s=final?context.progress.diagnosis.working:state.lab.workshop;
    const names=['plate','ramp','funnel','tube','bucket'];this.cameras.main.setViewport(0,0,720,330);const scale=.64,offset=10;
    const result=final?context.progress.diagnosis.tests.at(-1):s.trials.at(-1);
    const valid=()=>!this.dragging&&result?.signature===testCollector(s.parts,s.cold,s.angle).signature;
+   const firstBreak=result?.steps?.find(step=>!step.ok);const breakLabel=firstBreak?this.text(clamp(firstBreak.point.x,100,620),Math.min(290,firstBreak.point.y*scale+offset+30),'처음 멈춘 곳',17,'#9a3629').setDepth(12):null;
    const labelPosition=(obj,key)=>key==='plate'?[obj.x,obj.y-44]:key==='ramp'?[obj.x+65,obj.y-44]:[obj.x+(obj.x>570?-68:68),obj.y];
    this.parts={};names.forEach((key,i)=>{
     const p=s.parts[key],obj=this.prop(p.x,p.y*scale+offset,i,key==='plate'?120:key==='ramp'?150:85,'workshop',!final||key==='funnel');this.parts[key]=obj;
+    if(!final||key==='funnel')obj.setInteractive({pixelPerfect:true,alphaTolerance:96,useHandCursor:true});
+    obj.setDepth(s.selected===key?8:2);
+    obj.on('pointerdown',()=>{if(final)return;s.selected=key;Object.entries(this.parts).forEach(([k,part])=>part.setDepth(k===key?8:2));const select=document.querySelector('#selected-part');if(select)select.value=key;});
     const label=this.text(...labelPosition(obj,key),['냉각판','경사판','깔때기','연결관','물통'][i],17);
     if(key==='ramp'){obj.setDisplaySize(211,58);obj.setOrigin(.1,.5).setAngle(Math.atan(s.angle*2/180)*180/Math.PI);}
-    obj.onMove=()=>{obj.x=Math.round(clamp(obj.x,60,key==='ramp'?480:650)/10)*10;obj.y=final?p.y*scale+offset:Math.round(clamp((obj.y-offset)/scale,55,390)/10)*10*scale+offset;label.setPosition(...labelPosition(obj,key));if(!final&&key==='ramp'){const endpoint=rampEndpoint({x:obj.x,y:(obj.y-offset)/scale},s.angle);angleHandle.setPosition(endpoint.x-65,endpoint.y);angleLabel.setPosition(endpoint.x-65,endpoint.y);}};
+    obj.onMove=()=>{const next=partPosition(key,obj.x,(obj.y-offset)/scale);obj.x=next.x;obj.y=final?p.y*scale+offset:next.y*scale+offset;label.setPosition(...labelPosition(obj,key));if(!final&&key==='ramp'){const endpoint=rampEndpoint({x:obj.x,y:(obj.y-offset)/scale},s.angle);angleHandle.setPosition(endpoint.x-65,endpoint.y-45);angleLabel.setPosition(endpoint.x-65,endpoint.y-45);}};
     obj.onRelease=()=>{p.x=obj.x;p.y=Math.round((obj.y-offset)/scale);s.selected=key;this.reactAt(obj.x,obj.y);if(final){context.progress.diagnosis.resolved=false;context.progress.tested=false;context.progress.lever=0;if(!context.preview)save();later(()=>ctx.render());}else{s.compare=false;this.commit();}};
    });
-   let angleHandle,angleLabel;
+   let angleHandle,angleLabel,moveHandle;
    if(!final){
-    const end=rampEndpoint(s.parts.ramp,s.angle);angleHandle=this.add.circle(end.x-65,end.y,24,0xffdf91).setStrokeStyle(3,0x608a81).setDepth(9).setInteractive({useHandCursor:true,hitArea:new P.Geom.Circle(24,24,40),hitAreaCallback:P.Geom.Circle.Contains});this.input.setDraggable(angleHandle);
-    angleLabel=this.text(end.x-65,end.y,'↕',25,'#536e61').setDepth(10);angleLabel.setStroke('#ffedbd',0);
-    angleHandle.onMove=()=>{s.angle=Math.round(clamp(((angleHandle.y-offset)/scale-s.parts.ramp.y)/2,-20,40)/5)*5;const end=rampEndpoint(s.parts.ramp,s.angle);angleHandle.setPosition(end.x-65,end.y);angleLabel.setPosition(end.x-65,end.y);this.parts.ramp.setAngle(Math.atan(s.angle*2/180)*180/Math.PI);};
+    const selected=this.parts[s.selected]||this.parts.plate;
+    moveHandle=this.add.circle(selected.x-47,selected.y-25,26,0xffdf91).setStrokeStyle(3,0x315f59).setDepth(21).setInteractive({useHandCursor:true});this.input.setDraggable(moveHandle);
+    const moveLabel=this.text(moveHandle.x,moveHandle.y,'✥',26).setDepth(22);
+    moveHandle.on('pointerdown',()=>{moveHandle.partKey=s.selected||'plate';});
+    moveHandle.onMove=()=>{const obj=this.parts[moveHandle.partKey];obj.x=moveHandle.x+47;obj.y=moveHandle.y+25;obj.onMove();moveHandle.setPosition(obj.x-47,obj.y-25);moveLabel.setPosition(moveHandle.x,moveHandle.y);};
+    moveHandle.onRelease=()=>this.parts[moveHandle.partKey].onRelease();
+    this.moveSelectionLabel=moveLabel;
+   }
+   if(!final){
+    const end=rampEndpoint(s.parts.ramp,s.angle);angleHandle=this.add.circle(end.x-65,end.y-45,26,0xffdf91).setStrokeStyle(3,0x608a81).setDepth(9).setInteractive({useHandCursor:true});this.input.setDraggable(angleHandle);
+    angleLabel=this.text(end.x-65,end.y-45,'↕',25,'#536e61').setDepth(10);angleLabel.setStroke('#ffedbd',0);
+    angleHandle.onMove=()=>{s.angle=Math.round(clamp(((angleHandle.y+45-offset)/scale-s.parts.ramp.y)/2,-20,40)/5)*5;const end=rampEndpoint(s.parts.ramp,s.angle);angleHandle.setPosition(end.x-65,end.y-45);angleLabel.setPosition(end.x-65,end.y-45);this.parts.ramp.setAngle(Math.atan(s.angle*2/180)*180/Math.PI);};
     angleHandle.onRelease=()=>{s.compare=false;this.reactAt(angleHandle.x,angleHandle.y);this.commit();};
-    this.text(358,315,'부품 = 옮기기 · 경사판 손잡이 = 기울이기',17);
+    this.text(358,315,'부품 선택 → ✥ 이동 · 경사판의 ↕ 손잡이 = 기울이기',16);
    }
    let core,coreLabel,valve,valveText;
    if(final){
@@ -342,7 +364,13 @@ function makeScene(P,route,ctx,host,hidden){
    }
    this.tick=t=>{
     this.dynamic.clear();const isValid=valid(),progress=1,bucket=s.parts.bucket,bx=bucket.x,by=bucket.y*scale+offset;
-    if(angleHandle){const ramp=this.parts.ramp,end=rampEndpoint({x:ramp.x,y:(ramp.y-offset)/scale},s.angle);this.dynamic.lineStyle(2,0x6b8e7f,.8).lineBetween(angleHandle.x,angleHandle.y,end.x,end.y);this.dynamic.fillStyle(0x6b8e7f,.9).fillCircle(end.x,end.y,4);}
+    if(breakLabel)breakLabel.setVisible(isValid);
+    if(moveHandle&&!this.dragging){const selected=this.parts[s.selected]||this.parts.plate;moveHandle.setPosition(selected.x-47,selected.y-25);this.moveSelectionLabel.setPosition(moveHandle.x,moveHandle.y);}
+    if(angleHandle){angleHandle.setVisible(s.selected==='ramp');angleLabel.setVisible(s.selected==='ramp');const ramp=this.parts.ramp,end=rampEndpoint({x:ramp.x,y:(ramp.y-offset)/scale},s.angle);this.dynamic.lineStyle(2,0x6b8e7f,.8).lineBetween(angleHandle.x,angleHandle.y,end.x,end.y);this.dynamic.fillStyle(0x6b8e7f,.9).fillCircle(end.x,end.y,4);}
+    const selected=this.parts[s.selected];if(selected&&!final){this.dynamic.lineStyle(3,0xbf8828,.95).strokeRoundedRect(selected.x-42,selected.y-26,84,52,12);}
+    // Connection entrances are visual model points, not auto-placement targets.
+    for(const key of names){const obj=this.parts[key];this.dynamic.lineStyle(2,0x245f72,.95).strokeCircle(obj.x,obj.y,7);}
+    if(isValid){const broken=result.steps.find(step=>!step.ok);if(broken)this.dynamic.lineStyle(5,0xc44d39,.95).strokeCircle(broken.point.x,broken.point.y*scale+offset,18);}
     // The cold surface and the downhill end remain visible while the design is edited.
     if(s.cold){const plate=this.parts.plate;this.dynamic.lineStyle(3,0x94e4ef,.8).lineBetween(plate.x-35,plate.y+19,plate.x+35,plate.y+19);}
     if(this.dragging||!isValid){if(final&&context.progress.connected){this.dynamic.lineStyle(6,0x839a94,.65).lineBetween(bx+30,by,596,245);}return;}

@@ -1,7 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initialState,readState} from '../src/state.js';
+import {resetDrawingExperiment} from '../src/drawing-records.js';
 const storage=value=>({getItem:()=>JSON.stringify(value)});
+
+test('older predictions are preserved without inventing their observation-time provenance',()=>{
+ const old=initialState();delete old.inquiry.drawPredictionLocked;old.inquiry.drawPrediction='thick';
+ Object.assign(old.activities.draw,{strokes:[[[10,10],[20,20],[30,10]]],time:110,faster:'thin',destination:'air',records:[{band:0,time:0,thin:1,thick:1},{band:1,time:50,thin:.17,thick:.55},{band:2,time:110,thin:0,thick:0}]});
+ const loaded=readState(storage(old));assert.equal(loaded.activities.draw.records.length,3);
+ assert.equal(loaded.inquiry.drawInitialPrediction,'unrecorded');assert.equal(loaded.inquiry.drawPrediction,'thick');
+ resetDrawingExperiment(loaded.inquiry,loaded.activities.draw);
+ const record=loaded.inquiry.drawArchive.at(-1);assert.equal(record.prediction,'unrecorded');assert.equal(record.savedPrediction,'thick');assert.equal(record.reflection,'thin');assert.equal(record.records.length,3);
+});
 
 test('previous saved records survive the addition of interactive activity state',()=>{
  const old=initialState();delete old.activities;delete old.lab.final.cooling;
@@ -28,6 +38,34 @@ async function isolatedState(t,raw=null){
  return {api,box};
 }
 
+test('healthy storage has no failure message and separates reads from successful writes',async t=>{
+ const {api}=await isolatedState(t);
+ assert.equal(api.getStorageStatus().code,'ready');
+ assert.equal(api.getStorageStatus().message,'');
+ assert.equal(api.getStorageStatus().read,'ok');
+ assert.equal(api.getStorageStatus().write,'not-attempted');
+ assert.equal(api.save(),true);
+ assert.equal(api.getStorageStatus().message,'');
+ assert.equal(api.getStorageStatus().write,'saved');
+ assert.equal(api.getStorageStatus().protected,false);
+});
+
+test('failed writes remain distinct from restored reads and a successful retry clears the warning',async t=>{
+ const original=initialState();original.completed=[1];original.pages=[1,2];
+ const {api,box}=await isolatedState(t,JSON.stringify(original));
+ assert.deepEqual(api.state.completed,[1]);
+ box.failWrite=true;
+ assert.equal(api.save(),false);
+ assert.equal(api.getStorageStatus().read,'ok');
+ assert.equal(api.getStorageStatus().write,'failed');
+ assert.equal(api.getStorageStatus().code,'full');
+ assert.deepEqual(JSON.parse(box.raw).completed,[1]);
+ box.failWrite=false;
+ assert.equal(api.save(),true);
+ assert.equal(api.getStorageStatus().message,'');
+ assert.equal(api.getStorageStatus().write,'saved');
+});
+
 test('invalid, incomplete and future records survive repeated autosaves unchanged',async t=>{
  const invalid=['{bad','null',JSON.stringify({schemaVersion:999}),JSON.stringify({...initialState(),lab:{workshop:{parts:{}}}})];
  const damaged=initialState();damaged.activities.dew.records=[{kind:'after',cold:null,room:{}}];invalid.push(JSON.stringify(damaged));
@@ -36,6 +74,7 @@ test('invalid, incomplete and future records survive repeated autosaves unchange
  for(const raw of invalid){
   const {api,box}=await isolatedState(t,raw);
   api.state.route='map';assert.equal(api.save(),false);assert.equal(api.save(),false);
+  assert.equal(api.reset({}),false);assert.equal(api.getStorageStatus().protected,true,'an expired reset must not hide the underlying protection');
   assert.equal(box.raw,raw);assert.equal(box.writes,0);assert.ok(['damaged','unsupported'].includes(api.getStorageStatus().code));
  }
 });

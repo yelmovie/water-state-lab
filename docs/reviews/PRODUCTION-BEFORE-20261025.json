@@ -1,0 +1,386 @@
+[
+  {
+    "path": "index.html",
+    "matches": true
+  },
+  {
+    "path": "build-info.json",
+    "matches": true
+  },
+  {
+    "path": "assets/CREDITS.md",
+    "matches": true
+  },
+  {
+    "path": "src/domain.js",
+    "matches": true
+  },
+  {
+    "path": "src/state.js",
+    "matches": true
+  },
+  {
+    "path": "src/ui.js",
+    "matches": true
+  },
+  {
+    "path": "src/map.js",
+    "matches": true
+  },
+  {
+    "path": "src/experiments.js",
+    "matches": true
+  },
+  {
+    "path": "src/workshop.js",
+    "matches": true
+  },
+  {
+    "path": "src/app.js",
+    "matches": true
+  },
+  {
+    "path": "src/style.css",
+    "matches": true
+  },
+  {
+    "path": "src/sound.js",
+    "matches": true
+  },
+  {
+    "path": "src/activity-model.js",
+    "matches": true
+  },
+  {
+    "path": "src/activities.js",
+    "matches": true
+  },
+  {
+    "path": "src/journey.js",
+    "matches": true
+  },
+  {
+    "path": "src/activities.css",
+    "matches": true
+  },
+  {
+    "path": "src/v2.css",
+    "matches": true
+  },
+  {
+    "path": "src/inquiry-model.js",
+    "matches": true
+  },
+  {
+    "path": "src/collector-model.js",
+    "matches": true
+  },
+  {
+    "path": "src/inquiry.js",
+    "matches": true
+  },
+  {
+    "path": "src/inquiry.css",
+    "matches": true
+  },
+  {
+    "path": "src/scene-model.js",
+    "matches": true
+  },
+  {
+    "path": "src/phaser-scenes.js",
+    "matches": true
+  },
+  {
+    "path": "src/settings-content.js",
+    "matches": true
+  },
+  {
+    "path": "src/settings.js",
+    "matches": true
+  },
+  {
+    "path": "src/version.js",
+    "matches": true
+  },
+  {
+    "path": "src/fieldwork-model.js",
+    "matches": true
+  },
+  {
+    "path": "src/tablet.css",
+    "matches": true
+  },
+  {
+    "path": "src/fieldwork.js",
+    "matches": true
+  },
+  {
+    "path": "src/concept-data.js",
+    "matches": true
+  },
+  {
+    "path": "src/concepts.js",
+    "matches": true
+  },
+  {
+    "path": "src/coach.js",
+    "matches": true
+  },
+  {
+    "path": "src/experience.css",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/equipment-atlas.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/buddy-poses.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/lab-observe.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/lab-cold.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/lab-compare.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/lab-detective.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/lab-workshop.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/lab-core.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/journey-map.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/workshop-atlas.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/research-island-v3.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/experiment-table-v3.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/story-repair.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/rescue-reward.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/research-island-v4.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/v2/buddy-poses-clean.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/vendor/phaser.min.js",
+    "matches": true
+  },
+  {
+    "path": "assets/vendor/PHASER-LICENSE.md",
+    "matches": true
+  },
+  {
+    "path": "assets/fonts/jua-korean-400.woff2",
+    "matches": true
+  },
+  {
+    "path": "assets/fonts/jua-latin-400.woff2",
+    "matches": true
+  },
+  {
+    "path": "assets/fonts/Jua-OFL.txt",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/click_003.ogg",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/drop_003.ogg",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/confirmation_002.ogg",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/confirmation_001.ogg",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/error_001.ogg",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/question_002.ogg",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/switch_002.ogg",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/Kenney-LICENSE.txt",
+    "matches": true
+  },
+  {
+    "path": "assets/audio/sources.json",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-1.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-1.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-1.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-2.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-2.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-2.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-3.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-3.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-3.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-4.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-4.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-4.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-5.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-5.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-5.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-6.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-6.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-6.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-7.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-7.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-7.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-8.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-8.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-8.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-9.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-9.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-9.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-10.mp4",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-10.webm",
+    "matches": true
+  },
+  {
+    "path": "assets/concepts/stage-10.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/learning/scale.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/learning/tank-frame.webp",
+    "matches": true
+  },
+  {
+    "path": "assets/learning/condenser-plate.webp",
+    "matches": true
+  }
+]

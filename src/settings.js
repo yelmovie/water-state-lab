@@ -35,7 +35,10 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  },{once:true});
  const close=()=>dialog.close();
  dialog.querySelector('#settings-x').onclick=close;dialog.querySelector('#settings-close').onclick=close;
- const showStatus=()=>{const status=storageStatus(),notice=dialog.querySelector('#settings-save-notice');notice.textContent=status.message||'';notice.hidden=!status.message;};
+ const showStatus=()=>{const status=storageStatus(),notice=dialog.querySelector('#settings-save-notice');notice.textContent=status.message||'';notice.hidden=!status.message;
+ let diagnostics=dialog.querySelector('#storage-diagnostics');if(!diagnostics){diagnostics=document.createElement('p');diagnostics.id='storage-diagnostics';diagnostics.className='settings-muted';dialog.querySelector('.settings-scroll').append(diagnostics);}
+ diagnostics.textContent=`현재 저장 상태 · 읽기 ${status.read==='ok'?'성공':'실패'} · 쓰기 ${{saved:'성공',failed:'실패',blocked:'보류','not-attempted':'아직 시도 전'}[status.write]||'확인 전'} · 충돌 ${status.conflict?'있음':'없음'} · 원본 보호 ${status.protected?'중':'없음'}${status.preview?' · 교사 시연은 학생 진행과 분리':''}`;
+ };
  const persist=()=>{const result=save();showStatus();return result;};
  const updateSwitch=(id,on)=>{const b=dialog.querySelector(id);b.setAttribute('aria-pressed',String(on));b.querySelector('span:last-child').textContent=on?C.sound.on:C.sound.off;};
  const syncSound=()=>{settings.sound=settings.bgm||settings.sfx;setSoundSettings(settings);persist();onSoundChange(settings);};

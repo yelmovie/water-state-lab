@@ -1,17 +1,7 @@
-# 물방울 연구실 인계 · 2026-10-24
-
-목표: 초4 물의 상태 변화 교육게임. 기존 10단계 실험·현장 의뢰를 유지하며 지도·실험 그래픽·직접 조작·설정을 고도화함. 학생 기록과 교사 시연은 분리.
-
-완료: 새 연구섬 지도와 이동 경로 적용. 저울·물탱크·응결판 제작. 5개 실험에 시간 막대와 이전 모습 관찰 추가. 물 붓기·닦기·회전 손잡이, 8단계 전후 비교, 10단계 버튼 겹침 수정. 설정·저장 보호 강화. 방울이 16포즈 재분리로 머리 위 잘림 자국 제거(원본 보존).
-
-검증: 자동검사 71개, 화면 63개, 진행 흐름 16개 통과. 시간 조작 15화면 재확인. 방울이 수정 후 경계 검사·문법 검사·빌드·지도/실험 화면 확인 통과.
-
-다음: 사용자 피드백 반영. 실제 태블릿 터치·학교 네트워크·교실 음량 확인은 남음. 오프라인 미지원.
-
-위치: D:/iscreammedia_sc34/6 waterchange
-실행 화면: http://127.0.0.1:4324/ (새로고침). 빌드: npm run build.
-코드: src/inquiry.js, phaser-scenes.js, fieldwork.js, journey.js, scene-model.js, v2.css, settings.js, state.js.
-자료: public/assets/learning/, v2/research-island-v4.webp, v2/buddy-poses-clean.webp; image/generated-learning/ 원본.
-방울이 재생성: python scripts/prepare-buddy-sprites.py
-상세: docs/reviews/FINAL-CHECK-20261024.md, ASSET-GENERATION-20261024.md. 스크린샷은 같은 폴더 screenshots/ 아래.
-주의: 기존 미커밋 작업·학생 저장을 보존. 커밋·푸시·배포는 하지 않음. 한국어는 자연스러운 반말.
+# 물길탐험 인계 · 2026-10-25
+목표: water-state-lab만 수정. 5구역·10개 발견·10개 의뢰, 방울이, 2.5D 지도/2D 실험, 여권·내 설계 재사용 유지.
+확정: 검토 기준 224a381. 시작 HEAD/운영은 17484cb(지도 문구 두 커밋 차이). 수정 전 배포 파일 96개 일치. 운영 배포·푸시 금지, 별도 승인 필요.
+완료: 지도 별 제거, 기본/의뢰 공간 목표 구분, 최초 예상 고정·생각 분리·새 실험 보관, 완료 조건 일치, 의뢰 행동/결과 상시 안내, 겹친 부품 선택·동일 좌표 이동, 같은 수집량 표시, 저장 상태·원본 보호, 가림·탭/버튼·라벨 교정. 구역 그림 6종 적용.
+검증: 자동 83개, 새 학생 1~10장·의뢰·여권·엔딩, 오답/새 실험/새로고침, 분리된 읽기·쓰기 실패, 3해상도 71조합 확인. 실물 태블릿 터치 미검증.
+파일: src/activities.js→inquiry.js, fieldwork.js, workshop.js, state.js, phaser-scenes.js. 상세는 docs/reviews/STAGE-REVISION-20261025.md. 원본 PNG=image/generated-stage-experience. 증거=screenshots/stage-revision-20261025.
+다음: 실물 태블릿 점검, 사용자 BGM 확인. Suno 메인/엔딩 무가사 프롬프트=docs/audio/SUNO-PROMPTS.md. 미사용 experiments.js·map.js 수정 금지. 학생 저장소 삭제 금지. 변경 미커밋.

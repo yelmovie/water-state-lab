@@ -1,0 +1,53 @@
+[
+  {
+    "file": "dew-greenhouse.webp",
+    "width": 1672,
+    "height": 941,
+    "bytes": 322248,
+    "alpha": null,
+    "sha256": "26ed99035f51bac43538b0f89a551b62b30c8e726a7c184d61f143c2138000c6"
+  },
+  {
+    "file": "drink-bottle.webp",
+    "width": 1024,
+    "height": 1536,
+    "bytes": 656428,
+    "alpha": [
+      0,
+      254
+    ],
+    "sha256": "4a2395d742bf9eea5ba9d415287cec6f5c7e847ee89c3c0e8086cb3d28851564"
+  },
+  {
+    "file": "spring-terrace.webp",
+    "width": 1672,
+    "height": 941,
+    "bytes": 337628,
+    "alpha": null,
+    "sha256": "4ad97d1fece1baafac0c09c4c640554abcea2120a7185c1128794e29990d4bb4"
+  },
+  {
+    "file": "sun-courtyard.webp",
+    "width": 1672,
+    "height": 941,
+    "bytes": 269040,
+    "alpha": null,
+    "sha256": "1873b01371ac83fba8ee878435e3f61e76f0aaf7445fb38dc80543d335d9a78e"
+  },
+  {
+    "file": "water-search.webp",
+    "width": 1672,
+    "height": 941,
+    "bytes": 420830,
+    "alpha": null,
+    "sha256": "8174f582f9aba9aeef3a34d87a20a857a9dd9a62a81ea8cdb6fd260dd5b57cf9"
+  },
+  {
+    "file": "winter-waterworks.webp",
+    "width": 1672,
+    "height": 941,
+    "bytes": 405832,
+    "alpha": null,
+    "sha256": "b4d3ee3cbaa9f4a08fc26417c8519e9345a09c785661a6b22f1b9e90a645af0e"
+  }
+]

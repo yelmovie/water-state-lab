@@ -184,7 +184,7 @@ dialog::backdrop{background:#143a3bb8;backdrop-filter:blur(4px)}.dialog-head{bor
   .activity-scene,.lab-stage,.activity-tools,.control-panel{min-height:0;height:100%;overflow:auto}
   .fieldwork-activity .activity-stage-caption{display:none}
   /* The same feedback stays visible in Banguli's fixed guide, and remains a live region. */
-  .fieldwork-activity .challenge-status{position:absolute;clip-path:inset(50%);width:1px;height:1px;padding:0;border:0;overflow:hidden}
+  .fieldwork-activity .challenge-status{position:static;clip-path:none;width:auto;height:auto;padding:10px;overflow:visible}
   .fieldwork-activity .expedition-board{display:grid;place-items:center;container-type:size;min-height:0;max-height:none;aspect-ratio:auto;flex:1 1 0}
   .fieldwork-activity .expedition-board canvas{width:min(100%,calc(100cqh * 1.8));height:auto;max-height:100%;aspect-ratio:720/400;object-fit:fill}
   .compact-guide .buddy-pose{height:94px;width:88px}.compact-guide{padding-left:96px}.buddy-name{left:98px}

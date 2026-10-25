@@ -2,6 +2,7 @@ import {initialInquiry,sanitizeInquiry} from './inquiry-model.js';
 import {initialActivities,validateActivities} from './activity-model.js';
 import {defaultParts,canEnter} from './domain.js';
 import {initialFieldwork,cleanFieldwork} from './fieldwork-model.js';
+import {restoreDrawingMetadata} from './drawing-records.js';
 export const KEY='water-drop-lab:v1';
 export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:false,sfx:true,bgmVolume:35,adminUnlock:false},lab:{
   observe:{selected:0,seen:[],pour:0,ice:false,cloth:0,wipe:0,canTime:0},
@@ -43,6 +44,7 @@ function loadState(storage){
   s.activities={...fallback.activities,...raw.activities};
   for(const k of Object.keys(fallback.activities)){if(typeof fallback.activities[k]==='object')s.activities[k]={...fallback.activities[k],...raw.activities?.[k]};}
   if(!validateActivities(s.activities)){s.activities=initialActivities();repaired=true;}
+  if(!Object.hasOwn(raw.inquiry||{},'drawPredictionLocked'))restoreDrawingMetadata(s.inquiry,s.activities.draw);
   for(const k of Object.keys(s.lab))s.lab[k]={...fallback.lab[k],...raw.lab[k]};
   if(!matches(s.lab,fallback.lab)||!matches(s.settings,fallback.settings)||!Array.isArray(s.completed)||!Array.isArray(s.pages)||!s.evidence||typeof s.evidence!=='object'||Array.isArray(s.evidence)||typeof s.restored!=='boolean')return result(fallback,'damaged');
   // Teacher preview is a session-only copy, never a saved permission or progress.
@@ -71,7 +73,8 @@ export function readState(storage){return loadState(storage).value;}
 const loaded=loadState();
 export let state=loaded.value;
 let lastSource=loaded.source,storageCode=loaded.code;
-let protectedCode=['damaged','unsupported','unavailable','conflict'].includes(loaded.code)?loaded.code:null;
+let readStatus=loaded.code==='unavailable'?'failed':'ok',writeStatus='not-attempted';
+let protectedCode=['damaged','unsupported','conflict'].includes(loaded.code)?loaded.code:null;
 const resetTokens=new WeakSet();
 const messages={
  ready:'',
@@ -83,13 +86,18 @@ const messages={
  preview:'교사 시연 중에는 학생 기록을 지울 수 없어요. 시연을 종료한 뒤 다시 선택해 주세요.',
  confirmation:'초기화 확인이 만료됐어요. 기록 초기화를 다시 눌러 주세요.'
 };
-export function getStorageStatus(){return {code:storageCode,message:messages[storageCode]||messages.unavailable};}
+export function getStorageStatus(){const code=protectedCode||storageCode;return {code,message:messages[code]??messages.unavailable,read:readStatus,write:writeStatus,conflict:protectedCode==='conflict',protected:!!protectedCode,preview:!!previewStudent};}
+function emitStorageStatus(){if(typeof document!=='undefined'&&typeof CustomEvent==='function')document.dispatchEvent?.(new CustomEvent('storage-status',{detail:getStorageStatus()}));}
 function fail(code){
- storageCode=code;if(['damaged','unsupported','unavailable','conflict'].includes(code))protectedCode=code;
+ storageCode=code;if(['damaged','unsupported','conflict'].includes(code))protectedCode=code;
+ if(code==='unavailable')readStatus='failed';
+ if(code==='full')writeStatus='failed';
+ else if(protectedCode||code==='unavailable')writeStatus='blocked';
  if(typeof document!=='undefined'){const notice=document.querySelector('#toast');if(notice){notice.textContent=messages[code];notice.classList.add('show');}}
+ emitStorageStatus();
  return false;
 }
-function currentSource(){try{return {storage:globalThis.localStorage,raw:globalThis.localStorage.getItem(KEY)};}catch{fail('unavailable');return null;}}
+function currentSource(){try{const storage=globalThis.localStorage,raw=storage.getItem(KEY);readStatus='ok';return {storage,raw};}catch{fail('unavailable');return null;}}
 function unchanged(current){if(!current)return false;if(current.raw!==lastSource)return fail('conflict');return true;}
 let previewStudent=null;
 export function setPreviewMode(enabled){
@@ -101,12 +109,12 @@ export function save(){
  const current=currentSource();if(!unchanged(current))return false;
  try{
   const saved={...(previewStudent||state),settings:{...state.settings,adminUnlock:false}};
-  const serialized=JSON.stringify(saved);current.storage.setItem(KEY,serialized);lastSource=serialized;storageCode='ready';return true;
+  const serialized=JSON.stringify(saved);current.storage.setItem(KEY,serialized);lastSource=serialized;storageCode='ready';writeStatus='saved';emitStorageStatus();return true;
  }catch{return fail('full');}
 }
 export function captureResetToken(){
  if(previewStudent||state.settings.adminUnlock){fail('preview');return null;}
- if(protectedCode==='unavailable'||protectedCode==='conflict'){storageCode=protectedCode;return null;}
+ if(protectedCode==='conflict'){storageCode=protectedCode;return null;}
  const current=currentSource();if(!unchanged(current))return null;
  const token={raw:current.raw};resetTokens.add(token);return token;
 }
@@ -117,5 +125,5 @@ export function reset(token){
  const current=currentSource();if(!unchanged(current)||current.raw!==token.raw)return fail(current?'conflict':'unavailable');
  const next=initialState();
  for(const key of ['sound','bgm','sfx','bgmVolume','reduced'])next.settings[key]=state.settings[key];
- try{const serialized=JSON.stringify(next);current.storage.setItem(KEY,serialized);lastSource=serialized;storageCode='ready';protectedCode=null;state=next;return true;}catch{return fail('full');}
+ try{const serialized=JSON.stringify(next);current.storage.setItem(KEY,serialized);lastSource=serialized;storageCode='ready';protectedCode=null;writeStatus='saved';state=next;emitStorageStatus();return true;}catch{return fail('full');}
 }

@@ -236,9 +236,62 @@ test('starting a new drawing clears old preview time and preserves its archived 
  assert.equal(state.activities.draw.time, 0);
  assert.deepEqual(state.activities.draw.records, []);
  assert.deepEqual(state.inquiry.drawArchive.at(-1).records, records);
+ assert.equal(state.inquiry.drawPrediction,'');
+ assert.equal(state.inquiry.drawPredictionLocked,false);
  state.activities.draw.strokes = [[[20,30],[40,50],[60,30]]];
+ assert.equal(seekInquiryTime(5,50),false);
+ handleInquiry('ix-draw-predict-thick',ctx);
  seekInquiryTime(5, 50);
  assert.equal(observationTime(5), 50);
+});
+
+test('first prediction survives observation and a changed thought is recorded separately',()=>{
+ prepare(5);
+ handleInquiry('ix-draw-predict-thick',ctx);
+ seekInquiryTime(5,110);
+ assert.equal(state.inquiry.drawInitialPrediction,'thick');
+ handleInquiry('ix-draw-predict-thin',ctx);
+ assert.equal(state.inquiry.drawPrediction,'thick');
+ assert.equal(state.inquiry.drawInitialPrediction,'thick');
+ handleInquiry('ix-draw-answer-thin',ctx);
+ handleInquiry('ix-draw-air',ctx);
+ assert.equal(state.inquiry.drawReflection,'thin');
+ assert.equal(state.activities.draw.faster,'thin');
+ handleInquiry('ix-draw-new',ctx);
+ const previous=state.inquiry.drawArchive.at(-1);
+ assert.equal(previous.prediction,'thick');
+ assert.equal(previous.reflection,'thin');
+ assert.equal(previous.result.faster,'thin');
+ assert.equal(previous.result.destination,'air');
+ assert.equal(state.inquiry.drawPrediction,'');
+});
+
+test('example and directly drawn new experiments use the same fresh prediction rules',()=>{
+ prepare(5);seekInquiryTime(5,110);
+ handleInquiry('ix-draw-example',ctx);
+ assert.equal(state.inquiry.drawPrediction,'');
+ assert.equal(state.inquiry.drawInitialPrediction,'');
+ assert.equal(state.inquiry.drawReflection,'');
+ assert.equal(state.inquiry.drawPredictionLocked,false);
+ assert.equal(state.activities.draw.records.length,0);
+ assert.equal(seekInquiryTime(5,110),false);
+ handleInquiry('ix-draw-predict-same',ctx);
+ assert.equal(seekInquiryTime(5,110),true);
+ assert.equal(state.inquiry.drawInitialPrediction,'same');
+});
+
+test('opening comparison alone is not an observation judgment',()=>{
+ prepare(5);seekInquiryTime(5,110);
+ const query=document.querySelector,part={focus(){}};
+ const dialog={open:false,contains(){return false;},addEventListener(){},querySelector(){return part;},showModal(){this.open=true;}};
+ document.querySelector=selector=>selector==='#dialog'?dialog:query(selector);
+ try{
+  handleInquiry('ix-draw-compare',ctx);
+  assert.equal(dialog.open,true);
+  assert.equal(state.activities.draw.faster,'');
+  assert.equal(state.activities.draw.destination,'');
+  assert.equal(state.inquiry.drawCompared,false);
+ }finally{document.querySelector=query;}
 });
 
 test('reviewing one experiment does not change the observation time of another', () => {

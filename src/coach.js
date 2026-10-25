@@ -1,3 +1,4 @@
+import {fieldTask} from './field-guidance.js';
 import {state} from './state.js';
 import {fieldMissions,fieldReady} from './fieldwork-model.js';
 import {btn,esc,icon} from './ui.js';
@@ -31,18 +32,11 @@ const fieldClues={
  5:['B판의 물을 손가락으로 여러 방향으로 펴 봐.','양·시간·바닥을 같게 두고, 펼친 넓이만 비교해.'],
  6:['돋보기로 A 표면·B 물속·두 수위를 각각 살펴봐.','A와 B에서 줄어든 물은 각각 어디로 갔을까?'],
  7:['냉각팩을 붙이고 시험한 뒤, 다른 컵으로 옮겨 다시 시험해.','컵 이름이 바뀌어도 물방울이 생기는 조건은 무엇일까?'],
- 8:['먼저 냉각 없이 시험해. 그다음 판과 받이 위치를 바꿔 비교해.','물방울이 생기는 곳과 떨어져 모이는 곳을 따로 살펴봐.'],
+ 8:['먼저 냉각 없이 시험해. 받이는 같은 자리에 두고 판만 차갑게 해서 비교해.','물방울이 생기는 곳과 떨어져 모이는 곳을 따로 살펴봐.'],
  9:['출발 부품을 누른 뒤 이어 받을 부품을 눌러도 돼.','물은 저절로 위로 올라갈까? 부품의 높이를 비교해.'],
- 10:['따뜻한 도구와 차가운 도구를 물의 변화에 맞춰 연결해.','앞에서 관찰한 증발과 응결이 여기서는 어떻게 이어질까?']
+ 10:['시간 보내기 도구와 냉각팩을 물의 변화에 맞춰 연결해.','앞에서 관찰한 증발과 응결이 여기서는 어떻게 이어질까?']
 };
-function fieldInstruction(n){const c=state.fieldwork.chapters[n];if(!c)return fieldMissions[n].goal;
- if(fieldReady(n,c))return '현장 의뢰를 해결했어! ‘개념 영상 · 도장 받기’를 눌러 발견을 정리하자.';
- if(n===4)return !c.tested.some(t=>!t.ok)?'가득 채운 통부터 얼려 보자. 얼음이 커질 자리가 있을까?':!c.tested.some(t=>t.ok)?'손잡이를 내려 물을 덜 담고, 다시 얼려 비교해 보자.':'여유가 남는 물높이로 다시 시험해 줘.';
- if(n===7)return !c.tested.length?'냉각팩을 A나 B에 붙이고 같은 시간 뒤를 비교해.':!c.tested.some(t=>t.cold===0)||!c.tested.some(t=>t.cold===1)?'이번에는 냉각팩을 다른 컵으로 옮기고 다시 비교해.':'‘찾은 조건’을 차가운 표면에 연결해 줘.';
- if(n===8)return !c.tested.some(t=>!t.ok)?'아직 고치기 전이야. 먼저 시험해서 물이 모이는지 살펴봐.':!c.tested.at(-1)?.ok?'판을 차갑게 하고 받이를 판 아래로 옮겨 다시 시험해.':fieldMissions[n].goal;
- if(n===5)return c.spread.length<12?'B의 물자국을 손가락으로 넓게 펴 봐. A는 그대로 두자.':!c.tested.at(-1)?.ok?'‘같은 시간 뒤 비교’를 눌러 두 자국을 비교해.':'줄어든 물을 공기 중으로 연결해 줘.';
- return c.message||fieldMissions[n].goal;
-}
+function fieldInstruction(n){const c=state.fieldwork.chapters[n];return c?fieldTask(n,c).instruction:fieldMissions[n].goal;}
 export function cleanupCoach(){closeHelp();current=null;}
 export function syncCoach(n,progress,field,ready){
  cleanupCoach();level=0;current={n,progress,field,ready};
@@ -54,7 +48,7 @@ export function syncCoach(n,progress,field,ready){
  const tools=document.querySelector('.activity-tools,.control-panel');
  if(tools){
   tools.querySelectorAll('.quest-prize').forEach(e=>e.remove());
-  const optional=[...tools.querySelectorAll(':scope > details')];
+  const optional=[...tools.querySelectorAll(':scope > details:not(.essential-controls)')];
   if(optional.length>1){const drawer=document.createElement('details');drawer.className='tool-drawer';drawer.innerHTML='<summary>조작 도움·더 알아보기</summary>';optional.forEach(d=>drawer.append(d));const back=tools.querySelector('[data-action=field-back]');if(back)drawer.append(back);tools.append(drawer);}
   // One forward action remains visible while optional tools scroll.
   const forward=[...tools.querySelectorAll(':scope > button')].reverse().find(b=>/next|complete|field-finish/.test(b.dataset.action||''));

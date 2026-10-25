@@ -8,6 +8,12 @@ test('thin water trace disappears before thick trace; scrubbing is reversible',(
 test('collection requires condensation, slope, and an unbroken gravity path',()=>{const p=structuredClone(targetParts);const success=testCollector(p,true,20);assert.equal(success.ok,true);assert.equal(success.generated,success.collected+success.lost);assert.equal(testCollector(p,false,20).generated,0);assert.equal(testCollector(p,true,-10).ok,false);p.bucket.x=100;assert.equal(testCollector(p,true,20).ok,false);});
 test('each missing connection is diagnosed at the first broken point',()=>{for(const key of ['plate','funnel','tube','bucket']){const p=structuredClone(targetParts);p[key].x=650;const r=testCollector(p,true,20);assert.equal(r.ok,false,key);assert.ok(r.steps.some(s=>!s.ok));}});
 test('repeating the same successful design does not count as revision',()=>{const r=testCollector(targetParts,true,20);assert.equal(canFinishCollector([r]),false);assert.equal(canFinishCollector([r,r]),false);assert.equal(canFinishCollector([testCollector(targetParts,true,15),r]),true);});
+
+test('changed designs with equal collection can finish without an improvement gate',()=>{
+ const before=testCollector(targetParts,true,20),after=testCollector(targetParts,true,25);
+ assert.equal(before.collected,after.collected);assert.notEqual(before.signature,after.signature);
+ assert.equal(canFinishCollector([before,after]),true);
+});
 test('editing a successful design requires a new trial',()=>{const w={parts:structuredClone(targetParts),cold:true,angle:20,trials:[testCollector(targetParts,true,15),testCollector(targetParts,true,20)]};assert.equal(currentTrialValid(w),true);w.angle=30;assert.equal(currentTrialValid(w),false);w.trials.push(testCollector(w.parts,w.cold,w.angle));assert.equal(currentTrialValid(w),true);});
 test('recorded trial positions do not follow later part movement',()=>{const p=structuredClone(targetParts),r=testCollector(p,true,20);p.plate.y=200;assert.equal(r.steps[0].point.y,70);});
 test('confirmed final design uses evidence snapshot instead of draft',()=>{const draft={parts:structuredClone(targetParts),cold:true,angle:20};const evidence={...structuredClone(draft),result:testCollector(draft.parts,true,20)};draft.parts.bucket.x=100;draft.cold=false;const confirmed=confirmedWorkshop(evidence);assert.equal(testCollector(confirmed.parts,confirmed.cold,confirmed.angle).ok,true);assert.equal(testCollector(draft.parts,draft.cold,draft.angle).ok,false);});

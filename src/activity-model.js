@@ -21,6 +21,12 @@ export function heatingTrial(heat,time){
  return {heat,time,room:Math.round(room*10)/10,heated:Math.round(heated*10)/10,boiling};
 }
 export function pipeTrial(fill){fill=limit(fill,40,100);const expanded=Math.round(fill*1.09*10)/10;return {fill,expanded,space:Math.max(0,Math.round((100-expanded)*10)/10),safe:expanded<=95,risk:expanded>100?'높음':expanded>95?'보통':'낮음'};}
+export const pipeGoals={reserve:'학습 모형 목표 · 얼음 위 빈 공간 5% 이상',capacity:'이번 의뢰 목표 · 얼음이 통 밖으로 넘치지 않기'};
+export function pipeAssessment(fill,goal='reserve'){
+ const trial=pipeTrial(fill),fits=trial.expanded<=100;
+ return {...trial,fits,extraReserve:trial.safe,goal,met:goal==='capacity'?fits:trial.safe};
+}
+export function pipeFinding(fill){const t=pipeAssessment(fill);return `얼음 ${t.expanded}% · 빈 공간 ${t.space}% · ${t.fits?'넘치지 않음':'통 밖으로 넘침'} · 추가 5% 여유 ${t.extraReserve?'충족':'미달'}`;}
 export function dryTrace(thickness,time){return limit(1-time/(thickness==='thin'?60:110),0,1);}
 export function dewTrial(time,cold=true){return {time:limit(time),cold,drops:cold?Math.floor(limit(time)/5):0,mass:cold?250+limit(time)/50:250};}
 export const sortCards=[

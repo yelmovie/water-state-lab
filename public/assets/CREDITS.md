@@ -90,3 +90,11 @@
 - 실험 소품은 생성된 알파를 보존하고 바깥 투명 여백을 잘라 WebP로 내보냈다. 지도는 불투명 배경 이미지다. 측정 숫자·수위·기포·물방울·정확한 눈금과 조작 영역은 이미지에 고정하지 않고 기존 코드와 상태 모델로 표시한다.
 - 최종 프롬프트 원문, 출력 크기·용량·알파 확인, 적용 위치는 [2026-10-24 에셋 생성 기록](../../docs/reviews/ASSET-GENERATION-20261024.md)에 기록했다.
 - 생성 도구의 계정 요금제와 생성물의 법적 권리 범위는 이 작업에서 별도로 확인하지 않았으며 추정하지 않는다. 이 출처 기록은 확인되지 않은 독점 권리나 새로운 배포 허락을 주장하지 않는다.
+
+## 구역별 실험 배경·생활 장면 · 2026-10-25
+
+- 생성 도구: 내장 OpenAI `image_gen`. 기존 방울이와 소품 아틀라스는 유지한다.
+- 실행 파일: `stages/spring-terrace.webp`, `winter-waterworks.webp`, `sun-courtyard.webp`, `dew-greenhouse.webp`, `water-search.webp`, `drink-bottle.webp`.
+- 원본 PNG는 프로젝트 `image/generated-stage-experience/`에 보존한다. 생활 장면의 최종 원본은 `water-search-corrected.png`이며 첫 생성본도 보존한다. 배포 산출물에는 실행용 WebP만 복사한다.
+- 배경은 불투명 16:9 그림이고 음료병은 알파를 보존했다. 학습 수치, 물높이, 물방울, 선택 상태와 판정은 이미지에 고정하지 않고 기존 코드가 표시한다.
+- 용도·생성 기록·파일 검증은 `docs/reviews/ASSET-GENERATION-20261025.md`에 남긴다. 생성물의 법적 권리 범위에 관한 새로운 보장은 하지 않는다.
