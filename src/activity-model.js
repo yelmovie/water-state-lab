@@ -3,8 +3,8 @@ export const limit=(n,a=0,b=100)=>Math.max(a,Math.min(b,Number(n)||0));
 export function initialActivities(){return {
  version:1,
  observe:{step:0,pours:[],iceMoved:false,clothWet:false,time:0,records:[]},
- sort:{placed:{},selected:''},
- freeze:{onScale:false,prediction:66,phase:'water',records:[],predicted:false,compared:false},
+ sort:{placed:{},selected:'',hidden:{placed:{},tries:{}}},
+ freeze:{onScale:false,prediction:66,phase:'water',records:[],predicted:false,compared:false,challenge:{amount:0,prediction:0,trials:[]}},
  pipe:{fill:95,trials:[],chosen:-1,marked:false},
  draw:{strokes:[],time:0,records:[],faster:'',destination:''},
  compare:{heat:0,time:0,baseline:false,records:[],pins:[],destination:''},
@@ -37,6 +37,16 @@ export const sortCards=[
  {id:'rain',name:'화분에 주는 물',type:'liquid',art:'seedling',proof:'흐르고 그릇에 담기는 물은 액체야.',source:'새로운 생활 장면'},
  {id:'laundry',name:'빨래에서 공기로 간 물',type:'gas',art:'cloth',proof:'빨래의 물은 증발해 눈에 보이지 않는 수증기가 돼.',source:'새로운 생활 장면'}
 ];
+// Optional replay goals after a stage is finished. Both bonus scenes tempt a "gas" answer but are visible liquid water.
+export const hiddenScenes=[
+ {id:'mist',name:'폭포 옆 하얀 물보라',type:'liquid',site:[327,72],proof:'눈에 보이는 하얀 물보라는 아주 작은 물방울이야. 수증기는 눈에 보이지 않아.',clue:'하얗게 보이는 것은 눈으로 볼 수 있어. 수증기도 눈에 보일까?'},
+ {id:'drip',name:'수건 끝에서 떨어지는 물방울',type:'liquid',site:[452,236],proof:'떨어지는 물방울은 아직 액체야. 마르면서 공기로 간 물만 수증기야.',clue:'아직 마르지 않고 떨어지는 물이야. 흐르고 모양이 바뀌는 상태를 떠올려 봐.'}
+];
+export function hiddenSceneTry(sort,id,type){const card=hiddenScenes.find(c=>c.id===id);if(!card||sort.hidden.placed[id])return {ok:false,card,repeat:!!card};const ok=card.type===type;if(ok)sort.hidden.placed[id]=type;else sort.hidden.tries[id]=Math.min(99,(sort.hidden.tries[id]||0)+1);return {ok,card};}
+// Transfer challenge for stage 3: predict a new amount from the first measurement (60 → 65.4, the same ×1.09 model).
+export const freezeAmounts=[40,50,70,80];
+export function freezeChallengeTrial(amount,prediction){amount=limit(amount,40,80);prediction=limit(prediction,amount,amount+15);const actual=Math.round(amount*1.09*10)/10,error=Math.round(Math.abs(prediction-actual)*10)/10;return {amount,prediction,actual,error,close:error<=1};}
+export const bestFreezeChallenge=trials=>trials.length?trials.reduce((b,t)=>t.error<b.error?t:b):null;
 export function activityReady(n,a){switch(n){
  case 1:return a.observe.pours.length===2&&a.observe.iceMoved&&a.observe.records.some(r=>r.kind==='cloth'&&r.time>=80);
  case 2:return sortCards.every(c=>a.sort.placed[c.id]===c.type);
@@ -61,6 +71,8 @@ export function validateActivities(value){
  if(!Number.isInteger(value.observe.step)||value.observe.step<0||value.observe.step>2)return false;
  if(!Object.entries(value.sort.placed).every(([id,type])=>sortCards.some(c=>c.id===id&&c.type===type)))return false;
  if(!value.freeze.records.every(r=>['water','ice','melt'].includes(r.kind)&&Number.isFinite(r.level)&&Number.isFinite(r.mass)))return false;
+ if(!Object.entries(value.sort.hidden.placed).every(([id,type])=>hiddenScenes.some(c=>c.id===id&&c.type===type))||!Object.entries(value.sort.hidden.tries).every(([id,n])=>hiddenScenes.some(c=>c.id===id)&&Number.isInteger(n)&&n>=0&&n<100))return false;
+ if(value.freeze.challenge.trials.length>20||!value.freeze.challenge.trials.every(t=>t&&['amount','prediction','actual','error'].every(k=>Number.isFinite(t[k]))))return false;
  if(!value.draw.records.every(r=>[0,1,2].includes(r.band)&&['time','thin','thick'].every(k=>Number.isFinite(r[k]))))return false;
  if(!value.compare.records.every(r=>['heat','time','room','heated'].every(k=>Number.isFinite(r[k]))&&typeof r.boiling==='boolean'))return false;
  const measurement=v=>v&&['time','drops','mass'].every(k=>Number.isFinite(v[k]))&&typeof v.cold==='boolean';

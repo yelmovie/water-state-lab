@@ -11,15 +11,17 @@ const paragraphs=lines=>lines.map(line=>`<p>${esc(line)}</p>`).join('');
 const details=(title,body)=>`<details class="settings-section"><summary>${esc(title)}</summary><div>${body}</div></details>`;
 const switchButton=(id,label,on)=>`<div class="settings-row"><span id="${id}-label">${esc(label)}</span><button id="${id}" class="settings-switch" type="button" aria-labelledby="${id}-label" aria-describedby="${id}-state" aria-pressed="${on}"><span class="settings-switch-track" aria-hidden="true"></span><span id="${id}-state">${esc(on?C.sound.on:C.sound.off)}</span></button></div>`;
 let activeDialog;
+/** Teacher-facing line for the offline cache; status comes from the built site's service worker. */
+export const offlineText=({done,total})=>total&&done>=total?C.teacher.offlineDone:C.teacher.offlineSaving.replace('{n}',total?Math.floor(done/total*100):0);
 
 /** Optional videos preserve the settings list and return focus to its selected item. */
-export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()=>{},openIntro=()=>{},certificate=()=>{},notebook,discoveries,onSoundChange=()=>{},onReset,getResetToken=captureResetToken,storageStatus=getStorageStatus}){
+export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()=>{},openIntro=()=>{},certificate=()=>{},notebook,discoveries,onSoundChange=()=>{},onReset,getResetToken=captureResetToken,storageStatus=getStorageStatus,offline=()=>null}){
  if(activeDialog?.open){activeDialog.querySelector('#settings-x').focus();return activeDialog;}
  const opener=document.activeElement,dialog=document.createElement('dialog');
  dialog.className='settings-dialog';dialog.setAttribute('aria-labelledby','settings-title');
  const settings=state.settings;
  const done=state.restored===true&&[1,2,3,4,5].every(id=>state.completed.includes(id));
- const teacher=`${paragraphs(C.teacher.lines)}${details(C.teacher.standardsTitle,`<p>${esc(C.teacher.standardsIntro)}</p>${STANDARDS.map(s=>`<p><strong>[${esc(s.code)}]</strong> ${esc(s.text)}</p>`).join('')}`)}${details(C.teacher.toolsTitle,`<p>${esc(C.teacher.toolsIntro)}</p><button type="button" id="settings-unlock" class="btn secondary wide" aria-pressed="${settings.adminUnlock===true}">${esc(settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff)}</button><p class="settings-muted">${esc(C.teacher.toolsNote)}</p>${switchButton('settings-reduced',C.sound.reduced,settings.reduced===true)}`)}`;
+ const cache=offline(),teacher=`${paragraphs(C.teacher.lines)}${cache?`<p id="settings-offline" class="settings-muted" role="status">${esc(offlineText(cache))}</p>`:''}${details(C.teacher.standardsTitle,`<p>${esc(C.teacher.standardsIntro)}</p>${STANDARDS.map(s=>`<p><strong>[${esc(s.code)}]</strong> ${esc(s.text)}</p>`).join('')}`)}${details(C.teacher.toolsTitle,`<p>${esc(C.teacher.toolsIntro)}</p><button type="button" id="settings-unlock" class="btn secondary wide" aria-pressed="${settings.adminUnlock===true}">${esc(settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff)}</button><p class="settings-muted">${esc(C.teacher.toolsNote)}</p>${switchButton('settings-reduced',C.sound.reduced,settings.reduced===true)}`)}`;
  const credits=`${paragraphs(C.credits.lines)}${details(C.credits.sourcesTitle,`<p>${esc(C.credits.sourcesIntro)}</p>${C.credits.sources.map(([title,text])=>`<p><strong>${esc(title)}</strong><br>${esc(text)}</p>`).join('')}`)}<p>${esc(C.credits.copyright)}</p><p>${esc(C.credits.own)}</p><p>${esc(C.credits.external)}</p><p>${esc(C.credits.references)}</p>`;
  const clips=concepts.slice(1).map(clip=>{
   const unlocked=fieldReady(clip.id,state.fieldwork?.chapters?.[clip.id]);

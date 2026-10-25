@@ -71,6 +71,8 @@ export function bindFieldwork(n,ctx){
  const get=()=>fieldChapter(n);
  for(const [key,url] of [['equipment','equipment-atlas.webp'],['workshop','workshop-atlas.webp'],['buddy','buddy-poses-clean.webp']]){const im=new Image();im.src='/assets/v2/'+url;assets[key]=im;}
  for(const [key,url,needed] of [['scale','scale.webp',n===3],['tank','tank-frame.webp',n===4],['condenser','condenser-plate.webp',n===8]])if(needed){const im=new Image();im.src='/assets/learning/'+url;assets[key]=im;}
+ // Each region has its own field worktable; it is flattened once so every frame only copies pixels.
+ let table=null;{const im=new Image();im.onload=()=>{const off=document.createElement('canvas');off.width=720;off.height=400;const o=off.getContext('2d'),s=Math.max(720/im.naturalWidth,400/im.naturalHeight),w=im.naturalWidth*s,h=im.naturalHeight*s;o.drawImage(im,(720-w)/2,(400-h)/2,w,h);const wash=o.createRadialGradient(360,205,70,360,205,430);wash.addColorStop(0,'rgba(255,253,243,.4)');wash.addColorStop(1,'rgba(255,253,243,.06)');o.fillStyle=wash;o.fillRect(0,0,720,400);table=off;};im.src=`/assets/stages/field-${['spring','winter','sun','dew','lab'][Math.ceil(n/2)-1]}.webp`;}
  const act=(a,p={})=>{f.chapters[n]=fieldAction(n,get(),a,p);};
  const pos=e=>{const b=canvas.getBoundingClientRect();return {x:(e.clientX-b.left)/b.width*720,y:(e.clientY-b.top)/b.height*400};};
  const inside=(p,t)=>Math.abs(p.x-t.x)<t.w/2&&Math.abs(p.y-t.y)<t.h/2;
@@ -110,7 +112,7 @@ export function bindFieldwork(n,ctx){
  function clock(x,y,r=25){g.strokeStyle='#b58736';g.lineWidth=4;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.moveTo(x,y-r*.7);g.lineTo(x,y);g.lineTo(x+r*.5,y+r*.3);g.stroke();}
  function arrow(x1,y1,x2,y2,color='#56a6b5'){g.strokeStyle=color;g.fillStyle=color;g.lineWidth=5;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-14*Math.cos(a-.5),y2-14*Math.sin(a-.5));g.lineTo(x2-14*Math.cos(a+.5),y2-14*Math.sin(a+.5));g.fill();}
  function draw(time){
-  const c=get();g.clearRect(0,0,720,400);g.fillStyle='#fbf6e9';g.fillRect(0,0,720,400);
+  const c=get();g.clearRect(0,0,720,400);g.fillStyle='#fbf6e9';g.fillRect(0,0,720,400);if(table)g.drawImage(table,0,0);
   for(const t of layout.targets){const hit=drag&&drag.id!=='fill'&&inside(drag,t),filled=Object.values(c.moves).includes(t.id);panel(t.x-t.w/2,t.y-t.h/2,t.w,t.h,hit?'#e3f6eb':filled?'#eef7ed':'#fffdf3',hit?'#25867b':tapItem?'#b99943':'#c5d1c4');if(!(n===8&&t.id==='under'&&c.moves.tray==='under'))text(t.label,t.x,t.y+t.h/2-17,18);}
   if(n===1){for(const [key,x,w] of [['tall',365,75],['wide',570,155]]){if(c.marks.includes('water-'+key))cup(x,240,w,140,8500/w/1.4);else cup(x,240,w,140,0);if(c.marks.includes('ice-'+key))art(2,x,135,65);}text('같은 양의 물',465,32,22);}
   if(n===2||n===10){const keys=n===2?['freeze','melt','evaporate','condense']:['evaporate','condense'];keys.forEach(k=>{const t=layout.targets.find(t=>t.id===k),tool=c.moves[k];if(tool==='time')clock(t.x-95,t.y-4,20);else if(tool)art(tool==='cold'?5:6,t.x-95,t.y-4,52);if(c.marks.includes(k))text('연결됨',t.x+95,t.y-6,18,'#23755e');else if(c.message&&tool)text('변화 확인',t.x+95,t.y-6,17,'#ae6f3c');});if(n===10){text('온실로 돌아가는 물',360,350,24);text('수증기는 눈에 보이지 않아',360,385,18);}}

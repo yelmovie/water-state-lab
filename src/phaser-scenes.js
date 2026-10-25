@@ -2,7 +2,7 @@ import {partPosition} from './workshop-controls.js';
 import {resetDrawingExperiment} from './drawing-records.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
-import {sortCards,dryTrace,heatingTrial} from './activity-model.js';
+import {sortCards,hiddenScenes,activityReady,dryTrace,heatingTrial} from './activity-model.js';
 import {visibleDew,wipeDroplets,addRecord} from './inquiry-model.js';
 import {stop as stopClock,observationTime} from './inquiry.js';
 import {finalContext} from './workshop.js';
@@ -35,6 +35,9 @@ function makeScene(P,route,ctx,host,hidden){
     if(route===4)this.load.image('learning-tank','/assets/learning/tank-frame.webp');
     if(route===2)this.load.image('water-search','/assets/stages/water-search.webp');
     if(route===8)this.load.image('drink-bottle','/assets/stages/drink-bottle.webp');
+    if(route===5)this.load.image('drawing-board','/assets/learning/drawing-board.webp');
+    if(route===6)this.load.image('hotplate','/assets/learning/hotplate.webp');
+    if(route===10)this.load.image('water-core','/assets/learning/water-core.webp');
    }
   }
   create(){
@@ -196,8 +199,11 @@ function makeScene(P,route,ctx,host,hidden){
    this.add.image(245,150,'water-search').setDisplaySize(460,259);
    const sites=[[91,106],[226,93],[391,125],[91,197],[226,197],[405,210]];
    sortCards.forEach((c,i)=>{const [x,y]=sites[i],done=!!a().sort.placed[c.id];const marker=this.add.circle(x,y,26,done?0xd3ecd9:card?.id===c.id?0xffdc84:0xfff8df,.95).setStrokeStyle(3,0x477d79).setInteractive({useHandCursor:true});this.text(x,y,done?'✓':String(i+1),23).setDepth(2);marker.on('pointerdown',()=>this.action('ix-sort-card-'+c.id));});
-   ['solid','liquid','gas'].forEach((key,i)=>{const y=65+i*84;this.panel(490,y-30,215,72);this.text(600,y-8,['고체','액체','기체'][i],23);this.text(600,y+19,`${sortCards.filter(c=>a().sort.placed[c.id]===key).length}개 확인`,16);const bin=this.add.rectangle(600,y+5,210,68,0xffffff,0).setInteractive({useHandCursor:true});bin.on('pointerdown',()=>this.action('ix-sort-place-'+key));});
-   if(!card){this.text(245,300,'여섯 장면의 물을 모두 찾았어!',22);return;}
+   // After the six scenes, two hidden spots open as an optional replay goal; the bins then answer for the hidden spot.
+   const bonus=!card&&activityReady(2,a()),hidden=a().sort.hidden,hiddenActive=bonus&&hiddenScenes.find(c=>c.id===q().hiddenProof&&!hidden.placed[c.id]);
+   if(bonus)hiddenScenes.forEach(c=>{const [x,y]=c.site,done=!!hidden.placed[c.id];const marker=this.add.circle(x,y,24,done?0xd3ecd9:hiddenActive?.id===c.id?0xffdc84:0xfff1c2,.95).setStrokeStyle(3,done?0x477d79:0xb07a1f).setInteractive({useHandCursor:true});this.text(x,y,done?'✓':'?',23).setDepth(2);if(!done)marker.on('pointerdown',()=>this.action('ix-hidden-card-'+c.id));});
+   ['solid','liquid','gas'].forEach((key,i)=>{const y=65+i*84;this.panel(490,y-30,215,72);this.text(600,y-8,['고체','액체','기체'][i],23);this.text(600,y+19,`${sortCards.filter(c=>a().sort.placed[c.id]===key).length+hiddenScenes.filter(c=>hidden.placed[c.id]===key).length}개 확인`,16);const bin=this.add.rectangle(600,y+5,210,68,0xffffff,0).setInteractive({useHandCursor:true});bin.on('pointerdown',()=>this.action((hiddenActive?'ix-hidden-place-':'ix-sort-place-')+key));});
+   if(!card){const left=hiddenScenes.filter(c=>!hidden.placed[c.id]).length;this.text(245,300,!bonus?'여섯 장면의 물을 모두 찾았어!':hiddenActive?`${hiddenActive.name} · 오른쪽 상태를 눌러 봐`:left?`숨은 물 ${left}곳 · ? 표시를 눌러 찾아봐`:'숨은 물까지 모두 찾았어!',hiddenActive?18:20);return;}
    const idx=['beaker','jug','ice','cloth','can','icepack','thermometer','magnifier','seedling'].indexOf(card.art);
    const obj=this.prop(458,35,idx,66,'equipment',true);this.text(245,300,card.name+' · 장면을 고르고 상태에 놓아 봐',18);
    obj.onRelease=()=>{if(obj.x<490){obj.setPosition(458,35);return;}const key=['solid','liquid','gas'][clamp(Math.round((obj.y-65)/84),0,2)];q().sortProof=card.id;q().sortDraft[card.id]=key;this.action('ix-sort-check');};
@@ -245,7 +251,7 @@ function makeScene(P,route,ctx,host,hidden){
    this.tick=()=>{this.dynamic.clear();this.dynamic.fillStyle(0x59c5dc,.8).fillRect(120,280-s.fill*2.1,170,s.fill*2.1);this.dynamic.lineStyle(3,0xf8fffc).lineBetween(120,280-s.fill*2.1,290,280-s.fill*2.1);value.setText(`물높이 ${s.fill} · 손잡이로 조절`);if(t){const top=280-Math.min(100,expansion.level)*2.1;this.dynamic.fillStyle(0xa3dce9,.96).fillRect(430,top,170,280-top);this.dynamic.lineStyle(2,0x8d6e37,.8).lineBetween(430,280-t.fill*2.1,600,280-t.fill*2.1);if(t.space>0){this.dynamic.lineStyle(s.marked?4:2,s.marked?0x289e7e:0xc28d27).strokeRect(432,60,166,Math.max(4,top-60));if(s.marked)spaceLabel.setText('빈 공간이 얼음 위에 남았어');}else{this.dynamic.lineStyle(4,0xd58045).lineBetween(492,60,507,80).lineBetween(507,80,522,64).lineBetween(522,64,538,85);}}};
   }
   drawingScene(){
-   const d=a().draw;this.panel(20,45,330,245,0xe4d7b8);this.panel(370,45,330,245,0xe4d7b8);
+   const d=a().draw;if(this.textures.exists('drawing-board'))for(const x of [185,535])this.add.image(x,167.5,'drawing-board').setDisplaySize(330,245);else{this.panel(20,45,330,245,0xe4d7b8);this.panel(370,45,330,245,0xe4d7b8);}
    this.text(185,23,'A · 물을 조금');this.text(535,23,'B · 물을 많이');this.text(360,314,'A에 그리면 방울이가 B에 같은 그림을 그려 줘',18);
    let stroke=null;
    const point=p=>{if(stroke&&stroke.length<400)stroke.push([clamp((p.x-25)/320*500,0,500),clamp((p.y-50)/230*310,0,310)]);};
@@ -259,14 +265,16 @@ function makeScene(P,route,ctx,host,hidden){
    if(!q().lens)visual.lens={x:650,y:150};
     const lens=this.prop(visual.lens.x,visual.lens.y,7,100,'equipment',true).setDepth(12);this.text(643,245,'돋보기',22);
    const glass=this.add.graphics().setDepth(15),mask=this.add.graphics().setVisible(false),magnified=this.add.graphics().setDepth(16);magnified.setMask(mask.createGeometryMask());
-    const lensLabel=this.text(360,302,'A 표면 · B 물속 · 수위 비교',22);
+    // A real hot plate replaces the flat heater bar; its glow follows the heat setting under cup B.
+    const plate=this.textures.exists('hotplate')?this.add.image(490,267,'hotplate').setOrigin(.5,.395).setDisplaySize(168,65).setDepth(1):null,plateGlow=plate?this.add.graphics().setDepth(2):null;
+    const lensLabel=this.text(360,plate?316:302,'A 표면 · B 물속 · 수위 비교',22);
    lens.onMove=()=>{visual.lens={x:lens.x,y:lens.y};const site=lensRegion(lens.x,lens.y);lensLabel.setText(({surface:'A 표면 · 물은 눈에 보이지 않는 수증기로 변해',inside:'B 물속 · 기포가 생기는지 관찰해',level:'금색 선 = 처음 높이 · 지금 높이와 비교해'})[site]);};
    const inspect=()=>{const site=lensRegion(lens.x,lens.y);q().lens=site;visual.lens={x:lens.x,y:lens.y};this.reactAt(lens.x,lens.y);this.action('ix-lens-'+site);};lens.onRelease=()=>{if(lens.x<585)inspect();else{lens.setPosition(650,150);visual.lens={x:650,y:150};}};
    this.tick=t=>{const h=heatingTrial(s.heat,observationTime(6));this.dynamic.clear();this.cup(this.dynamic,220,267,125,205,h.room);this.cup(this.dynamic,490,267,125,205,h.heated);
     // A fixed initial line makes a falling water level comparable in both vessels.
     this.dynamic.lineStyle(2,0xa78037,.9).lineBetween(157,267-waterHeight(70,125),282,267-waterHeight(70,125)).lineBetween(427,267-waterHeight(70,125),552,267-waterHeight(70,125));
     if(h.boiling)for(let i=0;i<9;i++){const depth=Math.max(1,waterHeight(h.heated,125)-18),y=259-(((reduced()?0:t/30)+i*19)%depth);this.dynamic.lineStyle(2,0xc3f9ff,.9).strokeCircle(460+i%4*19,y,4+i%3);}
-    this.dynamic.fillStyle(s.heat?0xe8a257:0x94a5a1).fillRoundedRect(421,277,138,18,8);
+    if(plate){plateGlow.clear();if(s.heat)plateGlow.fillStyle(0xff8a3d,.18+s.heat/100*.5).fillEllipse(490,264,132,34);}else this.dynamic.fillStyle(s.heat?0xe8a257:0x94a5a1).fillRoundedRect(421,277,138,18,8);
     glass.clear();mask.clear();magnified.clear();if(lens.x>585)return;
     const site=lensRegion(lens.x,lens.y),x=clamp(lens.x+(lens.x<360?100:-100),66,654),y=clamp(lens.y-45,78,213),r=56;
     mask.fillStyle(0xffffff).fillCircle(x,y,r);glass.fillStyle(0xfffef2).fillCircle(x,y,r+6);glass.lineStyle(4,0x4b8991).strokeCircle(x,y,r+5);glass.lineStyle(2,0x7caaac,.6).lineBetween(lens.x,lens.y,x,y);
@@ -352,8 +360,10 @@ function makeScene(P,route,ctx,host,hidden){
    }
    let core,coreLabel,valve,valveText;
    if(final){
-    const f=context.progress;core=this.prop(638,245,5,119,'workshop').setDepth(6).setInteractive({useHandCursor:true});core.setAlpha(f.tested?1:.65);
-    coreLabel=this.text(600,310,f.tested?'코어에 물 도착!':f.connected?'코어로 물 보내기':'코어 연결이 필요해',17);
+    // The core art keeps its inlet at the lower left; pipe and glow coordinates follow that image.
+    const f=context.progress,coreArt=this.textures.exists('water-core');core=(coreArt?this.add.image(638,214,'water-core').setDisplaySize(84,170):this.prop(638,245,5,119,'workshop')).setDepth(6).setInteractive({useHandCursor:true});if(coreArt&&!f.tested)core.setTint(0xc4d2d6);else core.setAlpha(f.tested?1:.65);
+    this.coreInlet=coreArt?{x:598,y:272}:{x:596,y:245};this.coreGlow=coreArt?{x:642,y:188,r:30}:{x:638,y:240,r:46};
+    coreLabel=this.text(600,coreArt?316:310,f.tested?'코어에 물 도착!':f.connected?'코어로 물 보내기':'코어 연결이 필요해',17);
     core.on('pointerdown',()=>{if(f.tested)this.cue('물이 도착했어! 마지막 레버를 당겨 줘.');else if(!f.connected)this.cue('장치가 모은 물을 코어로 보낼 수 있게 먼저 연결해 줘.');else this.action('test-core');});
     if(f.connected&&!f.tested){
      valve=this.add.circle(549,270-f.valve*.35,23,0xffdf91).setStrokeStyle(4,0x6b8e7f).setDepth(10).setInteractive({useHandCursor:true,hitArea:new P.Geom.Circle(23,23,40),hitAreaCallback:P.Geom.Circle.Contains});this.input.setDraggable(valve);
@@ -383,7 +393,7 @@ function makeScene(P,route,ctx,host,hidden){
     if(result.collected>0){const height=result.collected*.27*progress;this.dynamic.fillStyle(0x55c6df,.8).fillRoundedRect(bx-24,by+21-height,48,height,4);this.dynamic.lineStyle(2,0xc2f9ff,.9).lineBetween(bx-24,by+21-height,bx+24,by+21-height);}
     if(final&&context.progress.connected){
      const f=context.progress;this.dynamic.lineStyle(9,f.tested?0x65bcb9:0x839a94,.75).lineBetween(bx+30,by,596,245);
-     if(f.tested){this.dynamic.lineStyle(4,0xa3fcf1,.95).lineBetween(bx+30,by,596,245);for(let i=0;i<5;i++){const k=reduced()?(i+1)/6:(t/1400+i/5)%1;this.dynamic.fillStyle(0xe5fff5,.95).fillCircle(bx+30+(596-bx-30)*k,by+(245-by)*k,4);}this.dynamic.lineStyle(3,0x8af3db,.8).strokeCircle(638,240,46+progress*6);core.setAlpha(.7+progress*.3);coreLabel.setText(progress<1?'코어로 흐르는 중…':'물 도착! 레버를 당겨');}
+     if(f.tested){const {x:ix,y:iy}=this.coreInlet,{x:gx,y:gy,r:gr}=this.coreGlow;this.dynamic.lineStyle(4,0xa3fcf1,.95).lineBetween(bx+30,by,ix,iy);for(let i=0;i<5;i++){const k=reduced()?(i+1)/6:(t/1400+i/5)%1;this.dynamic.fillStyle(0xe5fff5,.95).fillCircle(bx+30+(ix-bx-30)*k,by+(iy-by)*k,4);}this.dynamic.fillStyle(0x9ff7ff,.3*progress).fillCircle(gx,gy,gr+progress*10);this.dynamic.lineStyle(3,0x8af3db,.8).strokeCircle(gx,gy,gr+progress*6);core.setAlpha(.7+progress*.3);coreLabel.setText(progress<1?'코어로 흐르는 중…':'물 도착! 레버를 당겨');}
     }
    };
   }

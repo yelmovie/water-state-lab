@@ -1,5 +1,24 @@
 # 에셋 출처
 
+## 도구·라이선스 검토 (2026-10-25)
+
+상업 배포물(옐샘 & 아이스크림미디어) 기준으로 검토했다. 법률 자문이 아니며, 라이선스·약관은 바뀔 수 있으므로 배포 전에 원문을 다시 본다. 웹 약관은 아래 날짜에 확인한 내용이다.
+
+| 도구·자료 | 쓰는 곳 | 라이선스·조건 (확인 근거) | 판정 | 조치 |
+|---|---|---|---|---|
+| Phaser 3.90.0 | `vendor/phaser.min.js`. 지도·실험 Canvas. 배포 포함 | MIT. 전문 `vendor/PHASER-LICENSE.md`(Copyright (c) 2024 Richard Davey, Phaser Studio Inc.) 동봉, 빌드에 함께 복사. 버전은 파일 안 `VERSION:"3.90.0"`으로 확인 | PASS | 설정 > 자료 출처의 저작권자 표기(Photon Storm)를 라이선스 파일 표기와 맞추면 좋다 |
+| Jua 글꼴 | `fonts/jua-korean-400.woff2`, `jua-latin-400.woff2`. 제목 글꼴. 배포 포함 | SIL OFL 1.1. `fonts/Jua-OFL.txt`에 저작권 줄(Woowahan Brothers, Reserved Font Name "Jua", Google Fonts 배포)과 OFL 1.1 전문이 끝까지 들어 있음. 배민 자체 약관판 '주아체'가 아니라 OFL판으로 기록됨 | PASS | 두 서브셋 파일을 처음 받은 배포처(Google Fonts 등)는 기록에 없다. 알면 이 칸에 보강 |
+| Kenney Interface Sounds 7종 | `audio/*.ogg`. 효과음. 배포 포함 | CC0 1.0. `audio/Kenney-LICENSE.txt` 원문(개인·교육·상업 프로젝트 사용 가능, 크레딧 선택)과 `audio/sources.json`(출처·다운로드 주소·파일 대응) 동봉 | PASS | 없음 |
+| 배경 음악·대체 효과음 | `src/sound.js` | 프로젝트 코드의 Web Audio 합성. 내려받은 음원 없음 | PASS | Suno 배경음은 아직 넣지 않았다(`docs/audio/SUNO-PROMPTS.md`). 넣을 때 생성 계정의 요금제를 이 표에 먼저 기록 |
+| 개념 영상 렌더 도구 | `scripts/concept-clips/render.mjs`, `scenes.mjs` → `concepts/stage-1~10` MP4·WebM·WebP | 자체 SVG 장면을 sharp로 RGBA 변환해 FFmpeg(libx264, libvpx-vp9)로 인코딩. import는 Node 내장 모듈·`src/concept-data.js`·`scenes.mjs`·sharp뿐. 저장소의 package.json 2개(루트, `files/` 보관 사본)에 의존성 없음. Remotion·Highcharts·ag-Grid·Handsontable·Spine·유료 아이콘 패키지 검색 0건 | PASS | sharp·FFmpeg는 개발 도구로만 실행하고 배포 번들에 넣지 않는다 |
+| 내장 OpenAI `image_gen` (2026-10-15·21·24·25 생성분) | `v2/equipment-atlas`, `workshop-atlas`, `journey-map`, `story-repair`, `rescue-reward`, `research-island-v4`, `learning/*`, `stages/*` | OpenAI 이용약관 '콘텐츠 소유권': 법이 허용하는 범위에서 이용자가 출력을 소유하고 OpenAI는 출력에 대한 권리를 이용자에게 양도한다. 비슷한 출력이 다른 이용자에게 나올 수 있다. 2026-10-25 검색 결과의 약관 인용으로 확인(원문 https://openai.com/policies/terms-of-use/ 는 이번 접속에서 403으로 직접 열지 못함) | 확인 필요 | 생성에 쓴 계정의 명의·요금제가 기록에 없다. 회사 결과물에 넣는 데 문제가 없는지 회사 담당자 확인. 사용 중인 `v2/experiment-table-v3.webp`(와 교체 중인 `research-island-v3.webp`)는 2026-10-18 기록에 '이전 작업에서 생성'으로만 적혀 있어 생성 도구부터 확인해야 한다 |
+| 사용자 제공 ChatGPT 생성 이미지 | `v2/buddy-poses-clean.webp`(방울이), `lab-main.png`, `lab-room.png`, 사용 예정 `v2/lab-workshop.webp`·`lab-core.webp` | 생성한 사람·계정·요금제 기록 없음. 이전 기록대로 공개·상업 배포 권리는 소유자 확인 전 | 확인 필요 | 방울이가 주인공이라 우선 확인. 확인되면 이 칸과 설정 고지 첫 줄을 고친다 |
+| Higgsfield · GPT Image 2.5 (2026-10-25 생성분, Basic 유료 요금제 계정) | 아래 `2026-10-25 생성 이미지` 절에 기록할 파일 | Higgsfield Terms of Use(https://higgsfield.ai/terms-of-use-agreement, 문서 표시 'Last updated: October 23, 2026', 2026-10-25 확인): 4.4 회사는 입력·출력의 소유권을 주장하지 않고 출력의 상업적 이용을 제한하지 않는다. 출력은 회사 모델 학습에 쓰일 수 있고, 다른 이용자가 비슷하거나 같은 출력을 받을 수 있으며 고유성·독점성은 보장하지 않는다. 8조: 일부 모델은 외부 제공사가 공급하며 제공사 정책이 더 엄격하면 그 조건이 적용된다. 5.2(i)는 서비스 자체의 재판매·상업적 이용을 금지(출력이 아님). 도움말 'Who owns my generations and can I use them commercially?'(https://higgsfield.ai/creator-hub/help-center/account-and-privacy/who-owns-my-generations-and-can-i-use-them-commercially, 2026-09-12 수정): 상업적 이용 권리는 요금제와 관계없이 약관에서 나오며 유료 요금제는 워터마크 없는 다운로드를 포함 | 조건부 PASS · 확인 필요 | 아직 확인하지 못한 것: ① GPT Image 2.5 공급사 조건이 Higgsfield 경유 출력에 어떻게 적용되는지(약관에 공급사 이름 없음) ② 요금제 페이지(https://higgsfield.ai/pricing)가 스크립트로 그려져 Basic 요금제 문구를 직접 읽지 못함 ③ 받은 파일에 워터마크·C2PA 등 메타데이터가 있는지 ④ 학습 제외는 엔터프라이즈 계약에서만 안내됨 |
+
+- 판정 기준: `commercial-license-audit`(iscream-settings). FAIL은 0건. '확인 필요' 3건은 계약·계정 기록 문제라 회사 담당자 확인이 필요하다.
+- AI 생성물 자체가 저작물로 보호되는 범위는 나라별 법에 따르며 이 표에서 판단하지 않는다. 설정의 '자체 제작 일러스트 무단 복제 금지' 문구의 범위는 회사 확인 대상이다.
+- 이 파일은 빌드 때 배포본(`/assets/CREDITS.md`)에 복사되어 공개된다.
+
 ## 현재 사용분 · 물길 탐험 3.0 · 2026-10-24
 
 기획·제작 표기: 옐샘 & 아이스크림미디어. 앱 화면 캡처·자체 제작 일러스트·자체 제작 음원은 무단 복제·재배포·전용·상업적 이용을 금한다. 외부 자료·라이브러리·폰트는 각 원저작자의 라이선스와 이용 조건을 따른다. 이 문구는 외부 자료의 권리를 새로 주장하지 않는다.
@@ -34,7 +53,7 @@
 
 | 서비스 파일 | 제공된 원본 |
 |---|---|
-| logo.png | ChatGPT Image 2026년 9월 23일 오후 11_30_01.png |
+| logo.png | ChatGPT Image 2026년 9월 23일 오후 11_30_01.png (2026-10-25 미사용, `_unused/public-assets/`로 이동) |
 | lab-main.png | ChatGPT Image 2026년 9월 23일 오후 11_30_40 (1).png |
 | lab-room.png | ChatGPT Image 2026년 9월 23일 오후 11_30_41 (2).png |
 
@@ -54,12 +73,12 @@
 | v2/journey-map.webp | 이번 작업에서 OpenAI 이미지 생성 도구로 새로 생성한 연구섬 지도 |
 | v2/equipment-atlas.webp | 새로 생성한 3×3 실험 도구, 투명 WebP 무손실 변환 |
 | v2/workshop-atlas.webp | 새로 생성한 3×2 장치 부품, 투명 WebP 변환 |
-| v2/buddy-poses.webp | 사용자 제공 image/chatgpt_generated_035.png의 형식 변환, 4×4 포즈 |
+| v2/buddy-poses.webp | 사용자 제공 image/chatgpt_generated_035.png의 형식 변환, 4×4 포즈. 2026-10-25 미사용 확인 후 `_unused/public-assets/v2/`로 이동 |
 | v2/buddy-poses-clean.webp | 같은 원본의 16개 포즈를 실제 윤곽별로 분리하고 투명 여백을 두어 재배치. scripts/prepare-buddy-sprites.py로 생성. 원본 그림 유지 |
-| v2/lab-observe.webp | 사용자 제공 2026-09-23 오후 11_30_40 (1).png |
-| v2/lab-cold.webp | 사용자 제공 2026-09-23 오후 11_30_41 (3).png |
-| v2/lab-compare.webp | 사용자 제공 2026-09-23 오후 11_30_42 (5).png |
-| v2/lab-detective.webp | 사용자 제공 2026-09-23 오후 11_30_43 (7).png |
+| v2/lab-observe.webp | 사용자 제공 2026-09-23 오후 11_30_40 (1).png. 2026-10-25 미사용, `_unused/public-assets/v2/`로 이동 |
+| v2/lab-cold.webp | 사용자 제공 2026-09-23 오후 11_30_41 (3).png. 2026-10-25 미사용, 이동 |
+| v2/lab-compare.webp | 사용자 제공 2026-09-23 오후 11_30_42 (5).png. 2026-10-25 미사용, 이동 |
+| v2/lab-detective.webp | 사용자 제공 2026-09-23 오후 11_30_43 (7).png. 2026-10-25 미사용, 이동 |
 | v2/lab-workshop.webp | 사용자 제공 2026-09-23 오후 11_30_45 (9).png |
 | v2/lab-core.webp | 사용자 제공 2026-09-23 오후 11_30_46 (10).png |
 
@@ -98,3 +117,29 @@
 - 원본 PNG는 프로젝트 `image/generated-stage-experience/`에 보존한다. 생활 장면의 최종 원본은 `water-search-corrected.png`이며 첫 생성본도 보존한다. 배포 산출물에는 실행용 WebP만 복사한다.
 - 배경은 불투명 16:9 그림이고 음료병은 알파를 보존했다. 학습 수치, 물높이, 물방울, 선택 상태와 판정은 이미지에 고정하지 않고 기존 코드가 표시한다.
 - 용도·생성 기록·파일 검증은 `docs/reviews/ASSET-GENERATION-20261025.md`에 남긴다. 생성물의 법적 권리 범위에 관한 새로운 보장은 하지 않는다.
+
+## 2026-10-25 생성 이미지
+
+- 도구: Higgsfield · GPT Image 2.5 (quality high, 2K). Basic 유료 계정. 검토 결과는 맨 위 표의 Higgsfield 행 참조.
+- 기존 그림을 참고 이미지로 넣어 화풍을 맞췄다. 사람·캐릭터·글자는 넣지 않았다. 원본 PNG는 `image/generated-20261025/`(저장소 제외)에 보존한다.
+
+| 실행 파일 | 용도 | 원본 | 크기 | 화풍 참고 |
+|---|---|---|---:|---|
+| `stages/field-spring.webp` | 현장 의뢰 1·2 작업대 (샘터) | `field-spring.png` | 225 KB | `stages/spring-terrace.webp` |
+| `stages/field-winter.webp` | 현장 의뢰 3·4 작업대 (얼음 다리) | `field-winter.png` | 164 KB | `stages/winter-waterworks.webp` |
+| `stages/field-sun.webp` | 현장 의뢰 5·6 작업대 (햇살 마당) | `field-sun.png` | 151 KB | `stages/sun-courtyard.webp` |
+| `stages/field-dew.webp` | 현장 의뢰 7·8 작업대 (이슬 정원) | `field-dew.png` | 231 KB | `stages/dew-greenhouse.webp` |
+| `stages/field-lab.webp` | 현장 의뢰 9·10 작업대 (연구실) | `field-lab.png` | 81 KB | `v2/lab-workshop.webp` |
+| `learning/hotplate.webp` | 6장 가열판 (윗부분만 잘라 사용, 켜짐 빛은 코드로 표시) | `hotplate.png` | 20 KB | `v2/equipment-atlas.webp` |
+| `learning/drawing-board.webp` | 5장 물그림 판 (A·B 같은 그림 두 장) | `drawing-board.png` | 45 KB | `stages/sun-courtyard.webp` |
+| `learning/water-core.webp` | 10장 물방울 코어 (꺼짐 상태, 물 도착 빛은 코드로 표시) | `water-core.png` | 104 KB | `v2/equipment-atlas.webp + v2/lab-workshop.webp` |
+
+- 9·10장 배경은 새로 생성하지 않고 사용자 샘플 페이지에서 만든 기존 `v2/lab-workshop.webp`, `v2/lab-core.webp`를 적용했다.
+
+## 2026-10-25 3D 모형·3D 엔진·앱 아이콘
+
+- 3D 엔진: Three.js 0.170.0 (`public/assets/vendor/three/`, MIT, `THREE-LICENSE.txt` 동봉). npm 패키지에서 `three.module.min.js`, `GLTFLoader.js`, `BufferGeometryUtils.js`만 가져왔고, 로더 두 파일은 `import` 경로만 같은 폴더로 바꿨다. 외부 CDN 요청은 없다.
+- 3D 모형 9개(`public/assets/models/`): 이 프로젝트의 기준 그림(`image/3d-refs/meshy/`, 힉스필드 GPT Image 2.5 생성 또는 기존 공방 그림)을 사용자가 Meshy Image to 3D로 바꿨다. 원본 GLB는 저장소 밖 `D:\iscreammedia_sc34\_scratch\waterchange-3d\raw\`에 있다.
+- 다듬기: Blender 5.2 배치 스크립트(`_scratch/waterchange-3d/optimize.py`). 겹친 점 합치기 → 복셀로 겉면 재구성 → 삼각형 줄이기 → 새 펼침 좌표에 원본 바탕색 굽기 → WebP 텍스처 GLB. 원본과 결과를 같은 각도로 렌더해 찢어짐을 확인했다.
+- Meshy 출력의 상업 이용 조건은 사용 계정의 요금제 약관을 따른다. 이 기록은 그 권리를 새로 보장하지 않는다(맨 위 도구 검토 표 참조).
+- 앱 아이콘 `public/assets/icons/`: 기존 `v2/rescue-reward.webp`, `v2/buddy-poses-clean.webp`를 로컬 PIL로 자르고 크림색 배경에 얹었다. 새 생성 없음.

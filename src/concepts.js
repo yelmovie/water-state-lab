@@ -3,6 +3,8 @@ import {btn,buddy,esc,icon} from './ui.js';
 import {setMusicQuiet,playCue} from './sound.js';
 
 let active=null;
+/** One format per device; the offline cache stores the same one. */
+export const conceptVideoFormat=video=>video.canPlayType('video/webm; codecs="vp9"')?'webm':'mp4';
 export function closeConcept(){active?.close();}
 export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으로 돌아가기'}={}){
  const clip=concepts[n];if(!clip)return;
@@ -29,7 +31,7 @@ export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으
  video.addEventListener('error',fallback);
  video.addEventListener('loadedmetadata',()=>{clearTimeout(waiting);if(!reduced&&!matchMedia('(prefers-reduced-motion: reduce)').matches)start();},{once:true});
  document.addEventListener('visibilitychange',visibility);active={close,dialog:d};setMusicQuiet(true);void playCue('discover');
- video.src=`/assets/concepts/stage-${n}.${video.canPlayType('video/webm; codecs="vp9"')?'webm':'mp4'}`;
+ video.src=`/assets/concepts/stage-${n}.${conceptVideoFormat(video)}`;
  waiting=setTimeout(()=>{if(video.readyState<1)fallback();},6500);
  d.showModal();d.querySelector('[data-concept=continue]').focus();
 }

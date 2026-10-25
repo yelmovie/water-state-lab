@@ -54,7 +54,7 @@
 .reward-character .buddy-pose { width: 210px; }
 .reward-character .prop-art { width: 130px; height: 130px; }
 .reward-proof { padding: 12px 16px; border: 1px solid #a7c5ab; background: #edf5e8; border-radius: var(--radius-sm); font-size: 18px; }
-.ending-shell { background: linear-gradient(#eff8e5d9,#eaf7e3eb), url('/assets/v2/research-island-v3.webp') center/cover; }
+.ending-shell { background: linear-gradient(#eff8e5d9,#eaf7e3eb), url('/assets/v2/research-island-v4.webp') center/cover; }
 .ending-core { width: 340px; height: 340px; filter: drop-shadow(0 0 40px #62f6bc); }
 .ending-illustration > .buddy-pose { position: absolute; bottom: 10px; right: 0; width: 220px; }
 .ending-caption { font-size: 18px; max-width: 80%; margin-top: var(--space-lg); }

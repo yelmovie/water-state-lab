@@ -4,16 +4,19 @@ import path from 'node:path';
 const built = process.argv.includes('--dist');
 const root = built ? path.join(process.cwd(),'dist') : process.cwd();
 const port = Number(process.env.PORT || (built ? 4317 : 4316));
-const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.json':'application/json','.woff2':'font/woff2','.mp4':'video/mp4','.webm':'video/webm','.ogg':'audio/ogg'};
+const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.json':'application/json','.woff2':'font/woff2','.mp4':'video/mp4','.webm':'video/webm','.ogg':'audio/ogg','.webmanifest':'application/manifest+json'};
 http.createServer((req,res)=>{
   let relative;
   try { relative = decodeURIComponent(new URL(req.url,'http://localhost').pathname); } catch { res.writeHead(400).end();return; }
-  if(!built && relative.startsWith('/assets/')) relative='/public'+relative;
+  // The dev tree has no /sw.js, so the source site can never install the offline worker.
+  if(!built && (relative.startsWith('/assets/')||relative==='/manifest.webmanifest')) relative='/public'+relative;
   const file=path.resolve(root,'.'+(relative==='/'?'/index.html':relative));
   if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
   fs.stat(file,(err,info)=>{
     if(err||!info.isFile()){res.writeHead(404).end('Not found');return;}
-    const headers={'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Accept-Ranges':'bytes'};
+    const headers={'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Accept-Ranges':'bytes',ETag:`"${info.size}-${Math.floor(info.mtimeMs)}"`};
+    // Like the production host: revalidation answers 304, so the offline install reuses what the page already downloaded.
+    if(!req.headers.range&&req.headers['if-none-match']===headers.ETag){res.writeHead(304,{ETag:headers.ETag,'Cache-Control':'no-cache'}).end();return;}
     let start=0,end=info.size-1,status=200;
     if(req.headers.range){
       const match=/^bytes=(\d*)-(\d*)$/.exec(req.headers.range);

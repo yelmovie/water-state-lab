@@ -10,6 +10,8 @@ body{line-break:strict}h1,h2,h3{text-wrap:balance}button{word-break:keep-all;lin
 .activity-tools details p,.control-panel details p{font-size:18px}.activity-tools summary,.control-panel summary{font-size:18px;min-height:48px;display:flex;align-items:center}
 .activity-tools .extra-explanation{margin-top:0}.quest-prize{display:none}
 .stage-forward{position:sticky;bottom:-16px;z-index:3;box-shadow:0 4px 0 #98702f,0 -8px 12px var(--color-panel);margin-top:4px}
+/* The sticky forward button floats over scrolled controls, so even its disabled state must stay opaque. */
+.stage-forward:disabled{opacity:1;background:#efe5c8;border-color:#cdbb8c;color:#857650;box-shadow:0 -8px 12px var(--color-panel)}
 .next-action,.current-action{outline:2px solid #b78b36;outline-offset:3px}.next-action::after{content:none}
 .compact-guide{padding-left:122px;padding-top:10px;padding-bottom:10px;gap:12px}.compact-guide p{font-size:clamp(20px,1.5vw,27px);line-height:1.4;padding-top:18px}
 .compact-guide .buddy-name{font-size:16px;left:124px;top:8px}.compact-guide .hint-button{font-size:20px;min-width:100px;min-height:52px;padding:10px}
@@ -18,7 +20,7 @@ body{line-break:strict}h1,h2,h3{text-wrap:balance}button{word-break:keep-all;lin
 .coach-help-head,.coach-help-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}.coach-help-head b{font-size:22px}.coach-help-head .icon-btn{min-width:48px;min-height:48px}.coach-help p{padding:8px 0 16px;font-size:24px;line-height:1.5}.coach-help-actions{justify-content:flex-end}.coach-help .btn{font-size:20px}
 .coach-spotlight{outline:4px solid #d09a2b!important;outline-offset:3px}
 .scene-6 .lens-window{display:flex;align-items:center;gap:12px;font-size:20px;min-height:84px;padding:8px 12px;margin-top:8px}.scene-6 .lens-window>b{flex:0 0 100px;font-size:18px}.scene-6 .lens-window p{flex:1;min-width:0;font-size:20px}.scene-6 .lens-window .beaker{height:76px;width:96px;flex:none}.scene-6 .lens-window .record-pair{flex:0 0 180px;width:180px}.scene-6 .phaser-stage{min-height:190px}
-.activity-stage-caption,.lab-stage>.stage-tag{font-size:18px}.activity-record,.picture-record>span,.record-pair b,.inquiry-options .btn{font-size:18px}.activity-trial small,.activity-seal,.pins-log span{font-size:16px}
+.activity-stage-caption,.lab-stage>.stage-tag{font-size:18px}.activity-record,.picture-record>span,.record-pair b{font-size:18px}.inquiry-options .btn{font-size:20px}.activity-trial small,.activity-seal,.pins-log span{font-size:16px}
 .activity-5 .activity-drawing-pair canvas{height:clamp(150px,22vh,240px)}.time-controls{column-gap:8px;row-gap:8px}.time-controls .time-mode{display:none}.time-controls #time-description{font-size:18px}
 .fieldwork-activity .challenge-status{display:block}.fieldwork-activity .activity-science{font-size:16px}.fieldwork-activity .activity-tools .eyebrow{display:none}.fieldwork-activity .activity-tools h3{font-size:25px}.fieldwork-activity .challenge-goal{padding:4px 0;margin:0}
 .expedition-choices label,.expedition-choices select{font-size:20px}.expedition-choices .btn{margin:4px 0}
@@ -107,11 +109,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .scene-3,.scene-4{--stage-art:url('/assets/stages/winter-waterworks.webp')}
 .scene-5,.scene-6{--stage-art:url('/assets/stages/sun-courtyard.webp')}
 .scene-7,.scene-8{--stage-art:url('/assets/stages/dew-greenhouse.webp')}
-.experiment-shell:has(.activity){background-image:linear-gradient(#eef7ee30,#f7f0d62a),var(--stage-art,url('/assets/v2/experiment-table-v3.webp'))}
-.scene-1 .phaser-stage,.scene-3 .phaser-stage,.scene-4 .phaser-stage,.scene-5 .phaser-stage,.scene-6 .phaser-stage,.scene-7 .phaser-stage,.scene-8 .phaser-stage{background-image:linear-gradient(#fffaf089,#fffaf05c),var(--stage-art);background-size:cover;background-position:center}
+/* The last two stages happen inside the water-drop lab itself. */
+.scene-9{--stage-art:url('/assets/v2/lab-workshop.webp')}
+.scene-10{--stage-art:url('/assets/v2/lab-core.webp')}
+.experiment-shell:has(.activity),.experiment-shell.scene-9,.experiment-shell.scene-10{background-image:linear-gradient(#eef7ee30,#f7f0d62a),var(--stage-art,url('/assets/v2/experiment-table-v3.webp'))}
+.scene-1 .phaser-stage,.scene-3 .phaser-stage,.scene-4 .phaser-stage,.scene-5 .phaser-stage,.scene-6 .phaser-stage,.scene-7 .phaser-stage,.scene-8 .phaser-stage,.scene-9 .phaser-stage,.scene-10 .phaser-stage{background-image:linear-gradient(#fffaf089,#fffaf05c),var(--stage-art);background-size:cover;background-position:center}
+/* The lab art is busy and full of real funnels and tubes: a slightly stronger wash keeps the movable parts distinct. */
+.scene-9 .phaser-stage,.scene-10 .phaser-stage{background-image:linear-gradient(#fffaf0a6,#fffaf080),var(--stage-art)}
 .field-now{flex:none;margin:4px 0 8px;padding:9px 12px;background:#fff3c9;border-left:4px solid #b38837;border-radius:8px;font-size:18px;line-height:1.4}
 .fieldwork-activity .challenge-status{flex:none;margin:8px 0 0;font-size:18px!important;line-height:1.4}
-@media(min-width:801px){.fieldwork-activity .challenge-status{margin-left:96px}}
+
 .spread-coverage,.cooling-checks{display:flex;align-items:center;flex-wrap:wrap;gap:8px;flex:none;font-size:17px;margin-bottom:6px}
 .spread-coverage meter{flex:1;min-width:90px;height:20px}.cooling-checks span{padding:6px 10px;border:1px solid #b4bdb2;border-radius:8px}.cooling-checks .done{background:#dceddc;border-color:#5c8969}
 .model-goal{flex:none;margin:2px 0 6px;font-size:18px}.model-goal small,.prediction-record small{display:block;font-size:16px;line-height:1.4}
@@ -122,7 +129,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .learning-save-notice{position:fixed;left:12px;right:12px;bottom:8px;z-index:80;display:flex;gap:10px;align-items:center;justify-content:center;padding:8px 12px;border:2px solid #b77e38;border-radius:10px;background:#fff2d3;color:#583e24;font-size:16px;line-height:1.35;box-shadow:0 3px 10px #0002}
 .learning-save-notice[hidden]{display:none}.learning-save-notice button{flex:none;min-height:44px;border:1px solid #91682c;border-radius:7px;background:#fffdf2;padding:5px 12px;color:inherit;font:inherit}
 .save-warning-visible .experiment-main{padding-bottom:70px}
-@media(min-width:801px){.scene-4 .activity-scene,.scene-8 .activity-scene,.scene-10 .lab-stage{padding-bottom:100px}}
+@media(min-width:801px){.scene-4 .activity:not(.fieldwork-activity)>.activity-scene,.scene-8 .activity:not(.fieldwork-activity)>.activity-scene{padding-bottom:100px}}
 @media(orientation:portrait){.learning-save-notice{align-items:flex-start;flex-direction:column;font-size:15px}.save-warning-visible .experiment-main{padding-bottom:150px}}
 .activity-tools,.control-panel{
  border-color:var(--surface-border);background:#fff9eaf5;
@@ -257,6 +264,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .ending-stats{gap:20px}
 .ending-stats>div{padding:8px 14px;background:#fff9e9de;border:1px solid #c8b684;border-radius:12px}
 .ending-stats small{color:#496457}
+.ending-stats>div{flex:1 1 0;min-width:0}.ending-stats strong{white-space:nowrap}
 .ending-statement{padding:16px;border:1px solid #ccb987;border-radius:20px;background:#fff9e9db}
 .ending-statement h3{margin-bottom:4px}
 .classroom-making summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-size:18px}
@@ -295,6 +303,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
  .ending-illustration .ending-art-card>img{height:210px}
  .ending-copy h1{font-size:28px;line-height:1.2;margin:6px 0 8px}
  .ending-copy>p{font-size:20px;line-height:1.4}
+ .ending-stats>div{padding:8px 10px}
  .ending-statement{padding:12px;gap:6px;margin-top:12px}
  .ending-statement h3{font-size:22px;margin:0}
  .ending-statement .btn{font-size:20px;min-height:48px;padding:8px 12px}
@@ -375,7 +384,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .time-scrubber input[type='range']:active::-moz-range-thumb{background:#ffe49b}
 .time-stops{display:flex;justify-content:space-between;gap:8px;padding:0 2px;font:16px/1.25 var(--font-body);color:#456454}
 .time-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:8px;min-width:0;padding-bottom:4px}
-.time-controls .time-actions .btn{min-width:0;min-height:48px;padding:8px 10px;font-size:18px;line-height:1.3}
+.time-controls .time-actions .btn{min-width:0;min-height:48px;padding:8px 10px;font-size:20px;line-height:1.3}
 .time-actions>.btn:only-child{grid-column:1/-1}
 .time-controls:has(.time-scrubber)>#time-description{
  grid-column:1/-1;justify-self:center;margin:0;padding:3px 12px;
@@ -402,10 +411,89 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
  .time-controls:has(.time-scrubber)>#time-description{grid-column:1}
 }
 
-/* Keep the final evidence controls clear of the floating hint character. */
+/* Keep every bottom row clear of the floating hint character (bottom-left of the workspace).
+   --coach-safe: indent inside a padded scene. --coach-edge: indent from the card edge. --coach-floor: status height that keeps the board above it. */
+:root{--coach-safe:100px;--coach-edge:104px;--coach-floor:80px}
+@media(min-width:1500px) and (min-height:850px){:root{--coach-edge:116px;--coach-floor:84px}}
+@media(max-height:620px) and (min-width:701px){:root{--coach-safe:84px;--coach-edge:92px;--coach-floor:76px}}
 .coach-help-actions{flex-wrap:wrap}
 @media (min-width:701px) and (orientation:landscape){
- .final-layout .evidence-choice{padding-left:100px;min-height:76px;align-items:center;flex-wrap:wrap}
- .activity-scene>.time-controls:has(.time-scrubber),
- .activity-scene>.picture-records,.activity-scene>.freeze-snapshots,.activity-scene>.pipe-replay{margin-left:100px}
+ .final-layout .evidence-choice{padding-left:var(--coach-safe);min-height:calc(var(--coach-floor) + 8px);align-items:center;flex-wrap:wrap}
+ .activity-scene>.time-controls:has(.time-scrubber){margin-left:var(--coach-safe)}
+ .activity-scene>.picture-records,.activity-scene>.freeze-snapshots,.activity-scene>.pipe-replay,
+ .activity-scene>.jug-remaining,.activity-scene>.empty-guide,.activity-scene>#live-lens{margin-left:var(--coach-safe)}
+ /* Field missions: the canvas is the play surface. It runs edge to edge in its card and keeps the
+    720:400 drawing ratio, so pointer mapping stays exact and the board takes every spare pixel. */
+ .fieldwork-activity>.activity-scene{padding-left:0;padding-right:0}
+ .fieldwork-activity>.activity-scene>*{margin-left:12px;margin-right:12px}
+ .fieldwork-activity .activity-stage-caption{display:none}
+ .fieldwork-activity .expedition-board{display:grid;place-items:center;container-type:size;flex:1 1 0;min-height:150px;max-height:none;aspect-ratio:auto;margin-left:0;margin-right:0;border:0;border-radius:0;background:none}
+ .fieldwork-activity .expedition-board canvas{width:min(100%,calc(100cqh * 1.8));height:auto;max-height:100%;aspect-ratio:720/400;object-fit:fill;border-radius:0}
 }
+@media (min-width:801px) and (orientation:landscape){
+ .fieldwork-activity>.activity-scene>.challenge-status{display:flex;align-items:center;min-height:var(--coach-floor)}
+ .fieldwork-activity>.activity-scene>.challenge-status,.fieldwork-activity>.activity-scene>.activity-records{margin-left:var(--coach-edge)}
+ /* Trial history: one line of pills (scrolls rather than overlaps if a label is long). */
+ .fieldwork-activity .activity-records{gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+ .fieldwork-activity .activity-record{flex:none;min-width:0;max-width:none;padding:4px 10px;line-height:1.35;white-space:nowrap;border-radius:999px;font-size:17px}
+}
+@media(max-width:1100px) and (min-width:701px) and (orientation:landscape){
+ .experiment-main:has(.fieldwork-activity){padding-left:12px;padding-right:12px}
+ .fieldwork-activity{--control-width:228px;gap:10px}
+ /* The template keeps the last three trials; the narrow card shows the latest two so they fit on one line. */
+ .fieldwork-activity .activity-records{gap:4px}.fieldwork-activity .activity-record{padding:4px 8px}
+ .fieldwork-activity .activity-records>.activity-record:nth-last-child(n+3){display:none}
+}
+@media(min-width:1500px) and (min-height:850px){
+ .field-now,.model-goal{font-size:22px}.model-goal small{font-size:18px}
+ .fieldwork-activity>.activity-scene>.challenge-status{font-size:22px!important}
+ .spread-coverage,.cooling-checks,.fieldwork-activity .activity-record{font-size:20px}
+}
+/* Short landscape screens (fold, in-app browsers): compact the text strips, the side panel scrolls. */
+@media(max-height:620px) and (min-width:701px) and (orientation:landscape){
+ .fieldwork-activity>.activity-scene{padding-top:8px;padding-bottom:8px}
+ .fieldwork-activity .field-now{margin-top:0;margin-bottom:6px;padding:6px 10px;line-height:1.35}
+ .fieldwork-activity .model-goal{margin-top:0;margin-bottom:4px;line-height:1.35}
+ .fieldwork-activity .model-goal small{display:inline;margin-left:6px}
+ .fieldwork-activity .spread-coverage,.fieldwork-activity .cooling-checks{margin-bottom:4px}
+ .fieldwork-activity .cooling-checks span{padding:3px 8px}
+ .fieldwork-activity>.activity-scene>.challenge-status{margin-top:6px;padding:6px 10px}
+ .fieldwork-activity>.activity-scene>.activity-records{margin-top:4px}
+}
+
+/* Optional replay challenge after a stage is complete: a calm sub-section of the side panel. */
+.replay-challenge{flex:none;display:grid;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid #d3c69d}
+.activity-tools .replay-challenge h3{margin:0;font-size:clamp(21px,1.45vw,26px)}
+.replay-challenge p{margin:0;font-size:18px;line-height:1.45}
+.replay-challenge .replay-options,.replay-challenge .inquiry-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.replay-challenge .inquiry-options{grid-template-columns:minmax(0,1fr)}.replay-challenge .replay-focus+.inquiry-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+.replay-challenge .replay-options>:last-child:nth-child(odd){grid-column:1/-1}
+.replay-challenge :is(.replay-options,.inquiry-options) :is(.btn,.activity-button){min-width:0;min-height:48px;margin:0;padding:8px}
+.replay-challenge .replay-focus{color:var(--color-primary);font-family:var(--font-display);font-size:20px}
+.replay-challenge .replay-best{padding:8px 12px;background:#fff3c9;border-left:4px solid #b38837;border-radius:8px;font-family:var(--font-display);font-size:19px;color:#4d3f1f}
+.replay-result{display:flex;justify-content:center}.replay-result .beaker{display:block;width:auto;max-width:100%;max-height:150px;margin:0 auto}
+
+/* Map letterbox (16:10 and squarer screens): a soft, darker copy of the same island fills the bands.
+   Same URL as the map <img>, so nothing extra is downloaded; map geometry and hit areas are untouched. */
+@media(orientation:landscape) and (min-width:801px){
+ .journey-main{isolation:isolate;background:#2d6a70}
+ .journey-main::before,.journey-main::after{content:'';position:absolute;inset:-48px;z-index:-1;pointer-events:none}
+ .journey-main::before{background:url('/assets/v2/research-island-v4.webp') center/cover;filter:blur(30px) saturate(1.3) brightness(.95)}
+ .journey-main::after{inset:0;background:linear-gradient(#4fb0cc59,#1b667399)}
+ .journey-world{box-shadow:0 0 28px #0d2f3540}
+}
+
+/* Stage 8 before stage 7 is done: one calm card in the middle of the scene. */
+.activity-scene>.stage-guard{align-self:center;margin:auto;display:grid;justify-items:center;gap:12px;width:min(100%,520px);padding:24px 28px;text-align:center;background:var(--color-panel);border:2px solid var(--color-border-soft);border-radius:var(--radius-md);box-shadow:var(--panel-highlight),var(--shadow-card)}
+.stage-guard img{display:block;width:180px;height:auto;max-height:180px;object-fit:contain}
+.stage-guard h3{margin:0;font-size:clamp(26px,2vw,34px);line-height:1.3;color:var(--color-text-main)}
+.stage-guard p{margin:0;font-size:clamp(20px,1.45vw,26px);line-height:1.5;color:var(--color-text-sub)}
+/* Optional 3D views (stages 9–10 and ending). The canvas fills a fixed-ratio stage; text stays outside it. */
+.three-dialog{width:min(980px,calc(100vw - 48px))}
+.three-view{display:grid;gap:var(--space-sm,8px)}
+.three-stage{position:relative;aspect-ratio:16/10;max-height:min(62vh,560px);width:100%;margin:auto;border-radius:20px;overflow:hidden;background:radial-gradient(circle at 50% 38%,#ffffff 0%,#eef8f6 46%,#cfe8ef 100%);border:2px solid var(--line);outline-offset:3px}
+.three-stage canvas{display:block;width:100%;height:100%;cursor:grab}
+.three-stage canvas:active{cursor:grabbing}
+.three-status{position:absolute;inset:0;margin:0;display:grid;place-items:center;padding:24px;text-align:center;font-size:20px;color:var(--ink);word-break:keep-all}
+.three-hint{margin:0;font-size:18px;color:var(--muted);text-align:center;word-break:keep-all}
+.three-open{margin-top:var(--space-sm,8px)}
