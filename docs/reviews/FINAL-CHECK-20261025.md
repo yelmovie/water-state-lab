@@ -92,4 +92,12 @@
 - 섬 GLB 2.88MB로 계획(2.5MB)보다 약간 크다. 텍스처 품질을 낮추면 줄일 수 있다.
 - 873×580에서 4번 의뢰에 시험 기록이 쌓이면 캔버스가 472px로 목표(520px)보다 작다.
 
+## 운영 배포 (2026-10-25)
+
+- 배포: `wrangler pages deploy dist --project-name water-state-lab --branch main`, 커밋 46038cf. 새 배포 ID `bc820acd` (https://bc820acd.water-state-lab.pages.dev). 직전 운영본은 `3462b4f4`(17484cb)이며 되돌릴 때 이 ID를 쓴다.
+- 파일 대조: 운영 주소 https://water-state-lab.pages.dev 의 125개 파일이 로컬 `dist`와 SHA-256 모두 일치. 근거 `docs/reviews/PRODUCTION-AFTER-20261025.json`.
+- 운영 주소 실측(Chrome 헤드리스, 이 PC 네트워크): 첫 로딩 1.0초, 요청 41개. 나머지 108개 파일 저장 29초. 저장 후 와이파이를 끊고 새로고침하면 지도·10장 3D·엔딩 3D가 열림. 페이지·콘솔 오류 0.
+- 운영 주소에서 9장·10장·엔딩 3D 보기, 현장 작업대 배경, 6장 가열판, 9장 연구실 배경을 화면으로 확인.
+- GitHub 푸시는 하지 않았다.
+
 ※ 점수와 배포 판정은 별개다. 판정은 final-check `checklists/verdict-rules.md` 기준.
