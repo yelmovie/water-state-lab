@@ -50,11 +50,14 @@ test('save cleaning retains actual evidence, ignores a forged done flag, and iso
  const old=initialState();delete old.fieldwork;old.completed=[1];old.pages=[1,2];
  const migrated=readState({getItem:()=>JSON.stringify(old)});assert.deepEqual(migrated.completed,[1]);assert.deepEqual(migrated.fieldwork.chapters,{});
 });
-test('teacher preview and its rewards never overwrite the student save',()=>{
- let saved='';globalThis.localStorage={setItem:(key,value)=>{assert.equal(key,KEY);saved=value;}};
+test('teacher preview and its rewards never overwrite the student save',async t=>{
+ const previous=globalThis.localStorage;let saved=null;globalThis.localStorage={getItem:()=>saved,setItem:(key,value)=>{assert.equal(key,KEY);saved=value;}};
+ t.after(()=>{if(previous===undefined)delete globalThis.localStorage;else globalThis.localStorage=previous;});
+ const {state,save,setPreviewMode}=await import('../src/state.js?field-preview-test');
  Object.assign(state,initialState());state.completed=[1];state.pages=[1,2];
  state.settings.adminUnlock=true;setPreviewMode(true);state.completed=[1,2,3,4,5];state.fieldwork.chapters[10]=solve(10);save();
  assert.deepEqual(JSON.parse(saved).completed,[1]);assert.equal(JSON.parse(saved).fieldwork.chapters[10],undefined);
+ assert.equal(JSON.parse(saved).settings.adminUnlock,false,'reload never restores preview permission');
  state.settings.adminUnlock=false;state.settings.bgmVolume=50;setPreviewMode(false);
  assert.deepEqual(state.completed,[1]);assert.equal(state.settings.bgmVolume,50);assert.deepEqual(state.fieldwork.chapters,{});
 });

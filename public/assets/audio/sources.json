@@ -1,0 +1,15 @@
+{
+  "creator": "Kenney",
+  "license": "CC0-1.0",
+  "source": "https://kenney.nl/assets/interface-sounds",
+  "download": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+  "sounds": {
+    "click": "click_003.ogg",
+    "drop": "drop_003.ogg",
+    "success": "confirmation_002.ogg",
+    "discover": "confirmation_001.ogg",
+    "error": "error_001.ogg",
+    "hint": "question_002.ogg",
+    "connect": "switch_002.ogg"
+  }
+}

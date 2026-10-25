@@ -9,12 +9,13 @@ export function pourInto(inquiry,observation,key,amount){
  if(inquiry.pours[key]>=100&&!observation.pours.includes(key))observation.pours.push(key);
  return inquiry.pours[key]>=100;
 }
-export const islandStops=[[211,365],[306,167],[515,322],[680,163],[839,335]];
+// Walking anchors follow the broad footpaths of research-island-v4.
+export const islandStops=[[225,320],[310,185],[515,300],[700,185],[845,315]];
 export const islandTrails=[
- [[211,365],[240,357],[280,324],[320,300],[359,284],[385,260],[350,212],[320,193],[306,167]],
- [[306,167],[320,193],[350,212],[385,260],[405,280],[450,290],[515,322]],
- [[515,322],[580,303],[615,280],[600,235],[600,199],[650,165],[680,163]],
- [[680,163],[650,165],[600,199],[600,235],[660,270],[710,280],[755,315],[839,335]]
+ [[225,320],[205,290],[200,260],[230,230],[275,205],[310,185]],
+ [[310,185],[320,215],[350,250],[395,270],[455,292],[515,300]],
+ [[515,300],[580,300],[635,280],[685,250],[720,215],[700,185]],
+ [[700,185],[720,215],[730,255],[760,285],[805,305],[845,315]]
 ];
 export function islandRoute(from,to){const points=[];if(from<to){for(let i=from;i<to;i++)points.push(...islandTrails[i]);}else for(let i=from-1;i>=to;i--)points.push(...[...islandTrails[i]].reverse());return points;}
 export function pointOnRoute(points,fraction){

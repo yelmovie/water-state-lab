@@ -4,6 +4,34 @@ import {initialActivities,activityReady,heatingTrial,pipeTrial,dryTrace,dewTrial
 import {state} from '../src/state.js';
 import {activityView,handleActivity,getActivityProgress} from '../src/activities.js';
 
+test('pouring guidance follows the next unfinished comparison and keeps the other vessel usable',()=>{
+ const before=structuredClone({activities:state.activities,inquiry:state.inquiry});
+ try{
+  state.activities=initialActivities();
+  state.activities.observe.pours=['tall'];
+  state.inquiry.pours={tall:100,wide:0};state.inquiry.pourTarget='tall';
+  assert.match(getActivityProgress(1).instruction,/넓은 그릇/);
+  assert.match(activityView(1),/id="hold-pour" disabled/);
+  state.inquiry.pourTarget='wide';
+  assert.doesNotMatch(activityView(1),/id="hold-pour" disabled/);
+  state.activities.observe.pours.push('wide');state.inquiry.pours.wide=100;
+  assert.match(getActivityProgress(1).instruction,/얼음도 옮겨 보기/);
+  state.activities.observe.step=1;state.activities.observe.iceMoved=true;
+  assert.match(getActivityProgress(1).instruction,/사라지는 물을 찾아보자/);
+ }finally{Object.assign(state,before);}
+});
+
+test('pipe comparison guidance matches meaningful condition changes',()=>{
+ const before=state.activities;
+ try{
+  state.activities=initialActivities();
+  state.activities.pipe.trials=[{fill:95},{fill:95}];
+  assert.equal(getActivityProgress(4).steps[1].done,false);
+  state.activities.pipe.trials.push({fill:90});
+  assert.equal(getActivityProgress(4).steps[1].done,true);
+ }finally{state.activities=before;}
+});
+
 test('unheated identical cups lose equal water at every observation time',()=>{
  for(let time=0;time<=100;time+=5){const t=heatingTrial(0,time);assert.equal(t.room,t.heated);assert.equal(t.boiling,false);}
  assert.equal(heatingTrial(100,0).boiling,false);

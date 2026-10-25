@@ -9,6 +9,8 @@
     "preview": "node scripts/serve.mjs --dist",
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs",
+    "concepts:render": "node scripts/concept-clips/render.mjs",
+    "check:experience": "python scripts/experience-qa.py"
   }
 }

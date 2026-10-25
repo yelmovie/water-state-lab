@@ -17,4 +17,25 @@ export const note=(text)=>`<div class="guide">${mascot(true)}<div><span class="e
 export function beaker(level=60,frozen=false,bubbles=false,marks=[]){return `<svg class="beaker" viewBox="0 0 260 300" aria-label="${frozen?'얼음':'물'}이 담긴 비커"><defs><linearGradient id="waterG" x2="0" y2="1"><stop stop-color="#7edcef" stop-opacity=".7"/><stop offset="1" stop-color="#26a4d0" stop-opacity=".9"/></linearGradient></defs><path d="M49 35v221q0 16 17 16h128q17 0 17-16V35" fill="#f3fcff80" stroke="#7dabbc" stroke-width="4"/><path d="M53 ${267-level*2.1}h154V253q0 15-15 15H68q-15 0-15-15Z" fill="${frozen?'#a0d4f1':'url(#waterG)'}"/><path d="M52 ${267-level*2.1}q38-8 77 0t78 0" fill="none" stroke="${frozen?'#e7f8ff':'#45c0df'}" stroke-width="4"/>${[0,1,2,3,4,5,6,7].map(i=>`<path d="M54 ${61+i*26}h${i%2?12:22}" stroke="#477b94" stroke-width="2"/>`).join('')}${frozen?'<path d="m83 170 28 27-20 44m20-44 37-23 22 30-16 39m-43-46 43 46 38-14" stroke="#e8f9ff" fill="none" stroke-width="3"/>':''}${bubbles?[0,1,2,3,4,5,6].map(i=>`<circle class="bubble" style="animation-delay:${i*.18}s" cx="${84+(i*23)%100}" cy="${237-(i*29)%100}" r="${4+i%4}" fill="#e7fcff" stroke="#65bedc"/>`).join(''):''}${marks.map((m,i)=>`<path d="M48 ${267-m.level*2.1}h165" stroke="${m.color}" stroke-width="2" ${i===1?'stroke-dasharray="5 4"':' '}/><text x="${53+i*54}" y="${263-m.level*2.1}" fill="${m.color}" font-size="9">${m.label}</text>`).join('')}<path d="M44 34h172" stroke="#7dabbc" stroke-width="5" stroke-linecap="round"/><path d="M196 49v185" stroke="white" stroke-width="7" opacity=".6"/></svg>`;}
 export function canArt(droplets=0){return `<svg class="can-art" viewBox="0 0 240 290" aria-label="차가운 캔 표면"><defs><linearGradient id="canG"><stop stop-color="#497a9e"/><stop offset=".3" stop-color="#bee1ea"/><stop offset=".7" stop-color="#7eafc9"/><stop offset="1" stop-color="#426a8e"/></linearGradient></defs><rect x="54" y="42" width="132" height="213" rx="22" fill="url(#canG)" stroke="#477990" stroke-width="3"/><ellipse cx="120" cy="43" rx="66" ry="16" fill="#dae9ee" stroke="#7393a1" stroke-width="3"/><ellipse cx="120" cy="43" rx="22" ry="8" fill="#7b99a8"/><path d="M79 90h81v100H79Z" fill="#ecfaff66"/><path d="M120 112c-3 10-19 19-19 31a19 19 0 0 0 38 0c0-12-16-21-19-31" fill="#edfaff"/>${Array.from({length:Math.min(24,droplets)},(_,i)=>`<ellipse cx="${65+(i*37)%109}" cy="${69+(i*47)%166}" rx="${3+i%4}" ry="${4+i%5}" fill="#d9faff" stroke="#5f9cbc" opacity=".85"/>`).join('')}</svg>`;}
 export function toast(message){const el=document.querySelector('#toast');el.textContent=message;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),3800);}
-export function modal(title,body){const d=document.querySelector('#dialog');d.innerHTML=`<div class="dialog-head"><h2 id="dialog-title">${title}</h2><button class="icon-btn" id="close-dialog" aria-label="닫기">${icon('close')}</button></div>${body}`;d.querySelector('#close-dialog').onclick=()=>d.close();d.showModal();}
+let modalOpener;
+const modalDialogs=new WeakSet();
+export function modal(title,body){
+ const d=document.querySelector('#dialog'),wasOpen=d.open;
+ if(!wasOpen&&!d.contains(document.activeElement))modalOpener=document.activeElement;
+ if(!modalDialogs.has(d)){
+  modalDialogs.add(d);
+  d.addEventListener('close',()=>{
+   if(d.open)return;
+   const opener=modalOpener;modalOpener=undefined;
+   if(opener?.isConnected&&!document.querySelector('dialog[open]'))opener.focus({preventScroll:true});
+  });
+ }
+ const story=body.includes('story-overlay');
+ d.className='app-dialog'+(story?' story-dialog':'')+(body.includes('reward-modal')?' reward-dialog':'');
+ d.innerHTML=`<div class="dialog-head"><h2 id="dialog-title" tabindex="-1">${esc(title)}</h2><button type="button" class="icon-btn" id="close-dialog" aria-label="닫기">${icon('close')}</button></div><div class="dialog-body">${body}</div>`;
+ d.querySelector('#close-dialog').onclick=()=>d.close();
+ if(!wasOpen)d.showModal();
+ d.querySelector('.dialog-body').scrollTop=0;d.scrollTop=0;
+ (story?d.querySelector('.story-actions button'):d.querySelector('#dialog-title'))?.focus({preventScroll:true});
+ return d;
+}

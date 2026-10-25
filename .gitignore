@@ -1,5 +1,7 @@
 dist/
 node_modules/
+.wrangler/
+graphify-out/
 .env*
 *.log
 artifacts/

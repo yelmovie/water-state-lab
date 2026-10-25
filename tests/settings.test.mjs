@@ -56,7 +56,9 @@ test('settings use the common order, lock rewards until completion, and preserve
  const state={settings:{sound:true,bgm:false,sfx:true,bgmVolume:35,reduced:false,adminUnlock:false},completed:[],restored:false};
  let resets=0,savedAudio,rendered=0;
  const opener=doc.activeElement;
- let dialog=openSettings({state,render:()=>rendered++,onReset:audio=>{resets++;savedAudio=audio;}});
+ doc.querySelector=selector=>selector==='dialog[open]'?doc.created.find(el=>el.open):null;
+ const token={raw:'test'};
+ let dialog=openSettings({state,render:()=>rendered++,getResetToken:()=>token,storageStatus:()=>({}),onReset:(audio,received)=>{assert.equal(received,token);resets++;savedAudio=audio;}});
  const html=dialog.innerHTML;
  const requiredOrder=['settings-bgm-label','settings-sfx-label','settings-bgm-volume','settings-intro','앱 정보 · 배움과 보상','학생용 가이드','교사용 가이드','이미지·소리·저작권 고지','settings-footer'];
  requiredOrder.forEach((token,index)=>{assert.ok(html.includes(token));if(index)assert.ok(html.indexOf(token)>html.indexOf(requiredOrder[index-1]));});
@@ -64,6 +66,9 @@ test('settings use the common order, lock rewards until completion, and preserve
  assert.match(html,/id="settings-bgm-volume"[^>]*disabled/);assert.doesNotMatch(html,/<details[^>]*\sopen(?:\s|>)/);
  assert.equal((html.match(/id="settings-unlock"/g)||[]).length,1);assert.doesNotMatch(html,/<a\b|mailto:|[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
  const toggle=dialog.querySelector('#settings-unlock');toggle.onclick({currentTarget:toggle});assert.equal(state.settings.adminUnlock,true);assert.deepEqual(state.completed,[]);assert.equal(rendered,1);
+ assert.equal(dialog.querySelector('#settings-reset').disabled,true,'student reset is unavailable during preview');
+ dialog.querySelector('#settings-reset').onclick();assert.equal(doc.created.length,1);
+ toggle.onclick({currentTarget:toggle});assert.equal(state.settings.adminUnlock,false);assert.equal(dialog.querySelector('#settings-reset').disabled,false);
  dialog.querySelector('#settings-reset').onclick();let confirm=doc.created.at(-1);
  assert.equal(doc.activeElement,confirm.querySelector('#settings-cancel-reset'),'cancel receives the initial focus');
  confirm.querySelector('#settings-cancel-reset').onclick();assert.equal(resets,0);assert.equal(dialog.open,true);

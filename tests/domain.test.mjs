@@ -24,10 +24,10 @@ test('admin unlock opens every valid screen without awarding or erasing progress
  s.settings.adminUnlock=false;assert.equal(canEnter(3,s),true);assert.equal(canEnter(4,s),false);
  assert.equal(JSON.stringify({completed:s.completed,pages:s.pages,evidence:s.evidence}),before);
 });
-test('old saves acquire settings defaults and admin saves restore unlocked routes',()=>{
+test('old saves acquire settings defaults and reload always exits teacher preview',()=>{
  const old=initialState();old.settings={reduced:true};assert.deepEqual(readState(storage(JSON.stringify(old))).settings,{reduced:true,sound:true,bgm:false,sfx:true,bgmVolume:35,adminUnlock:false});
  const s=initialState();s.settings.adminUnlock=true;s.settings.sound=false;
- for(const route of [10,'ending']){s.route=route;const loaded=readState(storage(JSON.stringify(s)));assert.equal(loaded.route,route);assert.equal(loaded.settings.sound,false);}
+ for(const route of [10,'ending']){s.route=route;const loaded=readState(storage(JSON.stringify(s)));assert.equal(loaded.route,'map');assert.equal(loaded.settings.adminUnlock,false);assert.equal(loaded.settings.sound,false);}
 });
 test('previous page follows the lesson sequence with a disabled home boundary',()=>{
  assert.equal(previousRoute('home'),null);assert.equal(previousRoute('map'),'home');assert.equal(previousRoute(1),'map');

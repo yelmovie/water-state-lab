@@ -1,7 +1,9 @@
-// Original Web Audio score: no downloaded music, speech, or remote requests.
+// Original background score + locally hosted Kenney CC0 interface sounds.
 let context,unlocked=false,music=null,activeCue=null,cueSequence=0,quiet=false;
 let settings={sound:true,bgm:false,sfx:true,bgmVolume:35};
 const SFX_VOLUME=.035;
+const files={click:'click_003.ogg',drop:'drop_003.ogg',success:'confirmation_002.ogg',discover:'confirmation_001.ogg',error:'error_001.ogg',hint:'question_002.ogg',connect:'switch_002.ogg'};
+const players=new Map();let fileCue=null;
 const chords=[[261.63,329.63,392],[220,293.66,349.23],[246.94,293.66,392],[196,261.63,329.63]];
 const hidden=()=>typeof document!=='undefined'&&document.hidden;
 const desiredMusic=()=>settings.sound&&settings.bgm&&!quiet&&!hidden()&&unlocked;
@@ -14,6 +16,7 @@ function audioContext(){
 }
 function stopCue(){
  cueSequence++;
+ if(fileCue){fileCue.pause();fileCue.currentTime=0;fileCue=null;}
  if(!activeCue)return;
  try{activeCue.oscillator.stop();}catch{/* It may have already ended. */}
  activeCue.oscillator.disconnect();activeCue.gain.disconnect();activeCue=null;
@@ -63,6 +66,13 @@ export function playClick(){return playCue('click');}
 export async function playCue(kind='click'){
  if(!settings.sound||!settings.sfx||hidden())return;
  stopCue();const request=cueSequence;
+ // Sampled effects have one shared voice. Device/codec failures use the original soft tone.
+ if(typeof Audio!=='undefined'){
+  let player=players.get(kind);
+  if(!player){player=new Audio('/assets/audio/'+(files[kind]||files.click));player.preload='auto';players.set(kind,player);}
+  player.volume=kind==='click'?.22:.32;fileCue=player;
+  try{await player.play();return;}catch{if(request!==cueSequence)return;fileCue=null;}
+ }
  try{
   const ctx=audioContext();if(!ctx)return;
   if(ctx.state==='suspended')await ctx.resume();

@@ -10,8 +10,8 @@
   unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF, U+2300-25FF, U+2600-26FF, U+2700-27BF;
 }
 .buddy-pose {
-  display: inline-block; width: 180px; aspect-ratio: 362/271.5; flex-shrink: 0;
-  background: url('/assets/v2/buddy-poses.webp') var(--buddy-x) var(--buddy-y)/400% 400% no-repeat;
+  display: inline-block; width: 180px; aspect-ratio: 362/272; flex-shrink: 0;
+  background: url('/assets/v2/buddy-poses-clean.webp') var(--buddy-x) var(--buddy-y)/400% 400% no-repeat;
   filter: drop-shadow(0 6px 4px #164a4926);
 }
 .buddy-pose.small { width: 70px; }

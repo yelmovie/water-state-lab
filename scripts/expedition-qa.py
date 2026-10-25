@@ -55,6 +55,9 @@ with sync_playwright() as p:
             state.activities.dew.rewiped=true;state.activities.dew.again=true;
           }
           Object.assign(state.settings,{sound:false,bgm:false,sfx:false,reduced:true,adminUnlock:true});
+          // Reload intentionally exits teacher preview. Give persistence fixtures
+          // the prior learner progress needed to re-enter this actual chapter.
+          if(Number.isInteger(route)&&reset){state.completed=Array.from({length:Math.floor((route-1)/2)},(_,i)=>i+1);state.pages=Array.from({length:route-1},(_,i)=>i+1);}
           state.route=route;state.fieldwork.introSeen=true;state.fieldwork.active=field?route:0;
           state.fieldwork.pending='';
           if(field&&reset)state.fieldwork.chapters[route]=chapterState(route);
@@ -78,7 +81,7 @@ with sync_playwright() as p:
         page.wait_for_timeout(45)
 
     def alternative(item,target):
-        page.locator('.expedition-choices').evaluate('(el)=>el.open=true')
+        page.locator('.expedition-choices').evaluate("el=>{for(let p=el;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}")
         page.locator('#field-item').select_option(item)
         click('field-place-'+target)
 
@@ -190,7 +193,7 @@ with sync_playwright() as p:
             elif n==9:
                 nodes=[(165,55),(300,135),(450,210),(450,280),(450,350)]
                 for source,target in zip(nodes[:3],nodes[1:4]):drag(*source,*target)
-                page.locator('.expedition-choices').evaluate('(el)=>el.open=true')
+                page.locator('.expedition-choices').evaluate("el=>{for(let p=el;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}")
                 page.locator('#field-from').select_option('3');page.locator('#field-to').select_option('4');click('field-connect')
             elif n==10:
                 alternative('time','evaporate');alternative('cold','condense');click('field-test')
@@ -236,12 +239,16 @@ with sync_playwright() as p:
         persist_report()
         try:
             setup(1,False)
-            page.evaluate('''async()=>{const {state,save}=await import('/src/state.js');const {render}=await import('/src/app.js');Object.assign(state.activities.observe,{step:2,pours:['tall','wide'],iceMoved:true,clothRub:3,time:80,records:[{kind:'cloth',time:80}]});save();render();}''')
+            page.evaluate('''async()=>{const {state,save}=await import('/src/state.js');const {render}=await import('/src/app.js');Object.assign(state.activities.observe,{step:2,pours:['tall','wide'],iceMoved:true,clothRub:3,clothWet:true,time:80,records:[{kind:'cloth',time:80}]});save();render();}''')
             ready(False);click('act-next-1');ready(True)
             assert read("state.fieldwork.active===1&&state.fieldwork.pending==='act-next-1'&&state.route===1"),'base experiment must enter its own field request before proceeding'
             for item in ['water','ice']:
                 for target in ['tall','wide']:alternative(item,target)
             click('field-finish')
+            page.wait_for_selector('.concept-dialog[open]')
+            assert read('state.route===1&&state.fieldwork.active===1'),'concept preview must not advance or award progress'
+            page.screenshot(timeout=20000,path=str(OUT/'field-1-concept-before-reward.png'))
+            page.locator('[data-concept="continue"]').click()
             if page.locator('[data-action="field-claim"]:visible').count():
                 page.screenshot(timeout=20000,path=str(OUT/'field-1-seal-reward.png'),full_page=True);click('field-claim')
             ready(False)
@@ -271,7 +278,9 @@ with sync_playwright() as p:
             report['flows'].append({'name':'teacher-preview-student-record-isolation','pass':False,'error':str(error)});print('FAIL teacher preview: '+str(error),flush=True)
         persist_report()
         try:
-            setup(1,True);click('settings')
+            setup(1,True)
+            page.evaluate("async()=>{const {state,save}=await import('/src/state.js');state.settings.adminUnlock=false;save();}")
+            click('settings')
             page.locator('#settings-bgm').click();page.locator('#settings-bgm-volume').evaluate("el=>{el.value='75';el.dispatchEvent(new Event('input',{bubbles:true}));}")
             assert read('state.settings.bgm===true&&state.settings.sfx===false&&state.settings.bgmVolume===75')
             page.locator('#settings-sfx').click();assert read('state.settings.sfx===true')
@@ -350,7 +359,9 @@ with sync_playwright() as p:
                 alternative('time','evaporate');alternative('cold','condense');click('field-test')
                 assert chapter_ready(10)
                 page.screenshot(timeout=20000,path=str(OUT/f'core-{fault}-field10-ready.png'),full_page=True)
-                click('field-finish');page.wait_for_selector('.ending-main')
+                click('field-finish');page.wait_for_selector('.concept-dialog[open]')
+                assert not read('state.restored'),'video must open before granting the final completion'
+                page.locator('[data-concept="continue"]').click();page.wait_for_selector('.ending-main')
                 assert read("state.route==='ending'&&state.restored&&state.pages.includes(10)&&state.fieldwork.active===0&&state.fieldwork.pending===''&&state.lab.final.tested&&state.lab.final.diagnosis.resolved"),'final field finish must preserve repaired core state and unlock the ending'
                 assert read('state.evidence[5].cold&&state.evidence[5].parts.funnel.x===420')
                 page.reload(wait_until='networkidle');page.wait_for_selector('.ending-main')
@@ -366,7 +377,7 @@ with sync_playwright() as p:
     # Unfinished generated assets are reported distinctly; they are not silent passes.
     report['pendingGeneratedAssets']=[r for r in report['httpErrors'] if any(name in r['url'] for name in ['story-repair.webp','rescue-reward.webp'])]
     report['unexpectedHttpErrors']=[r for r in report['httpErrors'] if r not in report['pendingGeneratedAssets']]
-    report['expectedNavigationCancellations']=[r for r in report['networkFailures'] if r['url'].startswith('blob:') and r['failure']=='net::ERR_ABORTED']
+    report['expectedNavigationCancellations']=[r for r in report['networkFailures'] if (r['url'].startswith('blob:') or '/assets/concepts/' in r['url']) and r['failure']=='net::ERR_ABORTED']
     report['unexpectedNetworkFailures']=[r for r in report['networkFailures'] if r not in report['expectedNavigationCancellations']]
     report['summary']={'screens':len(report['layout']),'layoutFailures':sum(bool(row.get('failures')) for row in report['layout']),'settingsScreens':len(report['settingsLayout']),'settingsLayoutFailures':sum(bool(row.get('failures')) for row in report['settingsLayout']),'flowPasses':sum(row['pass'] for row in report['flows']),'flowFailures':sum(not row['pass'] for row in report['flows']),'pageErrors':len(report['pageErrors']),'consoleErrors':len(report['consoleErrors']),'networkFailures':len(report['networkFailures']),'unexpectedNetworkFailures':len(report['unexpectedNetworkFailures']),'unexpectedHttpErrors':len(report['unexpectedHttpErrors']),'pendingGeneratedAssets':len(report['pendingGeneratedAssets'])}
     persist_report();print(json.dumps(report['summary'],ensure_ascii=False),flush=True)
