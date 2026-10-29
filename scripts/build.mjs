@@ -28,7 +28,7 @@ console.log(`Built standalone site in dist/; editable PNG originals stay in publ
 
 /** Precache lists come from the real dist files; the cache name is their content hash. */
 async function offlineLists(dir){
- const files=(await readdir(dir,{recursive:true,withFileTypes:true})).filter(e=>e.isFile()).map(e=>path.relative(dir,path.join(e.parentPath??e.path,e.name)).split(path.sep).join('/')).filter(f=>!['sw.js','build-info.json'].includes(f)&&!/\.(md|txt)$/.test(f)).sort();
+ const files=(await readdir(dir,{recursive:true,withFileTypes:true})).filter(e=>e.isFile()).map(e=>path.relative(dir,path.join(e.parentPath??e.path,e.name)).split(path.sep).join('/')).filter(f=>!f.split('/').some(p=>p.startsWith('._')))/* macOS ._* metadata on exFAT drives */.filter(f=>!['sw.js','build-info.json'].includes(f)&&!/\.(md|txt)$/.test(f)).sort();
  const hash=createHash('sha256');for(const f of files)hash.update(f+'\0').update(await readFile(path.join(dir,f)));
  // Images of the opening map and story screen stay in the install set; other art waits for the idle warm-up.
  const firstScreen=['assets/v2/research-island-v4.webp','assets/v2/buddy-poses-clean.webp','assets/v2/story-repair.webp'];
