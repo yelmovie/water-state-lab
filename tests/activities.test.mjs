@@ -98,3 +98,8 @@ test('complete interaction sequence requires observations, comparisons, and tran
  for(let n=1;n<=8;n++){assert.equal(activityReady(n,a),true,`screen ${n}`);assert.ok(activityView(n));}
  assert.equal(validateActivities(a),true);
 });
+
+
+test('classifying one real example of each state is sufficient without inventing other records',()=>{
+ const a=initialActivities();a.sort.placed={frost:'solid',rain:'liquid'};assert.equal(activityReady(2,a),false);a.sort.placed.laundry='gas';assert.equal(activityReady(2,a),true);assert.equal(Object.keys(a.sort.placed).length,3);
+});

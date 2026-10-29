@@ -77,3 +77,10 @@ test('teacher preview and its rewards never overwrite the student save',async t=
  state.settings.adminUnlock=false;state.settings.bgmVolume=50;setPreviewMode(false);
  assert.deepEqual(state.completed,[1]);assert.equal(state.settings.bgmVolume,50);assert.deepEqual(state.fieldwork.chapters,{});
 });
+
+
+test('shorter field activities still require the meaningful choices and preserve trial evidence',()=>{
+ let c=chapterState(1);c=fieldAction(1,c,'place',{item:'water',target:'wide'});assert.equal(fieldReady(1,c),false);c=fieldAction(1,c,'place',{item:'ice',target:'tall'});assert.equal(fieldReady(1,c),true);
+ let d=chapterState(4);assert.deepEqual(d.tested[0],{value:100,amount:109,ok:false,source:'buddy'});assert.equal(fieldReady(4,d),false);d=fieldAction(4,d,'setting',{value:75});d=fieldAction(4,d,'test');assert.equal(fieldReady(4,d),true);for(let i=0;i<10;i++)d=fieldAction(4,d,'test');assert.equal(fieldReady(4,d),true);assert.equal(d.tested[0].source,'buddy');d=fieldAction(4,d,'setting',{value:100});assert.equal(fieldReady(4,d),false);
+ let e=chapterState(6);e=fieldAction(6,e,'place',{item:'A',target:'air'});assert.equal(fieldReady(6,e),false);e=fieldAction(6,e,'place',{item:'B',target:'air'});assert.equal(fieldReady(6,e),true);assert.match(e.message,/수증기/);
+});

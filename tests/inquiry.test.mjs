@@ -75,3 +75,11 @@ test('switching from a dragged classification to buttons advances to the next ob
  }
  assert.equal(Object.keys(state.activities.sort.placed).length,sortCards.length);
 });
+
+
+test('starting with a different example advances to an unrepresented state',()=>{
+ Object.assign(state,initialState());state.route=2;
+ for(const action of ['sort-card-frost','sort-place-solid','sort-check','sort-place-liquid','sort-check','sort-place-gas','sort-check'])handleInquiry('ix-'+action,ctx);
+ assert.deepEqual(state.activities.sort.placed,{frost:'solid',water:'liquid',vapor:'gas'});
+ assert.equal(activityReady(2,state.activities),true);
+});

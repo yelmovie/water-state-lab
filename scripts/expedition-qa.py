@@ -164,8 +164,7 @@ with sync_playwright() as p:
         def flow(n):
             setup(n,True)
             if n==1:
-                for source in [(110,100),(110,265)]:
-                    for target in [(365,205),(570,205)]:drag(*source,*target)
+                for source,target in [((110,100),(365,205)),((110,265),(570,205))]:drag(*source,*target)
             elif n==2:
                 drag(100,310,450,62);drag(100,60,450,149)
                 alternative('time','evaporate');alternative('cold','condense');click('field-test')
@@ -173,7 +172,7 @@ with sync_playwright() as p:
                 for item,target in [('water','first'),('ice','middle'),('melt','last'),('weight','balance')]:alternative(item,target)
                 click('field-test')
             elif n==4:
-                drag(345,84,345,65);click('field-test');drag(345,65,345,205);click('field-test')
+                drag(345,65,345,205);click('field-test')
             elif n==5:
                 page.mouse.move(*point(407,102));page.mouse.down()
                 for row in range(5):
@@ -181,15 +180,14 @@ with sync_playwright() as p:
                     if row%2:xs.reverse()
                     for x in xs:page.mouse.move(*point(x,102+row*34),steps=2)
                 page.mouse.up();ready(True)
-                alternative('destination','air');click('field-test')
+                click('field-test')
             elif n==6:
-                for site in ['surface','inside','level']:click('field-inspect-'+site)
-                alternative('A','air');alternative('B','air');click('field-test')
+                alternative('A','air');alternative('B','air')
             elif n==7:
                 drag(105,170,320,195);click('field-test');drag(105,170,550,195);click('field-test')
                 alternative('condition','cold')
             elif n==8:
-                click('field-test');alternative('cold','plate');alternative('tray','under');click('field-test')
+                alternative('tray','under');click('field-test');alternative('cold','plate');click('field-test')
             elif n==9:
                 nodes=[(165,55),(300,135),(450,210),(450,280),(450,350)]
                 for source,target in zip(nodes[:3],nodes[1:4]):drag(*source,*target)
@@ -242,8 +240,7 @@ with sync_playwright() as p:
             page.evaluate('''async()=>{const {state,save}=await import('/src/state.js');const {render}=await import('/src/app.js');Object.assign(state.activities.observe,{step:2,pours:['tall','wide'],iceMoved:true,clothRub:3,clothWet:true,time:80,records:[{kind:'cloth',time:80}]});save();render();}''')
             ready(False);click('act-next-1');ready(True)
             assert read("state.fieldwork.active===1&&state.fieldwork.pending==='act-next-1'&&state.route===1"),'base experiment must enter its own field request before proceeding'
-            for item in ['water','ice']:
-                for target in ['tall','wide']:alternative(item,target)
+            alternative('water','tall');alternative('ice','wide')
             click('field-finish')
             page.wait_for_selector('.concept-dialog[open]')
             assert read('state.route===1&&state.fieldwork.active===1'),'concept preview must not advance or award progress'

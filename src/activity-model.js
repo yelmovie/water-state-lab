@@ -47,9 +47,11 @@ export function hiddenSceneTry(sort,id,type){const card=hiddenScenes.find(c=>c.i
 export const freezeAmounts=[40,50,70,80];
 export function freezeChallengeTrial(amount,prediction){amount=limit(amount,40,80);prediction=limit(prediction,amount,amount+15);const actual=Math.round(amount*1.09*10)/10,error=Math.round(Math.abs(prediction-actual)*10)/10;return {amount,prediction,actual,error,close:error<=1};}
 export const bestFreezeChallenge=trials=>trials.length?trials.reduce((b,t)=>t.error<b.error?t:b):null;
+export const sortedTypes=sort=>new Set(sortCards.filter(c=>sort.placed[c.id]===c.type).map(c=>c.type));
+export const nextSortCard=sort=>sortCards.find(c=>!sortedTypes(sort).has(c.type))||sortCards.find(c=>!sort.placed[c.id])||sortCards[0];
 export function activityReady(n,a){switch(n){
  case 1:return a.observe.pours.length===2&&a.observe.iceMoved&&a.observe.records.some(r=>r.kind==='cloth'&&r.time>=80);
- case 2:return sortCards.every(c=>a.sort.placed[c.id]===c.type);
+ case 2:return sortedTypes(a.sort).size===3;
  case 3:return ['water','ice','melt'].every(k=>a.freeze.records.some(r=>r.kind===k))&&a.freeze.compared;
  case 4:return a.pipe.trials.length>=2&&Math.max(...a.pipe.trials.map(t=>t.fill))-Math.min(...a.pipe.trials.map(t=>t.fill))>0&&a.pipe.trials[a.pipe.chosen]?.safe&&a.pipe.marked;
  case 5:return a.draw.strokes.some(s=>s.length>=3)&&[0,1,2].every(b=>a.draw.records.some(r=>r.band===b))&&a.draw.faster==='thin'&&a.draw.destination==='air';

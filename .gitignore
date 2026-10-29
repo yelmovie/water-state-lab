@@ -12,3 +12,8 @@ samplepages/
 __pycache__/
 *.pyc
 docs/reviews/screenshots/
+.tmp/
+.npm-cache/
+.claude/settings.local.json
+.claude/worktrees/
+.claude/launch.json

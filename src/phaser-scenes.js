@@ -2,7 +2,7 @@ import {partPosition} from './workshop-controls.js';
 import {resetDrawingExperiment} from './drawing-records.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
-import {sortCards,hiddenScenes,activityReady,dryTrace,heatingTrial} from './activity-model.js';
+import {sortCards,nextSortCard,hiddenScenes,activityReady,dryTrace,heatingTrial} from './activity-model.js';
 import {visibleDew,wipeDroplets,addRecord} from './inquiry-model.js';
 import {stop as stopClock,observationTime} from './inquiry.js';
 import {finalContext} from './workshop.js';
@@ -195,12 +195,12 @@ function makeScene(P,route,ctx,host,hidden){
    }
   }
   sortScene(){
-   const card=sortCards.find(c=>c.id===q().sortProof)||sortCards.find(c=>!a().sort.placed[c.id]);
+   const card=q().hiddenProof?null:(sortCards.find(c=>c.id===q().sortProof)||(sortCards.some(c=>!a().sort.placed[c.id])?nextSortCard(a().sort):null));
    this.add.image(245,150,'water-search').setDisplaySize(460,259);
    const sites=[[91,106],[226,93],[391,125],[91,197],[226,197],[405,210]];
    sortCards.forEach((c,i)=>{const [x,y]=sites[i],done=!!a().sort.placed[c.id];const marker=this.add.circle(x,y,26,done?0xd3ecd9:card?.id===c.id?0xffdc84:0xfff8df,.95).setStrokeStyle(3,0x477d79).setInteractive({useHandCursor:true});this.text(x,y,done?'✓':String(i+1),23).setDepth(2);marker.on('pointerdown',()=>this.action('ix-sort-card-'+c.id));});
    // After the six scenes, two hidden spots open as an optional replay goal; the bins then answer for the hidden spot.
-   const bonus=!card&&activityReady(2,a()),hidden=a().sort.hidden,hiddenActive=bonus&&hiddenScenes.find(c=>c.id===q().hiddenProof&&!hidden.placed[c.id]);
+   const bonus=activityReady(2,a()),hidden=a().sort.hidden,hiddenActive=bonus&&hiddenScenes.find(c=>c.id===q().hiddenProof&&!hidden.placed[c.id]);
    if(bonus)hiddenScenes.forEach(c=>{const [x,y]=c.site,done=!!hidden.placed[c.id];const marker=this.add.circle(x,y,24,done?0xd3ecd9:hiddenActive?.id===c.id?0xffdc84:0xfff1c2,.95).setStrokeStyle(3,done?0x477d79:0xb07a1f).setInteractive({useHandCursor:true});this.text(x,y,done?'✓':'?',23).setDepth(2);if(!done)marker.on('pointerdown',()=>this.action('ix-hidden-card-'+c.id));});
    ['solid','liquid','gas'].forEach((key,i)=>{const y=65+i*84;this.panel(490,y-30,215,72);this.text(600,y-8,['고체','액체','기체'][i],23);this.text(600,y+19,`${sortCards.filter(c=>a().sort.placed[c.id]===key).length+hiddenScenes.filter(c=>hidden.placed[c.id]===key).length}개 확인`,16);const bin=this.add.rectangle(600,y+5,210,68,0xffffff,0).setInteractive({useHandCursor:true});bin.on('pointerdown',()=>this.action((hiddenActive?'ix-hidden-place-':'ix-sort-place-')+key));});
    if(!card){const left=hiddenScenes.filter(c=>!hidden.placed[c.id]).length;this.text(245,300,!bonus?'여섯 장면의 물을 모두 찾았어!':hiddenActive?`${hiddenActive.name} · 오른쪽 상태를 눌러 봐`:left?`숨은 물 ${left}곳 · ? 표시를 눌러 찾아봐`:'숨은 물까지 모두 찾았어!',hiddenActive?18:20);return;}
