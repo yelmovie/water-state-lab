@@ -55,3 +55,26 @@ test('the service worker parses, warms one video format, and answers byte ranges
  }
  assert.equal((await ctx.partial(full(),'bytes=20-')).status,416);
 });
+
+test('an uncached video answers byte ranges from one download when the host ignores Range',async()=>{
+ const stored=new Map(),calls=[];
+ const cache={match:async r=>stored.get(r.url??r)?.clone(),put:async(u,r)=>{stored.set(u,r);}};
+ // Cloudflare Pages replies 200 with the whole file whatever Range says.
+ const fetch=async r=>{calls.push(r.url??r);return new Response('0123456789',{headers:{'Content-Type':'video/mp4','Content-Length':'10'}});};
+ const ctx=swContext({caches:{open:async()=>cache},fetch});
+ vm.runInContext(readFileSync('public/sw.js','utf8'),ctx);
+ const ask=(path,range)=>({url:'http://lab.test'+path,mode:'no-cors',headers:new Headers(range?{range}:{})});
+ const [probe,rest]=await Promise.all([ctx.respond(ask('/intro.mp4','bytes=0-1')),ctx.respond(ask('/intro.mp4','bytes=2-9'))]);
+ assert.equal(probe.status,206);assert.equal(probe.headers.get('Content-Range'),'bytes 0-1/10');assert.equal(await probe.text(),'01');
+ assert.equal(rest.status,206);assert.equal(await rest.text(),'23456789');
+ assert.deepEqual(calls,['http://lab.test/intro.mp4'],'parallel ranges share one download');
+ assert.equal((await ctx.respond(ask('/intro.mp4','bytes=5-6'))).status,206);
+ assert.equal(calls.length,1,'later ranges come from the stored file');
+ // Chrome opens with bytes=0-: a worker-made 206 too, or the next range mixes response kinds and the video fails.
+ const stream=await ctx.respond(ask('/final.mp4','bytes=0-'));
+ assert.equal(stream.status,206);assert.equal(stream.headers.get('Content-Range'),'bytes 0-9/10');assert.equal(await stream.text(),'0123456789');
+ assert.equal((await ctx.respond(ask('/final.mp4','bytes=8-'))).status,206);
+ assert.equal(calls.filter(u=>u.endsWith('/final.mp4')).length,1,'the opening stream and later ranges share one download');
+ assert.ok(stored.has('http://lab.test/final.mp4'));
+ assert.equal((await ctx.respond(ask('/assets/a.webp','bytes=0-1'))).status,200,'only video needs cut ranges');
+});

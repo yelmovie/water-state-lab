@@ -22,12 +22,30 @@ async function partial(response,range){
  if(!m||(!m[1]&&!m[2])||start>end||start>=size)return new Response(null,{status:416,headers:{'Content-Range':`bytes */${size}`}});
  return new Response(blob.slice(start,end+1),{status:206,headers:{'Content-Type':response.headers.get('Content-Type')||'application/octet-stream','Content-Range':`bytes ${start}-${end}/${size}`,'Content-Length':String(end-start+1),'Accept-Ranges':'bytes'}});
 }
+// Cloudflare Pages ignores Range, so an uncached video is fetched once and stored while the worker answers every range:
+// Chrome fails a video that mixes network and worker-made responses, and 'bytes=0-' streams so play starts before the download ends.
+const downloads=new Map();
+function wholeVideo(cache,url){
+ if(!downloads.has(url)){
+  const started=fetch(url);
+  downloads.set(url,started);
+  started.then(response=>response.ok&&cache.put(url,response.clone())).catch(()=>{}).finally(()=>downloads.delete(url));
+ }
+ return downloads.get(url).then(response=>response.clone());
+}
+async function networkRange(cache,url,range){
+ const whole=await wholeVideo(cache,url),size=Number(whole.headers.get('Content-Length'));
+ if(!whole.ok)return whole;
+ if(range==='bytes=0-'&&size)return new Response(whole.body,{status:206,headers:{'Content-Type':whole.headers.get('Content-Type')||'application/octet-stream','Content-Range':`bytes 0-${size-1}/${size}`,'Content-Length':String(size),'Accept-Ranges':'bytes'}});
+ return partial(whole,range);
+}
 async function respond(request){
  const cache=await caches.open(CACHE),url=new URL(request.url),range=request.headers.get('range');
  const page=request.mode==='navigate'&&/^\/(index\.html)?$/.test(url.pathname);
  const hit=await cache.match(page?'/':request);
  if(hit)return range?partial(hit,range):hit;
  try{
+  if(range&&VIDEO.test(url.pathname))return await networkRange(cache,url.href,range);
   const response=await fetch(request);
   if(response.status===200&&!range&&response.type==='basic')cache.put(request,response.clone()).catch(()=>{});
   return response;
