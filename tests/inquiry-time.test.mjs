@@ -89,7 +89,9 @@ test('one drawing drag keeps beginning, middle and end snapshots while backward 
  prepare(5);
  assert.equal(seekInquiryTime(5, 110), true);
  const drawing = state.activities.draw;
- assert.deepEqual(drawing.records.map(r => [r.band,r.time]), [[0,0],[1,30],[2,110]]);
+ assert.deepEqual(drawing.records.map(r => [r.band,r.time]), [[0,0],[1,60],[2,110]]);
+ assert.equal(drawing.records[1].thin,0);
+ assert.ok(drawing.records[1].thick>0);
  const records = structuredClone(drawing.records);
  for(const time of [80,10,70,0]){
   assert.equal(seekInquiryTime(5, time), true);
@@ -302,4 +304,17 @@ test('reviewing one experiment does not change the observation time of another',
  assert.equal(observationTime(5), 20);
  assert.equal(observationTime(6), 75);
  assert.equal(state.activities.draw.time, 100);
+});
+
+test('inspecting an earlier still frame cannot award a later boiling observation', () => {
+ prepare(6);
+ Object.assign(state.activities.compare,{baseline:true,heat:100});
+ seekInquiryTime(6,100);
+ seekInquiryTime(6,10);
+ handleInquiry('ix-lens-inside',ctx);
+ assert.equal(observationTime(6),10);
+ assert.deepEqual(state.activities.compare.pins,[]);
+ seekInquiryTime(6,100);
+ handleInquiry('ix-lens-inside',ctx);
+ assert.deepEqual(state.activities.compare.pins,['inside']);
 });

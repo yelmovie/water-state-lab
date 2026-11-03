@@ -14,13 +14,14 @@ export const fieldMissions=[null,
  {title:'물방울 길 안내',problem:'연결만 하면 물이 위쪽으로도 갈까?',goal:'냉각판에서 물통까지, 아래로 이어지는 길을 손가락으로 연결해 봐.',type:'connect',reward:'물길 설계 도장',ability:'물이 흐르는 방향을 생각하며 연결을 고칠 수 있어',next:'내가 시험한 설계로 마지막 코어를 깨워요',standard:'4과10-03'},
  {title:'마지막 순환 회로',problem:'물이 모자란 온실에 물을 다시 보낼 수 있을까?',goal:'물 → 수증기 → 물방울의 길에 알맞은 도구를 연결해 봐.',type:'final',reward:'연구섬 복구 코어',ability:'증발과 응결을 이용한 물 수집 방법을 설명할 수 있어',next:'내 연구 기록과 복구 인증서가 남아요',standard:'4과10-03'}
 ];
-export function initialFieldwork(){return {version:1,introSeen:false,active:0,pending:'',chapters:{},ability:''};}
+export function initialFieldwork(){return {version:1,introSeen:false,active:0,pending:'',briefed:[],chapters:{},ability:''};}
 export function chapterState(n){const full=pipeAssessment(100,'capacity');return {rulesVersion:2,moves:{},tested:n===4?[{value:100,amount:full.expanded,ok:full.met,source:'buddy'}]:[],marks:[],lines:[],spread:[],setting:100,selected:'',message:'',done:false};}
 const clone=v=>JSON.parse(JSON.stringify(v));
 export function cleanFieldwork(raw){
  const f=initialFieldwork();if(!raw||typeof raw!=='object')return f;
  f.introSeen=raw.introSeen===true;f.active=Number.isInteger(raw.active)&&raw.active>=1&&raw.active<=10?raw.active:0;
  f.pending=typeof raw.pending==='string'&&/^(act-(next-[1357]|complete-[1234])|complete-5|field-ending)$/.test(raw.pending)?raw.pending:'';
+ f.briefed=Array.isArray(raw.briefed)?[...new Set(raw.briefed.filter(n=>Number.isInteger(n)&&n>=1&&n<=10))]:[];
  f.ability=['observe','compare','design'].includes(raw.ability)?raw.ability:'';
  for(let n=1;n<=10;n++){
   const c=raw.chapters?.[n];if(!c||typeof c!=='object')continue;

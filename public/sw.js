@@ -5,7 +5,7 @@ const VIDEO=/\.(mp4|webm)$/;
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('water-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function warmNext(video){
- const cache=await caches.open(CACHE),list=[...SHELL,...LATER.filter(u=>!VIDEO.test(u)||u.endsWith('.'+video))];
+ const cache=await caches.open(CACHE),list=[...SHELL,...LATER.filter(u=>!u.startsWith('/assets/concepts/')||!VIDEO.test(u)||u.endsWith('.'+video))];
  let done=0,missing;for(const url of list){if(await cache.match(url))done++;else missing??=url;}
  if(missing){await cache.add(missing);done++;}
  return {done,total:list.length};

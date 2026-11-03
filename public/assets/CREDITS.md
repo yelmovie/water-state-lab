@@ -118,6 +118,18 @@
 - 배경은 불투명 16:9 그림이고 음료병은 알파를 보존했다. 학습 수치, 물높이, 물방울, 선택 상태와 판정은 이미지에 고정하지 않고 기존 코드가 표시한다.
 - 용도·생성 기록·파일 검증은 `docs/reviews/ASSET-GENERATION-20261025.md`에 남긴다. 생성물의 법적 권리 범위에 관한 새로운 보장은 하지 않는다.
 
+## 2026-10-29 생성 이미지 · 첫 화면(타이틀)
+
+- 도구: Higgsfield · GPT Image 2.5 (quality medium, 1K). Basic 유료 계정. 검토 결과는 맨 위 표의 Higgsfield 행 참조.
+- 원본 PNG는 `image/generated-20261029/`(저장소 제외)에 보존한다. 로고·방울이는 투명 배경으로 생성한 뒤 여백만 잘랐다.
+
+| 실행 파일 | 용도 | 원본 | 크기 | 참고 이미지 |
+|---|---|---|---:|---|
+| `v2/title-island.webp` | 첫 화면 배경 (연구섬 전망대). 사람·캐릭터·글자 없음 | `title-island.png` | 244 KB | `v2/research-island-v4.webp` |
+| `v2/title-logo.webp` | 첫 화면 제목 글자 '방울이의 물길 탐험'. 화면에서는 `alt`로 같은 제목을 제공 | `title-logo.png` | 115 KB | 같은 시리즈 '초록정원 연구기지' 로고(화풍만 참고) |
+| `v2/bangul-title.webp` | 첫 화면 방울이 (손 흔들기·돋보기) | `bangul-title.png` | 84 KB | `v2/buddy-poses-clean.webp` 첫 포즈. 방울이 원본 권리 확인은 위 표 '사용자 제공 ChatGPT 생성 이미지' 행과 같음 |
+| `icons/og-image-v1.jpg` | 링크 공유 미리보기(1200×630). 위 세 그림을 sharp로 합성, 새 생성 없음 | 위 세 원본 | 154 KB | — |
+
 ## 2026-10-25 생성 이미지
 
 - 도구: Higgsfield · GPT Image 2.5 (quality high, 2K). Basic 유료 계정. 검토 결과는 맨 위 표의 Higgsfield 행 참조.
@@ -143,3 +155,76 @@
 - 다듬기: Blender 5.2 배치 스크립트(`_scratch/waterchange-3d/optimize.py`). 겹친 점 합치기 → 복셀로 겉면 재구성 → 삼각형 줄이기 → 새 펼침 좌표에 원본 바탕색 굽기 → WebP 텍스처 GLB. 원본과 결과를 같은 각도로 렌더해 찢어짐을 확인했다.
 - Meshy 출력의 상업 이용 조건은 사용 계정의 요금제 약관을 따른다. 이 기록은 그 권리를 새로 보장하지 않는다(맨 위 도구 검토 표 참조).
 - 앱 아이콘 `public/assets/icons/`: 기존 `v2/rescue-reward.webp`, `v2/buddy-poses-clean.webp`를 로컬 PIL로 자르고 크림색 배경에 얹었다. 새 생성 없음.
+
+## 실험 효과음 · 2026-11-02
+
+| 장면 | 배포 파일 | 제작자와 배포처 |
+|---|---|---|
+| 물 붓기 / 끓는 기포 관찰 기록 | `audio/splash_09.ogg` / `audio/bubble_02.ogg` | rubberduck · [Water, Splash & Slime SFX](https://opengameart.org/content/40-cc0-water-splash-slime-sfx) |
+| 노트 펼치기 / 겉면 닦기 / 장치 연결 | `audio/bookFlip1.ogg` / `audio/cloth1.ogg` / `audio/metalLatch.ogg` | Kenney · [RPG Audio](https://kenney.nl/assets/rpg-audio) · 원본 고지 `audio/Kenney-RPG-LICENSE.txt` |
+
+두 묶음의 배포 라이선스는 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)이다.
+
+## 지도 위 방울이 걷기 · 2026-11-03
+
+기존 타이틀 방울이를 참고해 내장 OpenAI 이미지 생성 도구로 그렸다. 게임 에셋은 `v2/bangul-walk.webp`이며, 128px 정사각형 12칸을 정면·왼쪽·오른쪽·뒷면 순으로 배치했다. 각 행 가운데 칸이 정지 자세다.
+
+<details><summary>이미지 생성 프롬프트</summary>
+
+Create ONE production-ready transparent 3-column by 4-row walk-cycle sprite sheet for a small top-down school science island adventure videogame. Use the reference image as identity: Bangul, cute round aqua-blue teardrop scientist, one pointed tip, navy eyes, short white lab coat, tiny blue feet, blue ID badge on front. Same visual materials, but soften the bright cyan so it fits a hand painted muted teal/sand island. NO magnifier in hands. Strict atlas layout: exactly TWELVE separate full-body sprites, flat evenly spaced 3 columns × 4 rows on transparent background, no visible rules or writing. Row 1 DOWN toward viewer (front); row 2 LEFT true side profile facing image-left; row 3 RIGHT true side profile facing image-right; row 4 UP away from viewer (back of blue drop head and coat, NO face). Columns left-foot forward / centered idle feet level / right-foot forward in EVERY row. Side poses must look like walking, clear foot separation and opposing arms, no waving. Same 3/4 overhead camera, same sizes, same scale and proportions and feet baseline within grid cell. Keep each figure entirely inside its own cell surrounded by empty transparent gutter. Aim game icon legibility at 46 px high. No background, shadows under feet, labels, arrows, typography, ground, borders or accessories. Professional coherent soft painted stylized game-character turnaround.
+
+</details>
+
+## 연구섬 주민 · 2026-11-02
+
+물모양 샘터부터 물길 공방까지 각 장이 끝나면 돌아오는 주민 10명의 캐릭터 일러스트는 내장 OpenAI 이미지 생성 도구로 제작했다. 주민마다 투명 PNG 원본을 `image/research-island-residents/resident-1.png`~`resident-10.png`에 보관했다. 게임은 지도와 대화창에서 `v2/resident-1.webp`~`resident-10.webp`를 공유한다.
+
+## 물 붓기 유리 그릇 · 2026-11-03
+
+내장 OpenAI 이미지 생성 도구로 투명 유리 그릇과 주전자를 제작했다. 런타임 에셋은 `v2/pouring-glass.webp`와 `v2/pouring-jug.webp`다. 유리 앞면, 물의 몸체, 수면을 분리해 기록된 양에 맞춰 합성한다. 두 그릇은 깊이가 같은 타원형 단면으로 해석한다.
+
+<details><summary>유리 그릇 생성 프롬프트</summary>
+
+Scientific educational game asset, polished realistic glass product rendering for a sunlit Mediterranean garden science laboratory. Create ONE transparent 2x2 sprite sheet, four separate full objects evenly aligned in equal square cells, lots of transparent gutter. TOP LEFT empty tall narrow glass vessel; TOP RIGHT empty broad wide glass vessel; BOTTOM LEFT exactly the same tall vessel 80 percent filled with crystal clear very pale aqua water; BOTTOM RIGHT exactly the same wide vessel roughly 42 percent filled with the same clear water. Vessels have same height and same front-to-back depth, but wide one is 1.92 times wider viewed from front, an elongated oval cross-section, with shallow rim ellipse SAME vertical thickness for both. Straight vertical walls, very gently rounded heel at base. No spouts and NO handles. Thin clear colorless glass with subtly blue-gray rim, realistic highlights, refraction at edges and subtle warm garden reflections, soft ivory highlights. TOP EMPTY VESSELS have genuinely transparent clean interiors with only faint reflective glints on glass. Filled vessels have visibly TRANSLUCENT colorless water lightly tinted aqua, an elegant elliptical meniscus, gentle reflections and mild caustics at their bottom, not a saturated solid blue block. SAME perspective for all, near-frontal with elevated view just enough to see oval opening, NO perspective lean, no pinched walls. Full object and full base fit inside each cell. Same absolute height and base baseline across all four. NO text, graduations, ticks, numbers, labels, backgrounds, tabletop, shadows outside the glass, framed cells, arrows, characters or decoration. All empty space is genuinely transparent. Production-ready raster asset sheet, realistic yet soft enough for a 4th grade adventure.
+
+</details>
+
+<details><summary>주전자 생성 프롬프트</summary>
+
+Create a production game sprite atlas of TWO matching glass pitchers side by side, both upright, on fully transparent background. LEFT contains a measured serving of clear water to 55% of its straight-sided interior; RIGHT exactly the same pitcher empty. Near-front elevated product photograph camera 10 degrees above eye level. Clear colorless borosilicate glass pitcher, rounded barrel lower body and straight upper neck, a small pouring spout pointing RIGHT, generous round handle on LEFT, realistic soft ivory and pale blue-green garden reflections and fine glass highlights. Very subtle pale aqua transparent water with an elliptical meniscus. Water looks clear and naturally translucent. Realistically substantial clear glass base. Full pitcher, rim, spout and handle entirely within its half, same dimensions and baseline in both halves, each centered with ample empty gutter. Reference a Mediterranean garden educational science game, warm daylight, soft photorealism, understated blue-gray edges, clean readable silhouette at 100px display. NO tilt, no pouring stream, no splashes, no labels, no numbers, no measuring marks, no text, no shadows outside object, no surface, no background, no frame. The entire space around and inside the empty glass is transparent.
+
+</details>
+
+## 관찰 재질과 의뢰 도구 · 2026-11-03
+
+내장 OpenAI 이미지 생성 도구로 천의 건조·젖은 모습, 얼음과 두 그릇, 물그림용 돌판과 붓, 밀봉한 유리컵과 부착 냉각팩, 따뜻한 받침·젤 냉각팩·모래시계를 제작했다. 배포 에셋은 `learning/real-cloth.webp`, `real-ice.webp`, `real-painting.webp`, `real-dew.webp`, `real-tools.webp`다. 물자국과 이슬 변화는 관찰 기록의 시간·닦은 위치에 맞춰 합성한다. 물그림은 색소 없이 맑은 물만 사용하며 수증기는 보이는 구름으로 표현하지 않는다.
+
+<details><summary>cloth 이미지 생성 프롬프트</summary>
+
+Production sprite atlas for a realistic elementary water science game in a warm sunlit Mediterranean garden. Two matching unfolded rectangular ivory cotton washcloths side by side, full cloth in each half, both viewed overhead at the same shallow elevated 20 degree camera, same exact wrinkles, hem and weave. LEFT completely dry soft pale warm ivory cotton, RIGHT the IDENTICAL cloth with a large naturally irregular water-soaked patch across its center. Wet patch is realistically DARKER muted warm gray-beige fibers, blurred capillary bleeding edges and a few tiny moisture glints, absolutely no blue paint, no blue oval, no colored stain, no visible steam. Cloth lies almost flat with slight soft rumpled edges. Clear readable weave and stitching. Transparent background around cloths, no table, no labels, no text, no props, no extra objects, no heavy shadows. Consistent equal-cell horizontal atlas, full isolated objects with generous transparent gutter. Photorealistic natural material, calm refined educational design.
+
+</details>
+
+<details><summary>ice 이미지 생성 프롬프트</summary>
+
+Production transparent 2 by 2 game sprite sheet, warm daylight photorealistic objects for a school water experiment. Equal square cells. TOP LEFT one elegant shallow warm white ceramic plate with a faint blue rim, EMPTY, seen 30 degrees above front. TOP RIGHT one broad shallow pale blue glazed ceramic serving bowl, EMPTY, same overhead perspective, larger flat inner floor visible, no tall sides. BOTTOM LEFT a tight cluster of three beautiful crystal clear water ice cubes touching on flat base, sharp natural edges, internal crack lines, realistic refraction, icy specular gleam, no puddle. BOTTOM RIGHT a single identical clear ice cube. Exactly four isolated assets, all fully visible with transparent gutters, genuinely transparent background and outside objects, no environmental background, labels, numbers, letters, decorative steam, fog, characters or UI. The ice must look like water frozen into clear solid cubes, not blue crystals or gems.
+
+</details>
+
+<details><summary>painting 이미지 생성 프롬프트</summary>
+
+One production-ready transparent 2 by 2 sprite atlas for elementary pure-water drawing experiments. Realistic sunlit Mediterranean garden science game art. TOP LEFT one empty rectangular pale limestone drawing slab viewed nearly straight on with a slight overhead perspective, lightly textured unpolished absorbent surface, neutral pale cream, thin natural edge, no frame, no writing. TOP RIGHT an identical blank slab, same exact dimensions and perspective. BOTTOM LEFT a slender natural wooden watercolor brush angled 25 degrees diagonal, silver ferrule, pointed dark bristles only slightly damp with CLEAR COLORLESS WATER. BOTTOM RIGHT exactly matching brush heavily loaded with CLEAR WATER, bristles visibly wet and glossy, one rounded colorless water droplet hanging from tip. Full objects inside equal cells, transparent background, generous gutters. No colored paint, colored pigment, paint palette, text, signs, numbers, colored puddles, steam or clouds. Realistic refined soft product photography suitable for a children's science learning adventure.
+
+</details>
+
+<details><summary>dew 이미지 생성 프롬프트</summary>
+
+Production-ready realistic transparent 2x2 sprite sheet for a school condensation comparison experiment. Same identical clear colorless cylindrical glass cup containing water to 55 percent in each cell, front view slightly from above, neutral warm daylight with subtle blue-green reflections, full glass fits within cell with clear gutters. TOP LEFT clean DRY cup with OPEN rim. TOP RIGHT same DRY cup with its mouth tightly SEALED by a visibly stretched transparent food wrap membrane across the entire opening, slight crinkles and folds wrapping around rim, secured by a thin pale elastic band below rim. BOTTOM LEFT identical SEALED cup with a rectangular blue gel cold pack visibly strapped FLUSH against the OUTSIDE RIGHT WALL using a white fabric band, dry outer glass. BOTTOM RIGHT same SEALED cup with the SAME blue gel cold pack on the RIGHT side and many photorealistic fine condensation droplets on the OUTSIDE glass only, random varied sizes with bright upper highlights and darker refracted lower rims, water inside stays at same 55 percent level. Colorless water, truly transparent glass, no saturated blue block. The plastic wrap must clearly look tightly attached to the rim, and the external pack looks flexible reusable gel pouch, NOT a bottle. No labels, no text, no letters, no numbers, no vapor clouds, no visible breath, no arrows, no background or tabletop.
+
+</details>
+
+<details><summary>tools 이미지 생성 프롬프트</summary>
+
+Production transparent sprite atlas with exactly THREE isolated realistic school science props in an evenly spaced horizontal row, each same sized equal cell. LEFT a square ceramic warming pad on a rounded low cork base, pale terracotta center with subtle warm orange rim, a safe simple tabletop WARMING REST for melting ice, no knobs, no electric coil, no thermometer. CENTER a flexible rectangular sealed BLUE GEL COLD PACK pouch with softly rounded corners, frosty translucent blue gel visible within, white fabric hook-and-loop attachment strap sitting next to it, must look like a flexible medical ice gel pouch and NOT a water bottle. RIGHT a small simple brass-and-ivory hourglass with sand partly fallen to convey waiting, precise realistic glass and warm wood/brass edges. All objects entirely in frame, pure transparent background and gutters, consistent soft daylight, realistic photographic educational game style, no labels, numbers, writing, steam, cold fog, icons or UI.
+
+</details>

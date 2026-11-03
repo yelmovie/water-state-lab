@@ -53,7 +53,11 @@ export function syncCoach(n,progress,field,ready){
   // One forward action remains visible while optional tools scroll.
   const forward=[...tools.querySelectorAll(':scope > button')].reverse().find(b=>/next|complete|field-finish/.test(b.dataset.action||''));
   if(forward){forward.classList.add('stage-forward');if(!forward.disabled)forward.classList.add('next-action');}
-  tools.querySelectorAll('.btn.primary,.activity-primary').forEach(b=>{if(!b.disabled&&!tools.querySelector('.current-action')&&!forward?.classList.contains('next-action'))b.classList.add('current-action');});
+  const direction=document.getElementById('stage-direction');
+  if(direction&&forward&&!forward.disabled)direction.textContent=`관찰을 마쳤어! ‘${forward.textContent.trim()}’를 눌러 다음으로 가 봐.`;
+  const instruction=direction?.textContent||fieldInstruction(n);
+  const target=[...tools.querySelectorAll('button:not(:disabled)')].find(button=>instruction.includes('‘'+button.textContent.trim()+'’'));
+  if(target&&target!==forward)target.classList.add('current-action');
  }
 }
 export function handleCoach(action){
@@ -65,6 +69,6 @@ export function handleCoach(action){
  const badge=guide.querySelector('.coach-trigger-badge');if(badge){badge.textContent='…';badge.classList.remove('has-news');}
  guide.querySelector('.coach-trigger')?.setAttribute('aria-label','방울이 힌트 보기');
  const clues=field?[current.notice||fieldInstruction(n),fieldClues[n][1]]:[current.notice||progress.instruction,progress.hint];
- const draw=()=>{help.innerHTML=`<div class="coach-help-head"><b>방울이의 단서 ${level+1} / 2</b><button class="icon-btn" aria-label="힌트 닫기">${icon('close')}</button></div><p>${esc(clues[level])}</p><details class="coach-progress"><summary>이번 활동 순서</summary><ol>${[...progress.steps,{label:'현장 의뢰 해결',done:ready}].map(step=>`<li>${step.done?'완료 · ':''}${esc(step.label)}</li>`).join('')}</ol></details><div class="coach-help-actions">${ready?btn(icon('retry',20)+' 개념 다시 보기','concept-replay','concept-revisit'):''}${level===0?btn('단서 하나 더','','secondary').replace('data-action=""','data-hint-more'):''}<button class="btn primary" data-hint-try>직접 해 볼게</button></div>`;help.querySelector('.icon-btn').onclick=()=>handleCoach('buddy-hint');help.querySelector('[data-hint-more]')?.addEventListener('click',()=>{level=1;draw();void playCue('hint');});help.querySelector('[data-hint-try]').onclick=()=>{handleCoach('buddy-hint');const target=document.querySelector('.current-action,.next-action,.expedition-board,.phaser-stage');target?.scrollIntoView({block:'nearest'});if(target){spotlight=target;target.classList.add('coach-spotlight');target.focus?.({preventScroll:true});}};};
+ const draw=()=>{help.innerHTML=`<div class="coach-help-head"><b>방울이의 단서 ${level+1} / 2</b><button class="icon-btn" aria-label="힌트 닫기">${icon('close')}</button></div><p>${esc(clues[level])}</p><details class="coach-progress"><summary>이번 활동 순서</summary><ol>${[...progress.steps,{label:'현장 의뢰 해결',done:ready}].map(step=>`<li>${step.done?'완료 · ':''}${esc(step.label)}</li>`).join('')}</ol></details><div class="coach-help-actions">${ready?btn(icon('retry',20)+' 개념 다시 보기','concept-replay','concept-revisit'):''}${level===0?btn('단서 하나 더','','secondary').replace('data-action=""','data-hint-more'):''}<button class="btn primary" data-hint-try>직접 해 볼게</button></div>`;help.querySelector('.icon-btn').onclick=()=>handleCoach('buddy-hint');help.querySelector('[data-hint-more]')?.addEventListener('click',()=>{level=1;draw();void playCue('hint');});help.querySelector('[data-hint-try]').onclick=()=>{handleCoach('buddy-hint');const target=document.querySelector('.current-action,.next-action')||document.querySelector('.expedition-board,.phaser-stage');target?.scrollIntoView({block:'nearest'});if(target){spotlight=target;target.classList.add('coach-spotlight');target.focus?.({preventScroll:true});}};};
  draw();guide.append(help);guide.querySelector('.hint-button').setAttribute('aria-expanded','true');help.querySelector('.icon-btn')?.focus({preventScroll:true});void playCue('hint');return true;
 }

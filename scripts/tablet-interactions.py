@@ -53,9 +53,9 @@ with sync_playwright() as p:
     def setup(route,extra=''):
         page.evaluate('''async({route,extra})=>{const {state,initialState,save,setPreviewMode}=await import('/src/state.js');
             document.querySelectorAll('dialog[open]').forEach(d=>d.close());setPreviewMode(false);
-            const {render}=await import('/src/app.js');Object.assign(state,initialState());
+            const {render}=await import('/src/app.js');state.fieldwork.briefed=Array.from({length:10},(_,i)=>i+1);Object.assign(state,initialState());
             Object.assign(state.settings,{sound:false,bgm:false,sfx:false,reduced:true,adminUnlock:true});state.route=route;
-            state.fieldwork.introSeen=true;
+            state.fieldwork.introSeen=true;state.fieldwork.briefed=Array.from({length:10},(_,i)=>i+1);
             const {targetParts,testCollector}=await import('/src/domain.js');
             const {newDiagnosis}=await import('/src/collector-model.js');
             const {dewTrial}=await import('/src/activity-model.js');
@@ -86,6 +86,8 @@ with sync_playwright() as p:
         page.mouse.move(*point(tx,ty),steps=15)
         if hold:page.wait_for_timeout(hold)
         page.mouse.up();ready()
+        if read('state.route===1 && state.activities.observe.step===0'):
+            page.wait_for_selector('.phaser-stage[aria-busy=false]')
 
     def time_drag(n,fraction):
         """Move the native range thumb with real pointer input, never JS events."""
@@ -162,9 +164,9 @@ with sync_playwright() as p:
         verify_time_drag(1)
         click('ix-record');click('act-next-1');ready()
         cards=page.evaluate("async()=>{const {sortCards}=await import('/src/activity-model.js');return sortCards;}")
-        for card in cards[:2]:drag(360,74,{'solid':130,'liquid':360,'gas':590}[card['type']],245)
+        for card in cards[:2]:drag(530,298,600,{'solid':65,'liquid':149,'gas':233}[card['type']])
         for card in cards[2:]:
-            click('ix-sort-place-'+card['type']);click('ix-sort-check')
+            click('ix-sort-card-'+card['id']);click('ix-sort-answer-'+card['type'])
         assert read('Object.keys(state.activities.sort.placed).length')==6
         click('act-complete-1')
         assert read('state.completed.includes(1) && state.evidence[1].records.length===6')

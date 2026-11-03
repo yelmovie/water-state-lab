@@ -4,7 +4,7 @@ export function collectorTrial(parts,cold,angle){
  const generated=cold?100:0,steps=[],links=[];let amount=generated,retained=0;
  const overlap=(source,target,width)=>clamp((width+12-Math.abs(source-target))/24);
  const add=(factor,label,point,from)=>{const incoming=amount;amount*=factor;steps.push({ok:factor>0&&incoming>0,label,point:{...point},factor});links.push({from:{...from},to:{...point},incoming,outgoing:amount,lost:incoming-amount,factor,label});};
- steps.push({ok:!!cold,label:'냉각판에서 물방울 생성',point:{...parts.plate},factor:cold?1:0});
+ steps.push({ok:!!cold,label:'공기 중 수증기가 냉각판에 물방울로 맺힘',point:{...parts.plate},factor:cold?1:0});
  add(parts.ramp.y-parts.plate.y>=45&&parts.ramp.y-parts.plate.y<=180?overlap(parts.plate.x,parts.ramp.x,65):0,'냉각판 → 경사판',parts.ramp,parts.plate);
  const end={x:parts.ramp.x+180,y:parts.ramp.y+angle*2};
  if(angle===0){retained=amount;amount=0;}

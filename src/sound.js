@@ -2,7 +2,7 @@
 let context,unlocked=false,music=null,activeCue=null,cueSequence=0,quiet=false;
 let settings={sound:true,bgm:false,sfx:true,bgmVolume:35};
 const SFX_VOLUME=.035;
-const files={click:'click_003.ogg',drop:'drop_003.ogg',success:'confirmation_002.ogg',discover:'confirmation_001.ogg',error:'error_001.ogg',hint:'question_002.ogg',connect:'switch_002.ogg'};
+const files={click:'click_003.ogg',drop:'drop_003.ogg',success:'confirmation_002.ogg',discover:'confirmation_001.ogg',error:'error_001.ogg',hint:'question_002.ogg',connect:'switch_002.ogg',pour:'splash_09.ogg',bubble:'bubble_02.ogg',page:'bookFlip1.ogg',wipe:'cloth1.ogg',latch:'metalLatch.ogg'};
 const players=new Map();let fileCue=null;
 const chords=[[261.63,329.63,392],[220,293.66,349.23],[246.94,293.66,392],[196,261.63,329.63]];
 const hidden=()=>typeof document!=='undefined'&&document.hidden;
@@ -70,7 +70,7 @@ export async function playCue(kind='click'){
  if(typeof Audio!=='undefined'){
   let player=players.get(kind);
   if(!player){player=new Audio('/assets/audio/'+(files[kind]||files.click));player.preload='auto';players.set(kind,player);}
-  player.volume=kind==='click'?.22:.32;fileCue=player;
+  player.volume=({click:.22,pour:.24,bubble:.20,page:.24,wipe:.18,latch:.24})[kind]??.32;fileCue=player;
   try{await player.play();return;}catch{if(request!==cueSequence)return;fileCue=null;}
  }
  try{

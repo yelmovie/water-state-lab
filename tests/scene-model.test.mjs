@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initialState} from '../src/state.js';
-import {waterHeight,vesselGeometry,pourInto,islandRoute,islandStops,pointOnRoute,discoveryStars} from '../src/scene-model.js';
+import {waterHeight,vesselGeometry,pourInto,islandRoute,islandStops,islandLanding,islandWalkTo,walkIslandStep,nearbyMapActions,pointOnRoute,discoveryStars} from '../src/scene-model.js';
 
 test('equal amounts occupy equal cross-section area in different vessels',()=>{
  const {tall,wide}=vesselGeometry;
@@ -35,6 +35,30 @@ test('island travel reaches each destination in either direction along connected
  }
 });
 
+test('choosing a stop after steering starts at the current feet and joins a nearby path',()=>{
+ const feet=[768,313];
+ for(let to=0;to<islandStops.length;to++){
+  const path=islandWalkTo(feet,to);
+  assert.deepEqual(path[0],feet);
+  assert.ok(Math.hypot(path[1][0]-feet[0],path[1][1]-feet[1])<3);
+  assert.deepEqual(path.at(-1),islandStops[to]);
+ }
+ assert.deepEqual(islandWalkTo(islandLanding,0).at(-1),islandStops[0]);
+});
+
+test('steering moves along the painted bridge and cannot leave its shoreline',()=>{
+ let feet=islandLanding;
+ for(let i=0;i<18;i++)feet=walkIslandStep(feet,-4,0);
+ assert.ok(feet[0]<islandLanding[0]-55);
+ for(let i=0;i<85;i++)feet=walkIslandStep(feet,0,4);
+ assert.ok(feet[1]<370);
+});
+test('nearby actions use character feet and order overlapping choices by distance',()=>{
+ const npc={feet:[10,10]},gate={feet:[35,10]},far={feet:[100,10]};
+ assert.deepEqual(nearbyMapActions([12,10],[gate,npc,far]),[npc,gate]);
+ assert.deepEqual(nearbyMapActions([32,10],[gate,npc,far]),[gate,npc]);
+ assert.deepEqual(nearbyMapActions([150,60],[gate,npc,far]),[]);
+});
 test('discovery stars track the learner observations and survive a state round trip',()=>{
  const s=initialState();
  for(let m=1;m<=5;m++)assert.deepEqual(discoveryStars(m,s),[false,false,false]);

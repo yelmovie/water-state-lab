@@ -9,15 +9,66 @@ export function pourInto(inquiry,observation,key,amount){
  if(inquiry.pours[key]>=100&&!observation.pours.includes(key))observation.pours.push(key);
  return inquiry.pours[key]>=100;
 }
-// Walking anchors follow the broad footpaths of research-island-v4.
-export const islandStops=[[225,320],[310,185],[515,300],[700,185],[845,315]];
-export const islandTrails=[
- [[225,320],[205,290],[200,260],[230,230],[275,205],[310,185]],
- [[310,185],[320,215],[350,250],[395,270],[455,292],[515,300]],
- [[515,300],[580,300],[635,280],[685,250],[720,215],[700,185]],
- [[700,185],[720,215],[730,255],[760,285],[805,305],[845,315]]
+// Foot coordinates traced on research-island-v4 (1000 × 563). Shared points are bridge junctions.
+export const islandStops=[[210,291],[286,135],[521,286],[683,144],[801,316]];
+export const islandLanding=[432,355];
+const square=[502,304],eastFork=[734,287];
+const roads=[
+ [islandStops[0],[238,315],[279,326],[324,337],[371,348],islandLanding,[474,345],[488,321],square],
+ [square,[447,293],[404,281],[376,267],[365,253],[368,244],[343,230],[313,220],[271,211],[241,201],[222,189],[221,177],[231,162],[253,150],islandStops[1]],
+ [square,islandStops[2]],
+ [islandStops[2],[563,287],[603,282],[648,279],[698,281],eastFork],
+ [eastFork,[731,270],[735,252],[750,235],[756,225],[748,212],[728,203],[700,185],[678,174],[654,157],[657,149],islandStops[3]],
+ [eastFork,[747,303],[770,314],islandStops[4],[828,326]],
+ [islandStops[0],[187,283],[153,276]]
 ];
-export function islandRoute(from,to){const points=[];if(from<to){for(let i=from;i<to;i++)points.push(...islandTrails[i]);}else for(let i=from-1;i>=to;i--)points.push(...[...islandTrails[i]].reverse());return points;}
+const links=new Map(),segments=[];
+for(const road of roads){
+ for(let i=1;i<road.length;i++){
+  const a=road[i-1],b=road[i];
+  segments.push([a,b]);
+  for(const [from,to] of [[a,b],[b,a]]){
+   if(!links.has(from))links.set(from,[]);
+   links.get(from).push(to);
+  }
+ }
+}
+function nearestRoad([x,y]){
+ let best;
+ for(const [a,b] of segments){
+  const dx=b[0]-a[0],dy=b[1]-a[1];
+  const t=clampValue(((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy),0,1);
+  const foot=[a[0]+t*dx,a[1]+t*dy],offset=Math.hypot(x-foot[0],y-foot[1]);
+  if(!best||offset<best.offset)best={a,b,foot,offset};
+ }
+ return best;
+}
+// A narrow walking lane allows diagonal steering and slides along bends at its edge.
+export function walkIslandStep(position,dx,dy){
+ const next=[position[0]+dx,position[1]+dy],{foot,offset}=nearestRoad(next),width=12;
+ if(offset<=width)return next;
+ return next.map((v,i)=>foot[i]+(v-foot[i])*width/offset);
+}
+function connectedPath(from,to,parent=null){
+ if(from===to)return [to];
+ for(const next of links.get(from)){
+  if(next===parent)continue;
+  const path=connectedPath(next,to,from);
+  if(path)return [from,...path];
+ }
+}
+export function islandRoute(from,to){return connectedPath(islandStops[from],islandStops[to]);}
+export const islandTrails=islandStops.slice(1).map((_,i)=>islandRoute(i,i+1));
+export function islandWalkTo(position,to){
+ const {a,b,foot}=nearestRoad(position),goal=islandStops[to];
+ const routes=[a,b].map(end=>[position,foot,...connectedPath(end,goal)]);
+ return routeDistance(routes[0])<=routeDistance(routes[1])?routes[0]:routes[1];
+}
+export function nearbyMapActions(position,targets){
+ const inReach=targets.map(t=>({target:t,distance:Math.hypot(t.feet[0]-position[0],t.feet[1]-position[1])}))
+  .filter(hit=>hit.distance<=34).sort((a,b)=>a.distance-b.distance);
+ return inReach.map(hit=>hit.target);
+}
 export function pointOnRoute(points,fraction){
  if(!points.length)return [0,0];if(points.length===1)return [...points[0]];
  const lengths=points.slice(1).map((p,i)=>Math.hypot(p[0]-points[i][0],p[1]-points[i][1]));

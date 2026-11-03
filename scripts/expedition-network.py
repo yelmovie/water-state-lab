@@ -22,7 +22,7 @@ with sync_playwright() as p:
     page.on('console',lambda m:console.append({'type':m.type,'text':m.text}) if m.type in ['error','warning'] else None)
     page.on('response',lambda r:responses.append({'url':r.url,'status':r.status,'cache':r.headers.get('cache-control'),'encoding':r.headers.get('content-encoding'),'mime':r.headers.get('content-type')}))
     start=time.perf_counter();page.goto(URL,wait_until='networkidle')
-    page.wait_for_selector('.phaser-stage[data-ready=true]',state='attached')
+    page.wait_for_selector('[data-action="title-start"]')
     page.wait_for_function('document.fonts.status === "loaded"')
     page.wait_for_timeout(200)
     elapsed=round((time.perf_counter()-start)*1000,2)
@@ -31,7 +31,7 @@ with sync_playwright() as p:
       const resources=performance.getEntriesByType('resource').map(r=>({url:r.name,transfer:r.transferSize,body:r.decodedBodySize,duration:r.duration}));
       const regs=await navigator.serviceWorker.getRegistrations();
       return {resources,navigation:{transfer:nav.transferSize,body:nav.decodedBodySize,dcl:nav.domContentLoadedEventEnd,load:nav.loadEventEnd},
-        intro:document.querySelector('.story-copy').innerText,
+        title:document.querySelector('.start-tagline').innerText,
         fonts:{hangul:document.fonts.check('20px Jua','물방울 연구실'),latin:document.fonts.check('20px Jua')},
         storageKeys:Object.keys(localStorage),storageBytes:new TextEncoder().encode(JSON.stringify({...localStorage})).length,
         manifest:document.querySelectorAll('link[rel=manifest]').length,serviceWorkers:regs.length,cacheKeys:await caches.keys()};
@@ -41,7 +41,8 @@ with sync_playwright() as p:
       'thirtyLearnersBytes':total*30,'externalHosts':sorted({urlsplit(r['url']).netloc for r in requests if urlsplit(r['url']).scheme in ['http','https'] and urlsplit(r['url']).netloc!=urlsplit(URL).netloc}),
       'console':console.copy(),'pageErrors':errors.copy(),'responses':responses.copy()}
     # A genuine offline reload, without installing or seeding a service worker.
-    page.locator('[data-action="intro-close"]').click()
+    page.locator('[data-action="title-start"]').click()
+    page.locator('[data-film="skip"]').click()
     saved=page.evaluate('localStorage.getItem("water-drop-lab:v1")')
     context.set_offline(True)
     try:

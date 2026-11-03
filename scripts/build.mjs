@@ -21,6 +21,7 @@ for(const file of await readdir(path.join(root,'public/assets/v2'))){
 }
 await copyFile(path.join(root,'public/assets/CREDITS.md'),path.join(output,'assets/CREDITS.md'));
 await copyFile(path.join(root,'public/manifest.webmanifest'),path.join(output,'manifest.webmanifest'));
+for(const movie of ['intro.mp4','final.mp4'])await copyFile(path.join(root,movie),path.join(output,movie));
 await copyFile(path.join(root,'index.html'),path.join(output,'index.html'));
 await writeFile(path.join(output,'build-info.json'),JSON.stringify({version,builtAt:new Date().toISOString()}));
 const offline=await writeServiceWorker();
@@ -30,10 +31,13 @@ console.log(`Built standalone site in dist/; editable PNG originals stay in publ
 async function offlineLists(dir){
  const files=(await readdir(dir,{recursive:true,withFileTypes:true})).filter(e=>e.isFile()).map(e=>path.relative(dir,path.join(e.parentPath??e.path,e.name)).split(path.sep).join('/')).filter(f=>!f.split('/').some(p=>p.startsWith('._')))/* macOS ._* metadata on exFAT drives */.filter(f=>!['sw.js','build-info.json'].includes(f)&&!/\.(md|txt)$/.test(f)).sort();
  const hash=createHash('sha256');for(const f of files)hash.update(f+'\0').update(await readFile(path.join(dir,f)));
- // Images of the opening map and story screen stay in the install set; other art waits for the idle warm-up.
- const firstScreen=['assets/v2/research-island-v4.webp','assets/v2/buddy-poses-clean.webp','assets/v2/story-repair.webp'];
+ // Images of the title, opening map and story screen stay in the install set; other art waits for the idle warm-up.
+ const firstScreen=['assets/v2/title-island.webp','assets/v2/title-logo.webp','assets/v2/bangul-title.webp','assets/v2/research-island-v4.webp','assets/v2/buddy-poses-clean.webp','assets/v2/bangul-walk.webp','assets/v2/story-repair.webp'];
  const url=f=>f==='index.html'?'/':'/'+f,shell=[],later=[];
- for(const f of files)(!/^assets\/(v2|stages|learning|concepts|models|vendor\/three)\//.test(f)||firstScreen.includes(f)?shell:later).push(url(f));
+ for(const f of files){
+  const deferred=f.endsWith('.mp4')||/^assets\/(v2|stages|learning|concepts|models|vendor\/three)\//.test(f);
+  (deferred&&!firstScreen.includes(f)?later:shell).push(url(f));
+ }
  later.sort((a,b)=>/\.(mp4|webm)$/.test(a)-/\.(mp4|webm)$/.test(b));
  return {cache:'water-'+hash.digest('hex').slice(0,12),shell,later};
 }

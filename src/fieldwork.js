@@ -1,3 +1,6 @@
+import {openFieldBriefing} from './field-briefing.js';
+import {drawStudyArt,drawRealDrop,studySheets} from './study-materials.js';
+import {residentReward} from './island-residents.js';
 import {fieldTask} from './field-guidance.js';
 import {pipeGoals} from './activity-model.js';
 import {state,save} from './state.js';
@@ -11,7 +14,7 @@ export function cleanupFieldwork(){cleanups.splice(0).forEach(fn=>fn());}
 export function fieldChapter(n){return state.fieldwork.chapters[n]??=chapterState(n);}
 export function hasFieldSeal(n){return fieldReady(n,state.fieldwork.chapters[n]);}
 export function startFieldwork(n,pending,ctx){state.fieldwork.active=n;state.fieldwork.pending=pending;fieldChapter(n);save();ctx.render();}
-const names={water:'물',ice:'얼음',warm:'따뜻한 받침',time:'시간 보내기',cold:'냉각팩',condition:'찾은 조건',weight:'100 g 추',melt:'녹인 뒤 사진',pack:'냉각팩',tray:'물 받이',destination:'줄어든 물',A:'A의 줄어든 물',B:'B의 줄어든 물',lens:'돋보기'};
+const names={water:'물',ice:'얼음',warm:'따뜻한 받침',time:'잠깐 기다리기',cold:'냉각팩',condition:'찾은 조건',weight:'100 g 추',melt:'녹인 뒤 사진',pack:'냉각팩',tray:'물 받이',destination:'줄어든 물',A:'A의 줄어든 물',B:'B의 줄어든 물',lens:'돋보기'};
 const destinations={tall:'길쭉한 그릇',wide:'넓은 그릇',freeze:'물 → 얼음',melt:'얼음 → 물',evaporate:'물 → 수증기',condense:'수증기 → 물',first:'처음',middle:'얼린 뒤',last:'녹인 뒤',balance:'저울',air:'공기 중',surface:'A 표면',inside:'B 물속',level:'두 수위',A:'A컵',B:'B컵',plate:'금속판',under:'판 아래'};
 function setup(n){
  let items=[],targets=[];
@@ -29,7 +32,7 @@ function setup(n){
 }
 function alternatives(n){
  const {items,targets}=setup(n);
- if(n===4)return '<label class="activity-range">물 채움<input id="field-fill" type="range" min="40" max="100" step="1" value="'+fieldChapter(n).setting+'"></label>';
+
  if(n===9)return '<label>출발<select id="field-from">'+['냉각판','경사판','깔때기','연결관'].map((v,k)=>`<option value="${k}">${v}</option>`).join('')+'</select></label><label>도착<select id="field-to">'+['경사판','깔때기','연결관','물통'].map((v,k)=>`<option value="${k+1}">${v}</option>`).join('')+'</select></label>'+btn('물길 연결','field-connect');
  const select=items.length?'<label>움직일 물체<select id="field-item">'+items.map(i=>`<option value="${i.id}">${esc(i.label)}</option>`).join('')+'</select></label>':'';
  const places=targets.filter(t=>n!==6||t.id==='air').map(t=>btn(t.label,'field-place-'+t.id)).join('');
@@ -37,21 +40,28 @@ function alternatives(n){
 }
 export function fieldworkView(n){
  const m=fieldMissions[n],c=fieldChapter(n),task=fieldTask(n,c),done=task.done,test=![1,6,9].includes(n),[found,total]=fieldProgress(n,c),actionTitle=['','물과 얼음 옮기기','조건 도구 놓기','사진 순서·무게 비교','채운 양 비교','펼친 넓이 비교','두 물의 행방 잇기','냉각팩 바꿔 놓기','찬 판과 받이 배치','출발과 도착 잇기','두 변화 이어 주기'][n];
- return `<div class="activity fieldwork-activity activity-${n}"><div class="activity-scene"><div class="activity-stage-caption">현장 의뢰 · ${m.title}</div>${n===4?`<p class="model-goal">${pipeGoals.capacity}<small>앞 실험의 추가 5% 여유 목표와 달라. 둘 다 같은 부피 모형이며 실제 배관 안전 기준은 아니야.</small></p>`:''}<p id="field-now" class="field-now" role="status">지금 할 일 · ${esc(task.instruction)}</p>${n===5?`<div class="spread-coverage"><label for="spread-coverage">B 바닥 넓히기 · 목표 12칸</label><meter id="spread-coverage" min="0" max="12" value="${Math.min(12,c.spread.length)}"></meter><output id="spread-count" for="spread-coverage">${c.spread.length}/12칸</output></div>`:''}${n===8?`<div class="cooling-checks"><span class="${task.beforeCooling?'done':''}">냉각 전 · ${task.beforeCooling?'확인함':'아직 시험 안 함'}</span><span class="${task.afterCooling?'done':''}">냉각 후 · ${task.afterCooling?'확인함':'아직 시험 안 함'}</span></div>`:''}<div class="expedition-board"><canvas id="field-canvas" width="720" height="400" role="img" aria-label="${esc(m.goal)}"></canvas></div><div class="challenge-status" role="status" aria-live="polite">${esc(task.result)}</div>${c.tested.length?`<div class="activity-records">${c.tested.slice(-3).map((t,k)=>`<span class="activity-record">${n===4&&t.source==='buddy'?'방울이의 가득 찬 통':`시험 ${Math.max(1,c.tested.length-2)+k}`} · ${n===4?`물 ${t.value}% → 얼음 ${t.amount}%`:n===7?`${t.cold===0?'A':'B'}에 냉각팩`:n===5?'같은 시간의 두 자국 비교':n===8?`${t.cold?'냉각팩 붙임':'냉각팩 없음'} · ${t.ok?'물 모임':'모인 물 없음'}`:t.ok?'물이 받이에 모임':'모인 물 없음'}</span>`).join('')}</div>`:''}</div><aside class="activity-tools quest-panel"><span class="eyebrow">관찰한 것을 써 볼 차례</span><h3>${actionTitle}</h3><p class="challenge-goal">확인한 단서 <b>${found} / ${total}</b></p>${n===8&&c.moves.cold==='plate'?btn('냉각팩 떼기','field-remove-cold','quiet'):''}${n===4?`<label class="activity-range">채운 물 <output>${c.setting}%</output><input id="field-fill-main" aria-label="채운 물의 양" type="range" min="40" max="100" step="1" value="${c.setting}"></label>`:''}${test?btn(({2:'변신길 시험하기',3:'사진 순서 확인하기',4:'얼려서 비교하기',5:'같은 시간 뒤 비교하기',6:'관찰 결과 확인하기',7:'같은 시간 뒤 비교하기',8:'물 모이는지 시험하기',10:'마지막 물길 시험하기'})[n],'field-test','primary'):''}<div class="quest-prize">${icon('star',20)}<div><b>${m.reward}</b><p>${m.next}</p></div></div>${btn(done?'개념 영상 · 도장 받기':'단서를 모두 찾아 줘','field-finish','gold',!done).replace('data-action=',"aria-describedby=\"field-now\" data-action=")}<details class="expedition-choices essential-controls" open><summary>물체 선택·버튼 조작</summary>${alternatives(n)}</details>${btn('실험 다시 살펴보기','field-back','quiet')}<details class="science-detail"><summary>모형 안내</summary><p class="activity-science">${n===5?'같은 물·같은 바닥·같은 방의 학습용 비교야. 실제 마르는 시간은 환경에 따라 달라.':n===4?'얼 때 필요한 공간을 보는 단순 모형이야. 실제 배관 안전 수치가 아니야.':n===9?'물통으로 가는 중력 물길을 연결하는 그림 모형이야.':'시간과 물의 양은 비교를 위한 가상 모형이야. 수증기는 눈에 보이지 않아.'}</p></details></aside></div>`;
+ return `<div class="activity fieldwork-activity activity-${n}"><div class="activity-scene"><div class="activity-stage-caption">현장 의뢰 · ${m.title}<button type="button" class="field-help-btn" data-action="field-help">${n}장 주민의 부탁 다시 듣기</button></div>${n===4?`<p class="model-goal">${pipeGoals.capacity}<small>앞 실험의 추가 5% 여유 목표와 달라. 둘 다 같은 부피 모형이며 실제 배관 안전 기준은 아니야.</small></p>`:''}<p id="field-now" class="field-now" role="status"><b>${state.settings.adminUnlock?'교사 시연 · ':''}${n}장 의뢰</b> ${esc(task.instruction)}</p>${n===5?`<div class="spread-coverage"><label for="spread-coverage">B 바닥 넓히기 · 목표 12칸</label><meter id="spread-coverage" min="0" max="12" value="${Math.min(12,c.spread.length)}"></meter><output id="spread-count" for="spread-coverage">${c.spread.length}/12칸</output></div>`:''}${n===8?`<div class="cooling-checks"><span class="${task.beforeCooling?'done':''}">냉각 전 · ${task.beforeCooling?'확인함':'아직 시험 안 함'}</span><span class="${task.afterCooling?'done':''}">냉각 후 · ${task.afterCooling?'확인함':'아직 시험 안 함'}</span></div>`:''}<div class="expedition-board"><canvas id="field-canvas" width="720" height="400" role="img" aria-label="${esc(m.goal)}"></canvas></div>${c.message?`<div class="challenge-status" role="status" aria-live="polite">${esc(task.result)}</div>`:''}${c.tested.length?`<div class="activity-records">${c.tested.slice(-3).map((t,k)=>`<span class="activity-record">${n===4&&t.source==='buddy'?'방울이의 가득 찬 통':`시험 ${Math.max(1,c.tested.length-2)+k}`} · ${n===4?`물 ${t.value}% → 얼음 ${t.amount}%`:n===7?`${t.cold===0?'A':'B'}에 냉각팩`:n===5?'같은 시간의 두 자국 비교':n===8?`${t.cold?'냉각팩 붙임':'냉각팩 없음'} · ${t.ok?'물 모임':'모인 물 없음'}`:t.ok?'물이 받이에 모임':'모인 물 없음'}</span>`).join('')}</div>`:''}</div><aside class="activity-tools quest-panel"><span class="eyebrow">관찰한 것을 써 볼 차례</span><h3>${actionTitle}</h3><p class="challenge-goal">확인한 단서 <b>${found} / ${total}</b></p>${n===8&&c.moves.cold==='plate'?btn('냉각팩 떼기','field-remove-cold','quiet'):''}${n===4?`<label class="activity-range">채운 물 <output>${c.setting}%</output><input id="field-fill-main" aria-label="채운 물의 양" type="range" min="40" max="100" step="1" value="${c.setting}"></label>`:''}${test?btn(({2:'변화 관찰하기',3:'사진 순서 확인하기',4:'얼려서 비교하기',5:'같은 시간 뒤 비교하기',6:'관찰 결과 확인하기',7:'같은 시간 뒤 비교하기',8:'물 모이는지 시험하기',10:'마지막 물길 시험하기'})[n],'field-test','primary'):''}<div class="quest-prize">${icon('star',20)}<div><b>${m.reward}</b><p>${m.next}</p></div></div>${btn(done?'개념 영상 · 도장 받기':'단서를 모두 찾아 줘','field-finish','gold',!done).replace('data-action=',"aria-describedby=\"field-now\" data-action=")}${n===4?'':`<details class="expedition-choices essential-controls"><summary>버튼으로 조작하기</summary>${alternatives(n)}</details>`}${btn('실험 다시 살펴보기','field-back','quiet')}<details class="science-detail"><summary>모형 안내</summary><p class="activity-science">${n===5?'같은 물·같은 바닥·같은 방의 학습용 비교야. 실제 마르는 시간은 환경에 따라 달라.':n===4?'얼 때 필요한 공간을 보는 단순 모형이야. 실제 배관 안전 수치가 아니야.':n===9?'물통으로 가는 중력 물길을 연결하는 그림 모형이야.':'시간과 물의 양은 비교를 위한 가상 모형이야. 수증기는 눈에 보이지 않아.'}</p></details></aside></div>`;
 }
 export function handleFieldwork(action,ctx){
  if(!action.startsWith('field-'))return false;
  const n=state.fieldwork.active||Number(state.route);if(!fieldMissions[n])return true;
+ if(action==='field-help'){openFieldBriefing(n);return true;}
+ if(action==='field-help-close'){document.querySelector('#dialog')?.close();return true;}
  if(action==='field-back'){state.fieldwork.active=0;save();ctx.render();return true;}
- if(action==='field-finish'||action==='field-continue'||action==='field-claim'){
+ if(action==='field-finish'||action==='field-continue'||action==='field-claim'||action==='field-claim-map'){
   if(!hasFieldSeal(n)){toast('조건을 바꿔 보고, 관찰한 근거로 문제를 해결해 줘.');return true;}
   if(action==='field-finish'){openConcept(n,{reduced:state.settings.reduced,continueLabel:'발견 도장 받기',onContinue:()=>{if(state.route===n&&state.fieldwork.active===n)handleFieldwork('field-continue',ctx);}});return true;}
   if(action==='field-continue'&&[1,3,5,7,9].includes(n)){
-   const m=fieldMissions[n];modal('새로운 발견을 남겼어!',`<div class="reward-modal"><div class="reward-character">${buddy('celebrate')}${propArt(['magnifier','ice','beaker','icepack','seedling'][Math.floor((n-1)/2)])}</div><span class="eyebrow">FIELD NOTE ${String(n).padStart(2,'0')}</span><h3>${m.reward}</h3><div class="reward-proof">${m.ability}</div><p>${m.next}</p>${btn('도장을 여권에 넣고 출발','field-claim','primary wide')}</div>`);return true;
+   const m=fieldMissions[n],newArrival=state.fieldwork.pending!=='teacher-return'&&!state.pages.includes(n);modal('새로운 발견을 남겼어!',`<div class="reward-modal">${newArrival?residentReward(n):`<div class="reward-character">${buddy('celebrate')}${propArt(['magnifier','ice','beaker','icepack','seedling'][Math.floor((n-1)/2)])}</div>`}<span class="eyebrow">FIELD NOTE ${String(n).padStart(2,'0')}</span><h3>${m.reward}</h3><div class="reward-proof">${m.ability}</div><p>${m.next}</p>${newArrival?btn('도장 받고 마을 복구 보기','field-claim-map','primary wide'):''}${btn(state.fieldwork.pending==='teacher-return'?'도장 받고 돌아가기':`${n+1}장으로 계속`,'field-claim',newArrival?'secondary wide':'primary wide')}</div>`);return true;
   }
   document.querySelector('#dialog')?.close();
   const pending=state.fieldwork.pending;state.fieldwork.active=0;state.fieldwork.pending='';save();playCue('success');
-  if(pending==='field-ending')ctx.finishEnding();else ctx.baseAction(pending);
+  if(pending==='teacher-return'&&state.settings.adminUnlock)ctx.go(n);
+  else if(pending==='field-ending')ctx.finishEnding();
+  else{
+   ctx.baseAction(pending);
+   if(action==='field-claim-map'&&state.pages.includes(n)&&state.route===n+1)ctx.go('map');
+  }
   return true;
  }
  let command,payload={};
@@ -66,10 +76,16 @@ export function handleFieldwork(action,ctx){
 }
 export function bindFieldwork(n,ctx){
  cleanupFieldwork();const canvas=document.getElementById('field-canvas');if(!canvas)return;
+ if(!state.fieldwork.briefed.includes(n))queueMicrotask(()=>{
+  if(state.route===n&&state.fieldwork.active===n&&!document.querySelector('dialog[open]')){
+   state.fieldwork.briefed.push(n);save();openFieldBriefing(n);
+  }
+ });
  const g=canvas.getContext('2d'),assets={},layout=setup(n),f=state.fieldwork,hasCoach=!!document.querySelector('.coach-trigger');
   let drag=null,activePointer=null,lineStart=null,brush=false,frame,tapItem=null,tapNode=null;
  const get=()=>fieldChapter(n);
  for(const [key,url] of [['equipment','equipment-atlas.webp'],['workshop','workshop-atlas.webp'],['buddy','buddy-poses-clean.webp']]){const im=new Image();im.src='/assets/v2/'+url;assets[key]=im;}
+ for(const key of ['tools',...([2,7,10].includes(n)?['dew']:[]),...([1,2,3].includes(n)?['ice']:[])]){const im=new Image();im.src='/assets/learning/'+studySheets[key].file;assets['real-'+key]=im;}
  for(const [key,url,needed] of [['scale','scale.webp',n===3],['tank','tank-frame.webp',n===4],['condenser','condenser-plate.webp',n===8]])if(needed){const im=new Image();im.src='/assets/learning/'+url;assets[key]=im;}
  // Each region has its own field worktable; it is flattened once so every frame only copies pixels.
  let table=null;{const im=new Image();im.onload=()=>{const off=document.createElement('canvas');off.width=720;off.height=400;const o=off.getContext('2d'),s=Math.max(720/im.naturalWidth,400/im.naturalHeight),w=im.naturalWidth*s,h=im.naturalHeight*s;o.drawImage(im,(720-w)/2,(400-h)/2,w,h);const wash=o.createRadialGradient(360,205,70,360,205,430);wash.addColorStop(0,'rgba(255,253,243,.4)');wash.addColorStop(1,'rgba(255,253,243,.06)');o.fillStyle=wash;o.fillRect(0,0,720,400);table=off;};im.src=`/assets/stages/field-${['spring','winter','sun','dew','lab'][Math.ceil(n/2)-1]}.webp`;}
@@ -92,13 +108,13 @@ export function bindFieldwork(n,ctx){
  const finish=e=>{if(activePointer!==e.pointerId)return;activePointer=null;const p=pos(e);
   if(e.type!=='pointercancel'){
    if(n===9&&lineStart>=0){const end=nearest(p);if(end===lineStart&&tapNode===null){tapNode=lineStart;drag=null;lineStart=null;ctx.say('출발 부품을 골랐어. 이어 받을 부품을 눌러 줘.');void playCue('click');return;}act('connect',{from:tapNode??lineStart,to:end});tapNode=null;void playCue('connect');}
-   else if(drag&&drag.id!=='fill'){const source=layout.items.find(i=>i.id===drag.id),t=n===8&&drag.id==='cold'&&inside(p,source)?{id:'shelf'}:layout.targets.find(t=>inside(p,t));if(t){if(drag.id==='lens')act('inspect',{site:t.id});else act('place',{item:drag.id,target:t.id});tapItem=null;void playCue('drop');}else{tapItem=source;drag=null;lineStart=null;ctx.say('물체를 골랐어. 놓을 곳을 눌러도 돼.');void playCue('click');return;}}
+   else if(drag&&drag.id!=='fill'){const source=layout.items.find(i=>i.id===drag.id),t=n===8&&drag.id==='cold'&&get().moves.cold==='plate'&&inside(p,source)?{id:'shelf'}:layout.targets.find(t=>inside(p,t));if(t){if(drag.id==='lens')act('inspect',{site:t.id});else act('place',{item:drag.id,target:t.id});tapItem=null;void playCue('drop');}else{tapItem=source;drag=null;lineStart=null;ctx.say('물체를 골랐어. 놓을 곳을 눌러도 돼.');void playCue('click');return;}}
   }
   drag=null;lineStart=null;brush=false;save();ctx.render();
  };
  canvas.onpointerup=finish;canvas.onpointercancel=finish;
- for(const id of ['field-fill','field-fill-main']){const input=document.getElementById(id);if(input){input.oninput=()=>{act('setting',{value:+input.value});const out=input.parentElement.querySelector('output');if(out)out.textContent=input.value+'%';};input.onchange=()=>{save();ctx.render();};cleanups.push(()=>{input.oninput=input.onchange=null;});}}
-  function text(str,x,y,size=22,color='#234f59',align='center'){const renderedScale=canvas.getBoundingClientRect().width/720;size=Math.max(22,Math.min(29,18/renderedScale),size);g.font=`${size}px Jua, system-ui, sans-serif`;g.fillStyle=color;g.textAlign=align;g.textBaseline='middle';const lines=String(str).split('\n');lines.forEach((line,i)=>g.fillText(line,x,y+(i-(lines.length-1)/2)*size*1.15));}
+ for(const id of ['field-fill-main']){const input=document.getElementById(id);if(input){input.oninput=()=>{act('setting',{value:+input.value});const out=input.parentElement.querySelector('output');if(out)out.textContent=input.value+'%';};input.onchange=()=>{save();ctx.render();};cleanups.push(()=>{input.oninput=input.onchange=null;});}}
+  function text(str,x,y,size=22,color='#234f59',align='center'){const renderedScale=canvas.getBoundingClientRect().width/720;size=Math.max(size,Math.min(24,17/Math.max(.6,renderedScale)));g.font=`${size}px Jua, system-ui, sans-serif`;g.fillStyle=color;g.textAlign=align;g.textBaseline='middle';const lines=String(str).split('\n');lines.forEach((line,i)=>g.fillText(line,x,y+(i-(lines.length-1)/2)*size*1.15));}
  function panel(x,y,w,h,fill='#fffdf3',stroke='#c8d5c9'){g.fillStyle=fill;g.strokeStyle=stroke;g.lineWidth=2;g.beginPath();g.roundRect(x,y,w,h,16);g.fill();g.stroke();}
  function art(index,x,y,w=100,type='equipment'){const im=assets[type];if(!im?.complete||!im.naturalWidth)return;const cols=type==='buddy'?4:3,rows=type==='buddy'?4:type==='workshop'?2:3,sw=im.naturalWidth/cols,sh=im.naturalHeight/rows;g.drawImage(im,index%cols*sw,Math.floor(index/cols)*sh,sw,sh,x-w/2,y-w/2,w,w);}
  function learningArt(key,x,y,w,h){const im=assets[key];if(!im?.complete||!im.naturalWidth)return false;g.drawImage(im,x-w/2,y-h/2,w,h);return true;}
@@ -112,20 +128,46 @@ export function bindFieldwork(n,ctx){
  function clock(x,y,r=25){g.strokeStyle='#b58736';g.lineWidth=4;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.moveTo(x,y-r*.7);g.lineTo(x,y);g.lineTo(x+r*.5,y+r*.3);g.stroke();}
  function arrow(x1,y1,x2,y2,color='#56a6b5'){g.strokeStyle=color;g.fillStyle=color;g.lineWidth=5;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-14*Math.cos(a-.5),y2-14*Math.sin(a-.5));g.lineTo(x2-14*Math.cos(a+.5),y2-14*Math.sin(a+.5));g.fill();}
  function draw(time){
+  const scale=Math.min(4,Math.max(2,canvas.clientWidth/720*2*devicePixelRatio));
+  if(canvas.width!==Math.round(720*scale)){canvas.width=Math.round(720*scale);canvas.height=Math.round(400*scale);}
+  g.setTransform(scale,0,0,scale,0,0);
   const c=get();g.clearRect(0,0,720,400);g.fillStyle='#fbf6e9';g.fillRect(0,0,720,400);if(table)g.drawImage(table,0,0);
-  for(const t of layout.targets){const hit=drag&&drag.id!=='fill'&&inside(drag,t),filled=Object.values(c.moves).includes(t.id);panel(t.x-t.w/2,t.y-t.h/2,t.w,t.h,hit?'#e3f6eb':filled?'#eef7ed':'#fffdf3',hit?'#25867b':tapItem?'#b99943':'#c5d1c4');if(!(n===8&&t.id==='under'&&c.moves.tray==='under'))text(t.label,t.x,t.y+t.h/2-17,18);}
-  if(n===1){for(const [key,x,w] of [['tall',365,75],['wide',570,155]]){if(c.marks.includes('water-'+key))cup(x,240,w,140,8500/w/1.4);else cup(x,240,w,140,0);if(c.marks.includes('ice-'+key))art(2,x,135,65);}text('같은 양의 물',465,32,22);}
-  if(n===2||n===10){const keys=n===2?['freeze','melt','evaporate','condense']:['evaporate','condense'];keys.forEach(k=>{const t=layout.targets.find(t=>t.id===k),tool=c.moves[k];if(tool==='time')clock(t.x-95,t.y-4,20);else if(tool)art(tool==='cold'?5:6,t.x-95,t.y-4,52);if(c.marks.includes(k))text('연결됨',t.x+95,t.y-6,18,'#23755e');else if(c.message&&tool)text('변화 확인',t.x+95,t.y-6,17,'#ae6f3c');});if(n===10){text('온실로 돌아가는 물',360,350,24);text('수증기는 눈에 보이지 않아',360,385,18);}}
+  for(const t of layout.targets){const hit=drag&&drag.id!=='fill'&&inside(drag,t),filled=Object.values(c.moves).includes(t.id);if(tapItem&&!hit)g.setLineDash([9,5]);panel(t.x-t.w/2,t.y-t.h/2,t.w,t.h,hit?'#e3f6eb':filled?'#eef7ed':'#fffdf3',hit?'#25867b':tapItem?'#986716':'#c5d1c4');g.setLineDash([]);if(!(n===8&&t.id==='under'&&c.moves.tray==='under'))text(t.label,t.x,t.y+t.h/2-17,18);}
+  if(n===1){for(const [key,x,w] of [['tall',365,75],['wide',570,155]]){if(c.moves.water===key)cup(x,240,w,140,8500/w/1.4);else cup(x,240,w,140,0);if(c.moves.ice===key)art(2,x,135,65);}text('같은 양의 물',465,32,22);}
+  if(n===2||n===10){
+   const keys=n===2?['freeze','melt','evaporate','condense']:['evaporate','condense'];
+   for(const key of keys){
+    const t=layout.targets.find(t=>t.id===key),tool=c.moves[key];
+    const fromIce=key==='melt',fromAir=key==='condense',toIce=key==='freeze',toAir=key==='evaporate';
+    if(fromAir)text('수증기\n(눈에 안 보임)',t.x-108,t.y-5,12);
+    else drawStudyArt(g,assets[fromIce?'real-ice':'real-dew'],fromIce?2:0,t.x-108,t.y-5,54,54);
+    if(tool)drawStudyArt(g,assets['real-tools'],tool==='cold'?1:tool==='warm'?0:2,t.x,t.y-10,44,44,3);
+    if(c.marks.includes(key)){
+     if(toAir)text('수증기\n(눈에 안 보임)',t.x+108,t.y-5,12);
+     else drawStudyArt(g,assets[toIce?'real-ice':'real-dew'],toIce?2:0,t.x+108,t.y-5,54,54);
+    }else text(tool?'시험해 봐':'?',t.x+108,t.y-5,14,'#795b2e');
+   }
+   if(n===10){text('온실로 돌아가는 물',360,350,24);text('수증기는 눈에 보이지 않아',360,385,18);}
+  }
   if(n===3){const scale=learningArt('scale',620,283,180,90);if(scale)text(c.moves.weight==='balance'?'100 g':'0 g',620,297,22,'#254d54');for(const [id,to] of Object.entries(c.moves)){const t=layout.targets.find(t=>t.id===to);if(!t)continue;if(id==='weight'){if(!scale){panel(t.x-43,t.y-45,86,70,'#d9e1db');text('100 g',t.x,t.y-7,22);}}else{art(id==='ice'?2:0,t.x-50,t.y-5,65);text(id==='ice'?'높이 65.4':'높이 60',t.x+40,t.y-5,18);}}}
   if(n===4){const fill=c.setting,last=c.tested.at(-1);text('손잡이로 물의 양 바꾸기',225,26,22);cup(225,315,130,240,fill,false,true);g.fillStyle='#f0c75b';g.beginPath();g.arc(345,65+(100-fill)/60*230,24,0,Math.PI*2);g.fill();text('↕',345,65+(100-fill)/60*230,25);text(fill+'% 채움',225,350,22);text('직전 시험 · 얼린 뒤',545,26,22);cup(545,315,130,240,last?Math.min(100,last.amount):0,true,true);if(last){text(last.ok?'넘치지 않음':'통 밖으로 넘침',545,350,22,last.ok?'#217f63':'#ac6335');if(!last.ok){g.strokeStyle='#c27f43';g.setLineDash([6,5]);g.strokeRect(480,315-last.amount*2.4,130,Math.max(10,(last.amount-100)*2.4));g.setLineDash([]);}}}
   if(n===5){const meter=document.getElementById('spread-coverage'),count=document.getElementById('spread-count');if(meter)meter.value=Math.min(12,c.spread.length);if(count)count.textContent=c.spread.length+'/12칸';text('A · 처음처럼 좁게',185,35,23);text('B · 같은 물을 넓게',540,35,23);panel(35,70,300,230,'#e0d9c2');panel(385,70,310,230,'#e0d9c2');g.fillStyle='#278dad';g.globalAlpha=c.tested.length?.55:.9;g.beginPath();g.ellipse(185,180,40,50,0,0,7);g.fill();g.globalAlpha=1;g.strokeStyle='#a2b8aa';g.lineWidth=1;for(let col=0;col<=8;col++){g.beginPath();g.moveTo(390+col*37.5,85);g.lineTo(390+col*37.5,290);g.stroke();}for(let row=0;row<=6;row++){g.beginPath();g.moveTo(390,85+row*34.2);g.lineTo(690,85+row*34.2);g.stroke();}g.fillStyle='#278dad';g.globalAlpha=c.tested.some(t=>t.spread>=12)?.12:.8*Math.min(1,5/Math.max(1,c.spread.length));for(const cell of c.spread){const x=390+cell%8*37.5,y=85+Math.floor(cell/8)*34.2;g.beginPath();g.ellipse(x+19,y+17,22,20,0,0,7);g.fill();}if(!c.spread.length){g.beginPath();g.ellipse(540,180,40,50,0,0,7);g.fill();}g.globalAlpha=1;}
   if(n===6){cup(210,280,115,205,60);cup(450,280,115,205,43);for(let j=0;j<6;j++){g.strokeStyle='#bdeeff';g.lineWidth=3;g.beginPath();g.arc(425+j%3*23,250-(time/28+j*21)%95,5,0,7);g.stroke();}text('가열하지 않은 A',210,35,20);text('끓는 B',450,35,20);if(drag?.id==='lens'){g.strokeStyle='#e3b34f';g.lineWidth=5;g.beginPath();g.arc(drag.x,drag.y,48,0,7);g.stroke();}}
-  if(n===7){for(const [key,x] of [['A',320],['B',550]]){cup(x,270,110,165,60);g.fillStyle='#eadab7';g.fillRect(x-58,100,116,12);g.strokeStyle='#ad9a71';g.strokeRect(x-58,100,116,12);if(c.selected===key)art(5,x+70,120,65);const last=c.tested.at(-1);if(last&&((last.cold===0&&key==='A')||(last.cold===1&&key==='B')))for(let i=0;i<14;i++){g.fillStyle='#43acc8';g.beginPath();g.ellipse(x-42+(i*29)%84,130+(i*37)%128,4,6,0,0,7);g.fill();}}text('입구는 두 컵 모두 밀봉',430,35,20);}
+  if(n===7){
+   const last=c.tested.at(-1);
+   for(const [key,x] of [['A',320],['B',550]]){
+    const cold=c.selected===key,wet=!!last&&last.cold===(key==='A'?0:1)&&cold;
+    drawStudyArt(g,assets['real-dew'],cold?2:1,x,175,190,215);
+    if(wet)for(let i=0;i<26;i++)drawRealDrop(g,x-53+(i*29)%106,135+(i*37)%109,2.3+i%3);
+    if(cold)text('냉각팩을 겉면에 붙임',x,315,17,'#21645d');
+   }
+   text('랩으로 입구를 막아 둔 같은 두 컵',430,35,20);
+  }
   if(n===8){if(!learningArt('condenser',475,90,240,55)){g.fillStyle=c.moves.cold==='plate'?'#acdce2':'#c7d2ce';g.fillRect(365,85,220,27);}if(c.moves.cold==='plate')art(5,580,100,75);if(c.moves.tray==='under')art(4,475,300,115,'workshop');if(c.tested.at(-1)?.ok){for(let i=0;i<6;i++){const t=state.settings.reduced?i/6:(time/1500+i/6)%1;g.fillStyle='#40abc4';g.beginPath();g.ellipse(435+i%3*40,130+t*130,4,7,0,0,7);g.fill();}}}
   if(n===9){nodes.forEach(([x,y],i)=>{art(i,x,y,i===1?95:80,'workshop');text(['냉각판','경사판','깔때기','연결관','물통'][i],x+(i<2?95:100),y,21);g.strokeStyle='#d5b55f';g.lineWidth=3;g.beginPath();g.arc(x,y,38,0,7);g.stroke();});for(const line of c.lines){const [from,to]=line.split('-').map(Number),a=nodes[from],b=nodes[to];arrow(...a,...b);const t=state.settings.reduced?.5:(time/1400)%1;g.fillStyle='#32b6d1';g.beginPath();g.arc(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,6,0,7);g.fill();}}
 
   if(n===9&&tapNode!==null){const [x,y]=nodes[tapNode];g.strokeStyle='#d09a2b';g.lineWidth=7;g.beginPath();g.arc(x,y,44,0,7);g.stroke();}
-  for(const it of layout.items){const obj=drag?.id===it.id?drag:it;panel(obj.x-53,obj.y-43,106,86,tapItem?.id===it.id?'#fff0bd':'#fffdf3',drag?.id===it.id||tapItem?.id===it.id?'#238b82':'#dac999');if(obj.art===-1)text('100 g',obj.x,obj.y,22);else if(obj.art===-2)clock(obj.x,obj.y);else if(obj.art===9)art(4,obj.x,obj.y,80,'workshop');else art(obj.art,obj.x,obj.y-5,72);text(obj.label,obj.x,Math.min(380,obj.y+53),18);}
+  for(const it of layout.items){const obj=drag?.id===it.id?drag:it;panel(obj.x-53,obj.y-43,106,86,tapItem?.id===it.id?'#fff0bd':'#fffdf3',drag?.id===it.id||tapItem?.id===it.id?'#238b82':'#dac999');if(obj.art===-1)text('100 g',obj.x,obj.y,22);else if(obj.art===-2){if(!drawStudyArt(g,assets['real-tools'],2,obj.x,obj.y,75,75,3))clock(obj.x,obj.y);}else if(obj.art===5)drawStudyArt(g,assets['real-tools'],1,obj.x,obj.y,90,90,3);else if(obj.art===6)drawStudyArt(g,assets['real-tools'],0,obj.x,obj.y,90,90,3);else if(obj.art===9)art(4,obj.x,obj.y,80,'workshop');else art(obj.art,obj.x,obj.y-5,72);text(obj.label,obj.x,Math.min(380,obj.y+53),18);}
   // The DOM hint character already occupies this corner on activity pages.
   if(!hasCoach&&![1,3,5,9,10].includes(n)){art(c.done?14:10,42,350,75,'buddy');}
   if(c.done){panel(260,365,200,31,'#e4f3d8','#96b994');text('현장 의뢰 해결!',360,381,20,'#35704f');}

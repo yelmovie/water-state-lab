@@ -34,8 +34,8 @@ with sync_playwright() as p:
     started=time.monotonic()
     page.goto(URL,wait_until='networkidle')
     report['initialLoadMs']=round((time.monotonic()-started)*1000)
-    if page.locator('[data-action="intro-close"]:visible').count():
-        page.locator('[data-action="intro-close"]').click()
+    if page.locator('[data-film="skip"]:visible').count():
+        page.locator('[data-film="skip"]').click()
     elif page.locator('#dialog[open]').count():
         page.locator('#close-dialog').click()
 
@@ -47,7 +47,7 @@ with sync_playwright() as p:
           document.querySelectorAll('dialog[open]').forEach(d=>d.close());
           const {state,initialState,save,setPreviewMode}=await import('/src/state.js');
           const {chapterState}=await import('/src/fieldwork-model.js');
-          const {render}=await import('/src/app.js');
+          const {render}=await import('/src/app.js');state.fieldwork.briefed=Array.from({length:10},(_,i)=>i+1);
           if(reset){setPreviewMode(false);Object.assign(state,initialState());}
           // The eighth lab displays the learner's two real comparison records.
           if(route===8&&!field){
@@ -58,7 +58,7 @@ with sync_playwright() as p:
           // Reload intentionally exits teacher preview. Give persistence fixtures
           // the prior learner progress needed to re-enter this actual chapter.
           if(Number.isInteger(route)&&reset){state.completed=Array.from({length:Math.floor((route-1)/2)},(_,i)=>i+1);state.pages=Array.from({length:route-1},(_,i)=>i+1);}
-          state.route=route;state.fieldwork.introSeen=true;state.fieldwork.active=field?route:0;
+          state.route=route;state.fieldwork.introSeen=true;state.fieldwork.briefed=Array.from({length:10},(_,i)=>i+1);state.fieldwork.active=field?route:0;
           state.fieldwork.pending='';
           if(field&&reset)state.fieldwork.chapters[route]=chapterState(route);
           save();render();

@@ -7,8 +7,8 @@ export const STANDARDS=[
 export const SETTINGS_CONTENT={
  title:'연구실 설정',close:'닫기',
  sound:{bgm:'배경 음악',sfx:'효과음',volume:'배경 음악 크기',on:'켜짐 · 끄기',off:'꺼짐 · 켜기',reduced:'움직임 줄이기'},
- replay:{intro:'이 탐험을 하는 이유 다시 보기',ending:'엔딩 다시 보기',certificate:'연구 인증서 받기',locked:'다섯 연구를 마치고 물길을 복구하면 열려요.',concepts:'개념 영상 다시 보기 (선택)',conceptsIntro:'현장 의뢰를 해결한 발견만 다시 볼 수 있어요. 영상을 닫으면 이 목록으로 돌아와요.',conceptReady:'내가 확인한 발견 · 9초',conceptLocked:'현장 의뢰 {n}을 해결하면 열려요.',conceptReturn:'목록으로 돌아가기'},
- app:{title:'앱 정보 · 배움과 보상',name:'물방울 연구실',maker:'기획·제작: 옐샘 & 아이스크림미디어',rows:[
+ replay:{intro:'인트로 영상 다시 보기',ending:'엔딩 영상 다시 보기',certificate:'연구 인증서 받기',locked:'다섯 연구를 마치고 물길을 복구하면 열려요.',concepts:'개념 영상 다시 보기 (선택)',conceptsIntro:'현장 의뢰를 해결한 발견만 다시 볼 수 있어요. 영상을 닫으면 이 목록으로 돌아와요.',conceptReady:'내가 확인한 발견 · 9초',conceptLocked:'현장 의뢰 {n}을 해결하면 열려요.',conceptReturn:'목록으로 돌아가기'},
+ app:{title:'앱 정보 · 배움과 보상',name:'방울이의 물길 탐험',maker:'기획·제작: 옐샘 & 아이스크림미디어',rows:[
   ['물길 복구 탐험','방울이와 물·얼음·수증기를 관찰하고, 조건을 바꾸어 물의 상태 변화를 확인해요.'],
   ['미션 보상','직접 찾은 증거로 연구 도구를 얻고 멈춘 물길을 하나씩 되살려요. 다섯 연구를 마치면 마지막 복구 장치와 연구 인증서가 열려요.'],
   ['남는 배움','처음 예상·관찰한 근거·다시 고친 생각·생활 속 적용이 연구노트에 남아요.']
@@ -29,18 +29,18 @@ export const SETTINGS_CONTENT={
   '화면 속 시간과 물 수집 지수는 비교를 돕는 모형이에요. 실제 장치의 성능을 예측하는 값이 아니에요.',
   '가상 설계 뒤에는 선생님과 차가운 용기·받침·모으는 컵을 준비해 실제로 만들어 보고, 모인 물과 새는 곳을 비교해 주세요.'
  ],offlineSaving:'이 기기에 수업 자료 저장: 준비 중 {n}% · 와이파이가 연결된 동안 조금씩 저장해요.',offlineDone:'이 기기에 수업 자료 저장: 완료 · 와이파이가 끊겨도 이어서 할 수 있어요.',standardsTitle:'성취기준',standardsIntro:'2022 개정 과학과 교육과정과 연계한 탐구 보조 활동이에요. 이 게임만으로 성취기준 전체를 달성했다고 판단하지 않으며, 수업·토론·후속 평가와 함께 활용해 주세요.',
- toolsTitle:'교사용 도구',toolsIntro:'버튼 하나로 모든 연구의 모든 단계를 한꺼번에 열어요. 학습 완료 기록과 보상은 자동으로 채워지지 않아요.',toolsOn:'시연 종료 · 학생 기록으로 돌아가기',toolsOff:'모든 단계 한 번에 열기',toolsNote:'시연 중 활동은 학생 기록과 분리돼요. 다시 누르거나 새로고침하면 학생의 원래 진행으로 돌아가요.',previewNotice:'교사 시연 중이에요. 활동 기록은 학생 원본에 합쳐지지 않으며, 기록 초기화는 시연을 종료한 뒤 할 수 있어요.'},
+ toolsTitle:'교사용 도구',toolsIntro:'한 번 누르면 1~10장 실험과 현장 의뢰를 모두 열어요. 아래 목록은 이동할 화면을 고르는 곳이에요.',toolsOn:'시연 종료 · 학생 기록으로 돌아가기',toolsOff:'전체 10장 · 모든 의뢰 한 번에 열기',toolsNote:'시연 중 활동은 학생 기록과 분리돼요. 다시 누르거나 새로고침하면 학생의 원래 진행으로 돌아가요.',previewNotice:'교사 시연 중이에요. 활동 기록은 학생 원본에 합쳐지지 않으며, 기록 초기화는 시연을 종료한 뒤 할 수 있어요.'},
  credits:{title:'이미지·소리·저작권 고지',lines:[
   '캐릭터·배경·장식은 제작자가 제공한 원화와 프로젝트 자체 AI 생성 이미지예요. 3D 장치·연구섬 모형도 프로젝트 자체 AI 이미지로 만든 뒤 다듬은 모형이에요.',
   '실험 장면은 실제 현장 사진이 아닌 학습용 재현 이미지예요. 그림 속 눈금이나 배치는 실제 측정값의 근거로 쓰지 않아요.',
-  '배경 음악은 자체 제작 Web Audio 합성음이에요. 효과음은 Kenney의 Interface Sounds를 CC0 1.0으로 사용해요. 음원 재생이 안 되면 자체 합성음으로 대신해요.',
+  '배경 음악은 자체 제작 Web Audio 합성음이에요. 물소리는 rubberduck, 책장·도구·버튼 소리는 Kenney의 CC0 효과음이에요. 음원 재생이 안 되면 자체 합성음으로 대신해요.',
   '개념 영상 10편은 직접 작성한 SVG 모션 그래픽을 FFmpeg로 제작했어요. 영상은 무음이며, 큰 글씨 설명을 화면에서 함께 보여 줘요.',
   '제목 글꼴 Jua는 SIL Open Font License 1.1에 따라 앱에 담았어요. 본문은 기기에 설치된 글꼴을 사용해요. Phaser 게임 엔진과 Three.js 3D 엔진은 MIT 라이선스에 따라 사용해요.',
   '출처와 라이선스 상세 내용은 프로젝트의 assets/CREDITS.md에서 확인할 수 있어요.'
  ],sourcesTitle:'자료 출처 모아 보기',sourcesIntro:'활동 화면에서 쓰는 자료의 출처를 이곳에 모았어요.',sources:[
   ['연구섬·실험실·방울이','사용자 제공 ChatGPT 생성 이미지와 프로젝트 자체 AI 생성 이미지예요.'],
   ['실험 도구·물 수집 장치','프로젝트 자체 AI 생성 이미지와 직접 작성한 Canvas·SVG 실험 표현이에요.'],
-  ['배경 음악·효과음','배경 음악: 자체 Web Audio. 효과음: Kenney Interface Sounds · CC0 1.0 (kenney.nl).'],
+  ['배경 음악·효과음','배경 음악: 자체 Web Audio. 효과음: Kenney Interface Sounds와 RPG Audio, rubberduck의 Water / Splash / Slime SFX · CC0 1.0 (Kenney, OpenGameArt).'],
   ['개념 영상','프로젝트 자체 SVG 모션 그래픽 · FFmpeg 렌더링이에요.'],
   ['3D 모형','프로젝트 자체 AI 생성 이미지를 Meshy로 3D로 바꾸고 Blender로 다듬었어요.'],
   ['게임 엔진','Phaser · Richard Davey, Phaser Studio Inc. · MIT License예요.'],

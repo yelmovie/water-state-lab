@@ -30,17 +30,17 @@ export function pipeFinding(fill){const t=pipeAssessment(fill);return `얼음 ${
 export function dryTrace(thickness,time){return limit(1-time/(thickness==='thin'?60:110),0,1);}
 export function dewTrial(time,cold=true){return {time:limit(time),cold,drops:cold?Math.floor(limit(time)/5):0,mass:cold?250+limit(time)/50:250};}
 export const sortCards=[
- {id:'ice',name:'옮긴 얼음',type:'solid',art:'ice',proof:'접시를 바꿔도 모양이 그대로야.',source:'실험 기록'},
- {id:'water',name:'옮겨 담은 물',type:'liquid',art:'jug',proof:'담긴 그릇에 맞게 모양이 바뀌었어.',source:'실험 기록'},
- {id:'vapor',name:'마른 천에서 공기로 간 물',type:'gas',art:'cloth',proof:'물은 보이지 않는 수증기로 변했어. 천 자체를 분류하는 게 아니야.',source:'실험 기록'},
- {id:'frost',name:'냉동실의 얼음',type:'solid',art:'ice',proof:'얼음은 고체 상태의 물이야.',source:'새로운 생활 장면'},
- {id:'rain',name:'화분에 주는 물',type:'liquid',art:'seedling',proof:'흐르고 그릇에 담기는 물은 액체야.',source:'새로운 생활 장면'},
- {id:'laundry',name:'빨래에서 공기로 간 물',type:'gas',art:'cloth',proof:'빨래의 물은 증발해 눈에 보이지 않는 수증기가 돼.',source:'새로운 생활 장면'}
+ {id:'ice',name:'접시 안의 얼음',label:'접시 안의 얼음',type:'solid',art:'ice',proof:'접시를 바꿔도 모양이 그대로야.',source:'실험 기록'},
+ {id:'water',name:'물병 속의 물',label:'물병 속의 물',type:'liquid',art:'jug',proof:'담긴 그릇에 맞게 모양이 바뀌었어.',source:'실험 기록'},
+ {id:'vapor',name:'천이 마르면서 공기로 간 물',label:'천이 마르면서\n공기로 간 물',type:'gas',art:'cloth',proof:'물은 보이지 않는 수증기로 변했어. 천 자체를 분류하는 게 아니야.',source:'실험 기록'},
+ {id:'frost',name:'냉동실 안의 얼음',label:'냉동실 안의 얼음',type:'solid',art:'ice',proof:'얼음은 고체 상태의 물이야.',source:'새로운 생활 장면'},
+ {id:'rain',name:'화분에 부어 주는 물',label:'화분에 부어 주는 물',type:'liquid',art:'seedling',proof:'흐르고 그릇에 담기는 물은 액체야.',source:'새로운 생활 장면'},
+ {id:'laundry',name:'빨래가 마르면서 공기로 간 물',label:'빨래가 마르면서\n공기로 간 물',type:'gas',art:'cloth',proof:'빨래의 물은 증발해 눈에 보이지 않는 수증기가 돼.',source:'새로운 생활 장면'}
 ];
 // Optional replay goals after a stage is finished. Both bonus scenes tempt a "gas" answer but are visible liquid water.
 export const hiddenScenes=[
- {id:'mist',name:'폭포 옆 하얀 물보라',type:'liquid',site:[327,72],proof:'눈에 보이는 하얀 물보라는 아주 작은 물방울이야. 수증기는 눈에 보이지 않아.',clue:'하얗게 보이는 것은 눈으로 볼 수 있어. 수증기도 눈에 보일까?'},
- {id:'drip',name:'수건 끝에서 떨어지는 물방울',type:'liquid',site:[452,236],proof:'떨어지는 물방울은 아직 액체야. 마르면서 공기로 간 물만 수증기야.',clue:'아직 마르지 않고 떨어지는 물이야. 흐르고 모양이 바뀌는 상태를 떠올려 봐.'}
+ {id:'mist',name:'폭포 옆 하얀 물보라',type:'liquid',card:'vapor',spot:[.12,.43],proof:'눈에 보이는 하얀 물보라는 아주 작은 물방울이야. 수증기는 눈에 보이지 않아.',clue:'하얗게 보이는 것은 눈으로 볼 수 있어. 수증기도 눈에 보일까?'},
+ {id:'drip',name:'수건 끝에서 떨어지는 물방울',type:'liquid',card:'laundry',spot:[.77,.86],proof:'떨어지는 물방울은 아직 액체야. 마르면서 공기로 간 물만 수증기야.',clue:'아직 마르지 않고 떨어지는 물이야. 흐르고 모양이 바뀌는 상태를 떠올려 봐.'}
 ];
 export function hiddenSceneTry(sort,id,type){const card=hiddenScenes.find(c=>c.id===id);if(!card||sort.hidden.placed[id])return {ok:false,card,repeat:!!card};const ok=card.type===type;if(ok)sort.hidden.placed[id]=type;else sort.hidden.tries[id]=Math.min(99,(sort.hidden.tries[id]||0)+1);return {ok,card};}
 // Transfer challenge for stage 3: predict a new amount from the first measurement (60 → 65.4, the same ×1.09 model).
@@ -81,4 +81,15 @@ export function validateActivities(value){
  if(!value.dew.records.every(r=>['before','after'].includes(r.kind)&&measurement(r.cold)&&measurement(r.room)&&r.sealed===true))return false;
  if(!value.dew.wiped.every(k=>['cold','room'].includes(k)))return false;
  return value.explain.evidence.every(x=>['sealed','contrast','again'].includes(x))&&value.explain.chain.every(x=>['air','cold','drops'].includes(x));
+}
+
+// A teacher may start chapter 8 before gathering the preceding cup observations.
+export function experimentActivities(n, state) {
+ const activities = state.activities;
+ if (n !== 8 || !state.settings.adminUnlock || activityReady(7, activities)) return activities;
+ const records = [0, 100].map(time => ({
+  kind: time ? 'after' : 'before', sealed: true,
+  cold: dewTrial(time, true), room: dewTrial(time, false)
+ }));
+ return {...activities, dew: {...activities.dew, records, sealed: true, rewiped: true, again: true}};
 }
