@@ -1,5 +1,7 @@
 # 물길탐험 인계 · 2026-11-04 (BGM·이야기 영상)
 
+운영 배포: 2026-11-04 커밋 ca12f5b → Cloudflare Pages `90f1813d`, 169개 파일 SHA-256 일치 확인. 직전 운영본 `6274b70c`(되돌릴 때 사용). 작업은 `feat/bgm-story-films` 브랜치에 있고 main 병합과 GitHub 푸시는 하지 않았다. 빌드는 `git -c core.autocrlf=false archive`로 꺼낸 커밋본에서 했다. 이 PC는 `npx wrangler`가 `ECOMPROMISED`로 실패해서 임시 폴더에 `npm install wrangler@4`로 설치해 썼다.
+
 완료
 - 파일 정리: 원본은 `assets/source-media/video|audio/`, 앱용은 `public/assets/story/`(MP4·VTT·WebP)와 `public/assets/audio/music/`. 루트의 mp3·mp4는 옮겼다.
 - BGM(`src/sound.js`): 합성음을 없애고 메인 테마 「섬의 탐험」(탐험 중 반복)과 엔딩 테마 「물바퀴의 노래」(`ending` 화면에서 한 번, 다시 보기 후 처음부터)를 재생한다. 영상 중 멈추고 닫으면 이어진다. 음량은 iPad Safari 때문에 gain 노드로 조절한다. 기본값을 켜짐으로 바꾸고, 예전 저장본은 `settings.themeMusic`로 한 번만 켠다.
