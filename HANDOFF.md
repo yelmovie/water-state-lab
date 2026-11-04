@@ -1,6 +1,6 @@
 # 물길탐험 인계 · 2026-11-04 (BGM·이야기 영상)
 
-운영 배포: 2026-11-04 커밋 ca12f5b → Cloudflare Pages `90f1813d`, 169개 파일 SHA-256 일치 확인. 직전 운영본 `6274b70c`(되돌릴 때 사용). 작업은 `feat/bgm-story-films` 브랜치에 있고 main 병합과 GitHub 푸시는 하지 않았다. 빌드는 `git -c core.autocrlf=false archive`로 꺼낸 커밋본에서 했다. 이 PC는 `npx wrangler`가 `ECOMPROMISED`로 실패해서 임시 폴더에 `npm install wrangler@4`로 설치해 썼다.
+운영 배포: 2026-11-04 커밋 ca12f5b → Cloudflare Pages `90f1813d`, 169개 파일 SHA-256 일치 확인. 직전 운영본 `6274b70c`(되돌릴 때 사용). 작업은 main에 병합했고 GitHub 푸시는 하지 않았다. 빌드는 `git -c core.autocrlf=false archive`로 꺼낸 커밋본에서 했다. 이 PC는 `npx wrangler`가 `ECOMPROMISED`로 실패해서 임시 폴더에 `npm install wrangler@4`로 설치해 썼다.
 
 완료
 - 파일 정리: 원본은 `assets/source-media/video|audio/`, 앱용은 `public/assets/story/`(MP4·VTT·WebP)와 `public/assets/audio/music/`. 루트의 mp3·mp4는 옮겼다.
