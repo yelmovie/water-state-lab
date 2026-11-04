@@ -10,7 +10,7 @@ import {icon,btn,mascot,buddy,propArt,note,toast,modal,esc} from './ui.js';
 import {journey,journeyView,mapEntryScreen,workshopProgress,travelRoute,mountMapCamera,cleanupMapCamera,travelIsland} from './journey.js';
 import {activityView,handleActivity,bindActivity,cleanupActivity,getActivityProgress} from './activities.js';
 import {workshopView,finalView,handleWorkshop,bindWorkshop,cleanupWorkshop,resetFinalPreview} from './workshop.js';
-import {playClick,playCue,setSoundSettings} from './sound.js';
+import {playClick,playCue,setMusicTheme,setSoundSettings} from './sound.js';
 import {openSettings,offlineText} from './settings.js';
 import {OFFLINE_BUILD} from './version.js';
 import {syncCoach,cleanupCoach,handleCoach,updateCoachMessage} from './coach.js';
@@ -37,7 +37,7 @@ function go(route){if(route!==state.route)state.fieldwork.active=0;clearTimeout(
 const finishActions={'act-next-1':1,'act-complete-1':2,'act-next-3':3,'act-complete-2':4,'act-next-5':5,'act-complete-3':6,'act-next-7':7,'act-complete-4':8,'complete-5':9};
 function baseAction(action){if(!action)return;if(handleActivity(action,ctx))return;handleWorkshop(action,ctx);}
 function routeAction(action){if(handleFieldwork(action,ctx))return;const n=finishActions[action];if(n&&!hasFieldSeal(n)&&(n<=8?activityReady(n,experimentActivities(n,state)):currentTrialValid(state.lab.workshop))){startFieldwork(n,action,ctx);return;}baseAction(action);}
-function showStory(kind,onFinish){playStoryFilm(kind,{muted:!state.settings.sound,onFinish});}
+function showStory(kind,onFinish){playStoryFilm(kind,{muted:!state.settings.sound,onFinish});if(kind==='final'&&state.route==='ending')setMusicTheme('ending',true);}
 function startAdventure(){
  if(state.fieldwork.introSeen)return go('map');
  showStory('intro',()=>{state.fieldwork.introSeen=true;go('map');});
@@ -113,7 +113,7 @@ function simplifyControls(route){
 }
 export function render(){
  cleanupCoach();closeConcept();cleanupMapCamera();
- clearInterval(endingTimer);cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():experimentShell(route);lastRenderedRoute=route;document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
+ clearInterval(endingTimer);cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():experimentShell(route);lastRenderedRoute=route;setMusicTheme(route==='ending'?'ending':'main');document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
  if(typeof route==='number'){if(state.fieldwork.active===route)bindFieldwork(route,ctx);else{if(route<=8)bindActivity(route,ctx);bindWorkshop(route,ctx);}}
  if(state.fieldwork.active!==route){
   if(route==='map')mountMapCamera();

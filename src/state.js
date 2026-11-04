@@ -4,7 +4,7 @@ import {defaultParts,canEnter} from './domain.js';
 import {initialFieldwork,cleanFieldwork} from './fieldwork-model.js';
 import {restoreDrawingMetadata} from './drawing-records.js';
 export const KEY='water-drop-lab:v1';
-export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:false,sfx:true,bgmVolume:35,adminUnlock:false},lab:{
+export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,adminUnlock:false},lab:{
   observe:{selected:0,seen:[],pour:0,ice:false,cloth:0,wipe:0,canTime:0},
   classify:{current:0,records:[],type:'',proof:false},
   freeze:{initial:false,tare:false,prediction:65,phase:'water',measured:false,melted:false,compared:false},
@@ -42,6 +42,8 @@ function loadState(storage){
   // Sanitized data can be shown, but rejected observations must not replace their source.
   if(raw.inquiry!==undefined&&!preservesSource(raw.inquiry,s.inquiry)||raw.fieldwork!==undefined&&!preservesSource(raw.fieldwork,s.fieldwork,true))repaired=true;
   s.settings.sfx=typeof raw.settings?.sfx==='boolean'?raw.settings.sfx:s.settings.sound;
+  // The old synthesized score defaulted to off; saves from that time hear the real themes once, then their choice sticks.
+  if(raw.settings?.themeMusic!==true){s.settings.bgm=true;s.settings.themeMusic=true;}
   s.settings.bgmVolume=Number.isFinite(s.settings.bgmVolume)?Math.max(0,Math.min(100,s.settings.bgmVolume)):35;
   s.activities={...fallback.activities,...raw.activities};
   for(const k of Object.keys(fallback.activities)){if(typeof fallback.activities[k]==='object')s.activities[k]={...fallback.activities[k],...raw.activities?.[k]};}

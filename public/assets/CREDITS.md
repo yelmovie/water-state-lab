@@ -9,7 +9,9 @@
 | Phaser 3.90.0 | `vendor/phaser.min.js`. 지도·실험 Canvas. 배포 포함 | MIT. 전문 `vendor/PHASER-LICENSE.md`(Copyright (c) 2024 Richard Davey, Phaser Studio Inc.) 동봉, 빌드에 함께 복사. 버전은 파일 안 `VERSION:"3.90.0"`으로 확인 | PASS | 설정 > 자료 출처의 저작권자 표기(Photon Storm)를 라이선스 파일 표기와 맞추면 좋다 |
 | Jua 글꼴 | `fonts/jua-korean-400.woff2`, `jua-latin-400.woff2`. 제목 글꼴. 배포 포함 | SIL OFL 1.1. `fonts/Jua-OFL.txt`에 저작권 줄(Woowahan Brothers, Reserved Font Name "Jua", Google Fonts 배포)과 OFL 1.1 전문이 끝까지 들어 있음. 배민 자체 약관판 '주아체'가 아니라 OFL판으로 기록됨 | PASS | 두 서브셋 파일을 처음 받은 배포처(Google Fonts 등)는 기록에 없다. 알면 이 칸에 보강 |
 | Kenney Interface Sounds 7종 | `audio/*.ogg`. 효과음. 배포 포함 | CC0 1.0. `audio/Kenney-LICENSE.txt` 원문(개인·교육·상업 프로젝트 사용 가능, 크레딧 선택)과 `audio/sources.json`(출처·다운로드 주소·파일 대응) 동봉 | PASS | 없음 |
-| 배경 음악·대체 효과음 | `src/sound.js` | 프로젝트 코드의 Web Audio 합성. 내려받은 음원 없음 | PASS | Suno 배경음은 아직 넣지 않았다(`docs/audio/SUNO-PROMPTS.md`). 넣을 때 생성 계정의 요금제를 이 표에 먼저 기록 |
+| 배경 음악 2곡 | `audio/music/main-theme.mp3`(「섬의 탐험」), `ending-theme.mp3`(「물바퀴의 노래」). 원본 `assets/source-media/audio/` | 기획자가 Suno로 생성해 제공(파일 메타데이터 `made with suno`, 2026-11-01). 프롬프트 `docs/audio/SUNO-PROMPTS.md`. 재인코딩 없이 표지 그림과 메타데이터를 빼고, 메인은 끝 무음 1초를 잘랐다 | 확인 필요 | 생성 계정의 Suno 요금제 미기록. 납품 전 상업적 이용 가능 요금제인지 이 칸에 기록 |
+| 대체 효과음 | `src/sound.js` | 프로젝트 코드의 Web Audio 합성. 내려받은 음원 없음 | PASS | 없음 |
+| 도입·엔딩 영상 | `story/intro.*`, `final.*`(MP4·VTT·WebP). 원본 `assets/source-media/video/` | 기획자 제공 영상에 `scripts/render-film.mjs`로 색 보정, Jua 자막, 캔버스 연출, 위 배경 음악, CC0 효과음을 입혀 H.264/AAC로 인코딩 | 확인 필요 | 원본 영상의 제작 도구와 권리는 기록에 없다. 알면 이 칸에 보강 |
 | 개념 영상 렌더 도구 | `scripts/concept-clips/render.mjs`, `scenes.mjs` → `concepts/stage-1~10` MP4·WebM·WebP | 자체 SVG 장면을 sharp로 RGBA 변환해 FFmpeg(libx264, libvpx-vp9)로 인코딩. import는 Node 내장 모듈·`src/concept-data.js`·`scenes.mjs`·sharp뿐. 저장소의 package.json 2개(루트, `files/` 보관 사본)에 의존성 없음. Remotion·Highcharts·ag-Grid·Handsontable·Spine·유료 아이콘 패키지 검색 0건 | PASS | sharp·FFmpeg는 개발 도구로만 실행하고 배포 번들에 넣지 않는다 |
 | 내장 OpenAI `image_gen` (2026-10-15·21·24·25 생성분) | `v2/equipment-atlas`, `workshop-atlas`, `journey-map`, `story-repair`, `rescue-reward`, `research-island-v4`, `learning/*`, `stages/*` | OpenAI 이용약관 '콘텐츠 소유권': 법이 허용하는 범위에서 이용자가 출력을 소유하고 OpenAI는 출력에 대한 권리를 이용자에게 양도한다. 비슷한 출력이 다른 이용자에게 나올 수 있다. 2026-10-25 검색 결과의 약관 인용으로 확인(원문 https://openai.com/policies/terms-of-use/ 는 이번 접속에서 403으로 직접 열지 못함) | 확인 필요 | 생성에 쓴 계정의 명의·요금제가 기록에 없다. 회사 결과물에 넣는 데 문제가 없는지 회사 담당자 확인. 사용 중인 `v2/experiment-table-v3.webp`(와 교체 중인 `research-island-v3.webp`)는 2026-10-18 기록에 '이전 작업에서 생성'으로만 적혀 있어 생성 도구부터 확인해야 한다 |
 | 사용자 제공 ChatGPT 생성 이미지 | `v2/buddy-poses-clean.webp`(방울이), `lab-main.png`, `lab-room.png`, 사용 예정 `v2/lab-workshop.webp`·`lab-core.webp` | 생성한 사람·계정·요금제 기록 없음. 이전 기록대로 공개·상업 배포 권리는 소유자 확인 전 | 확인 필요 | 방울이가 주인공이라 우선 확인. 확인되면 이 칸과 설정 고지 첫 줄을 고친다 |
@@ -33,7 +35,8 @@
 | v2/research-island-v4.webp | 같은 도구로 생성한 물 탐험 5개 구역 지도. 지도 글자·단계 선택·이동 경로·캐릭터는 별도 코드로 표시 |
 | fonts/jua-korean-400.woff2, jua-latin-400.woff2 | Jua, Woowahan Brothers. SIL Open Font License 1.1. 기존 사용자 프로젝트의 로컬 파일을 원본 그대로 사용. 라이선스 전문은 fonts/Jua-OFL.txt에 동봉 |
 | vendor/phaser.min.js | Phaser, MIT. 전문 vendor/PHASER-LICENSE.md 동봉 |
-| BGM·대체 효과음 | 프로젝트의 src/sound.js가 Web Audio로 직접 합성. 내려받은 배경 음악·음성 없음 |
+| 배경 음악 | 기획자가 Suno로 만든 2곡. 위 표의 배경 음악 2곡 참조 |
+| 대체 효과음 | 프로젝트의 src/sound.js가 Web Audio로 직접 합성 |
 | 기본 효과음 7종 | Kenney Interface Sounds, CC0 1.0. audio/sources.json의 파일·출처 기록과 audio/Kenney-LICENSE.txt의 원문 동봉. 아래 2026-10-22 기록 참조 |
 | 개념 영상 10편·끝 장면 | 프로젝트 자체 SVG 모션 그래픽. concepts/stage-1~10의 MP4·WebM·WebP. 외부 영상 클립을 내려받아 사용하지 않음 |
 | 기능 아이콘 | 프로젝트 SVG 경로. 별·집·화살표·잠금·스피커·톱니 등은 벡터로 표시 |
@@ -82,7 +85,7 @@
 | v2/lab-workshop.webp | 사용자 제공 2026-09-23 오후 11_30_45 (9).png |
 | v2/lab-core.webp | 사용자 제공 2026-09-23 오후 11_30_46 (10).png |
 
-사용자 제공 배경의 정확한 원본 파일명은 `image/ChatGPT Image ` 접두사를 포함한다. 제공 원본은 삭제하지 않았다. 재사용한 배경·캐릭터와 새 지도·장비는 생성형 AI 이미지다. 눈금·물높이·기포·물방울·조작 UI는 상태를 정확히 표현하기 위해 프로젝트 코드로 그린다. 배경 음악과 대체 효과음은 Web Audio 합성이며, 기본 효과음은 아래 Kenney CC0 음원을 사용한다. 원격 폰트 요청은 없다.
+사용자 제공 배경의 정확한 원본 파일명은 `image/ChatGPT Image ` 접두사를 포함한다. 제공 원본은 삭제하지 않았다. 재사용한 배경·캐릭터와 새 지도·장비는 생성형 AI 이미지다. 눈금·물높이·기포·물방울·조작 UI는 상태를 정확히 표현하기 위해 프로젝트 코드로 그린다. 대체 효과음은 Web Audio 합성이며, 기본 효과음은 아래 Kenney CC0 음원을 사용한다. 원격 폰트 요청은 없다.
 
 생성 프롬프트와 시각 점검은 `docs/reviews/ASSET-GENERATION-2026-10-15.md`, `docs/reviews/WORLD-ASSETS-2026-10-15.md`에 기록했다. 사용자 제공 자료의 공개·상업 배포 권리와 제작자 표기는 정식 배포 전 소유자가 확정해야 한다. 이 문서는 확인되지 않은 이용 허락이나 독점 권리를 새로 주장하지 않는다.
 

@@ -93,7 +93,7 @@ npm run preview
 
 ## 현재 범위와 제한
 
-도입과 엔딩은 일러스트·게임 내 연출이며 영상·음성은 없다. 스테이지 해결 후 개념 영상 10편을 제공한다. 배경 음악은 자체 Web Audio 합성이며 효과음은 로컬 Kenney CC0 음원을 사용하고 재생 실패 시 합성음으로 대체한다. 설정에서 따로 켜고 끌 수 있고 배경 음악만 음량을 조절한다. 교사용 전체 해금은 학생 기록과 분리된 시연이다. 터치 실기기, 학교 네트워크, 전자칠판 뒷자리 가독성은 별도 확인이 필요하다. 공개 주소는 맨 위에 적었다. 처음 접속에는 네트워크가 필요하고, 그 뒤에는 아래 오프라인 수업 준비를 따른다.
+도입과 엔딩은 자막을 입힌 이야기 영상이다. 원본은 `assets/source-media/`에 두고 `PW_PATH=<playwright-core 경로> node scripts/render-film.mjs`로 `public/assets/story/`에 다시 만든다. 자막은 화면에 새겨져 있고 VTT는 보조 기술용으로 함께 제공한다. 스테이지 해결 후 개념 영상 10편을 제공한다. 배경 음악은 Suno로 만든 메인 테마(탐험 중 반복)와 엔딩 테마(복구 완료 화면에서 한 번)이며 영상을 보는 동안 멈춘다. 효과음은 로컬 Kenney CC0 음원을 사용하고 재생 실패 시 합성음으로 대체한다. 설정에서 따로 켜고 끌 수 있고 배경 음악만 음량을 조절한다. 교사용 전체 해금은 학생 기록과 분리된 시연이다. 터치 실기기, 학교 네트워크, 전자칠판 뒷자리 가독성은 별도 확인이 필요하다. 공개 주소는 맨 위에 적었다. 처음 접속에는 네트워크가 필요하고, 그 뒤에는 아래 오프라인 수업 준비를 따른다.
 
 ## 2026-10-15 활동 개편
 
@@ -143,7 +143,9 @@ python scripts/tablet-interactions.py
 | src/fieldwork-model.js | 장별 질문·보상, 순수 활동 모형·관찰 완료 판정·저장 검증 |
 | src/fieldwork.js | 현장 의뢰 Canvas, 포인터·버튼 대체 조작, 도장과 여권 |
 | src/settings.js / settings-content.js | 설정 동작, 안내·성취기준 원문·출처 |
-| src/sound.js | 독립 BGM·효과음, 화면 비활성 시 정리 |
+| src/sound.js | 메인·엔딩 테마, 효과음, 영상·화면 비활성 시 정지 |
+| src/story-film.js | 도입·엔딩 영상 재생 |
+| scripts/render-film.mjs | 원본 영상에 자막·연출·음악을 입혀 public/assets/story 생성 |
 | src/version.js | build가 package.json에서 생성하는 버전 |
 | public/assets/fonts | Jua 두 서브셋과 OFL 라이선스 |
 | scripts/expedition-qa.py | 최신 화면·저장·보상·수리 흐름 브라우저 검사 |

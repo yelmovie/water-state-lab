@@ -4,7 +4,7 @@ import path from 'node:path';
 const built = process.argv.includes('--dist');
 const root = built ? path.join(process.cwd(),'dist') : process.cwd();
 const port = Number(process.env.PORT || (built ? 4317 : 4316));
-const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.json':'application/json','.woff2':'font/woff2','.mp4':'video/mp4','.webm':'video/webm','.ogg':'audio/ogg','.webmanifest':'application/manifest+json'};
+const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.json':'application/json','.woff2':'font/woff2','.mp4':'video/mp4','.webm':'video/webm','.ogg':'audio/ogg','.mp3':'audio/mpeg','.vtt':'text/vtt; charset=utf-8','.webmanifest':'application/manifest+json'};
 http.createServer((req,res)=>{
   let relative;
   try { relative = decodeURIComponent(new URL(req.url,'http://localhost').pathname); } catch { res.writeHead(400).end();return; }

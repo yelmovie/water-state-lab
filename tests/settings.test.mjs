@@ -21,33 +21,41 @@ function fakeAudio(){
  const instances=[];
  class Parameter{constructor(){this.values=[];}setValueAtTime(v){this.values.push(v);}linearRampToValueAtTime(v){this.values.push(v);}exponentialRampToValueAtTime(v){this.values.push(v);}setTargetAtTime(v){this.values.push(v);}}
  class AudioNode{constructor(){this.frequency=new Parameter();this.gain=new Parameter();this.stopped=false;}connect(){}disconnect(){this.disconnected=true;}start(){this.started=true;}stop(when){if(when===undefined)this.stopped=true;}}
- class Context{constructor(){this.state='running';this.currentTime=0;this.destination={};this.oscillators=[];this.gains=[];instances.push(this);}createOscillator(){const n=new AudioNode();this.oscillators.push(n);return n;}createGain(){const n=new AudioNode();this.gains.push(n);return n;}resume(){this.state='running';return Promise.resolve();}suspend(){this.state='suspended';return Promise.resolve();}}
+ class Context{constructor(){this.state='running';this.currentTime=0;this.destination={};this.oscillators=[];this.gains=[];instances.push(this);}createOscillator(){const n=new AudioNode();this.oscillators.push(n);return n;}createGain(){const n=new AudioNode();this.gains.push(n);return n;}createMediaElementSource(){return new AudioNode();}resume(){this.state='running';return Promise.resolve();}suspend(){this.state='suspended';return Promise.resolve();}}
  return {Context,instances};
+}
+// Music elements play; sampled effects refuse so the effect path falls back to countable oscillators.
+function fakeMediaElements(){
+ const created=[];
+ class Element{constructor(src=''){this.src=src;this.paused=true;this.currentTime=7;this.events={};created.push(this);}addEventListener(type,fn){this.events[type]=fn;}play(){if(!this.src.includes('/music/'))return Promise.reject(Error('no sample'));this.paused=false;return Promise.resolve();}pause(){this.paused=true;}}
+ return {Element,created};
 }
 
 test('independent sound controls gate autoplay, coalesce effects, and pause music for hidden pages and stories',async t=>{
- const previousDocument=globalThis.document,previousAudio=globalThis.AudioContext;
- const doc=mockDocument(),mock=fakeAudio();globalThis.document=doc;globalThis.AudioContext=mock.Context;
+ const previousDocument=globalThis.document,previousAudio=globalThis.AudioContext,previousElement=globalThis.Audio;
+ const doc=mockDocument(),mock=fakeAudio(),media=fakeMediaElements();globalThis.document=doc;globalThis.AudioContext=mock.Context;globalThis.Audio=media.Element;
  const audio=await import(`../src/sound.js?settings-test=${Date.now()}`);
- t.after(()=>{audio.setSoundSettings({sound:false});globalThis.document=previousDocument;globalThis.AudioContext=previousAudio;});
+ t.after(()=>{audio.setSoundSettings({sound:false});globalThis.document=previousDocument;globalThis.AudioContext=previousAudio;globalThis.Audio=previousElement;});
  audio.setSoundSettings({sound:true,bgm:true,sfx:false,bgmVolume:100});
  assert.equal(mock.instances.length,0,'music waits for a genuine first input');
  doc.events.get('pointerdown')();
- const ctx=mock.instances[0];assert.equal(ctx.oscillators.length,3);
- const firstMusic=ctx.oscillators.slice();
- await audio.playClick();assert.equal(ctx.oscillators.length,3,'SFX off leaves music intact');
- audio.setSoundSettings({bgm:false,sfx:true});assert.ok(firstMusic.every(n=>n.stopped));
+ const ctx=mock.instances[0],music=media.created[0],musicGain=ctx.gains[0];
+ assert.match(music.src,/\/music\/main-theme\.mp3$/);assert.equal(music.loop,true,'the main theme repeats');assert.equal(music.paused,false);
+ assert.equal(musicGain.gain.values.at(-1),1,'the volume slider drives the gain node, which iPad Safari honours');
+ await audio.playClick();assert.equal(ctx.oscillators.length,0,'SFX off leaves music intact');assert.equal(music.paused,false);
+ audio.setSoundSettings({bgm:false,sfx:true});assert.equal(music.paused,true);
  await audio.playClick();const firstCue=ctx.oscillators.at(-1);await audio.playCue('success');
  assert.equal(firstCue.stopped,true,'a new effect immediately stops the preceding effect');
- audio.setSoundSettings({bgm:true});
- const latestMusic=ctx.oscillators.slice(-3);
- const musicVolume=ctx.gains.at(-4).gain.values.at(-1);
- assert.ok(musicVolume<.035,'music master remains quieter than fixed effect gain even at 100%');
- doc.hidden=true;doc.events.get('visibilitychange')();assert.ok(latestMusic.every(n=>n.stopped));assert.equal(ctx.state,'suspended');
- doc.hidden=false;doc.events.get('visibilitychange')();await Promise.resolve();
- const resumedMusic=ctx.oscillators.slice(-3);assert.ok(resumedMusic.every(n=>!n.stopped));
- audio.setMusicQuiet(true);assert.ok(resumedMusic.every(n=>n.stopped),'stories can explicitly quiet music');
- audio.setMusicQuiet(false);audio.setSoundEnabled(false);
+ audio.setSoundSettings({bgm:true});assert.equal(music.paused,false);
+ doc.hidden=true;doc.events.get('visibilitychange')();assert.equal(music.paused,true);assert.equal(ctx.state,'suspended');
+ doc.hidden=false;doc.events.get('visibilitychange')();await Promise.resolve();await Promise.resolve();assert.equal(music.paused,false);
+ audio.setMusicQuiet(true);assert.equal(music.paused,true,'stories can explicitly quiet music');
+ audio.setMusicTheme('ending');assert.equal(music.paused,true,'a theme change waits for the film to close');
+ audio.setMusicQuiet(false);assert.match(music.src,/\/music\/ending-theme\.mp3$/);assert.equal(music.loop,false);assert.equal(music.paused,false);
+ music.pause();music.events.ended();audio.setMusicQuiet(true);audio.setMusicQuiet(false);assert.equal(music.paused,true,'the ending theme plays once');
+ audio.setMusicTheme('ending',true);assert.equal(music.paused,false,'watching the ending again replays it');assert.equal(music.currentTime,0);
+ audio.setMusicTheme('main');assert.match(music.src,/main-theme/);assert.equal(music.loop,true);
+ audio.setSoundEnabled(false);assert.equal(music.paused,true);
  const count=ctx.oscillators.length;await audio.playClick();assert.equal(ctx.oscillators.length,count,'master mute silences both channels');
 });
 

@@ -1,6 +1,6 @@
 // Offline cache for classroom use. scripts/build.mjs replaces the next line with the real lists; the dev server never registers this file.
 const CACHE='water-dev',SHELL=[],LATER=[];
-const VIDEO=/\.(mp4|webm)$/;
+const VIDEO=/\.(mp4|webm)$/,STREAMED=/\.(mp4|webm|mp3)$/;
 // Install keeps only the first screen; the page warms the rest one file at a time when idle.
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('water-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
@@ -22,7 +22,7 @@ async function partial(response,range){
  if(!m||(!m[1]&&!m[2])||start>end||start>=size)return new Response(null,{status:416,headers:{'Content-Range':`bytes */${size}`}});
  return new Response(blob.slice(start,end+1),{status:206,headers:{'Content-Type':response.headers.get('Content-Type')||'application/octet-stream','Content-Range':`bytes ${start}-${end}/${size}`,'Content-Length':String(end-start+1),'Accept-Ranges':'bytes'}});
 }
-// Cloudflare Pages ignores Range, so an uncached video is fetched once and stored while the worker answers every range:
+// Cloudflare Pages ignores Range, so uncached video or music is fetched once and stored while the worker answers every range:
 // Chrome fails a video that mixes network and worker-made responses, and 'bytes=0-' streams so play starts before the download ends.
 const downloads=new Map();
 function wholeVideo(cache,url){
@@ -45,7 +45,7 @@ async function respond(request){
  const hit=await cache.match(page?'/':request);
  if(hit)return range?partial(hit,range):hit;
  try{
-  if(range&&VIDEO.test(url.pathname))return await networkRange(cache,url.href,range);
+  if(range&&STREAMED.test(url.pathname))return await networkRange(cache,url.href,range);
   const response=await fetch(request);
   if(response.status===200&&!range&&response.type==='basic')cache.put(request,response.clone()).catch(()=>{});
   return response;
