@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initialState} from '../src/state.js';
-import {waterHeight,vesselGeometry,pourInto,islandRoute,islandStops,islandLanding,islandWalkTo,walkIslandStep,nearbyMapActions,pointOnRoute,discoveryStars} from '../src/scene-model.js';
+import {pourWaterHeight,jugRemaining,vesselGeometry,pourInto,islandRoute,islandStops,islandLanding,islandWalkTo,walkIslandStep,nearbyMapActions,pointOnRoute,discoveryStars} from '../src/scene-model.js';
 
-test('equal amounts occupy equal cross-section area in different vessels',()=>{
+test('equal amounts occupy equal volume in round vessels of different widths',()=>{
  const {tall,wide}=vesselGeometry;
- assert.ok(waterHeight(100,tall.width)>waterHeight(100,wide.width));
- assert.equal(waterHeight(100,tall.width)*tall.width,waterHeight(100,wide.width)*wide.width);
- assert.equal(waterHeight(-10,tall.width),0);
- assert.equal(waterHeight(150,tall.width),waterHeight(100,tall.width));
+ assert.ok(pourWaterHeight(100,tall.width)>pourWaterHeight(100,wide.width));
+ assert.ok(Math.abs(pourWaterHeight(100,tall.width)*tall.width**2-pourWaterHeight(100,wide.width)*wide.width**2)<1e-7);
+ assert.equal(pourWaterHeight(-10,tall.width),0);
+ assert.equal(pourWaterHeight(150,tall.width),pourWaterHeight(100,tall.width));
 });
 
 test('partial pours persist without awarding an observation until the vessel is full',()=>{
@@ -16,11 +16,15 @@ test('partial pours persist without awarding an observation until the vessel is 
  assert.equal(pourInto(q,o,'tall',40),false);
  assert.deepEqual(o.pours,[]);
  assert.equal(q.pours.tall,40);
+ assert.equal(jugRemaining(q.pours),160);
  assert.equal(pourInto(q,o,'tall',80),true);
  pourInto(q,o,'tall',10);
  assert.deepEqual(o.pours,['tall']);
  assert.equal(q.pours.tall,100);
  assert.equal(q.pours.wide,0);
+ assert.equal(jugRemaining(q.pours),100);
+ assert.equal(pourInto(q,o,'wide',100),true);
+ assert.equal(jugRemaining(q.pours),0);
  assert.equal(pourInto(q,o,'missing',100),false);
 });
 

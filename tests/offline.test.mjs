@@ -23,7 +23,7 @@ test('the built precache list covers every asset the app references, without PNG
  for(const film of ['/assets/story/intro.mp4','/assets/story/final.mp4'])assert.ok(later.includes(film)&&!shell.includes(film),'story films warm after install');
  for(const file of ['/assets/audio/music/main-theme.mp3','/assets/audio/music/ending-theme.mp3','/assets/story/intro.vtt','/assets/story/final.webp'])assert.ok(later.includes(file)&&!shell.includes(file),'music and film extras warm after install');
  assert.ok(later.indexOf('/assets/audio/music/main-theme.mp3')<later.indexOf('/assets/story/intro.mp4'),'music warms before the large films');
- for(let n=1;n<=10;n++)for(const ext of ['webp','mp4','webm'])assert.ok(all.has(`/assets/concepts/stage-${n}.${ext}`),`concept ${n}.${ext}`);
+ for(let n=1;n<=5;n++)for(const ext of ['webp','mp4'])assert.ok(all.has(`/assets/concepts/zone-${n}.${ext}`),`concept ${n}.${ext}`);
  // Legacy MVP backgrounds in style.css were never part of the built site.
  const legacy=new Set();
  const files=[...readdirSync('src').filter(f=>/\.(js|css)$/.test(f)).map(f=>'src/'+f),'index.html'];
@@ -41,15 +41,15 @@ test('the built precache list covers every asset the app references, without PNG
  assert.ok(checked>30,`only ${checked} references checked`);
 });
 
-test('the service worker parses, warms one video format, and answers byte ranges from cache',async()=>{
+test('the service worker parses, warms every file, and answers byte ranges from cache',async()=>{
  const source=readFileSync('public/sw.js','utf8');
  const added=[],cached=new Set(['/']),ctx=swContext({caches:{open:async()=>({match:async u=>cached.has(u)?new Response('x'):undefined,add:async u=>{added.push(u);cached.add(u);}})}});
- vm.runInContext(source.replace("SHELL=[],LATER=[]","SHELL=['/','/src/app.js'],LATER=['/assets/a.webp','/assets/concepts/stage-1.mp4','/assets/concepts/stage-1.webm','/assets/story/intro.mp4','/assets/story/final.mp4']"),ctx);
- assert.deepEqual({...await ctx.warmNext('webm')},{done:2,total:6});
+ vm.runInContext(source.replace("SHELL=[],LATER=[]","SHELL=['/','/src/app.js'],LATER=['/assets/a.webp','/assets/concepts/zone-1.mp4','/assets/story/intro.mp4','/assets/story/final.mp4']"),ctx);
+ assert.deepEqual({...await ctx.warmNext()},{done:2,total:6});
  assert.deepEqual(added,['/src/app.js']);
- while((await ctx.warmNext('webm')).done<6);
+ while((await ctx.warmNext()).done<6);
  assert.ok(added.includes('/assets/story/intro.mp4')&&added.includes('/assets/story/final.mp4'),'the two MP4-only story films are also available offline');
- assert.ok(added.includes('/assets/concepts/stage-1.webm')&&!added.includes('/assets/concepts/stage-1.mp4'),'only the playable format is stored');
+ assert.ok(added.includes('/assets/concepts/zone-1.mp4'),'the area clips are stored');
  const full=()=>new Response('0123456789',{headers:{'Content-Type':'video/mp4'}});
  for(const [range,body,header] of [['bytes=2-4','234','bytes 2-4/10'],['bytes=7-','789','bytes 7-9/10'],['bytes=-3','789','bytes 7-9/10'],['bytes=0-99','0123456789','bytes 0-9/10']]){
   const r=await ctx.partial(full(),range);

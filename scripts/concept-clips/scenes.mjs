@@ -18,7 +18,19 @@ function scale(x,y){return rect(x,y,190,55,'#e2eee2',C.ink,14)+line(x+40,y-12,x+
 function plate(x,y){return rect(x,y,200,22,C.ice,'#6baaba',5)+snow(x+175,y-37);}
 function collector(p,t,cycle=false){let s=plate(270,120)+cup(640,290,145,150,.15+.45*p);const pts=[[365,150],[440,235],[535,290],[630,340]];for(let i=0;i<pts.length-1;i++){s+=arrow(...pts[i],...pts[i+1],'#4b9e94');const u=(t/1.5-i*.2+2)%1;s+=drop(pts[i][0]+(pts[i+1][0]-pts[i][0])*u,pts[i][1]+(pts[i+1][1]-pts[i][1])*u,.5);}s+=rect(405,230,120,15,'#e4bb70','#aa8749',4)+rect(500,290,105,15,'#e4bb70','#aa8749',4);if(cycle)s+=vapor(145,280,t)+arrow(165,140,250,130,'#8aab9b')+cup(90,300,130,130,.6-.3*p);return s;}
 function scene(n,t){const p=ease(t/3),q=ease((t-3)/3),r=ease((t-6)/2);let s='';
- if(n===1){const fill=ease(t/2);s=cup(180,145,130,245,.7*fill)+cup(500,250,260,140,.61*fill)+arrow(355,245,460,245)+ice(260+400*q,95,0.65);s+=line(180,218.5,310,218.5,C.gold,'7 8')+line(500,304.6,760,304.6,C.gold,'7 8');if(t>6)s+=badge(480,425);}
+ if(n===1){
+  // Water and ice never share a frame: 0-6s is water only, 6s onward is ice only.
+  if(t<6){const pour=ease((t-.5)/2.2),tall=.7*(1-pour),wide=.61*pour;
+   s=cup(180,145,130,245,tall>.03?tall:0)+cup(500,250,260,140,wide>.05?wide:0);
+   if(t<3){s+=`<path d="M245 128Q430 30 630 238" fill="none" stroke="${C.gold}" stroke-width="5" stroke-dasharray="7 11" stroke-linecap="round"/>`;
+    if(pour>0&&pour<1)for(let i=0;i<4;i++){const u=(t*.8+i/4)%1,v=1-u;s+=drop(v*v*245+2*u*v*430+u*u*630,v*v*128+2*u*v*30+u*u*238,.6);}}
+   else{s+=`<rect x="185" y="218.5" width="120" height="166.5" rx="4" fill="none" stroke="${C.gold}" stroke-width="5" stroke-dasharray="9 10"/><rect x="505" y="304.6" width="250" height="80.4" rx="4" fill="none" stroke="${C.gold}" stroke-width="5"/>`+arrow(345,300,465,340);if(t>4.5)s+=badge(630,445);}
+  }else{const lift=ease((t-6.2)/.5),shift=ease((t-6.7)/.6),lower=ease((t-7.3)/.45),x=245+385*shift,y=335-245*lift+245*lower;
+   s=cup(180,145,130,245,0)+cup(500,250,260,140,0);
+   if(t>=7.75)s+=`<rect x="190" y="280" width="110" height="110" rx="14" fill="none" stroke="${C.gold}" stroke-width="5" stroke-dasharray="9 10"/><rect x="575" y="280" width="110" height="110" rx="14" fill="none" stroke="${C.gold}" stroke-width="5"/>`+badge(630,445);
+   s+=ice(x,y,1.2);
+  }
+ }
  if(n===2){s=ice(220,270,1.6)+cup(410,190,140,190,.7)+`<circle cx="740" cy="270" r="76" fill="none" stroke="#8aab9b" stroke-width="4" stroke-dasharray="8 12"/>`;s+=arrow(300,240,395,240)+arrow(570,240,650,240)+arrow(395,340,300,340,'#78b5c8')+arrow(650,340,570,340,'#78b5c8');s+=heat(330,185)+snow(350,405)+vapor(685,235,t)+snow(600,405);}
  if(n===3){const f=t<6?q:1-r;s=cup(260,130,160,240,.6+.054*f,f>.4)+scale(245,393)+cup(600,130,130,240,.6);s+=line(240,274,445,274,C.gold,'7 8')+arrow(450,270,450,257*f+270*(1-f),'#4b9e94')+scale(570,393)+ice(145,225,.6*f);if(t>6)s+=badge(480,420);}
  if(n===4){const e=.09*q;s=cup(220,140,160,240,Math.min(1,.96+e),q>.5)+cup(580,140,160,240,.68+.061*q,q>.5);s+=rect(580,140,160,50,'#ead9a755','#cfad5b',3);if(t>3)s+=`<path d="M370 145l22 -18 -12 24 23 -10" fill="none" stroke="#b97e54" stroke-width="5"/>`;if(t>6)s+=badge(660,425);}

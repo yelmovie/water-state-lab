@@ -1,6 +1,7 @@
 import {modal,btn} from './ui.js';
 import {playCue} from './sound.js';
 import {state,save} from './state.js';
+import {stageLessons} from './domain.js';
 
 // The coordinates are the residents' feet on the 1000 × 563 island painting.
 export const residents = [
@@ -58,7 +59,14 @@ export function openResidentList() {
  }
  modal('마을 복구 수첩',`<div class="village-tally"><strong>마을 복구 ${returned.length}/10</strong><span>인사 도장 ${met}/10</span></div><p class="village-goal">${villageFriend(state)?'★ 마을의 단짝 · 돌다리에 축제 깃발이 걸렸어!':'돌아온 주민과 첫인사를 나눠 봐. 도장 열 개를 모으면 돌다리에 축제 깃발이 걸려!'}</p>${spreads.join('')}`);
 }
+// A finished stage runs straight into its resident's talk. The last button carries on to `next`.
+let ending=null;
+export function stageEndTalk(stage,next,tool=''){
+ ending={stage,next,tool};
+ talkToResident(stage);
+}
 export function talkToResident(stage, followUp=false) {
+ const flow=state.route!=='map'&&ending?.stage===stage?ending:null;
  const r=returnedResidents(state).find(person=>person.stage===stage);
  if(!r)return;
  const first=!state.residentsMet.includes(stage);
@@ -77,6 +85,7 @@ export function talkToResident(stage, followUp=false) {
    marker.querySelector('.resident-speech').textContent=arriving?'인사하기':'···';
   }
  }
- modal(`${r.name}의 이야기`,`<article class="resident-chat"><img src="${portrait(r)}" alt="${r.role}"><div><small>${r.spot} · ${r.stage}장 복구</small><h3>${r.role} ${r.name}</h3><p>${followUp?r.reply:r.hello}</p><div class="village-stamp">${first?(villageFriend(state)?'★ 마을의 단짝! 돌다리에 축제 깃발이 걸렸어.':`✓ 첫인사 도장 · ${r.name}`):`✓ ${r.name}의 인사 도장`}</div><div class="resident-replies">${followUp?'':btn(r.ask,action('ask',r),'primary')}${btn('지도 보기','resident-close',followUp?'primary':'secondary')}</div></div></article>`);
+ const lesson=flow&&!followUp?`<section class="lesson-card"><small>${r.stage}장에서 알게 된 것</small><strong>${stageLessons[r.stage]}</strong>${flow.tool?`<span>${flow.tool}${(flow.tool.charCodeAt(flow.tool.length-1)-0xAC00)%28?'을':'를'} 얻었어!</span>`:''}</section>`:'';
+ modal(`${r.name}의 이야기`,`${lesson}<article class="resident-chat"><img src="${portrait(r)}" alt="${r.role}"><div><small>${r.spot} · ${r.stage}장 복구</small><h3>${r.role} ${r.name}</h3><p>${followUp?r.reply:r.hello}</p><div class="village-stamp">${first?(villageFriend(state)?'★ 마을의 단짝! 돌다리에 축제 깃발이 걸렸어.':`✓ 첫인사 도장 · ${r.name}`):`✓ ${r.name}의 인사 도장`}</div><div class="resident-replies">${followUp?'':btn(r.ask,action('ask',r),'primary')}${flow?(followUp?btn(flow.next.label,flow.next.action,'primary'):''):btn('지도 보기','resident-close',followUp?'primary':'secondary')}</div></div></article>`);
 }
 

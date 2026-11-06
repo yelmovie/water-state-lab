@@ -15,22 +15,26 @@ let activeDialog;
 export const offlineText=({done,total})=>total&&done>=total?C.teacher.offlineDone:C.teacher.offlineSaving.replace('{n}',total?Math.floor(done/total*100):0);
 
 /** Optional videos preserve the settings list and return focus to its selected item. */
-export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()=>{},showStory=()=>{},certificate=()=>{},notebook,discoveries,onSoundChange=()=>{},onReset,getResetToken=captureResetToken,storageStatus=getStorageStatus,offline=()=>null,previewStage=()=>{}}){
+export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()=>{},showStory=()=>{},certificate=()=>{},notebook,discoveries,onSoundChange=()=>{},onReset,getResetToken=captureResetToken,storageStatus=getStorageStatus,offline=()=>null}){
  if(activeDialog?.open){activeDialog.querySelector('#settings-x').focus();return activeDialog;}
  const opener=document.activeElement,dialog=document.createElement('dialog');
  dialog.className='settings-dialog';dialog.setAttribute('aria-labelledby','settings-title');
  const settings=state.settings;
- const done=state.restored===true&&[1,2,3,4,5].every(id=>state.completed.includes(id));
- const cache=offline(),teacher=`${paragraphs(C.teacher.lines)}${cache?`<p id="settings-offline" class="settings-muted" role="status">${esc(offlineText(cache))}</p>`:''}${details(C.teacher.standardsTitle,`<p>${esc(C.teacher.standardsIntro)}</p>${STANDARDS.map(s=>`<p><strong>[${esc(s.code)}]</strong> ${esc(s.text)}</p>`).join('')}`)}`;
- const stageChoices=experimentTitles.slice(1).map((title,i)=>`<option value="${i+1}" ${state.route===i+1?'selected':''}>${i+1}장 · ${esc(title)}</option>`).join('');
- const teacherTools=`<details class="settings-section teacher-tools" ${settings.adminUnlock?'open':''}><summary>전체 10장 · 모든 의뢰 해금</summary><div><p>${esc(C.teacher.toolsIntro)}</p><button type="button" id="settings-unlock" class="btn secondary wide" aria-pressed="${!!settings.adminUnlock}">${esc(settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff)}</button><div id="teacher-picker" ${settings.adminUnlock?'':'hidden'}><label for="teacher-stage">시연할 장</label><select id="teacher-stage" aria-label="이미 열린 화면 중 바로 이동할 장">${stageChoices}</select><div class="teacher-jumps"><button type="button" id="teacher-experiment" class="btn primary">실험 열기</button><button type="button" id="teacher-field" class="btn secondary">현장 의뢰 열기</button></div></div><p class="settings-muted">${esc(C.teacher.toolsNote)}</p>${switchButton('settings-reduced',C.sound.reduced,settings.reduced===true)}</div></details>`;
+ const earnedCertificate=()=>!settings.adminUnlock&&state.restored===true&&[1,2,3,4,5].every(id=>state.completed.includes(id));
+ const done=earnedCertificate();
+ const cache=offline(),teacher=`<h3>${esc(C.teacher.standardsTitle)}</h3><ul class="settings-standards">${STANDARDS.map(s=>`<li><strong>[${esc(s.code)}]</strong> ${esc(s.text)}</li>`).join('')}</ul>`;
+ const offlineStatus=cache?`<p id="settings-offline" class="settings-muted" role="status">${esc(offlineText(cache))}</p>`:'';
+ const teacherTools=`<section class="settings-unlock-card" aria-label="교사 시연">${switchButton('settings-unlock',C.teacher.toolsTitle,!!settings.adminUnlock)}<p id="settings-preview-notice" class="settings-muted" role="status">${esc(settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff)}</p></section>`;
  const credits=`${paragraphs(C.credits.lines)}${details(C.credits.sourcesTitle,`<p>${esc(C.credits.sourcesIntro)}</p>${C.credits.sources.map(([title,text])=>`<p><strong>${esc(title)}</strong><br>${esc(text)}</p>`).join('')}`)}<p>${esc(C.credits.copyright)}</p><p>${esc(C.credits.own)}</p><p>${esc(C.credits.external)}</p><p>${esc(C.credits.references)}</p>`;
- const clips=concepts.slice(1).map(clip=>{
-  const unlocked=settings.adminUnlock||fieldReady(clip.id,state.fieldwork?.chapters?.[clip.id]);
-  return `<button type="button" class="settings-concept-card" data-settings-concept="${clip.id}" ${unlocked?'':'disabled'}><img src="/assets/concepts/stage-${clip.id}.webp" alt="" loading="lazy"><span><strong>${clip.id}. ${esc(unlocked?clip.title:experimentTitles[clip.id])}</strong><small>${unlocked?C.replay.conceptReady:esc(C.replay.conceptLocked.replace('{n}',clip.id))}</small></span>${unlocked?'':icon('lock',20)}</button>`;
+ const clips=()=>concepts.slice(1).map(clip=>{
+  const unlocked=settings.adminUnlock||fieldReady(clip.id*2,state.fieldwork?.chapters?.[clip.id*2]);
+  return `<button type="button" class="settings-concept-card" data-settings-concept="${clip.id}" ${unlocked?'':'disabled'}><img src="/assets/concepts/zone-${clip.id}.webp" alt="" loading="lazy"><span><strong>${clip.id}. ${esc(unlocked?clip.title:experimentTitles[clip.id])}</strong><small>${unlocked?(settings.adminUnlock?'교사 시연 · 9초':C.replay.conceptReady):esc(C.replay.conceptLocked.replace('{n}',clip.id))}</small></span>${unlocked?'':icon('lock',20)}</button>`;
  }).join('');
  const records=`<div class="settings-records">${notebook?`<button type="button" id="settings-notebook" class="btn secondary">${icon('book')}${esc(C.app.notebook)}</button>`:''}${discoveries?`<button type="button" id="settings-discoveries" class="btn secondary">${icon('flask')}${esc(C.app.discoveries)}</button>`:''}</div>`;
- dialog.innerHTML=`<div class="settings-head"><h2 id="settings-title">${esc(C.title)}</h2><button type="button" id="settings-x" class="icon-btn" aria-label="${esc(C.close)}">${icon('close')}</button></div><p id="settings-save-notice" class="settings-notice" role="alert" hidden></p><div class="settings-scroll">${details(C.teacher.title,teacherTools+teacher)}${switchButton('settings-bgm',C.sound.bgm,settings.bgm===true)}${switchButton('settings-sfx',C.sound.sfx,settings.sfx!==false)}<div class="settings-volume"><label for="settings-bgm-volume">${esc(C.sound.volume)} <output id="settings-volume-output" for="settings-bgm-volume">${settings.bgmVolume??35}%</output></label><input type="range" id="settings-bgm-volume" min="0" max="100" step="5" value="${settings.bgmVolume??35}" aria-valuetext="${settings.bgmVolume??35}%" ${settings.bgm?'':'disabled'}></div><button type="button" id="settings-intro" class="btn secondary wide">${esc(C.replay.intro)}</button><div class="settings-replays"><button type="button" id="settings-ending" class="btn secondary wide" ${done?'':'disabled aria-describedby="settings-replay-locked"'}>${done?'':icon('lock',18)} ${esc(C.replay.ending)}</button><button type="button" id="settings-certificate" class="btn secondary wide" ${done?'':'disabled aria-describedby="settings-replay-locked"'}>${done?'':icon('lock',18)} ${esc(C.replay.certificate)}</button>${done?'':`<p id="settings-replay-locked" class="settings-muted">${esc(C.replay.locked)}</p>`}</div>${details(C.replay.concepts,`<p>${esc(C.replay.conceptsIntro)}</p><div class="settings-concept-list">${clips}</div>`)}${details(C.app.title,C.app.rows.map(([label,text])=>`<p><strong>${esc(label)}</strong><br>${esc(text)}</p>`).join('')+records+`<p class="settings-signature">${esc(C.app.name)} v${esc(APP_VERSION)} · ${esc(C.app.maker)}</p>`)}${details(C.student.title,paragraphs(C.student.lines))}${details(C.credits.title,credits)}<p id="settings-preview-notice" class="settings-notice" role="status" ${settings.adminUnlock?'':'hidden'}>${esc(C.teacher.previewNotice)}</p></div><footer class="settings-footer"><button type="button" id="settings-reset" class="btn secondary" ${settings.adminUnlock?'disabled aria-describedby="settings-preview-notice"':''}>${esc(C.reset.button)}</button><button type="button" id="settings-close" class="btn primary">${esc(C.close)}</button></footer>`;
+ const audio=`${switchButton('settings-bgm',C.sound.bgm,settings.bgm===true)}${switchButton('settings-sfx',C.sound.sfx,settings.sfx!==false)}<div class="settings-volume"><label for="settings-bgm-volume">${esc(C.sound.volume)} <output id="settings-volume-output" for="settings-bgm-volume">${settings.bgmVolume??35}%</output></label><input type="range" id="settings-bgm-volume" min="0" max="100" step="5" value="${settings.bgmVolume??35}" aria-valuetext="${settings.bgmVolume??35}%" ${settings.bgm?'':'disabled'}></div>${switchButton('settings-reduced',C.sound.reduced,settings.reduced===true)}`;
+ const videos=`<div class="settings-replays"><button type="button" id="settings-ending" class="btn secondary wide" ${done||settings.adminUnlock?'':'disabled aria-describedby="settings-replay-locked"'}>${esc(C.replay.ending)}</button><button type="button" id="settings-certificate" class="btn secondary wide" ${done?'':'disabled aria-describedby="settings-replay-locked"'}>${esc(C.replay.certificate)}</button><p id="settings-replay-locked" class="settings-muted" ${done?'hidden':''}>${esc(C.replay.locked)}</p></div>${details(C.replay.concepts,`<div id="settings-concept-list" class="settings-concept-list">${clips()}</div>`)}`;
+ const guides=details(C.student.title,paragraphs(C.student.lines))+details(C.teacher.title,teacher)+details(C.app.title,C.app.rows.map(([label,text])=>`<p><strong>${esc(label)}</strong><br>${esc(text)}</p>`).join('')+records+offlineStatus+`<p id="storage-diagnostics" class="settings-muted"></p><p class="settings-signature">${esc(C.app.name)} v${esc(APP_VERSION)} · ${esc(C.app.maker)}</p>`)+details(C.credits.title,credits);
+ dialog.innerHTML=`<div class="settings-head"><h2 id="settings-title">${esc(C.title)}</h2><button type="button" id="settings-x" class="icon-btn" aria-label="${esc(C.close)}">${icon('close')}</button></div><p id="settings-save-notice" class="settings-notice" role="alert" hidden></p><div class="settings-scroll">${teacherTools}${details('소리 · 화면',audio)}<button type="button" id="settings-intro" class="btn secondary wide">${esc(C.replay.intro)}</button>${details('영상·인증서',videos)}${details('가이드 · 앱 정보',guides)}</div><footer class="settings-footer"><button type="button" id="settings-reset" class="btn secondary" ${settings.adminUnlock?'disabled aria-describedby="settings-preview-notice"':''}>${esc(C.reset.button)}</button><button type="button" id="settings-close" class="btn primary">${esc(C.close)}</button></footer>`;
  document.body.append(dialog);activeDialog=dialog;
  let confirmation;
  dialog.addEventListener('close',()=>{
@@ -40,7 +44,7 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  const close=()=>dialog.close();
  dialog.querySelector('#settings-x').onclick=close;dialog.querySelector('#settings-close').onclick=close;
  const showStatus=()=>{const status=storageStatus(),notice=dialog.querySelector('#settings-save-notice');notice.textContent=status.message||'';notice.hidden=!status.message;
- let diagnostics=dialog.querySelector('#storage-diagnostics');if(!diagnostics){diagnostics=document.createElement('p');diagnostics.id='storage-diagnostics';diagnostics.className='settings-muted';dialog.querySelector('.settings-scroll').append(diagnostics);}
+ const diagnostics=dialog.querySelector('#storage-diagnostics');
  diagnostics.textContent=`현재 저장 상태 · 읽기 ${status.read==='ok'?'성공':'실패'} · 쓰기 ${{saved:'성공',failed:'실패',blocked:'보류','not-attempted':'아직 시도 전'}[status.write]||'확인 전'} · 충돌 ${status.conflict?'있음':'없음'} · 원본 보호 ${status.protected?'중':'없음'}${status.preview?' · 교사 시연은 학생 진행과 분리':''}`;
  };
  const persist=()=>{const result=save();showStatus();return result;};
@@ -49,29 +53,30 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  dialog.querySelector('#settings-bgm').onclick=()=>{settings.bgm=!settings.bgm;updateSwitch('#settings-bgm',settings.bgm);dialog.querySelector('#settings-bgm-volume').disabled=!settings.bgm;syncSound();};
  dialog.querySelector('#settings-sfx').onclick=()=>{settings.sfx=settings.sfx===false;updateSwitch('#settings-sfx',settings.sfx);syncSound();if(settings.sfx)void playClick();};
  dialog.querySelector('#settings-bgm-volume').oninput=e=>{settings.bgmVolume=Number(e.target.value);e.target.setAttribute('aria-valuetext',`${settings.bgmVolume}%`);dialog.querySelector('#settings-volume-output').textContent=`${settings.bgmVolume}%`;syncSound();};
- dialog.querySelector('#settings-unlock').onclick=e=>{
-  settings.adminUnlock=!settings.adminUnlock;e.currentTarget.setAttribute('aria-pressed',String(settings.adminUnlock));e.currentTarget.textContent=settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff;
-  dialog.querySelector('#teacher-picker').hidden=!settings.adminUnlock;
-  dialog.querySelector('#settings-reset').disabled=settings.adminUnlock;dialog.querySelector('#settings-preview-notice').hidden=!settings.adminUnlock;persist();render();
-  for(const button of dialog.querySelectorAll('[data-settings-concept]')){
-   const n=Number(button.dataset.settingsConcept);
-   button.disabled=!settings.adminUnlock&&!fieldReady(n,state.fieldwork?.chapters?.[n]);
-  }
+ dialog.querySelector('#settings-unlock').onclick=()=>{
+  settings.adminUnlock=!settings.adminUnlock;
+  persist(); // Ending a preview restores the student snapshot before any unlocks are refreshed.
+  updateSwitch('#settings-unlock',settings.adminUnlock);
+  const unlocked=earnedCertificate();
+  dialog.querySelector('#settings-preview-notice').textContent=settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff;
+  dialog.querySelector('#settings-reset').disabled=settings.adminUnlock;
+  dialog.querySelector('#settings-ending').disabled=!unlocked&&!settings.adminUnlock;
+  dialog.querySelector('#settings-certificate').disabled=!unlocked;
+  dialog.querySelector('#settings-replay-locked').hidden=unlocked;
+  dialog.querySelector('#settings-concept-list').innerHTML=clips();
+  render();
  };
- for(const [id,field] of [['teacher-experiment',false],['teacher-field',true]]) {
-  dialog.querySelector('#'+id).onclick=()=>{
-   const n=Number(dialog.querySelector('#teacher-stage').value);
-   if(!settings.adminUnlock||!experimentTitles[n])return;
-   close();previewStage(n,field);
-  };
- }
  dialog.querySelector('#settings-reduced').onclick=()=>{settings.reduced=!settings.reduced;updateSwitch('#settings-reduced',settings.reduced);document.documentElement.classList.toggle('reduce-motion',settings.reduced);persist();};
  dialog.querySelector('#settings-intro').onclick=()=>showStory('intro');
- dialog.querySelector('#settings-ending').onclick=()=>{if(done)showStory('final');};
- dialog.querySelector('#settings-certificate').onclick=()=>{if(done){close();certificate();}};
+ dialog.querySelector('#settings-ending').onclick=()=>{if(earnedCertificate()||settings.adminUnlock)showStory('final');};
+ dialog.querySelector('#settings-certificate').onclick=()=>{if(earnedCertificate()){close();certificate();}};
  if(notebook)dialog.querySelector('#settings-notebook').onclick=()=>{close();notebook();};
  if(discoveries)dialog.querySelector('#settings-discoveries').onclick=()=>{close();discoveries();};
- for(const clip of concepts.slice(1))dialog.querySelector(`[data-settings-concept="${clip.id}"]`).onclick=()=>{if(fieldReady(clip.id,state.fieldwork?.chapters?.[clip.id]))openConcept(clip.id,{reduced:settings.reduced,continueLabel:C.replay.conceptReturn});};
+ dialog.querySelector('#settings-concept-list').onclick=e=>{
+  const button=e.target.closest('[data-settings-concept]');if(!button||button.disabled)return;
+  const n=Number(button.dataset.settingsConcept);
+  if(settings.adminUnlock||fieldReady(n*2,state.fieldwork?.chapters?.[n*2]))openConcept(n,{reduced:settings.reduced,continueLabel:C.replay.conceptReturn});
+ };
  dialog.querySelector('#settings-reset').onclick=()=>{
   if(settings.adminUnlock||confirmation?.open)return;
   const token=getResetToken();if(!token){showStatus();return;}

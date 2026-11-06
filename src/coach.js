@@ -19,16 +19,17 @@ export function updateCoachMessage(text){
  if(current)current.notice=text;
 }
 document.addEventListener('click',event=>{
- if(help&&!event.target.closest('.compact-guide'))closeHelp();
+ // A hint button can replace itself while the click bubbles. The original path still identifies the panel.
+ if(help&&!event.composedPath().some(node=>node.classList?.contains('compact-guide')))closeHelp();
  const mapHint=document.querySelector('#map-coach-help');
  if(mapHint&&!mapHint.hidden&&!event.target.closest('.journey-companion')){mapHint.hidden=true;document.querySelector('.map-coach')?.setAttribute('aria-expanded','false');}
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&help){event.preventDefault();closeHelp(true);}});
 const fieldClues={
  1:['물과 얼음을 원하는 그릇으로 한 번씩 옮겨 봐.','그릇을 바꾸기 전과 후, 무엇의 모양이 달라졌는지 비교해.'],
- 2:['도구 하나를 고른 뒤 변신길을 눌러 봐.','얼리기·녹이기·증발·응결에 필요한 조건이 같을까?'],
+ 2:['그림을 보고 지금 필요한 도구 하나를 골라 봐.','물이 끓을 때는 물속에서 기포가 생겨. 얼기와 응결에는 어떤 조건이 필요할까?'],
  3:['세 사진은 처음 → 얼린 뒤 → 녹인 뒤야. 저울에도 추를 놓아 봐.','높이 눈금과 무게를 따로 비교해.'],
- 4:['방울이의 가득 찬 통과 물을 덜 담은 통을 비교해 봐.','얼음 위에 빈 공간이 남는 조건을 찾아 봐.'],
+ 4:['수도꼭지를 꾹 눌러 담고, 레버로 밤을 보내 봐. 터져도 다시 채우면 돼.','얼음은 물보다 자리를 더 차지해. 통 위쪽에 얼마나 남겨야 할까?'],
  5:['B판의 물을 손가락으로 여러 방향으로 펴 봐.','양·시간·바닥을 같게 두고, 펼친 넓이만 비교해.'],
  6:['앞 실험에서 살펴본 A와 B의 물을 공기 중으로 이어 봐.','A와 B에서 줄어든 물은 각각 어디로 갔을까?'],
  7:['냉각팩을 붙이고 시험한 뒤, 다른 컵으로 옮겨 다시 시험해.','컵 이름이 바뀌어도 물방울이 생기는 조건은 무엇일까?'],
@@ -38,10 +39,10 @@ const fieldClues={
 };
 function fieldInstruction(n){const c=state.fieldwork.chapters[n];return c?fieldTask(n,c).instruction:fieldMissions[n].goal;}
 export function cleanupCoach(){closeHelp();current=null;}
-export function syncCoach(n,progress,field,ready){
- cleanupCoach();level=0;current={n,progress,field,ready};
+export function syncCoach(n,progress,field,ready,task){
+ cleanupCoach();level=0;current={n,progress,field,ready,task};
  const guide=document.querySelector('.compact-guide');if(!guide)return;
- const p=guide.querySelector('p');p.textContent=field?fieldInstruction(n):progress.instruction;
+ const p=guide.querySelector('p');p.textContent=task?.instruction??(field?fieldInstruction(n):progress.instruction);
  p.setAttribute('role','status');p.setAttribute('aria-live','polite');
  guide.querySelector('.hint-button').setAttribute('aria-expanded','false');
  const steps=[...document.querySelectorAll('.activity-progress li')];const next=steps.find(s=>!s.classList.contains('done'));next?.classList.add('next');if(next)next.setAttribute('aria-current','step');
@@ -53,22 +54,18 @@ export function syncCoach(n,progress,field,ready){
   // One forward action remains visible while optional tools scroll.
   const forward=[...tools.querySelectorAll(':scope > button')].reverse().find(b=>/next|complete|field-finish/.test(b.dataset.action||''));
   if(forward){forward.classList.add('stage-forward');if(!forward.disabled)forward.classList.add('next-action');}
-  const direction=document.getElementById('stage-direction');
-  if(direction&&forward&&!forward.disabled)direction.textContent=`관찰을 마쳤어! ‘${forward.textContent.trim()}’를 눌러 다음으로 가 봐.`;
-  const instruction=direction?.textContent||fieldInstruction(n);
-  const target=[...tools.querySelectorAll('button:not(:disabled)')].find(button=>instruction.includes('‘'+button.textContent.trim()+'’'));
-  if(target&&target!==forward)target.classList.add('current-action');
+
  }
 }
 export function handleCoach(action){
- if(!current)return false;const {n,progress,field,ready}=current;
+ if(!current)return false;const {n,progress,field,ready,task}=current;
  if(action==='concept-replay'){if(ready)openConcept(n,{reduced:state.settings.reduced});return true;}
  if(action!=='buddy-hint')return false;
  if(help){closeHelp(true);return true;}
  const guide=document.querySelector('.compact-guide');help=document.createElement('div');help.id='coach-help';help.className='coach-help';help.setAttribute('role','region');help.setAttribute('aria-label','방울이의 단계별 힌트');
  const badge=guide.querySelector('.coach-trigger-badge');if(badge){badge.textContent='…';badge.classList.remove('has-news');}
  guide.querySelector('.coach-trigger')?.setAttribute('aria-label','방울이 힌트 보기');
- const clues=field?[current.notice||fieldInstruction(n),fieldClues[n][1]]:[current.notice||progress.instruction,progress.hint];
- const draw=()=>{help.innerHTML=`<div class="coach-help-head"><b>방울이의 단서 ${level+1} / 2</b><button class="icon-btn" aria-label="힌트 닫기">${icon('close')}</button></div><p>${esc(clues[level])}</p><details class="coach-progress"><summary>이번 활동 순서</summary><ol>${[...progress.steps,{label:'현장 의뢰 해결',done:ready}].map(step=>`<li>${step.done?'완료 · ':''}${esc(step.label)}</li>`).join('')}</ol></details><div class="coach-help-actions">${ready?btn(icon('retry',20)+' 개념 다시 보기','concept-replay','concept-revisit'):''}${level===0?btn('단서 하나 더','','secondary').replace('data-action=""','data-hint-more'):''}<button class="btn primary" data-hint-try>직접 해 볼게</button></div>`;help.querySelector('.icon-btn').onclick=()=>handleCoach('buddy-hint');help.querySelector('[data-hint-more]')?.addEventListener('click',()=>{level=1;draw();void playCue('hint');});help.querySelector('[data-hint-try]').onclick=()=>{handleCoach('buddy-hint');const target=document.querySelector('.current-action,.next-action')||document.querySelector('.expedition-board,.phaser-stage');target?.scrollIntoView({block:'nearest'});if(target){spotlight=target;target.classList.add('coach-spotlight');target.focus?.({preventScroll:true});}};};
+ const clues=[current.notice||task?.instruction||(field?fieldInstruction(n):progress.instruction),field?fieldClues[n][1]:progress.hint];
+ const draw=()=>{help.innerHTML=`<div class="coach-help-head"><b>방울이의 단서 ${level+1} / 2</b><button class="icon-btn" aria-label="힌트 닫기">${icon('close')}</button></div><p>${esc(clues[level])}</p><details class="coach-progress"><summary>이번 활동 순서</summary><ol>${[...progress.steps,{label:'현장 의뢰 해결',done:ready}].map(step=>`<li>${step.done?'완료 · ':''}${esc(step.label)}</li>`).join('')}</ol></details><div class="coach-help-actions">${ready?btn(icon('retry',20)+' 개념 다시 보기','concept-replay','concept-revisit'):''}${level===0?btn('단서 하나 더','','secondary').replace('data-action=""','data-hint-more'):''}<button class="btn primary" data-hint-try>직접 해 볼게</button></div>`;help.querySelector('.icon-btn').onclick=()=>handleCoach('buddy-hint');help.querySelector('[data-hint-more]')?.addEventListener('click',()=>{level=1;draw();void playCue('hint');});help.querySelector('[data-hint-try]').onclick=()=>{handleCoach('buddy-hint');const target=document.querySelector('.guided-control,.next-action')||document.querySelector('.expedition-board,.phaser-stage');target?.scrollIntoView({block:'nearest'});if(target){spotlight=target;target.classList.add('coach-spotlight');target.focus?.({preventScroll:true});}};};
  draw();guide.append(help);guide.querySelector('.hint-button').setAttribute('aria-expanded','true');help.querySelector('.icon-btn')?.focus({preventScroll:true});void playCue('hint');return true;
 }

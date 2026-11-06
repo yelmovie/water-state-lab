@@ -26,7 +26,7 @@ export function drawRealDrop(ctx,x,y,r=4,alpha=1){
  ctx.strokeStyle='#ffffffdf';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(x-r*.1,y-r*.15,r*.47,Math.PI*1.03,Math.PI*1.53);ctx.stroke();
  ctx.restore();
 }
-export function drawWaterStroke(ctx,lines,{left,top,width,height,amount=1,time=0}){
+export function drawWaterStroke(ctx,lines,{left,top,width,height,amount=1,time=0,grain}){
  const remaining=Math.max(0,1-time/(amount>1?110:60));
  if(!remaining)return;
  ctx.save();ctx.lineJoin='round';ctx.lineCap='round';
@@ -36,9 +36,10 @@ export function drawWaterStroke(ctx,lines,{left,top,width,height,amount=1,time=0
    ctx.beginPath();
    line.forEach(([x,y],i)=>{x=left+x/500*width;y=top+y/310*height;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
   };
-  ctx.globalAlpha=remaining*(amount>1?.46:.28);
-  ctx.strokeStyle='#536f67';ctx.lineWidth=13;ctx.shadowColor='#617e6c';ctx.shadowBlur=amount>1?3:1;path();ctx.stroke();
-  ctx.shadowBlur=0;ctx.globalAlpha=remaining*remaining*(amount>1?.5:.15);
+  ctx.globalAlpha=remaining*(amount>1?.74:.53);
+  ctx.strokeStyle='#387e89';ctx.lineWidth=amount>1?14:10;ctx.shadowColor='#527d75';ctx.shadowBlur=amount>1?3:1;path();ctx.stroke();
+  ctx.shadowBlur=0;if(grain){ctx.strokeStyle=grain;ctx.globalAlpha=remaining*(amount>1?.58:.37);ctx.lineWidth=amount>1?11:7;path();ctx.stroke();}
+  ctx.globalAlpha=remaining*remaining*(amount>1?.5:.23);
   ctx.strokeStyle='#d9f6f1';ctx.lineWidth=2;path();ctx.stroke();
  }
  ctx.restore();

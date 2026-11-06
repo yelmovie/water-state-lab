@@ -67,11 +67,11 @@ with sync_playwright() as p:
 
     def ready(field=False):
         if field:
-            page.wait_for_selector('#field-canvas[data-ready=true]',state='visible')
-            page.wait_for_function("()=>document.querySelector('#field-canvas')?.getBoundingClientRect().width>100")
+            page.wait_for_selector('#field-canvas[data-ready=true],#field-transform,#field-coldnight',state='visible')
+            page.wait_for_function("()=>document.querySelector('#field-canvas,#field-transform,#field-coldnight')?.getBoundingClientRect().width>100")
         else:
-            page.wait_for_selector('.phaser-stage[data-ready=true]',state='attached')
-            page.wait_for_function("()=>document.querySelector('.phaser-stage canvas')?.getBoundingClientRect().width>100")
+            page.wait_for_selector('.phaser-stage[data-ready=true],#freeze-bench',state='attached')
+            page.wait_for_function("()=>document.querySelector('.phaser-stage canvas,#freeze-bench')?.getBoundingClientRect().width>100")
         page.wait_for_timeout(100)
 
     def click(action):
@@ -108,7 +108,7 @@ with sync_playwright() as p:
             paintedSamples=pixels.size;
           }
           return {canvas:rect(canvas),intrinsicCanvas:canvas?{width:canvas.width,height:canvas.height}:null,paintedSamples,
-            stage:rect(document.querySelector('#field-canvas,.phaser-stage')),
+            stage:rect(document.querySelector('#field-canvas,#field-transform,#field-coldnight,#freeze-bench,.phaser-stage')),
             pageOverflowY:document.documentElement.scrollHeight>innerHeight+2,
             pageOverflowX:document.documentElement.scrollWidth>innerWidth+2,
             documentSize:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},
@@ -119,10 +119,11 @@ with sync_playwright() as p:
         }''')
         row={'viewport':f'{width}x{height}','route':route,'kind':'field' if field else 'base',**result}
         row['failures']=[]
-        if not result['canvas'] or result['canvas']['width']<100 or result['canvas']['height']<80:row['failures'].append('missing-or-small-canvas')
+        area=result['stage'] if field and route==2 else result['canvas']
+        if not area or area['width']<100 or area['height']<80:row['failures'].append('missing-or-small-experiment')
         if result['pageOverflowX']:row['failures'].append('horizontal-overflow')
         if width>=873 and result['pageOverflowY']:row['failures'].append('landscape-page-scroll')
-        if field and result['paintedSamples']<4:row['failures'].append('apparently-blank-field-canvas')
+        if field and route not in (2,4) and result['paintedSamples']<4:row['failures'].append('apparently-blank-field-canvas')
         report['layout'].append(row)
         if route=='map' or (width in [1280,873] and route in [1,5,7,9]) or (width==375 and route in [1,9]):
             filename=f'{row["kind"]}-{route}-{width}x{height}.png'
@@ -166,13 +167,30 @@ with sync_playwright() as p:
             if n==1:
                 for source,target in [((110,100),(365,205)),((110,265),(570,205))]:drag(*source,*target)
             elif n==2:
-                drag(100,310,450,62);drag(100,60,450,149)
-                alternative('time','evaporate');alternative('cold','condense');click('field-test')
+                choose=lambda tool:page.locator(f'[data-transform-tool="{tool}"]').click()
+                apply=page.locator('[data-transform-apply]')
+                onward=page.locator('[data-transform-next]')
+                choose('warm');apply.click()
+                page.locator('.transform-feedback[data-correct=false]').wait_for()
+                assert read('state.fieldwork.chapters[2].marks.length')==0
+                onward.click()
+                cold=page.locator('[data-transform-tool="cold"]');sample=page.locator('[data-transform-sample]')
+                cold.drag_to(sample)
+                page.locator('.transform-feedback[data-correct=true]').wait_for()
+                onward.click()
+                choose('warm');apply.click();onward.click()
+                choose('time');page.locator('#transform-time').press('End');assert page.locator('.transform-feedback[data-correct=false]').is_visible();onward.click()
+                page.locator('#transform-time').press('End');assert page.locator('.is-boiling .bubble').count()>0;onward.click()
+                choose('cold');apply.click();onward.click()
             elif n==3:
                 for item,target in [('water','first'),('ice','middle'),('melt','last'),('weight','balance')]:alternative(item,target)
-                click('field-test')
             elif n==4:
-                drag(345,65,345,205);click('field-test')
+                for night,count in [(1,1),(2,2),(3,3)]:
+                    for vessel in range(count):
+                        tap=page.locator(f'[data-pour="{vessel}"][data-dir="1"]')
+                        for _ in range(17):tap.press('Enter')
+                    page.locator('[data-lever]').press('Enter');page.locator('[data-night-next]').click(timeout=5000)
+                page.locator('[data-reason="grow"]').click()
             elif n==5:
                 page.mouse.move(*point(407,102));page.mouse.down()
                 for row in range(5):
@@ -182,10 +200,11 @@ with sync_playwright() as p:
                 page.mouse.up();ready(True)
                 click('field-test')
             elif n==6:
-                alternative('A','air');alternative('B','air')
+                click('field-water-A');click('field-destination-floor');assert not chapter_ready(n)
+                click('field-destination-air');click('field-water-B');click('field-destination-air')
             elif n==7:
                 drag(105,170,320,195);click('field-test');drag(105,170,550,195);click('field-test')
-                alternative('condition','cold')
+                click('field-condition-cold')
             elif n==8:
                 alternative('tray','under');click('field-test');alternative('cold','plate');click('field-test')
             elif n==9:
@@ -194,7 +213,7 @@ with sync_playwright() as p:
                 page.locator('.expedition-choices').evaluate("el=>{for(let p=el;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}")
                 page.locator('#field-from').select_option('3');page.locator('#field-to').select_option('4');click('field-connect')
             elif n==10:
-                alternative('time','evaporate');alternative('cold','condense');click('field-test')
+                page.locator('#field-cycle-time').press('End');click('field-cycle-condense')
             assert chapter_ready(n),f'fieldReady({n}) remained false: '+str(read(f'state.fieldwork.chapters[{n}]'))
             assert not page.locator('[data-action="field-finish"]').is_disabled(),'earned finish button must enable'
             result=read(f'state.fieldwork.chapters[{n}]')
@@ -218,18 +237,20 @@ with sync_playwright() as p:
             def base_point(x,y):
                 box=page.locator('.phaser-stage canvas').bounding_box()
                 return (box['x']+x/720*box['width'],box['y']+y/330*box['height'])
+            pixel_js="""()=>{const c=document.querySelector('.phaser-stage canvas'),g=c.getContext('2d');return [100,450].map(x=>Array.from(g.getImageData(x*c.width/720,96*c.height/330,8,32).data));}"""
+            unpainted=page.evaluate(pixel_js)
             page.mouse.move(*base_point(70,100));page.mouse.down()
             for xy in [(170,100),(220,200),(300,100)]:page.mouse.move(*base_point(*xy),steps=12)
             page.mouse.up();ready(False)
             strokes=json.loads(read('JSON.stringify(state.activities.draw.strokes)'))
             assert strokes and len(strokes[0])>=3,'real base-lab drawing must produce a stored stroke'
-            pixel_js="""()=>{const c=document.querySelector('.phaser-stage canvas'),g=c.getContext('2d');return [[100,100],[450,100]].map(([x,y])=>[...g.getImageData(x*c.width/720,y*c.height/330,1,1).data]);}"""
             before_pixels=page.evaluate(pixel_js)
-            assert all(b>r+50 and g>r+40 for r,g,b,a in before_pixels),'drawn blue line must visibly appear in both comparison panels'
+            changed=lambda pixels:all(sum(abs(a-b)>15 for a,b in zip(base,now))>=20 for base,now in zip(unpainted,pixels))
+            assert changed(before_pixels),'wet line must visibly change pixels in both comparison panels'
             page.reload(wait_until='networkidle');ready(False)
             assert strokes==json.loads(read('JSON.stringify(state.activities.draw.strokes)')),'drawing coordinates changed on reload'
             after_pixels=page.evaluate(pixel_js)
-            assert all(b>r+50 and g>r+40 for r,g,b,a in after_pixels),'restored strokes must paint back onto the real canvas after reload'
+            assert changed(after_pixels),'restored strokes must visibly repaint both comparison panels'
             page.screenshot(timeout=20000,path=str(OUT/'base-5-drawing-restored.png'),full_page=True)
             report['flows'].append({'name':'base-drawing-serialization-and-visible-restoration','pass':True,'beforePixels':before_pixels,'afterPixels':after_pixels});print('PASS real drawing stored and visibly restored in both canvases after reload',flush=True)
         except Exception as error:
@@ -278,6 +299,7 @@ with sync_playwright() as p:
             setup(1,True)
             page.evaluate("async()=>{const {state,save}=await import('/src/state.js');state.settings.adminUnlock=false;save();}")
             click('settings')
+            page.get_by_text('소리 · 화면',exact=True).click()
             page.locator('#settings-bgm').click();page.locator('#settings-bgm-volume').evaluate("el=>{el.value='75';el.dispatchEvent(new Event('input',{bubbles:true}));}")
             assert read('state.settings.bgm===true&&state.settings.sfx===false&&state.settings.bgmVolume===75')
             page.locator('#settings-sfx').click();assert read('state.settings.sfx===true')
@@ -327,7 +349,7 @@ with sync_playwright() as p:
                     let c=chapterState(n);const act=(action,payload={})=>c=fieldAction(n,c,action,payload);
                     const place=(item,target)=>act('place',{item,target});
                     if(n===1)for(const item of ['water','ice'])for(const target of ['tall','wide'])place(item,target);
-                    if(n===2){for(const [item,target] of [['cold','freeze'],['warm','melt'],['time','evaporate'],['cold','condense']])place(item,target);act('test');}
+                    if(n===2){for(const [item,target] of [['cold','freeze'],['warm','melt'],['warm','evaporate'],['cold','condense']])act('try-route',{item,target,time:100});}
                     if(n===3){for(const [item,target] of [['water','first'],['ice','middle'],['melt','last'],['weight','balance']])place(item,target);act('test');}
                     if(n===4){act('setting',{value:100});act('test');act('setting',{value:75});act('test');}
                     if(n===5){for(let cell=0;cell<24;cell++)act('spread',{cell});place('destination','air');act('test');}
@@ -352,8 +374,9 @@ with sync_playwright() as p:
                 click('test-core');assert read('state.lab.final.tested')
                 page.locator('#final-lever').focus();page.keyboard.press('End');ready(True)
                 assert read("state.route===10&&!state.restored&&state.fieldwork.active===10&&state.fieldwork.pending==='field-ending'"),'lever must open the unsolved final field request before the ending'
-                assert page.locator('[data-action="field-finish"]').is_disabled()
-                alternative('time','evaporate');alternative('cold','condense');click('field-test')
+                assert page.locator('[data-action="field-finish"]').count()==0
+                click('field-help-close')
+                page.locator('#field-cycle-time').press('End');click('field-cycle-condense')
                 assert chapter_ready(10)
                 page.screenshot(timeout=20000,path=str(OUT/f'core-{fault}-field10-ready.png'),full_page=True)
                 click('field-finish');page.wait_for_selector('.concept-dialog[open]')

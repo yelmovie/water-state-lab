@@ -256,7 +256,7 @@ test('first prediction survives observation and a changed thought is recorded se
  assert.equal(state.inquiry.drawPrediction,'thick');
  assert.equal(state.inquiry.drawInitialPrediction,'thick');
  handleInquiry('ix-draw-answer-thin',ctx);
- handleInquiry('ix-draw-air',ctx);
+ handleInquiry('ix-draw-where-air',ctx);
  assert.equal(state.inquiry.drawReflection,'thin');
  assert.equal(state.activities.draw.faster,'thin');
  handleInquiry('ix-draw-new',ctx);

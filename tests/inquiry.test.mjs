@@ -5,7 +5,7 @@ import {collectorTrial,newDiagnosis,diagnosisResolved} from '../src/collector-mo
 import {targetParts} from '../src/domain.js';
 import {state,initialState,readState,KEY} from '../src/state.js';
 import {handleInquiry,inquiryNotebook} from '../src/inquiry.js';
-import {activityReady,pipeTrial,sortCards} from '../src/activity-model.js';
+import {activityReady,pipeTrial,sortCards,nextSortCard} from '../src/activity-model.js';
 const ctx={render(){},go(){},pageDone(){}};
 globalThis.localStorage={setItem(){}};
 globalThis.document={querySelector(){return {textContent:'',classList:{add(){},remove(){}}}},getElementById(){return null}};
@@ -53,7 +53,7 @@ test('forward-only drawing time keeps all three scenes and record viewing never 
  const html=inquiryNotebook();assert.ok(!html.includes('data-action="ix-draw-view'));
 });
 test('two different pipe fills are enough to compare without a hidden minimum gap',()=>{
- const a=initialState().activities;a.pipe.trials=[pipeTrial(80),pipeTrial(85)];a.pipe.chosen=0;a.pipe.marked=true;assert.equal(activityReady(4,a),true);
+ const a=initialState().activities;a.pipe.trials=[pipeTrial(85),pipeTrial(90)];a.pipe.chosen=0;a.pipe.marked=true;assert.equal(activityReady(4,a),true);
 });
 
 test('repeated preparation wiping cannot permanently hide future condensation',()=>{
@@ -70,16 +70,19 @@ test('switching from a dragged classification to buttons advances to the next ob
  const first=sortCards[0];
  for(const action of ['sort-card-'+first.id,'sort-place-'+first.type,'sort-check'])handleInquiry('ix-'+action,ctx);
  assert.equal(state.inquiry.sortProof,'');
- for(const card of sortCards.slice(1)){
-  handleInquiry('ix-sort-place-'+card.type,ctx);handleInquiry('ix-sort-check',ctx);
+ for(const _ of sortCards.slice(1)){
+  const card=nextSortCard(state.activities.sort);handleInquiry('ix-sort-place-'+card.type,ctx);handleInquiry('ix-sort-check',ctx);
  }
  assert.equal(Object.keys(state.activities.sort.placed).length,sortCards.length);
 });
 
 
-test('starting with a different example advances to an unrepresented state',()=>{
+test('the everyday scenes finish the stage, as the standard asks for examples around us',()=>{
  Object.assign(state,initialState());state.route=2;
  for(const action of ['sort-card-frost','sort-place-solid','sort-check','sort-place-liquid','sort-check','sort-place-gas','sort-check'])handleInquiry('ix-'+action,ctx);
- assert.deepEqual(state.activities.sort.placed,{frost:'solid',water:'liquid',vapor:'gas'});
+ assert.deepEqual(state.activities.sort.placed,{frost:'solid',rain:'liquid',laundry:'gas'});
  assert.equal(activityReady(2,state.activities),true);
+ Object.assign(state,initialState());
+ Object.assign(state.activities.sort.placed,{ice:'solid',water:'liquid',vapor:'gas'});
+ assert.equal(activityReady(2,state.activities),false,'lab examples alone are not enough');
 });

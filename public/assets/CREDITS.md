@@ -30,7 +30,7 @@
 | v2/story-repair.webp / .png | OpenAI 이미지 생성 도구로 2026-10-21 새로 제작한 도입. 기존 방울이·연구섬을 참조. WebP 실행본, PNG 재작업 원본 |
 | v2/rescue-reward.webp / .png | 같은 도구로 새로 제작한 투명 복구 보상 그림. 과학 장치의 실측 제작도가 아닌 이야기 연출 |
 | learning/scale.webp | 2026-10-24 내장 OpenAI image_gen으로 생성한 전자저울 외형. LCD 숫자는 그림에 넣지 않고 실험 상태에 따라 코드로 표시 |
-| learning/tank-frame.webp | 같은 도구로 생성한 투명 관찰 탱크 테두리. 투명 중앙에 물높이·얼음 변화·눈금을 코드로 겹쳐 표시 |
+| learning/tank-frame.webp | 같은 도구로 생성한 투명 관찰 탱크 테두리. 2026-11-06부터 쓰지 않아 `_unused/public-assets/learning/`로 옮겼고 빌드에 포함하지 않음 |
 | learning/condenser-plate.webp | 같은 도구로 생성한 응결 금속판. 물방울과 물 수집 결과는 코드로 표시 |
 | v2/research-island-v4.webp | 같은 도구로 생성한 물 탐험 5개 구역 지도. 지도 글자·단계 선택·이동 경로·캐릭터는 별도 코드로 표시 |
 | fonts/jua-korean-400.woff2, jua-latin-400.woff2 | Jua, Woowahan Brothers. SIL Open Font License 1.1. 기존 사용자 프로젝트의 로컬 파일을 원본 그대로 사용. 라이선스 전문은 fonts/Jua-OFL.txt에 동봉 |
@@ -107,7 +107,7 @@
 ## 실험 소품·연구섬 지도 추가 · 2026-10-24
 
 - 생성 도구: 내장 OpenAI `image_gen`. 별도 API·CLI 생성 경로는 사용하지 않았다.
-- 실행 파일: `learning/scale.webp`, `learning/tank-frame.webp`, `learning/condenser-plate.webp`, `v2/research-island-v4.webp`.
+- 실행 파일: `learning/scale.webp`, `learning/condenser-plate.webp`, `v2/research-island-v4.webp`.
 - 생성 원본: 프로젝트의 `image/generated-learning/scale.png`, `tank-frame.png`, `condenser-plate.png`, `research-island-v4.png`. 실행에는 WebP를 사용하며 원본 PNG를 보존한다.
 - 실험 소품은 생성된 알파를 보존하고 바깥 투명 여백을 잘라 WebP로 내보냈다. 지도는 불투명 배경 이미지다. 측정 숫자·수위·기포·물방울·정확한 눈금과 조작 영역은 이미지에 고정하지 않고 기존 코드와 상태 모델로 표시한다.
 - 최종 프롬프트 원문, 출력 크기·용량·알파 확인, 적용 위치는 [2026-10-24 에셋 생성 기록](../../docs/reviews/ASSET-GENERATION-20261024.md)에 기록했다.
@@ -172,6 +172,8 @@
 
 기존 타이틀 방울이를 참고해 내장 OpenAI 이미지 생성 도구로 그렸다. 게임 에셋은 `v2/bangul-walk.webp`이며, 128px 정사각형 12칸을 정면·왼쪽·오른쪽·뒷면 순으로 배치했다. 각 행 가운데 칸이 정지 자세다.
 
+2026-11-06 색 보정: 타이틀 방울이와 맞도록 로컬에서 몸을 맑은 파랑(평균 HSV 187/.34/.66 → 200/.60/.91)으로, 가운을 흰색으로 바꾸고 볼터치를 다시 칠했다. 새 이미지 생성 없음. 눈·입·포즈·칸 배치는 원본 그대로다.
+
 <details><summary>이미지 생성 프롬프트</summary>
 
 Create ONE production-ready transparent 3-column by 4-row walk-cycle sprite sheet for a small top-down school science island adventure videogame. Use the reference image as identity: Bangul, cute round aqua-blue teardrop scientist, one pointed tip, navy eyes, short white lab coat, tiny blue feet, blue ID badge on front. Same visual materials, but soften the bright cyan so it fits a hand painted muted teal/sand island. NO magnifier in hands. Strict atlas layout: exactly TWELVE separate full-body sprites, flat evenly spaced 3 columns × 4 rows on transparent background, no visible rules or writing. Row 1 DOWN toward viewer (front); row 2 LEFT true side profile facing image-left; row 3 RIGHT true side profile facing image-right; row 4 UP away from viewer (back of blue drop head and coat, NO face). Columns left-foot forward / centered idle feet level / right-foot forward in EVERY row. Side poses must look like walking, clear foot separation and opposing arms, no waving. Same 3/4 overhead camera, same sizes, same scale and proportions and feet baseline within grid cell. Keep each figure entirely inside its own cell surrounded by empty transparent gutter. Aim game icon legibility at 46 px high. No background, shadows under feet, labels, arrows, typography, ground, borders or accessories. Professional coherent soft painted stylized game-character turnaround.
@@ -231,3 +233,32 @@ Production-ready realistic transparent 2x2 sprite sheet for a school condensatio
 Production transparent sprite atlas with exactly THREE isolated realistic school science props in an evenly spaced horizontal row, each same sized equal cell. LEFT a square ceramic warming pad on a rounded low cork base, pale terracotta center with subtle warm orange rim, a safe simple tabletop WARMING REST for melting ice, no knobs, no electric coil, no thermometer. CENTER a flexible rectangular sealed BLUE GEL COLD PACK pouch with softly rounded corners, frosty translucent blue gel visible within, white fabric hook-and-loop attachment strap sitting next to it, must look like a flexible medical ice gel pouch and NOT a water bottle. RIGHT a small simple brass-and-ivory hourglass with sand partly fallen to convey waiting, precise realistic glass and warm wood/brass edges. All objects entirely in frame, pure transparent background and gutters, consistent soft daylight, realistic photographic educational game style, no labels, numbers, writing, steam, cold fog, icons or UI.
 
 </details>
+
+## 2026-11-05 · 실험 그림과 주민 음성
+
+- `learning/heat-plate-guide.webp`, `learning/cold-plate-guide.webp`, `learning/cold-plate-dry.webp`, `learning/water-material.webp`: 프로젝트용으로 Codex 내장 ImageGen에서 생성 후 WebP로 변환했다. 물의 양과 기포 등 관찰 결과는 코드로 표시한다.
+- `audio/briefings/resident-01.m4a`~`resident-10.m4a`: 프로젝트 대사를 모모 자비스의 기본 음성 프리셋으로 합성 후 인코딩했다.
+
+## 2026-11-06 · 물 모으는 장치의 컬러 피겨스
+
+- 9장과 10장의 벡터 모형 및 상호작용은 이 프로젝트용으로 만들었다. 투영과 잉크 렌더링은 [Colorfigures](https://april-zhu.com/colorfigures) (April Zhu, MIT)의 로컬 엔진을 사용한다. 저작권과 라이선스 전문은 `vendor/colorfigures/LICENSE.md`에 동봉했다.
+- 물방울의 표시와 도착 여부는 앱의 실험 모형을 읽는다. 과학 참고: [미국 지질조사국 — 응결과 물의 순환](https://www.usgs.gov/water-science-school/science/condensation-and-water-cycle?page=1).
+
+## 얼기·녹기 소품과 개념 영상 · 2026-11-06
+
+생성형 이미지가 아니라 코드로 직접 그렸다. `scripts/learning-art/freeze-props.mjs`가 SVG를 WebP로 만들고, 글자는 그림에 넣지 않는다.
+
+| 파일 | 용도 |
+|---|---|
+| `learning/weight-100g.webp` | 뒤섞인 실험 사진의 양팔저울에 올리는 100 g 추. 양팔저울과 도장은 코드로 그린다 |
+| `learning/ice-pop-soft.webp`, `learning/ice-pop-frozen.webp` | 얼리기 전과 얼린 뒤의 쭈쭈바 |
+| `learning/pipe-water.webp`, `learning/pipe-burst.webp` | 물이 찬 배관과 얼어서 금이 간 배관 |
+| `concepts/stage-3.mp4`, `concepts/stage-3.webp` | 얼면 왜 커질까 개념 영상. `scripts/concept-clips/freeze-why.mjs`와 `render-freeze.mjs`, macOS AVFoundation 인코더 `encode-mac.swift`로 렌더 |
+
+이전 `concepts/stage-3.webm`은 ffmpeg 없이 다시 만들 수 없어 `_unused/public-assets/concepts/`로 옮겼고, 3번 영상은 MP4만 쓴다.
+
+## 복구 장소 지도 클립 · 2026-11-06
+
+- 실행 파일: `village/stage-1~10-on.webp`(켜지는 장면 4초), `village/stage-1~10-idle.webp`(반복 장면 2초).
+- 제작: `scripts/map-clips`의 Remotion 코드로 직접 그린 투명 벡터 애니메이션. 외부 이미지·음원을 쓰지 않았다.
+- 도구: Remotion 4.0.541(개인·소규모 조직 무료 라이선스, 직원 4명 이상 회사는 회사 라이선스 필요). 게임 실행에는 Remotion이 들어가지 않는다.

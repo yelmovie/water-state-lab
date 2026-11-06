@@ -1,0 +1,16 @@
+{
+  "name": "water-map-clips",
+  "private": true,
+  "description": "Offline Remotion source for the restored-place map clips. The game never loads this at runtime.",
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.541",
+    "@remotion/renderer": "4.0.541",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "remotion": "4.0.541",
+    "sharp": "0.34.3"
+  }
+}

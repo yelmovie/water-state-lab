@@ -1,4 +1,4 @@
-import {mkdir,copyFile,cp,writeFile,rm,readdir,readFile} from 'node:fs/promises';
+import {mkdir,copyFile,cp,writeFile,rm,readdir,readFile,unlink} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -11,19 +11,22 @@ await writeFile(path.join(root,'src/version.js'),versionModule(false));
 if(output!==path.join(path.resolve(root),'dist')&&path.dirname(output)!==path.join(path.resolve(root),'tmp'))throw new Error('Unexpected build path');
 await rm(output,{recursive:true,force:true});
 await mkdir(path.join(output,'assets/v2'),{recursive:true});
-await cp(path.join(root,'src'),path.join(output,'src'),{recursive:true});
+const copyTree={recursive:true,filter:source=>!path.basename(source).startsWith('._')};
+await cp(path.join(root,'src'),path.join(output,'src'),copyTree);
 await writeFile(path.join(output,'src/version.js'),versionModule(true));
-await cp(path.join(root,'public/assets/vendor'),path.join(output,'assets/vendor'),{recursive:true});
-await cp(path.join(root,'public/assets/fonts'),path.join(output,'assets/fonts'),{recursive:true});
-for(const folder of ['audio','story','concepts','learning','stages','icons','models'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),{recursive:true});
+await cp(path.join(root,'public/assets/vendor'),path.join(output,'assets/vendor'),copyTree);
+await cp(path.join(root,'public/assets/fonts'),path.join(output,'assets/fonts'),copyTree);
+for(const folder of ['audio','story','concepts','learning','stages','village','icons','models'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),copyTree);
 for(const file of await readdir(path.join(root,'public/assets/v2'))){
- if(file.endsWith('.webp'))await copyFile(path.join(root,'public/assets/v2',file),path.join(output,'assets/v2',file));
+ if(!file.startsWith('._')&&file.endsWith('.webp'))await copyFile(path.join(root,'public/assets/v2',file),path.join(output,'assets/v2',file));
 }
 await copyFile(path.join(root,'public/assets/CREDITS.md'),path.join(output,'assets/CREDITS.md'));
 await copyFile(path.join(root,'public/manifest.webmanifest'),path.join(output,'manifest.webmanifest'));
 await copyFile(path.join(root,'index.html'),path.join(output,'index.html'));
 await writeFile(path.join(output,'build-info.json'),JSON.stringify({version,builtAt:new Date().toISOString()}));
 const offline=await writeServiceWorker();
+// exFAT on macOS can create AppleDouble metadata even when only the real files were copied.
+for(const entry of await readdir(output,{recursive:true,withFileTypes:true}))if(entry.isFile()&&entry.name.startsWith('._'))await unlink(path.join(entry.parentPath??entry.path,entry.name));
 console.log(`Built standalone site in dist/; editable PNG originals stay in public/assets/v2. Offline cache ${offline.cache}: ${offline.shell.length} first-screen + ${offline.later.length} background files.`);
 
 /** Precache lists come from the real dist files; the cache name is their content hash. */
@@ -34,7 +37,7 @@ async function offlineLists(dir){
  const firstScreen=['assets/v2/title-island.webp','assets/v2/title-logo.webp','assets/v2/bangul-title.webp','assets/v2/research-island-v4.webp','assets/v2/buddy-poses-clean.webp','assets/v2/bangul-walk.webp','assets/v2/story-repair.webp'];
  const url=f=>f==='index.html'?'/':'/'+f,shell=[],later=[];
  for(const f of files){
-  const deferred=f.endsWith('.mp4')||/^assets\/(v2|stages|learning|concepts|models|story|audio\/music|vendor\/three)\//.test(f);
+  const deferred=f.endsWith('.mp4')||/^assets\/(v2|stages|village|learning|concepts|models|story|audio\/(music|briefings)|vendor\/(?:three|colorfigures))\//.test(f);
   (deferred&&!firstScreen.includes(f)?later:shell).push(url(f));
  }
  later.sort((a,b)=>/\.(mp4|webm)$/.test(a)-/\.(mp4|webm)$/.test(b));

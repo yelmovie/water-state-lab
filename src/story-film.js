@@ -11,10 +11,11 @@ export function playStoryFilm(kind,{muted=false,onFinish}={}) {
  const film=films[kind];
  if(!film||document.querySelector('.story-film[open]'))return;
  const opener=document.activeElement,dialog=document.createElement('dialog');
- dialog.className='story-film';dialog.setAttribute('aria-labelledby','film-title');
- dialog.innerHTML=`<header class="film-heading"><h2 id="film-title">${film.title}</h2><button type="button" class="btn secondary" data-film="skip">건너뛰기</button></header>
+ dialog.className='story-film story-film--full';dialog.setAttribute('aria-labelledby','film-title');
+ dialog.style.setProperty('--film-poster',`url("${film.poster}")`);
+ dialog.innerHTML=`<header class="film-heading"><h2 id="film-title">${film.title}</h2><div class="film-actions"><button type="button" class="btn secondary" data-film="restart">다시 보기</button><button type="button" class="btn secondary" data-film="skip">건너뛰기</button></div></header>
  <video playsinline preload="metadata" poster="${film.poster}" aria-label="${film.title} 영상" aria-describedby="film-summary"><track kind="captions" srclang="ko" label="한국어" src="${film.captions}"></video>
- <div class="film-footer"><p class="film-summary" id="film-summary">${film.summary}</p><button type="button" class="btn secondary" data-film="restart">다시 보기</button></div>
+ <p class="film-summary sr-only" id="film-summary">${film.summary}</p>
  <p class="film-status" role="status" hidden></p>`;
  document.body.append(dialog);
  const video=dialog.querySelector('video'),status=dialog.querySelector('.film-status');

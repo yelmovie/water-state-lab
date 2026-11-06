@@ -1,3 +1,5 @@
+import {villageClips} from './village-clips.js';
+
 // Coordinates follow the windows, lamps and equipment in research-island-v4.webp.
 const lamps=[
  {x:315,y:451,rx:100,ry:30,cool:true,art:'<ellipse class="water-ring" cx="315" cy="454" rx="56" ry="12"/><ellipse class="water-ring" cx="315" cy="454" rx="34" ry="7"/><path class="water-jet" d="M299 451 Q310 420 315 449 Q323 423 333 452"/>'},
@@ -19,17 +21,24 @@ function festivalFlags(){
  }).join('');
  return `<g class="village-festival"><path class="garland-cord" d="M541 554Q618 585 696 580"/>${flags}</g>`;
 }
-export function villageLights(returned,fresh,festival){
+function clipMarkup(returned,fresh){
+ const place=([x,y,w,h])=>`left:${x/16.72}%;top:${y/9.41}%;width:${w/16.72}%;height:${h/9.41}%`;
+ return `<div class="village-clips" aria-hidden="true">${returned.map(({stage})=>{
+  const isNew=fresh.includes(stage),{box}=villageClips.find(c=>c.id===stage);
+  return `<div class="village-clip${isNew?' is-new':''}" style="${place(box)}">${isNew?`<img class="clip-on" src="/assets/village/stage-${stage}-on.webp" alt="">`:''}<img class="clip-idle" src="/assets/village/stage-${stage}-idle.webp" alt="" decoding="async"></div>`;
+ }).join('')}</div>`;
+}
+export function villageLights(returned,fresh,festival,motion=true){
  const dormant=lamps.map(({x,y,rx,ry},i)=>returned.some(r=>r.stage===i+1)?'':`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#village-sleep)"/>`).join('');
  const lights=returned.map(({stage})=>{
   const {x,y,rx,ry,cool,art}=lamps[stage-1];
   return `<g class="village-upgrade${fresh.includes(stage)?' is-new':''}" data-upgrade="${stage}">
    <ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#village-${cool?'aqua':'amber'})"/>
-   ${art}${fresh.includes(stage)?`<ellipse class="lighting-ring" cx="${x}" cy="${y}" rx="${rx*.72}" ry="${ry*.72}"/>`:''}</g>`;
+   <g class="village-art">${art}</g>${fresh.includes(stage)?`<ellipse class="lighting-ring" cx="${x}" cy="${y}" rx="${rx*.72}" ry="${ry*.72}"/>`:''}</g>`;
  }).join('');
- return `<svg class="village-lights" viewBox="0 0 1672 941" preserveAspectRatio="none" aria-hidden="true">
+ return `<svg class="village-lights${motion?' has-clips':''}" viewBox="0 0 1672 941" preserveAspectRatio="none" aria-hidden="true">
   <defs><radialGradient id="village-sleep"><stop stop-color="#29404f" stop-opacity=".48"/><stop offset=".55" stop-color="#425763" stop-opacity=".32"/><stop offset="1" stop-color="#425763" stop-opacity="0"/></radialGradient><radialGradient id="village-amber"><stop stop-color="#ffeaa1" stop-opacity=".85"/><stop offset=".48" stop-color="#ffc962" stop-opacity=".52"/><stop offset="1" stop-color="#ffb545" stop-opacity="0"/></radialGradient>
   <radialGradient id="village-aqua"><stop stop-color="#e2ffff" stop-opacity=".85"/><stop offset=".52" stop-color="#75f4e9" stop-opacity=".53"/><stop offset="1" stop-color="#61e9f1" stop-opacity="0"/></radialGradient></defs>
-  ${dormant}${lights}<g class="festival-ropes" visibility="${festival?'visible':'hidden'}">${festivalFlags()}</g></svg>`;
+  ${dormant}${lights}<g class="festival-ropes" visibility="${festival?'visible':'hidden'}">${festivalFlags()}</g></svg>${motion?clipMarkup(returned,fresh):''}`;
 }
 

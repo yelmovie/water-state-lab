@@ -1,7 +1,7 @@
 import {initialInquiry,sanitizeInquiry} from './inquiry-model.js';
 import {initialActivities,validateActivities} from './activity-model.js';
 import {defaultParts,canEnter} from './domain.js';
-import {initialFieldwork,cleanFieldwork} from './fieldwork-model.js';
+import {initialFieldwork,cleanFieldwork,migrateFieldwork} from './fieldwork-model.js';
 import {restoreDrawingMetadata} from './drawing-records.js';
 export const KEY='water-drop-lab:v1';
 export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,adminUnlock:false},lab:{
@@ -38,7 +38,7 @@ function loadState(storage){
   const s={...fallback,...raw,settings:{...fallback.settings,...raw.settings},lab:{...fallback.lab}};
   s.residentsMet=Array.isArray(raw.residentsMet)?[...new Set(raw.residentsMet.filter(n=>Number.isInteger(n)&&n>=1&&n<=10))]:[];
   s.villageArrivals=Array.isArray(raw.villageArrivals)?[...new Set(raw.villageArrivals.filter(n=>Number.isInteger(n)&&n>=1&&n<=10))]:[];
-  s.schemaVersion=2;s.inquiry=sanitizeInquiry(raw.inquiry);s.fieldwork=cleanFieldwork(raw.fieldwork);
+  raw.fieldwork=migrateFieldwork(raw.fieldwork);s.schemaVersion=2;s.inquiry=sanitizeInquiry(raw.inquiry);s.fieldwork=cleanFieldwork(raw.fieldwork);
   // Sanitized data can be shown, but rejected observations must not replace their source.
   if(raw.inquiry!==undefined&&!preservesSource(raw.inquiry,s.inquiry)||raw.fieldwork!==undefined&&!preservesSource(raw.fieldwork,s.fieldwork,true))repaired=true;
   s.settings.sfx=typeof raw.settings?.sfx==='boolean'?raw.settings.sfx:s.settings.sound;
@@ -53,6 +53,7 @@ function loadState(storage){
   if(!matches(s.lab,fallback.lab)||!matches(s.settings,fallback.settings)||!Array.isArray(s.completed)||!Array.isArray(s.pages)||!s.evidence||typeof s.evidence!=='object'||Array.isArray(s.evidence)||typeof s.restored!=='boolean')return result(fallback,'damaged');
   // Teacher preview is a session-only copy, never a saved permission or progress.
   s.settings.adminUnlock=false;
+  const start=defaultParts();if(['plate','ramp','tube','bucket'].some(k=>s.lab.workshop.parts?.[k]&&(s.lab.workshop.parts[k].x!==start[k].x||s.lab.workshop.parts[k].y!==start[k].y)))s.lab.workshop={parts:start,selected:'plate',cold:false,angle:0,trials:[]};
   const parts=s.lab.workshop.parts;
   if(!Object.hasOwn(parts,s.lab.workshop.selected)||s.lab.observe.selected<0||s.lab.observe.selected>3||s.lab.classify.current<0||s.lab.classify.current>3)return result(fallback,'damaged');
   if(!s.completed.every(n=>Number.isInteger(n)&&n>=1&&n<=5)||!s.pages.every(n=>Number.isInteger(n)&&n>=1&&n<=10))return result(fallback,'damaged');

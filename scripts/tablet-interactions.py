@@ -70,6 +70,8 @@ with sync_playwright() as p:
         ready()
 
     def click(action):
+        if page.locator('.phaser-stage').count():
+            page.wait_for_selector('.phaser-stage[data-ready=true]',state='attached',timeout=4500)
         selector='[data-action="'+action+'"]'
         page.locator(selector).evaluate_all("es=>es.forEach(e=>{for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;})")
         page.locator(selector+':visible').first.click()
@@ -82,7 +84,9 @@ with sync_playwright() as p:
         return (box['x']+x/720*box['width'],box['y']+y/330*box['height'])
 
     def drag(x,y,tx,ty,hold=0):
-        ready();page.mouse.move(*point(x,y));page.mouse.down()
+        ready()
+        page.evaluate('()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
+        page.mouse.move(*point(x,y));page.mouse.down()
         page.mouse.move(*point(tx,ty),steps=15)
         if hold:page.wait_for_timeout(hold)
         page.mouse.up();ready()
@@ -158,7 +162,7 @@ with sync_playwright() as p:
         setup(1)
         for x in [300,535]:drag(100,150,x,150)
         assert read('state.activities.observe.pours.length')==2
-        click('act-observe-step-1');drag(195,150,520,150)
+        click('act-observe-step-1');drag(440,203,590,170)
         assert read('state.activities.observe.iceMoved')
         click('act-observe-step-2');ready();page.mouse.click(*point(360,150));ready()
         verify_time_drag(1)
@@ -230,9 +234,11 @@ with sync_playwright() as p:
     def grip_flow():
         setup(9,'state.lab.workshop.parts=structuredClone(targetParts);state.lab.workshop.angle=20;state.lab.workshop.cold=true;')
         before=read('({angle:state.lab.workshop.angle,funnel:state.lab.workshop.parts.funnel})')
-        # This starts 32 logical pixels left of the visible radius-24 handle.
-        # The widened hit area must catch the drag without moving the funnel.
-        drag(313,144,313,164)
+        # The pointer starts outside the visible circle, inside the wider hit area.
+        # Convert the actual ramp endpoint into its handle position on the canvas.
+        handle=page.evaluate("""async()=>{const {state}=await import('/src/state.js');const {rampEndpoint}=await import('/src/scene-model.js');
+            const w=state.lab.workshop,p=rampEndpoint(w.parts.ramp,w.angle);return {x:p.x-65,y:p.y-45};}""")
+        drag(handle['x']-32,handle['y'],handle['x']-32,handle['y']+20)
         assert read('state.lab.workshop.angle')!=before['angle']
         assert read('state.lab.workshop.parts.funnel')==before['funnel']
         page.screenshot(path=str(OUT/'grip-stage-9.png'))
@@ -264,9 +270,10 @@ with sync_playwright() as p:
             if fault=='cooling':click('core-cooling')
             else:value('#diagnosis-funnel',420)
             click('diagnosis-test');click('connect-core')
+            page.wait_for_selector('#final-valve')
             # The visible valve radius is 23; x=517 is 32px left of its centre.
             drag(517,270,517,235)
-            assert read('state.lab.final.valve')==100
+            assert read('state.lab.final.valve')==100,read('state.lab.final')
             page.screenshot(path=str(OUT/f'grip-stage-10-{fault}.png'))
             click('test-core');value('#final-lever',100)
             page.wait_for_selector('.ending-main')

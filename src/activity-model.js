@@ -4,7 +4,7 @@ export function initialActivities(){return {
  version:1,
  observe:{step:0,pours:[],iceMoved:false,clothWet:false,time:0,records:[]},
  sort:{placed:{},selected:'',hidden:{placed:{},tries:{}}},
- freeze:{onScale:false,prediction:66,phase:'water',records:[],predicted:false,compared:false,challenge:{amount:0,prediction:0,trials:[]}},
+ freeze:{onScale:false,prediction:66,phase:'water',records:[],predicted:false,compared:false,talk:0,popSeen:'',pipeTry:'',challenge:{amount:0,prediction:0,trials:[]}},
  pipe:{fill:95,trials:[],chosen:-1,marked:false},
  draw:{strokes:[],time:0,records:[],faster:'',destination:''},
  compare:{heat:0,time:0,baseline:false,records:[],pins:[],destination:''},
@@ -20,8 +20,8 @@ export function heatingTrial(heat,time){
  const heated=70-time*(.1+heat/100*.1)-(boiling?(warming-55)*.3:0);
  return {heat,time,room:Math.round(room*10)/10,heated:Math.round(heated*10)/10,boiling};
 }
-export function pipeTrial(fill){fill=limit(fill,40,100);const expanded=Math.round(fill*1.09*10)/10;return {fill,expanded,space:Math.max(0,Math.round((100-expanded)*10)/10),safe:expanded<=95,risk:expanded>100?'높음':expanded>95?'보통':'낮음'};}
-export const pipeGoals={reserve:'학습 모형 목표 · 얼음 위 빈 공간 5% 이상',capacity:'이번 의뢰 목표 · 얼음이 통 밖으로 넘치지 않기'};
+export const iceVolume=fill=>Math.round(fill*1.09*10)/10;
+export function pipeTrial(fill){fill=limit(fill,40,100);const expanded=iceVolume(fill);return {fill,expanded,space:Math.max(0,Math.round((100-expanded)*10)/10),safe:expanded<=95,risk:expanded>100?'높음':expanded>95?'보통':'낮음'};}
 export function pipeAssessment(fill,goal='reserve'){
  const trial=pipeTrial(fill),fits=trial.expanded<=100;
  return {...trial,fits,extraReserve:trial.safe,goal,met:goal==='capacity'?fits:trial.safe};
@@ -30,7 +30,7 @@ export function pipeFinding(fill){const t=pipeAssessment(fill);return `얼음 ${
 export function dryTrace(thickness,time){return limit(1-time/(thickness==='thin'?60:110),0,1);}
 export function dewTrial(time,cold=true){return {time:limit(time),cold,drops:cold?Math.floor(limit(time)/5):0,mass:cold?250+limit(time)/50:250};}
 export const sortCards=[
- {id:'ice',name:'접시 안의 얼음',label:'접시 안의 얼음',type:'solid',art:'ice',proof:'접시를 바꿔도 모양이 그대로야.',source:'실험 기록'},
+ {id:'ice',name:'접시 안의 얼음',label:'접시 안의 얼음',type:'solid',art:'ice',proof:'그릇을 바꿔도 모양이 그대로야.',source:'실험 기록'},
  {id:'water',name:'물병 속의 물',label:'물병 속의 물',type:'liquid',art:'jug',proof:'담긴 그릇에 맞게 모양이 바뀌었어.',source:'실험 기록'},
  {id:'vapor',name:'천이 마르면서 공기로 간 물',label:'천이 마르면서\n공기로 간 물',type:'gas',art:'cloth',proof:'물은 보이지 않는 수증기로 변했어. 천 자체를 분류하는 게 아니야.',source:'실험 기록'},
  {id:'frost',name:'냉동실 안의 얼음',label:'냉동실 안의 얼음',type:'solid',art:'ice',proof:'얼음은 고체 상태의 물이야.',source:'새로운 생활 장면'},
@@ -47,13 +47,17 @@ export function hiddenSceneTry(sort,id,type){const card=hiddenScenes.find(c=>c.i
 export const freezeAmounts=[40,50,70,80];
 export function freezeChallengeTrial(amount,prediction){amount=limit(amount,40,80);prediction=limit(prediction,amount,amount+15);const actual=Math.round(amount*1.09*10)/10,error=Math.round(Math.abs(prediction-actual)*10)/10;return {amount,prediction,actual,error,close:error<=1};}
 export const bestFreezeChallenge=trials=>trials.length?trials.reduce((b,t)=>t.error<b.error?t:b):null;
-export const sortedTypes=sort=>new Set(sortCards.filter(c=>sort.placed[c.id]===c.type).map(c=>c.type));
-export const nextSortCard=sort=>sortCards.find(c=>!sortedTypes(sort).has(c.type))||sortCards.find(c=>!sort.placed[c.id])||sortCards[0];
+// 4과10-01 asks for examples around us, so the three everyday scenes finish this stage.
+const dailyCards=sortCards.filter(c=>['frost','rain','laundry'].includes(c.id));
+export const sortedTypes=sort=>new Set(dailyCards.filter(c=>sort.placed[c.id]===c.type).map(c=>c.type));
+export const nextSortCard=sort=>dailyCards.find(c=>!sort.placed[c.id])||sortCards.find(c=>!sort.placed[c.id])||sortCards[0];
+/** Stage 3 starts with the cup already measured, so the first choice is the prediction. */
+export function freezeStart(a){const f=a.freeze;if(f.onScale)return;f.onScale=true;if(!f.records.some(r=>r.kind==='water'))f.records.push({kind:'water',level:60,mass:100});}
 export function activityReady(n,a){switch(n){
  case 1:return a.observe.pours.length===2&&a.observe.iceMoved&&a.observe.records.some(r=>r.kind==='cloth'&&r.time>=80);
  case 2:return sortedTypes(a.sort).size===3;
  case 3:return ['water','ice','melt'].every(k=>a.freeze.records.some(r=>r.kind===k))&&a.freeze.compared;
- case 4:return a.pipe.trials.length>=2&&Math.max(...a.pipe.trials.map(t=>t.fill))-Math.min(...a.pipe.trials.map(t=>t.fill))>0&&a.pipe.trials[a.pipe.chosen]?.safe&&a.pipe.marked;
+ case 4:return a.pipe.trials.some(t=>!t.safe)&&a.pipe.trials[a.pipe.chosen]?.safe===true&&a.pipe.marked;
  case 5:return a.draw.strokes.some(s=>s.length>=3)&&[0,1,2].every(b=>a.draw.records.some(r=>r.band===b))&&a.draw.faster==='thin'&&a.draw.destination==='air';
  case 6:return a.compare.baseline&&a.compare.records.some(r=>r.boiling)&&['surface','inside','level'].every(k=>a.compare.pins.includes(k))&&a.compare.destination==='air';
  case 7:return a.dew.records.length>=2&&a.dew.rewiped&&a.dew.again;
@@ -72,6 +76,7 @@ export function validateActivities(value){
  if(!value.observe.pours.every(x=>['tall','wide'].includes(x))||!value.compare.pins.every(x=>['surface','inside','level'].includes(x)))return false;
  if(!Number.isInteger(value.observe.step)||value.observe.step<0||value.observe.step>2)return false;
  if(!Object.entries(value.sort.placed).every(([id,type])=>sortCards.some(c=>c.id===id&&c.type===type)))return false;
+ if(![0,1,2,3].includes(value.freeze.talk))return false;
  if(!value.freeze.records.every(r=>['water','ice','melt'].includes(r.kind)&&Number.isFinite(r.level)&&Number.isFinite(r.mass)))return false;
  if(!Object.entries(value.sort.hidden.placed).every(([id,type])=>hiddenScenes.some(c=>c.id===id&&c.type===type))||!Object.entries(value.sort.hidden.tries).every(([id,n])=>hiddenScenes.some(c=>c.id===id)&&Number.isInteger(n)&&n>=0&&n<100))return false;
  if(value.freeze.challenge.trials.length>20||!value.freeze.challenge.trials.every(t=>t&&['amount','prediction','actual','error'].every(k=>Number.isFinite(t[k]))))return false;

@@ -1,13 +1,42 @@
 // Shared geometry and learner actions. No renderer, clock or DOM dependency.
 export const clampValue=(v,min,max)=>Math.max(min,Math.min(max,v));
-export const vesselGeometry={tall:{x:300,width:100},wide:{x:535,width:192}};
+export const pourServing=100,jugCapacity=2*pourServing;
+export const vesselGeometry={tall:{x:320,width:100,height:186},wide:{x:548,width:176,height:154}};
+// For round vessels viewed at the same angle, volume is proportional to diameter² × height.
+export const servingVolume=100**2*114;
+export function pourWaterHeight(amount,width){return clampValue(amount,0,pourServing)/pourServing*servingVolume/width**2;}
+export function jugRemaining({tall,wide}){return clampValue(jugCapacity-tall-wide,0,jugCapacity);}
 export function waterHeight(amount,width){return clampValue(amount,0,100)*160/100*100/width;}
+// The atlas beaker's inner walls and floor, as fractions measured from the art.
+export const beakerShell=(x,base,width,height)=>({left:x-width*.75,top:base-height*1.04,width:width*1.5,height:height*1.1});
+export const beakerInner=({left,top,width,height})=>({cx:left+width*.53,half:width*.285,ry:width*.057,floor:top+height*.868});
 export function pourInto(inquiry,observation,key,amount){
  if(!Object.hasOwn(vesselGeometry,key))return false;
  inquiry.pourTarget=key;
- inquiry.pours[key]=clampValue(inquiry.pours[key]+Math.max(0,amount),0,100);
- if(inquiry.pours[key]>=100&&!observation.pours.includes(key))observation.pours.push(key);
- return inquiry.pours[key]>=100;
+ inquiry.pours[key]=clampValue(inquiry.pours[key]+Math.max(0,amount),0,pourServing);
+ if(inquiry.pours[key]>=pourServing&&!observation.pours.includes(key))observation.pours.push(key);
+ return inquiry.pours[key]>=pourServing;
+}
+export function pourComparison(pours){
+ const {tall,wide}=vesselGeometry,heights={tall:pourWaterHeight(pours.tall,tall.width),wide:pourWaterHeight(pours.wide,wide.width)};
+ const ready=pours.tall>=pourServing&&pours.wide>=pourServing;
+ return {ready,heights,higher:heights.tall>=heights.wide?'tall':'wide',ratio:ready?Math.round(Math.max(heights.tall,heights.wide)/Math.min(heights.tall,heights.wide)):0};
+}
+// Older saves recorded a finished pour without its measured amount.
+export function comparedPours(inquiry,observation){
+ return Object.fromEntries(Object.keys(vesselGeometry).map(key=>[key,observation.pours.includes(key)?pourServing:inquiry.pours[key]]));
+}
+// One pair holds the poured water, an identical pair takes the ice: only the state of the water differs.
+export const compareStage={scale:.8,floor:236,water:{tall:92,wide:232},ice:{tall:440,wide:590},iceSize:72,iceFill:.9};
+export function iceSeat(key){const {floor,ice,iceSize:size}=compareStage;return {x:ice[key],y:floor-size*.46,size};}
+export function iceDropTarget({x,y}){
+ const {floor,ice,scale}=compareStage;
+ if(y<floor-170||y>floor+30)return null;
+ return Object.keys(ice).filter(key=>Math.abs(x-ice[key])<vesselGeometry[key].width*scale/2+34).sort((a,b)=>Math.abs(x-ice[a])-Math.abs(x-ice[b]))[0]??null;
+}
+export function restingIceY({floor,size,waterTop}){
+ const rest=floor-size/2;
+ return waterTop===null?rest:Math.min(rest,waterTop+size*.4);
 }
 // Foot coordinates traced on research-island-v4 (1000 × 563). Shared points are bridge junctions.
 export const islandStops=[[210,291],[286,135],[521,286],[683,144],[801,316]];

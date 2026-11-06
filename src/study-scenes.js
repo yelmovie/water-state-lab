@@ -4,27 +4,55 @@ import {dryTrace} from './activity-model.js';
 import {visibleDew,wipeDroplets} from './inquiry-model.js';
 import {resetDrawingExperiment} from './drawing-records.js';
 import {drawRealDrop,drawWaterStroke} from './study-materials.js';
+import {compareStage,comparedPours,iceSeat,iceDropTarget} from './scene-model.js';
+import {drawVessel,drawVesselFront,waterSurfaceY,dashedLine} from './pouring-scene.js';
 const reduced=()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
 let lastIce=false,iceRelease=null,lastWet=false;
 export function createIceScene(scene){
- const moved=state.activities.observe.iceMoved;
- scene.add.image(195,187,'real-ice','0').setDisplaySize(245,245);
- scene.add.image(520,187,'real-ice','1').setDisplaySize(265,265);
- scene.text(195,282,'처음 접시',20);scene.text(520,282,'옮길 그릇',20);
- const end={x:moved?520:195,y:162};
- const ice=scene.add.image(end.x,end.y,'real-ice','2').setDisplaySize(104,104).setDepth(5);
- if(moved)scene.add.image(195,162,'real-ice','2').setDisplaySize(104,104).setAlpha(.16);
- else{ice.setInteractive({useHandCursor:true});scene.input.setDraggable(ice);}
+ const o=state.activities.observe,moved=o.iceMoved,{water,ice:icePair,scale,floor}=compareStage;
+ const keys=Object.keys(water),names={tall:'길쭉한 그릇',wide:'넓은 그릇'},pours=comparedPours(state.inquiry,o);
+ const photo=scene.textures.get('pouring-glass').getSourceImage();
+ const layer=(name,depth,paint)=>{
+  const texture=scene.textures.createCanvas(name,1440,660);
+  texture.context.setTransform(2,0,0,2,0,0);paint(texture.context);texture.refresh();
+  scene.add.image(360,165,name).setDisplaySize(720,330).setDepth(depth);
+ };
+ scene.panel(22,8,310,314,0xeef9fd);scene.panel(366,8,328,314,0xfbf7ea);
+ layer('compare-glasses',3,ctx=>{
+  for(const key of keys){
+   drawVessel(ctx,photo,key,{x:water[key],floor,scale,amount:pours[key]});
+   drawVessel(ctx,photo,key,{x:icePair[key],floor,scale});
+  }
+ });
+ layer('compare-front',5.5,ctx=>{for(const key of keys)drawVesselFront(ctx,photo,key,{x:icePair[key],floor,scale});});
+ scene.text(177,30,'물 · 액체',22);scene.text(530,30,'얼음 · 고체',22);
+ for(const key of keys){scene.text(water[key],264,names[key],18);scene.text(icePair[key],264,names[key],18);}
+ scene.text(177,298,'그릇 따라 모양이 달라져',18);
+ scene.text(530,298,moved?'그릇을 바꿔도 그대로야':'넓은 그릇으로 옮겨 봐',18);
+ const marks=scene.add.graphics().setDepth(5);
+ marks.lineStyle(2,0xb4701c,.9);
+ for(const key of keys)dashedLine(marks,water.tall-44,water.wide+74,waterSurfaceY(key,pours[key],floor,scale));
+ const home=iceSeat('tall'),seat=iceSeat(moved?'wide':'tall'),{size}=seat;
+ const shadow=scene.add.ellipse(seat.x,floor+3,size*.86,10,0x24505c,.22).setDepth(4);
+ const ice=scene.add.image(seat.x,seat.y,'real-ice','3').setDisplaySize(size,size).setDepth(5);
+ if(moved){
+  scene.add.image(home.x,home.y,'real-ice','3').setDisplaySize(size,size).setDepth(4).setAlpha(.24);
+  // One frame around both blocks: the same size in a narrow and a wide vessel.
+  marks.lineStyle(2,0xb4701c,.95);
+  for(const {x,y} of [home,seat])marks.strokeRect(x-size*.46,y-size*.46,size*.92,size*.92);
+ }else{
+  scene.touchGrip(ice,256,340);
+  ice.onMove=()=>shadow.setVisible(false);
+ }
  ice.onRelease=()=>{
-  if(ice.x>400){iceRelease={x:ice.x,y:ice.y};scene.action('act-drop-ice-dish');}
-  else scene.tweens.add({targets:ice,x:195,y:162,duration:reduced()?0:180});
+  if(iceDropTarget(ice)==='wide'){iceRelease={x:ice.x,y:ice.y};scene.action('act-drop-ice-dish');return;}
+  scene.tweens.add({targets:ice,x:home.x,y:home.y,duration:reduced()?0:180,onComplete:()=>shadow.setVisible(true)});
  };
  if(moved&&!lastIce&&!reduced()){
-  const start=iceRelease??{x:195,y:162};ice.setPosition(start.x,start.y);
-  scene.tweens.add({targets:ice,...end,duration:iceRelease?180:520,ease:'Sine.easeInOut',onComplete:()=>scene.reactAt(520,182,'grab')});
+  const start=iceRelease??home;ice.setPosition(start.x,start.y);shadow.setVisible(false);
+  scene.tweens.add({targets:ice,x:seat.x,y:seat.y,duration:iceRelease?180:520,ease:'Sine.easeInOut',onComplete:()=>{shadow.setVisible(true);scene.reactAt(seat.x,seat.y,'grab');}});
  }
  lastIce=moved;iceRelease=null;
- scene.text(360,315,moved?'그릇을 바꿔도 얼음의 모양은 같아.':'얼음을 잡아 오른쪽 그릇으로 옮겨 봐.',17);
 }
 export function createClothScene(scene){
  const o=state.activities.observe;
@@ -49,8 +77,10 @@ export function createWaterDrawing(scene){
  brushes.forEach(b=>b.setDisplaySize(65,65).setDepth(8));
  scene.text(360,314,'물감 없이 맑은 물로 그려. A에 그리면 B에도 같은 그림이 생겨.',16);
  const texture=scene.textures.createCanvas('water-painting',1440,660),g=texture.context;
+ const grain=g.createPattern(scene.textures.get('water-material').getSourceImage(),'repeat');
+ grain?.setTransform(new DOMMatrix().scale(.26));
  scene.add.image(360,165,'water-painting').setDisplaySize(720,330).setDepth(5);
- let stroke=null;
+ let stroke=null,lastDrawing='';
  const point=p=>{
   if(stroke&&stroke.length<400)stroke.push([Math.max(0,Math.min(500,(p.worldX-25)/320*500)),Math.max(0,Math.min(310,(p.worldY-50)/230*310))]);
   if(stroke){brushes[0].setPosition(p.worldX-18,p.worldY+18);brushes[1].setPosition(p.worldX+332,p.worldY+18);}
@@ -63,8 +93,10 @@ export function createWaterDrawing(scene){
  scene.input.on('pointermove',p=>{if(p.isDown)point(p);});
  scene.finishPointer=()=>{if(stroke){stroke=null;scene.commit();}};
  scene.tick=()=>{
+  const time=observationTime(5),revision=[time,d.strokes.length,d.strokes.at(-1)?.length].join(':');
+  if(lastDrawing===revision)return;lastDrawing=revision;
   g.setTransform(2,0,0,2,0,0);g.clearRect(0,0,720,330);
-  for(let i=0;i<2;i++)drawWaterStroke(g,d.strokes,{left:25+i*350,top:50,width:320,height:230,amount:i+1,time:observationTime(5)});
+  for(let i=0;i<2;i++)drawWaterStroke(g,d.strokes,{left:25+i*350,top:50,width:320,height:230,amount:i+1,time,grain});
   texture.refresh();
  };
 }

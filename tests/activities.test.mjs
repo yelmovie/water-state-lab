@@ -47,6 +47,20 @@ test('cold and room-temperature controls differ, with outside droplets adding ma
  assert.equal(dewTrial(80,false).mass,250);assert.ok(dewTrial(80).mass>250);
  assert.equal(dewTrial(80).drops,16);
 });
+test('the space experiment needs a tube that ran out of room as well as one that did not',()=>{
+ const a=initialActivities();a.pipe.trials=[pipeTrial(60),pipeTrial(70)];a.pipe.chosen=1;a.pipe.marked=true;
+ assert.equal(activityReady(4,a),false,'two roomy tubes never showed what goes wrong');
+ a.pipe.trials.push(pipeTrial(90));assert.equal(activityReady(4,a),true);
+});
+test('a new freeze clears the earlier mark and an unknown tube changes nothing',()=>{
+ const before=state.activities;
+ try{
+  state.activities=initialActivities();const a=state.activities,ctx={render(){}},act=action=>assert.equal(handleActivity(`act-${action}`,ctx),true);
+  a.pipe.fill=95;act('pipe-test');a.pipe.fill=70;act('pipe-test');act('pipe-mark-1');assert.equal(a.pipe.marked,true);
+  act('pipe-test');assert.equal(a.pipe.marked,false);assert.equal(a.pipe.chosen,-1);
+  act('pipe-mark-9');assert.equal(a.pipe.marked,false);
+ }finally{state.activities=before;}
+});
 test('repeated pipe trials do not substitute for a meaningfully changed condition',()=>{
  const a=initialActivities();a.pipe.trials=[pipeTrial(70),pipeTrial(70)];a.pipe.chosen=1;a.pipe.marked=true;
  assert.equal(activityReady(4,a),false);a.pipe.trials.unshift(pipeTrial(95));a.pipe.chosen=2;
@@ -78,9 +92,16 @@ test('complete interaction sequence requires observations, comparisons, and tran
  for(const c of sortCards)put(`card:${c.id}`,`bin:${c.type}`);
  act('complete-1');assert.equal(completed[1].records.length,6);
  put('icepack','freeze-cup');assert.equal(a.freeze.phase,'water');
- put('measure-cup','scale');act('freeze-predict');put('icepack','freeze-cup');act('freeze-record');put('warm','freeze-cup');act('freeze-record');
- assert.equal(activityReady(3,a),false);act('freeze-compare');act('next-3');
- a.pipe.fill=95;act('pipe-test');a.pipe.fill=70;act('pipe-test');act('mark-space');act('pipe-choose-1');act('complete-2');
+ put('measure-cup','scale');act('freeze-guess-66');assert.equal(a.freeze.prediction,66);
+ put('warm','freeze-cup');assert.equal(a.freeze.phase,'water');
+ put('icepack','freeze-cup');assert.equal(a.freeze.records.length,2);assert.equal(activityReady(3,a),false);
+ put('warm','freeze-cup');assert.equal(activityReady(3,a),true);
+ const leaving=routes.length;act('next-3');assert.equal(routes.length,leaving,'the pipe talk comes before leaving the experiment');
+ act('talk-pop-yes');act('talk-chill');act('talk-pipe-burst');act('next-3');
+ a.pipe.fill=95;act('pipe-test');assert.equal(activityReady(4,a),false);a.pipe.fill=70;act('pipe-test');assert.equal(activityReady(4,a),false,'the empty space still has to be found');
+ act('pipe-mark-0');assert.equal(a.pipe.marked,false,'a popped tube has no room to point at');assert.equal(activityReady(4,a),false);
+ act('pipe-mark-1');assert.equal(a.pipe.marked,true);assert.equal(a.pipe.chosen,1);assert.equal(activityReady(4,a),true);
+ act('complete-2');
  assert.equal(completed[2].safeFill,70);assert.equal(completed[2].measurements.length,3);
  act('draw-example');for(const time of [0,40,90]){a.draw.time=time;act('draw-record');}
  act('draw-faster-thick');assert.equal(a.draw.faster,'');act('draw-faster-thin');put('drawing-water','drawing-air');act('next-5');

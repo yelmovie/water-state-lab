@@ -17,7 +17,9 @@ with sync_playwright() as p:
     def setup(n,field=False):
         page.evaluate('''async({n,field})=>{const {state,initialState}=await import('/src/state.js');const {render}=await import('/src/app.js');const {chapterState}=await import('/src/fieldwork-model.js');Object.assign(state,initialState());Object.assign(state.settings,{adminUnlock:true,sound:false,reduced:true});state.fieldwork.introSeen=true;state.route=n;state.fieldwork.active=field?n:0;if(field)state.fieldwork.chapters[n]=chapterState(n);render();}''',{'n':n,'field':field})
         page.wait_for_selector('#field-canvas[data-ready=true]' if field else '.phaser-stage[data-ready=true]')
+        if field: page.locator('[data-action="field-help-close"]').click()
     def tap(x,y):
+        page.wait_for_selector('#field-canvas[data-ready=true]')
         r=page.locator('#field-canvas').bounding_box()
         page.touchscreen.tap(r['x']+x/720*r['width'],r['y']+y/400*r['height'])
     def state(expr):return page.evaluate('async()=>{const {state}=await import("/src/state.js");return '+expr+'}')
@@ -56,6 +58,8 @@ with sync_playwright() as p:
     assert len(sounds)==7 and all(0<s['duration']<4 for s in sounds);report['audio']=sounds
     # Main experiment: real continuous dragging pours equal amounts into two vessels.
     def lab_drag(x,y,tx,ty,hold=0):
+        page.wait_for_selector('.phaser-stage[data-ready=true] canvas')
+        page.evaluate('()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
         r=page.locator('.phaser-stage canvas').bounding_box()
         pt=lambda a,b:(r['x']+a/720*r['width'],r['y']+b/330*r['height'])
         page.mouse.move(*pt(x,y));page.mouse.down();page.mouse.move(*pt(tx,ty),steps=14)
@@ -77,11 +81,12 @@ with sync_playwright() as p:
     for _ in range(4):action('ix-forward')
     action('ix-record');assert state('state.activities.dew.again')
     report['checks'].append('local pointer wiping removes a region and condensation returns there')
-    # Real touch: select an object, select a target; four observations are still required.
+    # Real touch: select a source, then a destination. One water and one ice observation unlock the lesson.
     setup(1,True)
-    for x,y in [(110,100),(110,265)]:
-        for tx,ty in [(365,205),(570,205)]:tap(x,y);tap(tx,ty)
-    assert state('state.fieldwork.chapters[1].marks.length===4')
+    tap(110,100);tap(365,205)
+    assert page.locator('[data-action="field-finish"]:enabled').count()==0
+    tap(110,265);tap(570,205)
+    assert state('state.fieldwork.chapters[1].marks.includes("water-tall")&&state.fieldwork.chapters[1].marks.includes("ice-wide")'),state('state.fieldwork.chapters[1]')
     page.locator('[data-action="field-finish"]').click();page.wait_for_selector('.concept-dialog[open]')
     assert state('state.route===1&&state.fieldwork.active===1&&state.pages.length===0')
     page.keyboard.press('Escape');assert state('state.route===1&&state.fieldwork.active===1')
@@ -100,10 +105,13 @@ with sync_playwright() as p:
     # Centered, readable dialogs at all classroom target sizes, with short and long content.
     for w,h in [(1280,800),(1024,768),(1920,1080),(1440,900),(1280,720)]:
         page.set_viewport_size({'width':w,'height':h});setup(1)
-        for name,action in [('notebook','notebook'),('settings','settings')]:
-            page.locator(f'[data-action="{action}"]').click();modal_rect(name,w,h)
-            page.screenshot(path=str(OUT/f'{name}-{w}x{h}.png'))
-            page.keyboard.press('Escape')
+        page.locator('[data-action="settings"]').click()
+        modal_rect('settings',w,h);page.screenshot(path=str(OUT/f'settings-{w}x{h}.png'))
+        page.get_by_text('가이드 · 앱 정보',exact=True).click()
+        page.get_by_text('앱 정보 · 배움과 보상',exact=True).click()
+        page.locator('#settings-notebook').click();page.wait_for_selector('#dialog[open]')
+        modal_rect('notebook',w,h);page.screenshot(path=str(OUT/f'notebook-{w}x{h}.png'))
+        page.keyboard.press('Escape')
         page.evaluate('async()=>{const {openConcept}=await import("/src/concepts.js");openConcept(8,{reduced:true})}')
         page.wait_for_function('()=>document.querySelector(".concept-dialog video").readyState>=2')
         modal_rect('concept',w,h);page.screenshot(path=str(OUT/f'concept-{w}x{h}.png'))

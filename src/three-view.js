@@ -4,6 +4,7 @@
 import {modal,esc} from './ui.js';
 import {state} from './state.js';
 import {MODEL_DIR,deviceModels,islandModels,deviceLayout,pointAlong} from './three-layout.js';
+import {islandWater} from './island-water.js';
 
 const BASE='/assets/vendor/three/';
 // Mill placement beside the island and the wheel's axle on the stand (model units: metres).
@@ -31,13 +32,13 @@ async function mount(THREE,loader,stage,view,build){
  scene.add(new THREE.HemisphereLight(0xffffff,0xc9dde4,2.1));
  const sun=new THREE.DirectionalLight(0xfff6e6,1.5);sun.position.set(.7,1.3,1);scene.add(sun,root);
  const load=async name=>(await loader.loadAsync(MODEL_DIR+name)).scene;
- const tick=await build({THREE,root,load});
+ const decor=new THREE.Group(),tick=await build({THREE,root,decor,load});
  if(view.stop)return;
  tick?.(0,0,true);
  const box=new THREE.Box3().setFromObject(root),centre=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
  // Fit what a turning model can cover: its horizontal footprint across, its height up.
  const across=Math.hypot(size.x,size.z)/2,tall=size.y*.6,tanV=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
- root.position.sub(centre);
+ root.position.sub(centre);root.add(decor);
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true}),el=renderer.domElement;
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));stage.append(el);
  let yaw=-.55,pitch=.32,drag=null,frame=0,last=performance.now(),dist=1;
@@ -85,15 +86,17 @@ export function openDevice(design,{withCore=false,flowing=false}={}){
  });
 }
 
+/** The restored island. Water effects sit in `decor` so they never change how the camera frames the model. */
+export async function buildIsland({THREE,root,decor,load}){
+ const [island,stand,wheel]=await Promise.all([load(islandModels.island),load(islandModels.stand),load(islandModels.wheel)]);
+ const mill=new THREE.Group();mill.add(stand);wheel.position.set(MILL.wheel.x,MILL.wheel.y,MILL.wheel.z);mill.add(wheel);
+ mill.position.set(MILL.x,MILL.y,MILL.z);mill.rotation.y=MILL.yaw;mill.scale.setScalar(MILL.scale);root.add(island,mill);
+ const flow=islandWater(THREE,{island,mill,decor});
+ return (dt,t,still)=>{
+  if(!still)wheel.rotation.x-=dt*.9;
+  flow(t,still);
+ };
+}
 export function openIsland(){
- open('되살린 연구섬','드래그해서 섬을 둘러봐. 네가 모은 물로 물레가 다시 돌아.',async({THREE,root,load})=>{
-  const [island,stand,wheel]=await Promise.all([load(islandModels.island),load(islandModels.stand),load(islandModels.wheel)]);
-  const mill=new THREE.Group();mill.add(stand);wheel.position.set(MILL.wheel.x,MILL.wheel.y,MILL.wheel.z);mill.add(wheel);
-  mill.position.set(MILL.x,MILL.y,MILL.z);mill.rotation.y=MILL.yaw;mill.scale.setScalar(MILL.scale);root.add(island,mill);
-  const water=drops(THREE,mill,5),spout={x:MILL.wheel.x,y:MILL.wheel.y-.052};
-  return (dt,t,still)=>{
-   if(!still)wheel.rotation.x-=dt*.9;
-   water.forEach((m,i)=>{const k=still?(i+.5)/water.length:(t*.6+i/water.length)%1;m.position.set(spout.x,spout.y-k*.03,MILL.wheel.z);});
-  };
- });
+ open('되살린 연구섬','드래그해서 섬을 둘러봐. 네가 모은 물로 물레가 다시 돌아.',buildIsland);
 }

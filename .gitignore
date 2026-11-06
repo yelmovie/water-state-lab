@@ -17,3 +17,4 @@ docs/reviews/screenshots/
 .claude/settings.local.json
 .claude/worktrees/
 .claude/launch.json
+._*

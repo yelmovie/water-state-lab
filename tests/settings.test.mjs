@@ -69,11 +69,11 @@ test('settings use the common order, lock rewards until completion, and preserve
  const token={raw:'test'};
  let dialog=openSettings({state,render:()=>rendered++,getResetToken:()=>token,storageStatus:()=>({}),onReset:(audio,received)=>{assert.equal(received,token);resets++;savedAudio=audio;}});
  const html=dialog.innerHTML;
- const requiredOrder=['교사용 가이드','settings-bgm-label','settings-sfx-label','settings-bgm-volume','settings-intro','앱 정보 · 배움과 보상','학생용 가이드','이미지·소리·저작권 고지','settings-footer'];
+ const requiredOrder=['settings-unlock','settings-bgm-label','settings-sfx-label','settings-bgm-volume','settings-intro','학생용 가이드','교사용 가이드','성취기준','앱 정보 · 배움과 보상','이미지·소리·저작권 고지','settings-footer'];
  requiredOrder.forEach((token,index)=>{assert.ok(html.includes(token));if(index)assert.ok(html.indexOf(token)>html.indexOf(requiredOrder[index-1]));});
  assert.match(html,/id="settings-ending"[^>]*disabled/);assert.match(html,/id="settings-certificate"[^>]*disabled/);
  assert.match(html,/id="settings-bgm-volume"[^>]*disabled/);assert.doesNotMatch(html,/<details[^>]*\sopen(?:\s|>)/);
- assert.equal((html.match(/id="settings-unlock"/g)||[]).length,1);assert.doesNotMatch(html,/<a\b|mailto:|[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+ assert.equal((html.match(/id="settings-unlock"/g)||[]).length,1);assert.doesNotMatch(html,/teacher-picker|teacher-stage|teacher-experiment|teacher-field/);assert.doesNotMatch(html,/<a\b|mailto:|[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
  const toggle=dialog.querySelector('#settings-unlock');toggle.onclick({currentTarget:toggle});assert.equal(state.settings.adminUnlock,true);assert.deepEqual(state.completed,[]);assert.equal(rendered,1);
  assert.equal(dialog.querySelector('#settings-reset').disabled,true,'student reset is unavailable during preview');
  dialog.querySelector('#settings-reset').onclick();assert.equal(doc.created.length,1);
@@ -90,7 +90,16 @@ test('settings use the common order, lock rewards until completion, and preserve
 test('settings include all three original standards, local saving policy, and separate original and external rights',()=>{
  assert.deepEqual(STANDARDS.map(s=>s.code),['4과10-01','4과10-02','4과10-03']);
  assert.equal(STANDARDS[2].text,'물의 상태 변화를 이용하여 물을 얻을 수 있는 장치를 설계하고 만들 수 있다.');
- assert.ok(SETTINGS_CONTENT.teacher.lines.some(line=>line.includes('서버로 전송하지 않고')));
- assert.ok(SETTINGS_CONTENT.teacher.standardsIntro.includes('이 게임만으로 성취기준 전체를 달성했다고 판단하지 않으며'));
+ assert.equal(SETTINGS_CONTENT.teacher.standardsTitle,'성취기준');
  assert.ok(SETTINGS_CONTENT.credits.own);assert.ok(SETTINGS_CONTENT.credits.external);
+});
+
+test('the five area clips share one timeline with the player',async()=>{
+ const {concepts}=await import('../src/concept-data.js');
+ assert.equal(concepts.filter(Boolean).length,5);
+ for(const clip of concepts.filter(Boolean)){
+  assert.ok(clip.seconds>=9&&clip.seconds<=15,clip.title);
+  for(const q of clip.cues)assert.doesNotMatch(q.text,/분자|육각형/,'particle explanations are out of scope for grade 4');
+  clip.cues.reduce((at,q)=>{assert.equal(q.at,at);assert.ok(q.to>q.from);return at+q.to-q.from;},0);
+ }
 });

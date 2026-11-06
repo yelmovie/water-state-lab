@@ -1,25 +1,28 @@
+import {experimentMove,stageGuide,markStageControls} from './stage-guide.js';
+import {fieldTask} from './field-guidance.js';
 import {playStoryFilm} from './story-film.js';
-import {residents,residentReward,openResidentList,talkToResident} from './island-residents.js';
-import {observationStep,bindObservation} from './observation-play.js';
+import {residentReward,openResidentList,talkToResident,stageEndTalk} from './island-residents.js';
+import {observationStep,replayStep,bindObservation,observationPlaying} from './observation-play.js';
+import {assistStep,bindAssist} from './stage-assist.js';
 import {inquiryNotebook,wipe} from './inquiry.js';
 import {mountPhaser,cleanupPhaser,focusExperiment} from './phaser-scenes.js';
 import {discoveryStars,discoveryGoals} from './scene-model.js';
 import {state,save,reset,setPreviewMode,getStorageStatus,captureResetToken} from './state.js';
 import {missions,screenNames,canEnter,researchStyle,previousRoute} from './domain.js';
-import {icon,btn,mascot,buddy,propArt,note,toast,modal,esc} from './ui.js';
+import {icon,btn,mascot,buddy,propArt,note,toast,modal,esc,celebrate} from './ui.js';
 import {journey,journeyView,mapEntryScreen,workshopProgress,travelRoute,mountMapCamera,cleanupMapCamera,travelIsland} from './journey.js';
 import {activityView,handleActivity,bindActivity,cleanupActivity,getActivityProgress} from './activities.js';
-import {workshopView,finalView,handleWorkshop,bindWorkshop,cleanupWorkshop,resetFinalPreview} from './workshop.js';
+import {workshopView,finalView,handleWorkshop,bindWorkshop,cleanupWorkshop,resetFinalPreview,finalContext} from './workshop.js';
 import {playClick,playCue,setMusicTheme,setSoundSettings} from './sound.js';
 import {openSettings,offlineText} from './settings.js';
 import {OFFLINE_BUILD} from './version.js';
 import {syncCoach,cleanupCoach,handleCoach,updateCoachMessage} from './coach.js';
-import {closeConcept,conceptVideoFormat} from './concepts.js';
-import {activityReady,experimentActivities,nextSortCard,sortCards} from './activity-model.js';
+import {closeConcept} from './concepts.js';
+import {activityReady,experimentActivities,freezeStart,nextSortCard,sortCards} from './activity-model.js';
 import {currentTrialValid} from './domain.js';
-import {finalContext} from './workshop.js';
-import {fieldMissions,experimentTitles,experimentQuestions} from './fieldwork-model.js';
-import {fieldworkView,bindFieldwork,cleanupFieldwork,handleFieldwork,startFieldwork,hasFieldSeal,passportView} from './fieldwork.js';
+import {fieldMissions,fieldStages,experimentTitles,experimentQuestions,fieldProgress} from './fieldwork-model.js';
+import {fieldworkView,bindFieldwork,cleanupFieldwork,handleFieldwork,startFieldwork,hasFieldSeal,fieldChapter} from './fieldwork.js';
+import {passportView,certificateView} from './achievement.js';
 const app=document.querySelector('#app');
 const ctx={render,go,pageDone,complete,action:routeAction,baseAction,wipe:(kind,ids)=>wipe(kind,ids,ctx),finishEnding,say:updateCoachMessage,enterMission:m=>{if(canEnter((m-1)*2+1,state))document.querySelector(`[data-action="mission-${m}"]`)?.click();}};
 let endingTimer,travelTimer,lastRenderedRoute,resetToken;
@@ -34,9 +37,9 @@ function syncStorageNotice(){
 document.addEventListener('storage-status',syncStorageNotice);
 function persist(){const ok=save();if(!ok)toast(getStorageStatus().message);return ok;}
 function go(route){if(route!==state.route)state.fieldwork.active=0;clearTimeout(travelTimer);clearInterval(endingTimer);clearTimeout(toast.timer);document.querySelector('#toast').classList.remove('show');document.querySelector('#toast').textContent='';if(typeof route==='number'&&!canEnter(route,state)){toast('앞 실험의 기록을 먼저 완성해 줘.');return;}if(route==='ending'&&!state.restored&&!state.settings.adminUnlock)return;state.route=route;if(typeof route==='number')state.lastScreen=route;persist();render();window.scrollTo(0,0);}
-const finishActions={'act-next-1':1,'act-complete-1':2,'act-next-3':3,'act-complete-2':4,'act-next-5':5,'act-complete-3':6,'act-next-7':7,'act-complete-4':8,'complete-5':9};
+const finishActions={'act-complete-1':2,'act-complete-2':4,'act-complete-3':6,'act-complete-4':8};
 function baseAction(action){if(!action)return;if(handleActivity(action,ctx))return;handleWorkshop(action,ctx);}
-function routeAction(action){if(handleFieldwork(action,ctx))return;const n=finishActions[action];if(n&&!hasFieldSeal(n)&&(n<=8?activityReady(n,experimentActivities(n,state)):currentTrialValid(state.lab.workshop))){startFieldwork(n,action,ctx);return;}baseAction(action);}
+function routeAction(action){if(handleFieldwork(action,ctx))return;const n=finishActions[action];if(n&&!hasFieldSeal(n)&&activityReady(n,experimentActivities(n,state))){startFieldwork(n,action,ctx);return;}baseAction(action);}
 function showStory(kind,onFinish){playStoryFilm(kind,{muted:!state.settings.sound,onFinish});if(kind==='final'&&state.route==='ending')setMusicTheme('ending',true);}
 function startAdventure(){
  if(state.fieldwork.introSeen)return go('map');
@@ -57,8 +60,7 @@ function finishEnding(){
  if(first)showStory('final',()=>{if(newResident)announceResident(10);});
 }
 function announceResident(n){
- const resident=residents.find(r=>r.stage===n);
- if(resident)toast(`${resident.news} ${resident.name}에게 지도에서 인사해 봐.`);
+ stageEndTalk(n,{label:typeof state.route==='number'?`${state.route}장 시작`:'계속',action:'resident-close'});
 }
 function pageDone(n,announce=true){
  const first=!state.pages.includes(n);
@@ -67,16 +69,27 @@ function pageDone(n,announce=true){
  if(first&&saved&&announce)queueMicrotask(()=>announceResident(n));
  return first&&saved;
 }
-function complete(m,record){const first=!state.completed.includes(m);state.evidence[m]=record;if(first)state.completed.push(m);pageDone(m*2);persist();render();playCue('success');const j=journey[m-1];modal(first?'새로운 물길을 연결했어!':'연구 기록을 새로 남겼어',`<div class="reward-modal">${first?residentReward(m*2):`<div class="reward-character">${buddy('celebrate')}${propArt(j.prop)}</div>`}<span class="eyebrow">${m}번째 발견</span><h3>${j.tool}</h3><p>${j.after}</p><div class="reward-proof">${m===1?'직접 옮기고 부어 본 관찰':m===2?`${record.trials.length}개 조건을 비교한 배관 기록`:m===3?'같은 조건과 다른 조건을 나란히 비교한 기록':'두 컵을 비교하고 다시 닦아 확인한 증거'}</div>${btn('지도로 가서 주민 만나기 '+icon('arrow'),'reward-map','primary wide')}</div>`);}
+function complete(m,record){const first=!state.completed.includes(m);state.evidence[m]=record;if(first)state.completed.push(m);const greeted=pageDone(m*2,false);persist();render();playCue('success');const j=journey[m-1];if(first&&greeted){stageEndTalk(m*2,{label:'지도 보기',action:'reward-map'},j.tool);return celebrate(document.querySelector('#dialog'));}modal(first?'새로운 물길을 연결했어!':'연구 기록을 새로 남겼어',`<div class="reward-modal">${first?residentReward(m*2):`<div class="reward-character">${buddy('celebrate')}${propArt(j.prop)}</div>`}<span class="eyebrow">${m}번째 발견</span><h3>${j.tool}</h3><p>${j.after}</p><div class="reward-proof">${m===1?'직접 옮기고 부어 본 관찰':m===2?`${record.trials.length}개 조건을 비교한 배관 기록`:m===3?'같은 조건과 다른 조건을 나란히 비교한 기록':'두 컵을 비교하고 다시 닦아 확인한 증거'}</div>${btn('지도 보기 '+icon('arrow'),'reward-map','primary wide')}</div>`);}
 function soundButton(){return `${icon(state.settings.sound?'speaker':'speakerOff')}`;}
-function header(home=false){return `<header class="topbar" aria-label="화면 도구"><div class="topbar-left">${home?'':`<nav class="page-nav" aria-label="페이지 이동"><button class="icon-btn" data-action="home" aria-label="홈으로 가기" title="홈으로 가기">${icon('home')}</button><button class="icon-btn" data-action="previous" aria-label="이전 페이지로 가기" title="이전 페이지로 가기" ${previousRoute(state.route)===null?'disabled':''}>${icon('back')}</button></nav>`}</div><div class="topbar-right"><button class="icon-btn" data-action="sound" aria-label="소리 ${state.settings.sound?'끄기':'켜기'}" aria-pressed="${state.settings.sound}" title="소리 ${state.settings.sound?'끄기':'켜기'}">${soundButton()}</button><button class="icon-btn ${state.settings.adminUnlock?'admin-active':''}" data-action="settings" aria-label="설정" title="설정${state.settings.adminUnlock?' · 교사 시연 중':''}">${icon('settings')}</button></div></header>`;}
+function header(home=false){return `<header class="topbar" aria-label="화면 도구"><div class="topbar-left">${state.settings.adminUnlock?'<button type="button" class="btn teacher-stage-launch" data-action="teacher-stages">시연할 장</button>':''}${home?'':`<nav class="page-nav" aria-label="페이지 이동"><button class="icon-btn" data-action="home" aria-label="홈으로 가기" title="홈으로 가기">${icon('home')}</button><button class="icon-btn" data-action="previous" aria-label="이전 페이지로 가기" title="이전 페이지로 가기" ${previousRoute(state.route)===null?'disabled':''}>${icon('back')}</button></nav>`}</div><div class="topbar-right"><button class="icon-btn" data-action="sound" aria-label="소리 ${state.settings.sound?'끄기':'켜기'}" aria-pressed="${state.settings.sound}" title="소리 ${state.settings.sound?'끄기':'켜기'}">${soundButton()}</button><button class="icon-btn ${state.settings.adminUnlock?'admin-active':''}" data-action="settings" aria-label="설정" title="설정${state.settings.adminUnlock?' · 교사 시연 중':''}">${icon('settings')}</button></div></header>`;}
 
 // Title screen: logo, Bangul and one next step. With saved progress, "continue" leads and the map is the second choice.
 function homeView(){const started=state.pages.length>0||state.completed.length>0;return `<div class="start-screen">${header(true)}<main class="start-main"><img class="start-bg" src="/assets/v2/title-island.webp" width="1344" height="752" alt=""><div class="start-bubbles" aria-hidden="true">${'<i></i>'.repeat(9)}</div><div class="start-copy"><span class="start-kicker">${icon('drop',20)}방울이와 함께하는 물의 상태 변화 탐험</span><h1 class="start-title"><img src="/assets/v2/title-logo.webp" width="927" height="532" alt="방울이의 물길 탐험"></h1><p class="start-tagline">얼고, 마르고, 다시 맺히는 물의 비밀로<br>멈춘 물길을 다시 흐르게 해 줘!</p><div class="start-actions">${started?btn(`${state.restored?'완성한 물길 보기':'이어서 탐험하기'} ${icon('arrow')}`,'start','primary start-cta')+btn('탐험 지도 보기','map','start-second'):btn(`방울이와 탐험 시작 ${icon('arrow')}`,'title-start','primary start-cta')}</div><small class="start-save">내 탐험 기록은 이 기기에 저장돼요</small></div><img class="start-bangul" src="/assets/v2/bangul-title.webp" width="774" height="1015" alt="돋보기를 들고 손을 흔드는 물방울 연구원 방울이"></main></div>`;}
 function mapView(){return `<div class="journey-shell">${header()}${journeyView()}</div>`;}
-function experimentShell(n){const m=missions[Math.ceil(n/2)-1],progress=n<=8?getActivityProgress(n):workshopProgress(n),field=state.fieldwork.active===n,q=fieldMissions[n],steps=[...progress.steps,{label:'현장 의뢰 해결',done:hasFieldSeal(n)}];return `<div class="experiment-shell scene-${n}">${header()}<main class="experiment-main"><div class="experiment-heading"><button class="back-map" data-action="map">${icon('back')}<span>연구섬</span></button><div class="quest-brief"><span class="eyebrow">${m.id}번째 구역 · ${field?'현장 의뢰':experimentTitles[n]}</span><h1>${field?q.title:experimentQuestions[n]}</h1></div></div><ol class="activity-progress quest-objectives">${steps.map((s,i)=>`<li class="${s.done?'done':''}"><span>${s.done?icon('check',16):i+1}</span>${s.label}</li>`).join('')}</ol>${field?'':`<div class="stage-instruction"><span class="step-tag">${state.settings.adminUnlock?'교사 시연 · ':''}${n}장</span><div><small>지금 할 일</small><strong id="stage-direction">${esc(progress.instruction)}</strong></div><span class="step-count" aria-label="관찰 단계 ${progress.steps.filter(s=>s.done).length}개 완료">${progress.steps.filter(s=>s.done).length} / ${progress.steps.length}</span>${observationStep(n,state)?'<button type="button" id="observation-play" class="btn" aria-pressed="false" title="관찰 동작을 차례로 재생해. 직접 조작하면 멈춰.">▶ 자동재생</button>':''}</div>`}<div class="scene-workspace"><div class="compact-guide"><button class="hint-button coach-trigger" data-action="buddy-hint" aria-label="방울이 힌트 보기" aria-expanded="false" aria-controls="coach-help">${buddy(field&&hasFieldSeal(n)?'celebrate':'point')}<span class="coach-trigger-badge" aria-hidden="true">…</span><span class="coach-trigger-label">방울이 힌트</span></button><p class="sr-only">${field?esc(state.fieldwork.chapters[n]?.message||q.goal):esc(progress.instruction)}</p></div><section class="activity-area" aria-label="직접 해 보는 실험">${field?fieldworkView(n):n<=8?activityView(n):n===9?workshopView():finalView()}</section></div></main></div>`;}
-function endingView(){const preview=!state.restored,seals=fieldMissions.slice(1).filter((_,i)=>hasFieldSeal(i+1)).length;return `<div class="ending-shell">${header()}<main class="ending-main"><div class="ending-illustration"><figure class="ending-art-card reward-reveal"><img src="/assets/v2/rescue-reward.webp" alt="방울이와 함께 복구한 연구섬의 물레"><figcaption id="ending-caption">네가 모은 물로 온실과 물레가 다시 움직여!</figcaption></figure>${btn('엔딩 영상 다시 보기','final-replay','secondary wide')}<button type="button" class="btn secondary wide three-open" data-action="three-island">연구섬 3D로 둘러보기</button><div class="ending-stats"><div><strong>${state.completed.length}<span>/ 5</span></strong><small>연구 기록</small></div><div><strong>${seals}<span>/ 10</span></strong><small>현장 도장</small></div><div><strong>${state.lab.workshop.trials.length}<span>회</span></strong><small>내 설계 시험</small></div></div></div><div class="ending-copy"><span class="unit-label">${preview?'교사 시연 · 학생 기록과 별개예요':'MISSION COMPLETE · 복구 100%'}</span><h1>우리가 찾은 물의 비밀로,<br>연구섬을 깨웠어!</h1><p>처음 생각과 달라도, 관찰하고 다시 고쳤어.<br>네 기록과 네 장치가 물길을 되살린 거야.</p><div class="ending-statement"><h3>나는 이제 이런 일을 할 수 있어!</h3>${[['observe','물의 변화를 관찰할 수 있어'],['compare','내 증거로 두 조건을 비교할 수 있어'],['design','화면 속 물길 설계를 고칠 수 있어']].map(([k,v])=>btn(v,'ability-'+k,state.fieldwork.ability===k?'selected':'secondary')).join('')}</div><div class="home-actions">${btn(icon('print')+' 나의 연구 인증서','certificate','primary',preview)}${btn('탐구 여권 보기','notebook','secondary')}${btn(state.restored&&!state.residentsMet.includes(10)?'느티 만나러 연구섬으로':'연구섬 다시 탐험','map','quiet')}</div><details class="classroom-making"><summary>교실에서 진짜 장치도 만들어 볼까?</summary><p>선생님과 차가운 용기·받침·모으는 컵으로 내 설계를 만들어 봐. 물이 모이는 곳과 새는 곳을 관찰하고 한 부분씩 고쳐 보자.</p><p>화면에서는 가상 설계를 시험했어. 실제 제작과 관찰 결과는 따로 남겨 줘.</p></details></div></main></div>`;}
-function notebook(){void playCue('page');const records=missions.map(m=>{const e=state.evidence[m.id];return `<article class="notebook-record"><span class="eyebrow">RESEARCH ${String(m.id).padStart(2,'0')} ${e?'· 기록 완료':'· 조사 중'}</span><h3>${m.reward}</h3>${e?`<p>${m.id===1?e.records.join('<br>'):m.id===2?`예상 ${e.prediction} → 관찰 ${e.result}<br>무게 ${e.mass} · 다시 녹이기 완료<br>${e.trials.length}개 조건의 배관 시험`:m.id===3?e.observations.join('<br>'):m.id===4?`${e.chain.join(' → ')}<br>무게 ${e.mass}<br>생활 적용: ${e.transfer}`:`${e.trials}회 설계 시험 · 수집 지수 ${e.first} → ${e.last}<br>내 장치를 코어 복구에 사용`}</p>`:'<p class="muted">아직 수집 전</p>'}</article>`;}).join('');modal('나의 연구노트',`<p class="muted">현장 의뢰를 해결하면 도장과 내 관찰 기록이 이곳에 쌓여.</p>${passportView()}${inquiryNotebook()}<div class="notebook-list">${records}</div>`);}
+let currentTask;
+function experimentShell(n){
+ if(n===3&&state.fieldwork.active!==n)freezeStart(experimentActivities(n,state));
+ const m=missions[Math.ceil(n/2)-1],progress=n<=8?getActivityProgress(n):workshopProgress(n),field=state.fieldwork.active===n,q=fieldMissions[n],steps=q?[...progress.steps,{label:'현장 의뢰 해결',done:hasFieldSeal(n)}]:progress.steps;
+ currentTask=field?([2,4].includes(n)?null:fieldTask(n,fieldChapter(n))):experimentMove(n,state,n===10?finalContext():null);
+ const assist=field?null:assistStep(n,state,n===10?finalContext():null);
+ if(assist)currentTask={...currentTask,kind:'watch',title:assist.title,instruction:assist.note,target:'',regions:[]};
+ const play=(observationPlaying()||!assist)&&(observationStep(n,state)||replayStep(n,state))?'<button type="button" id="observation-play" class="btn" aria-pressed="false" title="관찰 동작을 차례로 재생해. 직접 조작하면 멈춰.">▶ 자동재생</button>':'';
+ const extra=(field?'<button type="button" class="field-help-btn" data-action="field-help">주민의 부탁 다시 보기</button>':'')+play;
+ const guide=currentTask?stageGuide(n,currentTask,{steps:field?[]:progress.steps,counts:field?fieldProgress(n,fieldChapter(n)):null,teacher:state.settings.adminUnlock,extra}):'';
+ return `<div class="experiment-shell scene-${n}">${header()}<main class="experiment-main"><div class="experiment-heading"><button class="back-map" data-action="map">${icon('back')}<span>연구섬</span></button><div class="quest-brief"><span class="eyebrow">${m.id}번째 구역 · ${field?'현장 의뢰':experimentTitles[n]}</span><h1>${field?q.title:experimentQuestions[n]}</h1></div></div><ol class="activity-progress quest-objectives">${steps.map((s,i)=>`<li class="${s.done?'done':''}"><span>${s.done?icon('check',16):i+1}</span>${s.label}</li>`).join('')}</ol>${guide}<div class="scene-workspace"><div class="compact-guide"><button class="hint-button coach-trigger" data-action="buddy-hint" aria-label="방울이 힌트 보기" aria-expanded="false" aria-controls="coach-help">${buddy(field&&hasFieldSeal(n)?'celebrate':'point')}<span class="coach-trigger-badge" aria-hidden="true">…</span><span class="coach-trigger-label">방울이 힌트</span></button><p class="sr-only">${esc(currentTask?.instruction??q?.goal??'')}</p></div><section class="activity-area" aria-label="직접 해 보는 실험">${field?fieldworkView(n):n<=8?activityView(n):n===9?workshopView():finalView()}</section></div></main></div>`;
+}
+function endingView(){const preview=!state.restored,seals=fieldStages.filter(hasFieldSeal).length;return `<div class="ending-shell">${header()}<main class="ending-main"><div class="ending-illustration"><figure class="ending-art-card reward-reveal"><img src="/assets/v2/rescue-reward.webp" alt="방울이와 함께 복구한 연구섬의 물레"><figcaption id="ending-caption">네가 모은 물로 온실과 물레가 다시 움직여!</figcaption></figure>${btn('엔딩 영상 다시 보기','final-replay','secondary wide')}<button type="button" class="btn secondary wide three-open" data-action="three-island">연구섬 3D로 둘러보기</button><div class="ending-stats"><div><strong>${state.completed.length}<span>/ 5</span></strong><small>연구 기록</small></div><div><strong>${seals}<span>/ 5</span></strong><small>현장 도장</small></div><div><strong>${state.lab.workshop.trials.length}<span>회</span></strong><small>내 설계 시험</small></div></div></div><div class="ending-copy"><span class="unit-label">${preview?'교사 시연 · 학생 기록과 별개예요':'MISSION COMPLETE · 복구 100%'}</span><h1>우리가 찾은 물의 비밀로,<br>연구섬을 깨웠어!</h1><p>처음 생각과 달라도, 관찰하고 다시 고쳤어.<br>네 기록과 네 장치가 물길을 되살린 거야.</p><div class="ending-statement"><h3>나는 이제 이런 일을 할 수 있어!</h3>${[['observe','물의 변화를 관찰할 수 있어'],['compare','내 증거로 두 조건을 비교할 수 있어'],['design','화면 속 물길 설계를 고칠 수 있어']].map(([k,v])=>btn(v,'ability-'+k,state.fieldwork.ability===k?'selected':'secondary')).join('')}</div><div class="home-actions">${btn(icon('print')+' 나의 연구 인증서','certificate','primary',preview)}${btn('탐구 여권 보기','notebook','secondary')}${btn(state.restored&&!state.residentsMet.includes(10)?'느티 만나러 연구섬으로':'연구섬 다시 탐험','map','quiet')}</div><details class="classroom-making"><summary>교실에서 진짜 장치도 만들어 볼까?</summary><p>선생님과 차가운 용기·받침·모으는 컵으로 내 설계를 만들어 봐. 물이 모이는 곳과 새는 곳을 관찰하고 한 부분씩 고쳐 보자.</p><p>화면에서는 가상 설계를 시험했어. 실제 제작과 관찰 결과는 따로 남겨 줘.</p></details></div></main></div>`;}
+function notebook(){void playCue('page');const records=missions.map(m=>{const e=state.evidence[m.id];return `<article class="notebook-record"><span class="eyebrow">RESEARCH ${String(m.id).padStart(2,'0')} ${e?'· 기록 완료':'· 조사 중'}</span><h3>${m.reward}</h3>${e?`<p>${m.id===1?e.records.join('<br>'):m.id===2?`예상 ${e.prediction} → 관찰 ${e.result}<br>무게 ${e.mass} · 다시 녹이기 완료<br>${e.trials.length}개 조건의 배관 시험`:m.id===3?e.observations.join('<br>'):m.id===4?`${e.chain.join(' → ')}<br>무게 ${e.mass}<br>생활 적용: ${e.transfer}`:`${e.trials}회 설계 시험 · 수집 지수 ${e.first} → ${e.last}<br>내 장치를 코어 복구에 사용`}</p>`:'<p class="muted">아직 수집 전</p>'}</article>`;}).join('');modal('나의 연구노트',`${passportView()}${inquiryNotebook()}<div class="notebook-list">${records}</div>`);if(fieldStages.every(hasFieldSeal))celebrate(document.querySelector('#dialog'),900);}
 function previewStage(n,field){
  if(!state.settings.adminUnlock||!canEnter(n,state))return;
  state.fieldwork.active=0;
@@ -84,9 +97,13 @@ function previewStage(n,field){
  go(n);
  if(field)startFieldwork(n,'teacher-return',ctx);
 }
-function settings(){openSettings({state,previewStage,save:()=>{setPreviewMode(state.settings.adminUnlock);return persist();},render:()=>{resetFinalPreview();if(typeof state.route==='number'&&!canEnter(state.route,state))state.route='map';if(state.route==='ending'&&!state.restored&&!state.settings.adminUnlock)state.route='map';render();},go,reset,showStory,certificate,notebook,discoveries,offline:()=>offline,onSoundChange:()=>{setSoundSettings(state.settings);const b=document.querySelector('[data-action="sound"]');if(b){b.innerHTML=soundButton();b.setAttribute('aria-pressed',String(state.settings.sound));}},onReset:(audio,token)=>{if(!reset(token))return false;Object.assign(state.settings,audio);resetFinalPreview();setSoundSettings(state.settings);go('home');return true;}});}
+function teacherStages(){
+ if(!state.settings.adminUnlock)return;
+ modal('시연할 장',`<div class="teacher-stage-list"><p>실험이나 현장 의뢰를 바로 열 수 있어요.</p><ol>${experimentTitles.slice(1).map((title,i)=>`<li><strong>${i+1}장 · ${esc(title)}</strong><div>${btn('실험','teacher-experiment-'+(i+1),'secondary')}${fieldMissions[i+1]?btn('현장 의뢰','teacher-field-'+(i+1),'secondary'):''}</div></li>`).join('')}</ol>${btn('연구섬 지도','teacher-map','quiet')}${btn('복구 결과 보기','teacher-ending','quiet')}</div>`);
+}
+function settings(){openSettings({state,save:()=>{setPreviewMode(state.settings.adminUnlock);return persist();},render:()=>{resetFinalPreview();if(typeof state.route==='number'&&!canEnter(state.route,state))state.route='map';if(state.route==='ending'&&!state.restored&&!state.settings.adminUnlock)state.route='map';render();},go,reset,showStory,certificate,notebook,discoveries,offline:()=>offline,onSoundChange:()=>{setSoundSettings(state.settings);const b=document.querySelector('[data-action="sound"]');if(b){b.innerHTML=soundButton();b.setAttribute('aria-pressed',String(state.settings.sound));}},onReset:(audio,token)=>{if(!reset(token))return false;Object.assign(state.settings,audio);resetFinalPreview();setSoundSettings(state.settings);go('home');return true;}});}
 function changeSound(enabled){state.settings.sound=enabled;setSoundSettings(state.settings);persist();const b=document.querySelector('[data-action="sound"]');if(b){b.innerHTML=soundButton();b.setAttribute('aria-pressed',String(enabled));b.setAttribute('aria-label',`소리 ${enabled?'끄기':'켜기'}`);b.title=b.getAttribute('aria-label');}if(enabled)playClick();}
-function certificate(){modal('물방울 연구실 연구 인증서',`<div class="certificate-form"><label for="student-name">인증서에 표시할 별명 (선택)</label><input id="student-name" maxlength="20" placeholder="예: 물방울 탐험가"><p class="muted">별명은 저장하거나 전송하지 않아. 인쇄할 인증서에만 표시돼.</p>${btn(icon('print')+' 인증서 인쇄 / PDF 저장','print-certificate','primary wide')}</div><div id="certificate-print"><div class="certificate-border"><span class="eyebrow">SCIENCE WORLD · WATER DROP LAB</span><h2>물방울 연구실<br>연구 인증서</h2><p class="cert-name" id="cert-name">물방울 연구원</p><p>관찰 · 측정 · 실험 · 증거 분석 · 설계로<br>멈춘 연구실의 물길을 복구했습니다.</p><div class="cert-badge">연구 기록 5 / 5 · 복구 100%</div><p>${({observe:'물의 변화를 관찰할 수 있어요',compare:'내 증거로 두 조건을 비교할 수 있어요',design:'화면 속 물길 설계를 고칠 수 있어요'})[state.fieldwork.ability]||researchStyle(state)}</p><small>${new Date().toLocaleDateString('ko-KR')} · 물방울 연구실</small></div></div>`);document.querySelector('#student-name').oninput=e=>document.querySelector('#cert-name').textContent=e.target.value.trim()||'물방울 연구원';}
+function certificate(){const strength=({observe:'물의 변화를 관찰할 수 있어요',compare:'내 증거로 두 조건을 비교할 수 있어요',design:'화면 속 물길 설계를 고칠 수 있어요'})[state.fieldwork.ability]||researchStyle(state);modal('연구 인증서',`<div class="certificate-form"><label for="student-name">내 별명 (선택 · 저장 안 돼)</label><input id="student-name" maxlength="20" placeholder="예: 물방울 탐험가">${btn(icon('print')+' 인쇄 / PDF 저장','print-certificate','primary')}</div>${certificateView(strength)}`);const name=document.querySelector('#cert-name');document.querySelector('#student-name').oninput=e=>{name.textContent=e.target.value.trim()||'물방울 연구원';name.classList.remove('is-typed');void name.offsetWidth;name.classList.add('is-typed');};void playCue('success');celebrate(document.querySelector('#dialog'),1700);}
 function discoveries(){modal('우리의 발견과 도구',`<p>빨리 끝내는 대신, 관찰하고 비교해서 얻은 별이야.</p><div class="discovery-collection">${journey.map((j,i)=>`<article>${propArt(j.prop)}<div><h3>${j.tool}</h3><p>${j.need}</p><ul>${discoveryGoals[i].map((goal,k)=>`<li class="${discoveryStars(i+1,state)[k]?'earned':''}"><span>${discoveryStars(i+1,state)[k]?'★':'☆'}</span> ${goal}</li>`).join('')}</ul></div></article>`).join('')}</div>`);}
 function simplifyControls(route){
  if(typeof route!=='number')return;
@@ -108,19 +125,20 @@ function simplifyControls(route){
 
  }
  if(scene&&state.completed.includes(1)&&route>=3){const zoom=document.createElement('button');zoom.className='scene-lens icon-btn';zoom.dataset.action='focus-experiment';zoom.setAttribute('aria-label','찾은 돋보기로 실험 확대');zoom.title='찾은 관찰 돋보기';zoom.innerHTML=icon('zoom');scene.append(zoom);}
- if(tools&&typeof route==='number'){const prize=document.createElement('div');prize.className='quest-prize';prize.innerHTML=icon('star',22)+`<div><b>${fieldMissions[route].reward}</b><p>${fieldMissions[route].next}</p></div>`;tools.append(prize);}
+ if(tools&&fieldMissions[route]){const prize=document.createElement('div');prize.className='quest-prize';prize.innerHTML=icon('star',22)+`<div><b>${fieldMissions[route].reward}</b><p>${fieldMissions[route].next}</p></div>`;tools.append(prize);}
  const guide=document.querySelector('.compact-guide');if(guide)guide.dataset.mission=String(Math.ceil(route/2));
 }
 export function render(){
  cleanupCoach();closeConcept();cleanupMapCamera();
- clearInterval(endingTimer);cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():experimentShell(route);lastRenderedRoute=route;setMusicTheme(route==='ending'?'ending':'main');document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
+ clearInterval(endingTimer);cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);currentTask=null;app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():experimentShell(route);lastRenderedRoute=route;setMusicTheme(route==='ending'?'ending':'main');document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
  if(typeof route==='number'){if(state.fieldwork.active===route)bindFieldwork(route,ctx);else{if(route<=8)bindActivity(route,ctx);bindWorkshop(route,ctx);}}
  if(state.fieldwork.active!==route){
   if(route==='map')mountMapCamera();
-  mountPhaser(route,ctx);simplifyControls(route);
+  mountPhaser(route,ctx,currentTask?.regions);simplifyControls(route);
  }
  bindObservation(state,routeAction);
- if(typeof route==='number')syncCoach(route,route<=8?getActivityProgress(route):workshopProgress(route),state.fieldwork.active===route,hasFieldSeal(route));
+ bindAssist(state,routeAction,state.route===10?finalContext():null);
+ if(typeof route==='number'){syncCoach(route,route<=8?getActivityProgress(route):workshopProgress(route),state.fieldwork.active===route,hasFieldSeal(route),currentTask);markStageControls(app,currentTask);}
  app.querySelectorAll('details').forEach(d=>{if(openPanels.has(panelKey(d)))d.open=openPanels.get(panelKey(d));else if(d.matches(".workshop-keyboard")&&matchMedia("(max-width:800px)").matches)d.open=false;});
  for(const [id,value] of fieldSelections){const select=document.getElementById(id);if(select&&[...select.options].some(o=>o.value===value))select.value=value;}
  syncStorageNotice();
@@ -140,9 +158,15 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
  if(a==='reset'){if(!reset(resetToken)){toast(getStorageStatus().message);return;}resetFinalPreview();setSoundSettings(state.settings);document.querySelector('#dialog').close();go('home');return;}
  if(a==='resident-close'){document.querySelector('#dialog')?.close();return;}
  if(a==='resident-list'&&state.route==='map')return openResidentList();
- if(a.startsWith('resident-')&&state.route==='map'){
+ if(a.startsWith('resident-')){
   const [,verb,id]=a.split('-');
-  if(verb==='talk'||verb==='ask')return talkToResident(Number(id),verb==='ask');
+  if(verb==='ask'||verb==='talk'&&state.route==='map')return talkToResident(Number(id),verb==='ask');
+ }
+ if(a==='teacher-stages')return teacherStages();
+ if(a.startsWith('teacher-')&&state.settings.adminUnlock){
+  document.querySelector('#dialog')?.close();
+  if(a==='teacher-map'||a==='teacher-ending')return go(a.slice(8));
+  const [,kind,n]=a.split('-');if(kind==='experiment'||kind==='field')return previewStage(Number(n),kind==='field');
  }
  if(a==='reward-map'){document.querySelector('#dialog').close();go('map');return;}
  if(a.startsWith('mission-')){const m=+a.slice(8),screen=mapEntryScreen(m);if(!canEnter(screen,state))return;if(travelIsland(m-1,()=>go(screen)))return;return go(screen);}
@@ -153,8 +177,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
 // Offline classroom play (built site only): install keeps the first screen, then one file at a time is saved while idle.
 let offline=null;
 async function warmOffline(){
- const reg=await navigator.serviceWorker.ready,video=conceptVideoFormat(document.createElement('video')),pause=ms=>new Promise(r=>setTimeout(r,ms));let fails=0;
- const ask=()=>new Promise(ok=>{const ch=new MessageChannel(),t=setTimeout(()=>ok(null),60000);ch.port1.onmessage=e=>{clearTimeout(t);ok(e.data);};reg.active?reg.active.postMessage({type:'warm',video},[ch.port2]):ok(null);});
+ const reg=await navigator.serviceWorker.ready,pause=ms=>new Promise(r=>setTimeout(r,ms));let fails=0;
+ const ask=()=>new Promise(ok=>{const ch=new MessageChannel(),t=setTimeout(()=>ok(null),60000);ch.port1.onmessage=e=>{clearTimeout(t);ok(e.data);};reg.active?reg.active.postMessage({type:'warm'},[ch.port2]):ok(null);});
  for(;;){
   if(document.hidden||!navigator.onLine){await pause(5000);continue;}
   const r=await ask();

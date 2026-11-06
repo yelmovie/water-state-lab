@@ -13,10 +13,24 @@ export const observations=[
   {name:'젖은 천 관찰',label:'천을 적신 물',evidence:'시간이 지나자 젖은 자국이 옅어졌어. 물이 수증기로 변했어.',type:'기체'},
   {name:'차가운 캔 닦기',label:'캔 바깥 물방울',evidence:'표면을 닦고 기다리니 액체 물방울이 다시 생겼어.',type:'액체'}
 ];
+// One sentence per stage: what a learner should be able to say afterwards.
+export const stageLessons=['',
+ '물은 담는 그릇에 따라 모양이 바뀌지만, 얼음은 옮겨도 모양이 그대로야.',
+ '얼음은 고체, 물은 액체, 수증기는 기체야. 같은 물이 세 가지 모습으로 있어.',
+ '물이 얼면 부피는 늘어나지만 무게는 그대로야.',
+ '물이 얼면 부피가 커지니까, 얼음이 커질 자리를 남겨야 해.',
+ '물은 시간이 지나면 보이지 않는 수증기가 되어 공기 중으로 가. 이것이 증발이야.',
+ '끓을 때는 물 표면과 물속에서 수증기로 변해서, 증발보다 물이 빨리 줄어.',
+ '공기 중 수증기가 차가운 표면에 닿으면 물방울로 변해. 이것이 응결이야.',
+ '컵 밖 물방울은 컵 속 물이 샌 게 아니라, 공기 중 수증기가 응결한 거야.',
+ '차가운 판으로 수증기를 물방울로 바꾸고, 아래로 흘려 보내면 물을 모을 수 있어.',
+ '물은 증발해서 수증기가 되고 응결해서 다시 물이 돼. 이 변화로 물을 얻을 수 있어.'
+];
 export const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 export function freezeTrial(fill){const expanded=fill*1.09;return {fill,expanded:Math.round(expanded*10)/10,risk:expanded>100?'높음':expanded>95?'보통':'낮음'};}
 export function opacityAt(water,time){return clamp(1-time/(water===1?60:110),0,1);}
-export const defaultParts=()=>({plate:{x:110,y:80},ramp:{x:220,y:190},funnel:{x:470,y:180},tube:{x:580,y:270},bucket:{x:140,y:340}});
+// Stage 9 starts assembled with two faults, a flat ramp and a stray funnel, so the work stays on condensing and flowing down.
+export const defaultParts=()=>({plate:{x:230,y:70},ramp:{x:230,y:170},funnel:{x:600,y:215},tube:{x:420,y:300},bucket:{x:420,y:390}});
 export const targetParts={plate:{x:230,y:70},ramp:{x:230,y:170},funnel:{x:420,y:215},tube:{x:420,y:300},bucket:{x:420,y:390}};
 export function testCollector(parts,cold,angle){return collectorTrial(parts,cold,angle);}
 export function canFinishCollector(trials){return trials.length>=2&&trials.at(-1).ok&&new Set(trials.map(t=>t.signature)).size>=2;}
