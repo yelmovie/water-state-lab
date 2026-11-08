@@ -21,13 +21,14 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  dialog.className='settings-dialog';dialog.setAttribute('aria-labelledby','settings-title');
  const settings=state.settings;
  const earnedCertificate=()=>!settings.adminUnlock&&state.restored===true&&[1,2,3,4,5].every(id=>state.completed.includes(id));
+ const conceptUnlocked=n=>settings.adminUnlock||([3,4].includes(n)&&state.completed.includes(n))||fieldReady(n*2,state.fieldwork?.chapters?.[n*2]);
  const done=earnedCertificate();
  const cache=offline(),teacher=`<h3>${esc(C.teacher.standardsTitle)}</h3><ul class="settings-standards">${STANDARDS.map(s=>`<li><strong>[${esc(s.code)}]</strong> ${esc(s.text)}</li>`).join('')}</ul>`;
  const offlineStatus=cache?`<p id="settings-offline" class="settings-muted" role="status">${esc(offlineText(cache))}</p>`:'';
  const teacherTools=`<section class="settings-unlock-card" aria-label="교사 시연">${switchButton('settings-unlock',C.teacher.toolsTitle,!!settings.adminUnlock)}<p id="settings-preview-notice" class="settings-muted" role="status">${esc(settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff)}</p></section>`;
  const credits=`${paragraphs(C.credits.lines)}${details(C.credits.sourcesTitle,`<p>${esc(C.credits.sourcesIntro)}</p>${C.credits.sources.map(([title,text])=>`<p><strong>${esc(title)}</strong><br>${esc(text)}</p>`).join('')}`)}<p>${esc(C.credits.copyright)}</p><p>${esc(C.credits.own)}</p><p>${esc(C.credits.external)}</p><p>${esc(C.credits.references)}</p>`;
  const clips=()=>concepts.slice(1).map(clip=>{
-  const unlocked=settings.adminUnlock||fieldReady(clip.id*2,state.fieldwork?.chapters?.[clip.id*2]);
+  const unlocked=conceptUnlocked(clip.id);
   return `<button type="button" class="settings-concept-card" data-settings-concept="${clip.id}" ${unlocked?'':'disabled'}><img src="/assets/concepts/zone-${clip.id}.webp" alt="" loading="lazy"><span><strong>${clip.id}. ${esc(unlocked?clip.title:experimentTitles[clip.id])}</strong><small>${unlocked?(settings.adminUnlock?'교사 시연 · 9초':C.replay.conceptReady):esc(C.replay.conceptLocked.replace('{n}',clip.id))}</small></span>${unlocked?'':icon('lock',20)}</button>`;
  }).join('');
  const records=`<div class="settings-records">${notebook?`<button type="button" id="settings-notebook" class="btn secondary">${icon('book')}${esc(C.app.notebook)}</button>`:''}${discoveries?`<button type="button" id="settings-discoveries" class="btn secondary">${icon('flask')}${esc(C.app.discoveries)}</button>`:''}</div>`;
@@ -75,7 +76,7 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  dialog.querySelector('#settings-concept-list').onclick=e=>{
   const button=e.target.closest('[data-settings-concept]');if(!button||button.disabled)return;
   const n=Number(button.dataset.settingsConcept);
-  if(settings.adminUnlock||fieldReady(n*2,state.fieldwork?.chapters?.[n*2]))openConcept(n,{reduced:settings.reduced,continueLabel:C.replay.conceptReturn});
+  if(conceptUnlocked(n))openConcept(n,{reduced:settings.reduced,continueLabel:C.replay.conceptReturn});
  };
  dialog.querySelector('#settings-reset').onclick=()=>{
   if(settings.adminUnlock||confirmation?.open)return;

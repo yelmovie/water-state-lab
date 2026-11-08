@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {pipeTrial} from '../src/activity-model.js';
-import {nights,reasons,vesselTrial,nightTrial,levelHeight,currentNight,nightFills,coldNightsDone,retryHint} from '../src/cold-night-model.js';
+import {nights,reasons,vesselTrial,nightTrial,levelHeight,currentNight,nightFills,coldNightsDone,retryHint,seedColdNight} from '../src/cold-night-model.js';
 import {chapterState,fieldAction,fieldReady,fieldProgress,cleanFieldwork,initialFieldwork} from '../src/fieldwork-model.js';
 import {coldNightMarkup} from '../src/field-coldnight.js';
 
@@ -13,13 +13,23 @@ function clearNight(c,night,value=85){
 }
 const allNights=()=>[1,2,3].reduce((c,night)=>clearNight(c,night),chapterState(4));
 
+test('the first night carries the chosen tube amount and preserves an adjusted pour',()=>{
+ const pipe={trials:[pipeTrial(95),pipeTrial(70)],chosen:1,marked:true};
+ const c=chapterState(4);seedColdNight(c,pipe);
+ assert.deepEqual(nightFills(c,nights[0]),[70]);assert.equal(c.moves['bench-fill'],'70');
+ c.moves['fill-1-0']='80';seedColdNight(c,pipe);
+ assert.deepEqual(nightFills(c,nights[0]),[80]);
+ const empty=chapterState(4);seedColdNight(empty,{...pipe,marked:false});
+ assert.deepEqual(nightFills(empty,nights[0]),[0]);
+});
+
 test('the game freezes water with the same model as the chapter 4 experiment',()=>{
  for(const value of [70,90,95])assert.equal(vesselTrial('tub',value).ice,pipeTrial(value).expanded);
 });
 
-test('too much water fails differently in an open tub and a closed jar',()=>{
+test('an open tub can expand upwards while a closed jar lacks room',()=>{
  assert.equal(vesselTrial('tub',91).outcome,'ok');
- assert.equal(vesselTrial('tub',92).outcome,'overflow');
+ assert.equal(vesselTrial('tub',92).outcome,'raised');
  assert.equal(vesselTrial('jar',91).outcome,'ok');
  assert.equal(vesselTrial('jar',92).outcome,'crack');
  assert.equal(vesselTrial('bottle',92).outcome,'crack');
@@ -37,7 +47,7 @@ test('a night needs enough water and room for every vessel to grow',()=>{
  const short=nightTrial(1,[50]);
  assert.equal(short.ok,false);assert.equal(short.enough,false);assert.equal(short.safe,true);
  const full=nightTrial(1,[100]);
- assert.equal(full.ok,false);assert.equal(full.safe,false);assert.equal(full.kept,0,'a ruined tub keeps no usable water');
+ assert.equal(full.ok,true);assert.equal(full.safe,true);assert.equal(full.kept,100,'ice above an open rim is still retained water');
  const right=nightTrial(1,[80]);
  assert.equal(right.ok,true);assert.equal(right.kept,80);
  const mixed=nightTrial(2,[90,100]);
@@ -57,9 +67,9 @@ test('nights open in order and a failed night keeps the pour for adjusting',()=>
  let c=chapterState(4);
  assert.equal(currentNight(c).id,1);
  c=fill(c,2,0,80);assert.deepEqual(nightFills(c,nights[1]),[0,0],'a later night stays closed');
- c=fill(c,1,0,100);c=freeze(c,1);
- assert.equal(currentNight(c).id,1);assert.equal(c.tested.at(-1).ok,false);assert.match(c.message,/넘쳤/);
- assert.deepEqual(nightFills(c,nights[0]),[100]);
+ c=fill(c,1,0,50);c=freeze(c,1);
+ assert.equal(currentNight(c).id,1);assert.equal(c.tested.at(-1).ok,false);assert.match(c.message,/모자라/);
+ assert.deepEqual(nightFills(c,nights[0]),[50]);
  c=fill(c,1,0,80);c=freeze(c,1);
  assert.equal(currentNight(c).id,2);assert.equal(c.tested.at(-1).ok,true);
  const closed=fill(c,1,0,30);assert.deepEqual(nightFills(closed,nights[0]),[80],'a cleared night is finished');
@@ -95,7 +105,7 @@ test('repeated failures point at evidence the screen shows, not the answer',()=>
  const crack=nightTrial(3,[85,85,95]);
  assert.equal(retryHint(crack,0),'');
  assert.match(retryHint(crack,2),/좁/);
- assert.match(retryHint(nightTrial(1,[100]),2),/점선/);
+ assert.match(retryHint(nightTrial(2,[85,100]),2),/점선/);
  assert.match(retryHint(nightTrial(1,[30]),2),/더 담/);
  assert.doesNotMatch(retryHint(nightTrial(1,[100]),2),/\d/);
 });

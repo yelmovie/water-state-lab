@@ -1,4 +1,6 @@
-import {activityReady,experimentActivities,heatingTrial,nextSortCard,sortCards} from './activity-model.js';
+import {measureStatus,measureTask} from './freeze-measure.js';
+import {coreTransfer} from './core-transfer.js';
+import {activityReady,experimentActivities,heatingTrial,nextSortCard,sortCards,pipeStep} from './activity-model.js';
 import {currentTrialValid,testCollector,stageLessons} from './domain.js';
 import {funnelSeat} from './workshop-controls.js';
 import {icon,esc} from './ui.js';
@@ -15,7 +17,7 @@ const board='.phaser-stage';
 const time=n=>`#inquiry-time-${n}`;
 const record=actions('ix-record');
 const next=['','act-next-1','act-complete-1','act-next-3','act-complete-2','act-next-5','act-complete-3','act-next-7','act-complete-4','complete-5'];
-const shortSteps=[[],['붓기','얼음 옮기기','물자국'],['고체','액체','기체'],['예상','얼리기','녹이기'],['가득 얼리기','덜 얼리기','빈자리'],['그리기','시간 비교','물의 행방'],['가열 전','끓이기','돋보기'],['닦기','겉면 비교','다시 닦기'],['증거','설명 잇기','새 병'],['판 차갑게','기울이기','고치기'],['증상','고치기','물 보내기']];
+const shortSteps=[[],['붓기','얼음 옮기기','물자국'],['고체','액체','기체'],['예상','얼리기','녹이기'],['가득 담기','덜 담기','남은 공간 찾기'],['그리기','시간 비교','물의 행방'],['가열 전','끓이기','물의 행방'],['닦기','겉면 비교','다시 닦기'],['증거','설명 잇기','새 병'],['판 차갑게','기울이기','고치기'],['증상','고치기','물 보내기']];
 
 // What the learner expected, set against what happened. Empty when no prediction was made.
 function predictionNote(n,a,q){
@@ -44,17 +46,17 @@ export function experimentMove(n,state,final){
   return move('tap',`‘${card.name}’ 속 물은 어떤 상태일까?`,'모양이 그대로면 고체, 그릇 따라 바뀌면 액체, 눈에 안 보이면 기체야.',board,[[597.5,71,215,72,22],[597.5,155,215,72,22],[597.5,239,215,72,22]]);
  }
  if(n===3){
-  const s=a.freeze,ice=s.records.some(r=>r.kind==='ice'),melt=s.records.some(r=>r.kind==='melt');
-  if(!s.predicted)return move('tap','얼면 물 윗면은 어떻게 될까?','빨간 선이 처음 물높이야. 오른쪽에서 네 생각을 골라 봐.','.freeze-guess');
-  if(!ice)return move('drag','냉각팩으로 얼려 봐','물은 더 넣지 않아. 냉각팩을 끌어 놓고 물 윗면과 빨간 선을 비교해 봐.',actions('act-drop-icepack-freeze-cup'),[[580,95,108,108]]);
-  return move('drag','따뜻한 받침으로 녹여 봐','받침을 끌어 놓고 물 윗면이 빨간 선으로 돌아오는지 봐.',actions('act-drop-warm-freeze-cup'),[[580,244,108,108]]);
+  const f=a.freeze,{stage}=measureStatus(f);
+  if(stage==='measured'&&!f.predicted)return move('tap','얼면 물 윗면은 어떻게 될까?','빨간 선이 처음 물높이야. 오른쪽에서 네 생각을 골라 봐.','.freeze-guess');
+  return move('tap',measureTask(f),'화면의 큰 버튼으로 한 단계씩 해 보자. 같은 통과 같은 물을 유지해서 비교해.','[data-measure-action]');
  }
  if(n===4){
-  const trials=a.pipe.trials;
-  if(!trials.length)return move('drag','시험관을 냉동고에 넣어 봐','물이 입구 가까이 찼어. 몸통을 잡아 냉동고로 끌어 봐. 마개는 어떻게 될까?','[data-bench-tube],[data-bench-run]');
-  if(!trials.some(t=>!t.safe))return move('slide','이번엔 입구까지 가득 채워 봐','노란 손잡이를 위로 올리고 다시 냉동고에 넣어 봐.','[data-bench-handle]');
-  if(!trials.some(t=>t.safe))return move('slide','이번엔 물을 덜 채워 봐','노란 손잡이를 내리고 다시 냉동고에 넣어 봐. 얼음 위에 자리가 남을까?','[data-bench-handle]');
-  return move('tap','빈자리가 넉넉한 시험관을 짚어 봐','선반에서 얼음 위에 자리가 넉넉한 시험관을 눌러 봐.','[data-action^="act-pipe-mark-"]');
+  const step=pipeStep(a.pipe);
+  if(step==='first')return move('drag','먼저 시험관을 얼려 봐','물의 양을 확인하고 냉동고에 넣어 봐. 몸통을 끌거나 ‘얼리기’를 눌러도 돼.','[data-bench-tube],[data-bench-run]');
+  if(step==='add')return move('slide','가득 담은 물과도 비교해 봐','‘더 담기’를 누르거나 노란 손잡이를 올려 물을 더 담아 봐.','[data-bench-more],[data-bench-handle]');
+  if(step==='reduce')return move('slide','이번엔 물을 덜 담아 봐','‘덜 담기’를 누르거나 노란 손잡이를 내려 봐. 물의 양만 바꾸고 똑같이 얼릴 거야.','[data-bench-less],[data-bench-handle]');
+  if(step==='freeze')return move('drag',`물 ${a.pipe.fill}만큼 담은 시험관을 얼려 봐`,'물의 양이 바뀌었어. 냉동고에 넣고 오른쪽의 앞 시험관과 비교해 봐.','[data-bench-run]');
+  return move('tap','얼음 위에 공간이 남은 시험관을 찾아 봐','물을 덜 담으면 얼린 뒤에도 위쪽에 공간이 남아. 그 공간이 넉넉한 시험관을 눌러 봐.','[data-action^="act-pipe-mark-"]');
  }
  if(n===5){
   const s=a.draw;
@@ -70,14 +72,11 @@ export function experimentMove(n,state,final){
   if(!s.baseline&&s.time<30)return move('slide','불을 켜지 않고 물을 지켜봐','시간 손잡이를 오른쪽으로 밀어 두 컵의 물높이를 봐.',time(n));
   if(!s.baseline)return move('measure','가열하기 전 모습을 남겨 봐','두 컵이 같은 조건일 때의 관찰을 ‘지금 모습 남기기’로 기록해 봐.',record);
   if(!s.records.some(r=>r.boiling)){
-   if(s.heat<55)return move('tap','B 컵을 가열해 봐','‘B 가열 켜기’를 눌러 봐. 시간을 처음으로 돌려 두 컵을 나란히 다시 볼게.',actions('ix-heat-on'));
+   if(s.heat<55&&!s.batchPrepared)return move('tap','새 실험의 두 컵을 같은 양으로 준비해','첫 실험은 기록했어. 같은 두 컵에 같은 양을 다시 담아, 이번에는 B만 가열해서 비교하자.',actions('ix-heat-prepare'));
+   if(s.heat<55)return move('tap','B 컵만 가열해 봐','같은 양으로 다시 준비했어. A는 그대로 두고 B만 가열해.',actions('ix-heat-on'));
    if(!t.boiling)return move('slide','B의 물속에 기포가 생기는지 봐','시간 손잡이를 더 밀고 B의 물속을 자세히 살펴봐.',time(n));
    return move('measure','기포가 올라오는 모습을 남겨 봐','‘지금 모습 남기기’를 눌러 끓는 모습과 가열하지 않은 물을 기록해 봐.',record);
   }
-  const site=['surface','inside','level'].find(k=>!s.pins.includes(k));
-  if(site&&s.time<30)return move('slide','관찰할 시간을 조금 더 보내 봐','시간 손잡이를 밀고 나면 돋보기로 변화를 더 자세히 볼 수 있어.',time(n));
-  if(site==='inside'&&!t.boiling)return s.heat<55?move('tap','B의 물을 다시 데워 봐','‘B 가열 켜기’를 눌러 봐.',actions('ix-heat-on')):move('slide','기포가 올라올 때까지 기다려 봐','시간 손잡이를 더 밀고 B에 돋보기를 대 봐.',time(n));
-  if(site)return move('drag',`${({surface:'A 물의 표면',inside:'B 물속',level:'두 컵의 물높이'})[site]}를 살펴봐`,'돋보기를 끌어 가서 가까이 보고 단서를 남겨 봐.',board,[[650,150,99,105]]);
   return move('tap','두 컵에서 줄어든 물은 어디로 갔을까?','끓은 물도, 끓지 않은 물도 줄었어. 공통점을 골라 봐.','[data-action^="ix-heat-where-"]');
  }
  if(n===7){
@@ -106,12 +105,14 @@ export function experimentMove(n,state,final){
   if(!live)return move('watch','물방울을 따라가 봐','물이 어디까지 가는지 지켜봐.');
   if(s.angle<=0)return move('tap','경사판을 기울여 봐','판이 평평해서 물방울이 멈췄어. 물은 아래로 흐르니까 ‘경사판 기울이기’를 눌러 봐.',actions('ramp-tilt'));
   if(currentTrialValid(s))return move('next','물이 물통에 모였어!',stageLessons[9],actions('complete-5'));
+  if(last?.ok)return move('tap','한 조건을 바꾸어 비교해 봐','물이 잘 모였어. 냉각을 껐다 켜며 결과를 비교해 봐. 더 살펴보기에서 직접 시험할 수도 있어.',actions('toggle-cold'));
   return move('drag','깔때기를 빛나는 자리로 옮겨 봐','물이 경사판 끝에서 샜어. 깔때기를 끌어 놓거나 ‘깔때기 옮기기’를 눌러 봐.',actions('funnel-fix'),[[s.parts.funnel.x,Math.round(s.parts.funnel.y*.64+10),110,110]]);
  }
  const f=final?.progress,d=f?.diagnosis;
  if(!final?.design)return move('next','먼저 물 모으는 장치를 만들어 봐','공방에서 완성한 장치로 코어를 다시 움직일 수 있어.',actions('screen-9'));
- if(f.tested)return move('slide','마지막 레버를 당겨 봐','코어에 물이 왔어. 레버 손잡이를 끝까지 밀어 봐.','#final-lever');
- if(f.connected&&d?.resolved)return f.valve>0?move('test','코어에 물을 보내 봐','‘물 보내기’를 눌러 물이 코어까지 닿는지 확인해 봐.',actions('test-core')):move('slide','밸브를 열어 물길을 열어 봐','밸브 손잡이를 밀어 연결한 길로 물이 흐르게 해 줘.','#final-valve');
+ if(f.tested)return move('tap','도착한 물로 코어를 깨워 봐','밸브를 지나 코어까지 물이 왔어. ‘코어 깨우기’를 눌러 봐.',actions('core-activate'));
+ if(f.connected&&d?.resolved&&!coreTransfer(f,d.working).downhill)return move('slide','코어 입구를 물통의 물높이보다 낮춰 봐','높이 손잡이를 왼쪽으로 밀어 봐. 물은 높은 곳에서 낮은 곳으로 흘러.','#core-inlet-height');
+ if(f.connected&&d?.resolved)return f.valve>0?move('test','코어에 물을 보내 봐','‘물 보내기’를 눌러 물이 코어까지 닿는지 확인해 봐.',actions('test-core')):move('slide','밸브를 열어 물길을 열어 봐','그림 속 밸브를 눌러 돌리거나, 밸브 열림 손잡이를 밀어 봐.','#final-valve');
  if(d?.resolved)return move('connect','고친 장치를 코어에 이어 봐','‘코어에 연결’을 눌러 물이 갈 길을 열어 봐.',actions('connect-core'));
  if(!d?.tests.length)return move('test','물이 어디에서 멈췄는지 찾아 봐','‘장치 시험’을 눌러 물방울이 생기는 곳과 새는 곳을 살펴봐.',actions('diagnosis-test'));
  if(!d.hypothesis)return move('tap','고장의 원인을 골라 봐','물이 생기지 않았는지, 중간에 샜는지 보고 네 생각을 눌러 봐.','[data-action^="diagnose-"]');

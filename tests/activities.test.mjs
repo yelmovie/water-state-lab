@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initialActivities,activityReady,heatingTrial,pipeTrial,dryTrace,dewTrial,sortCards,validateActivities} from '../src/activity-model.js';
 import {state} from '../src/state.js';
+import {measureAction} from '../src/freeze-measure.js';
 import {activityView,handleActivity,getActivityProgress} from '../src/activities.js';
 
 test('pouring guidance follows the next unfinished comparison and keeps the other vessel usable',()=>{
@@ -25,9 +26,11 @@ test('pipe comparison guidance matches meaningful condition changes',()=>{
  const before=state.activities;
  try{
   state.activities=initialActivities();
-  state.activities.pipe.trials=[{fill:95},{fill:95}];
+  state.activities.pipe.trials=[pipeTrial(95),pipeTrial(95)];
   assert.equal(getActivityProgress(4).steps[1].done,false);
-  state.activities.pipe.trials.push({fill:90});
+  state.activities.pipe.trials.push(pipeTrial(90));
+  assert.equal(getActivityProgress(4).steps[1].done,false,'nearly full still lacks the reserved space');
+  state.activities.pipe.trials.push(pipeTrial(70));
   assert.equal(getActivityProgress(4).steps[1].done,true);
  }finally{state.activities=before;}
 });
@@ -94,8 +97,9 @@ test('complete interaction sequence requires observations, comparisons, and tran
  put('icepack','freeze-cup');assert.equal(a.freeze.phase,'water');
  put('measure-cup','scale');act('freeze-guess-66');assert.equal(a.freeze.prediction,66);
  put('warm','freeze-cup');assert.equal(a.freeze.phase,'water');
- put('icepack','freeze-cup');assert.equal(a.freeze.records.length,2);assert.equal(activityReady(3,a),false);
- put('warm','freeze-cup');assert.equal(activityReady(3,a),true);
+ put('icepack','freeze-cup');assert.equal(a.freeze.records.length,1,'a pack cannot stand in for a freezer process');
+ for(const step of ['load','wait','take','measure-ice','rest','wait','measure-melt'])measureAction(a.freeze,step,100);
+ assert.equal(activityReady(3,a),false,'compare after all measurements');measureAction(a.freeze,'compare');assert.equal(activityReady(3,a),true);
  const leaving=routes.length;act('next-3');assert.equal(routes.length,leaving,'the pipe talk comes before leaving the experiment');
  act('talk-pop-yes');act('talk-chill');act('talk-pipe-burst');act('next-3');
  a.pipe.fill=95;act('pipe-test');assert.equal(activityReady(4,a),false);a.pipe.fill=70;act('pipe-test');assert.equal(activityReady(4,a),false,'the empty space still has to be found');

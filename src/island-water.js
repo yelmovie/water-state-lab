@@ -1,5 +1,6 @@
 // Moving water for the restored island. The diorama's water is painted into one baked texture,
 // so a shader finds that paint and animates it in place, then a sea, spray and the mill's stream are added around it.
+import {islandWaterwayLayout,MILL_CUP} from './three-layout.js';
 const NOISE=`
 float wHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float wNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(wHash(i),wHash(i+vec2(1,0)),f.x),mix(wHash(i+vec2(0,1)),wHash(i+vec2(1,1)),f.x),f.y);}
@@ -8,7 +9,7 @@ float wRipple(vec2 p,float t){float a=wNoise(p+vec2(t*.7,t*.4)),b=wNoise(p*1.6-v
 const SEA_LEVEL=.006,SEA_RADIUS=.5;
 // Measured from the stand model, in mill units: down the flume's channel, then over its end into the glass.
 const STREAM=[[-.009,.08,.004],[-.009,.0735,.02],[-.009,.072,.04],[-.009,.0705,.058],[-.009,.067,.067],[-.008,.058,.07],[-.006,.046,.07]];
-const CUP={y:.047,z:.069,radius:.0185};
+const CUP=MILL_CUP;
 // Drops leave the wheel's lower buckets and land in the channel.
 const WHEEL_DRIP={x:-.006,y:.102,z:.022},CHANNEL_Y=.074;
 
@@ -107,9 +108,8 @@ function makeSpray(THREE,time,origins,{count,spread,rise,fall=0,size,colour,spee
  return new THREE.Points(geometry,material);
 }
 
-function makeStream(THREE,time){
- const curve=new THREE.CatmullRomCurve3(STREAM.map(p=>new THREE.Vector3(...p)));
- const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uTime:time},
+function streamMaterial(THREE,time){
+ return new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uTime:time},
   vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
   fragmentShader:`varying vec2 vUv;uniform float uTime;${NOISE}
   void main(){
@@ -117,7 +117,54 @@ function makeStream(THREE,time){
    vec3 colour=mix(vec3(.26,.72,.88),vec3(.92,.99,1.),smoothstep(.5,.85,n));
    gl_FragColor=vec4(colour,.72+.28*n);
   }`});
- return new THREE.Mesh(new THREE.TubeGeometry(curve,48,.0046,10),material);
+}
+function makeStream(THREE,time){
+ const curve=new THREE.CatmullRomCurve3(STREAM.map(p=>new THREE.Vector3(...p)));
+ return new THREE.Mesh(new THREE.TubeGeometry(curve,48,.0046,10),streamMaterial(THREE,time));
+}
+
+// A continuous U-shaped channel, including the bends. Water remains visible between its walls.
+function channelGeometry(THREE,path,left,right,top,bottom){
+ const positions=[],indices=[],uv=[],offsets=[];
+ path.forEach((p,i)=>{
+  const a=path[Math.max(0,i-1)],b=path[Math.min(path.length-1,i+1)],length=Math.hypot(b.x-a.x,b.z-a.z),nx=-(b.z-a.z)/length,nz=(b.x-a.x)/length;
+  offsets.push({x:nx,z:nz});
+  for(const [offset,y]of [[left,top],[right,top],[left,bottom],[right,bottom]]){positions.push(p.x+nx*offset,p.y+y,p.z+nz*offset);uv.push(i/(path.length-1),offset===left?0:1);}
+  if(!i)return;
+  const a0=(i-1)*4,b0=i*4;
+  for(const [a1,a2,b1,b2]of [[0,1,0,1],[2,0,2,0],[1,3,1,3],[3,2,3,2]])indices.push(a0+a1,a0+a2,b0+b1,a0+a2,b0+b2,b0+b1);
+ });
+ const end=(base,reverse)=>{const face=[base,base+2,base+1,base+1,base+2,base+3];indices.push(...(reverse?face.reverse():face));};end(0,false);end((path.length-1)*4,true);
+ const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();
+ return {geometry,offsets};
+}
+function makeVillageWaterway(THREE,time,decor){
+ const {cup,path,landing,width}=islandWaterwayLayout(),group=new THREE.Group();group.name='mill-to-village-waterway';
+ const stone=new THREE.MeshStandardMaterial({color:0xe4d9bd,roughness:.83,flatShading:true}),brass=new THREE.MeshStandardMaterial({color:0xb79554,metalness:.48,roughness:.4}),water=streamMaterial(THREE,time);
+ const half=width/2;
+ for(const [left,right,top,bottom,material]of [[-half-.003,half+.003,-.0015,-.005,stone],[-half-.003,-half,.003,-.005,stone],[half,half+.003,.003,-.005,stone],[-half,half,0,-.0002,water]]){
+  const {geometry}=channelGeometry(THREE,path,left,right,top,bottom);group.add(new THREE.Mesh(geometry,material));
+ }
+ const {geometry:guide,offsets}=channelGeometry(THREE,path,-half,half,0,0);guide.dispose();
+ for(const side of [-1,1]){
+  const points=path.map((p,i)=>new THREE.Vector3(p.x+offsets[i].x*(half+.0015)*side,p.y+.003,p.z+offsets[i].z*(half+.0015)*side)),curve=new THREE.CurvePath();
+  for(let i=1;i<points.length;i++)curve.add(new THREE.LineCurve3(points[i-1],points[i]));
+  group.add(new THREE.Mesh(new THREE.TubeGeometry(curve,32,.0007,6),brass));
+ }
+ const curve=new THREE.CurvePath();for(let i=1;i<path.length;i++)curve.add(new THREE.LineCurve3(new THREE.Vector3(path[i-1].x,path[i-1].y,path[i-1].z),new THREE.Vector3(path[i].x,path[i].y,path[i].z)));
+ // Two grounded piers support the span over the sea; the last reach rests on the island bank.
+ for(const t of [.25,.67]){
+  const p=curve.getPointAt(t),top=p.y-.005,base=SEA_LEVEL-.003,height=top-base;
+  const pier=new THREE.Mesh(new THREE.BoxGeometry(.012,height,.016),stone);pier.position.set(p.x,base+height/2,p.z);group.add(pier);
+  for(const y of [base+.002,top-.002]){const cap=new THREE.Mesh(new THREE.BoxGeometry(.019,.004,.022),stone);cap.position.set(p.x,y,p.z);group.add(cap);}
+ }
+ // A short brass outlet through the cup wall feeds the open channel.
+ const inlet=new THREE.Vector3(cup.x,cup.y-.001,cup.z),outlet=new THREE.Vector3(path[0].x,path[0].y,path[0].z),axis=outlet.clone().sub(inlet),pipe=new THREE.Mesh(new THREE.CylinderGeometry(.0047,.0047,axis.length(),12,1,true),brass);
+ pipe.position.copy(inlet.clone().add(outlet).multiplyScalar(.5));pipe.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),axis.clone().normalize());group.add(pipe);
+ const feed=new THREE.LineCurve3(inlet,outlet);group.add(new THREE.Mesh(new THREE.TubeGeometry(feed,4,.003,8),water));
+ const last=path.at(-1),drop=new THREE.LineCurve3(new THREE.Vector3(last.x,last.y,last.z),new THREE.Vector3(landing.x,landing.y,landing.z));group.add(new THREE.Mesh(new THREE.TubeGeometry(drop,4,.0035,8),water));
+ decor.add(group);
+ decor.add(makeSpray(THREE,time,[landing],{count:12,spread:.006,rise:.007,fall:.007,size:.12,colour:0xecfbff,speed:1.5}));
 }
 function makeCupWater(THREE,time){
  const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uTime:time},
@@ -138,5 +185,6 @@ export function islandWater(THREE,{island,mill,decor}){
  mill.add(makeStream(THREE,time),makeCupWater(THREE,time));
  mill.add(makeSpray(THREE,time,[WHEEL_DRIP],{count:26,spread:.008,rise:0,fall:WHEEL_DRIP.y-CHANNEL_Y,size:.32,colour:0x8fe3f5,speed:1.3}));
  mill.add(makeSpray(THREE,time,[{x:-.006,y:CUP.y+.002,z:CUP.z}],{count:18,spread:.016,rise:.022,fall:.022,size:.22,colour:0xe8fbff,speed:1.8}));
+ makeVillageWaterway(THREE,time,decor);
  return (t,still)=>{time.value=still?2:t;};
 }

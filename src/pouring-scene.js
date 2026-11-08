@@ -90,9 +90,9 @@ export function drawVesselFront(ctx,photo,key,{x,floor=base,scale=1}){
 }
 export function dashedLine(g,from,to,y){for(let x=from;x<to;x+=13)g.lineBetween(x,y,Math.min(x+7,to),y);}
 
-const home={x:117,y:162},jugWidth=216,jugHeight=234;
+const home={x:117,y:162},jugWidth=216,jugHeight=234,jugScale=.78;
 const jugFrame=[896,26,777,841],tilt=.52;
-const spout={x:jugWidth*.475,y:-jugHeight*.42};
+const spout={x:jugWidth*.475*jugScale,y:-jugHeight*.42*jugScale};
 // Trace the inside of the glass, excluding its handle and thick bottom.
 const jugProfile=[[.13,.36,.85],[.40,.36,.85],[.49,.335,.88],[.57,.31,.912],[.64,.30,.927],[.73,.316,.911],[.81,.348,.88],[.87,.389,.837]];
 const crossSection=([y,left,right])=>({y:y*jugHeight,left:left*jugWidth,right:right*jugWidth});
@@ -155,7 +155,7 @@ export function createPouringScene(scene){
  const picture=scene.textures.get('pouring-glass').getSourceImage();
  const jugPhoto=scene.textures.get('pouring-jug').getSourceImage();
  const jugCanvas=scene.textures.createCanvas('pouring-jug-live',jugWidth*2,jugHeight*2);
- const jug=scene.add.image(home.x,home.y,'pouring-jug-live').setDisplaySize(jugWidth,jugHeight).setDepth(9).setInteractive({useHandCursor:true});
+ const jug=scene.add.image(home.x,home.y,'pouring-jug-live').setDisplaySize(jugWidth*jugScale,jugHeight*jugScale).setDepth(9).setInteractive({useHandCursor:true});
  scene.input.setDraggable(jug);
  scene.add.image(360,165,'pouring-water').setDisplaySize(720,330).setDepth(4);
  const guides=scene.add.graphics().setDepth(5),motion={tall:0,wide:0};

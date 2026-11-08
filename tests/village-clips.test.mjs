@@ -31,3 +31,12 @@ test('reduced motion keeps the still art and loads no clips',()=>{
  assert.match(html,/village-art/);
  assert.doesNotMatch(html,/has-clips/);
 });
+
+test('a building guide restores both places in its building without duplicate effects',()=>{
+ const html=villageLights([{stage:1},{stage:2},{stage:4}],[4],false,true);
+ for(const n of [1,2,3,4])assert.equal((html.match(new RegExp(`stage-${n}-idle\\.webp`,'g'))||[]).length,1,'one loop for place '+n);
+ assert.match(html,/stage-3-on\.webp/);
+ assert.match(html,/stage-4-on\.webp/);
+ assert.doesNotMatch(html,/stage-1-on\.webp/);
+ assert.doesNotMatch(html,/stage-5-/);
+});

@@ -22,9 +22,9 @@ test('both final faults are real and need a repaired design plus matching eviden
  for(const x of [420,650])for(const fault of ['cooling','connection']){
  const parts=structuredClone(targetParts);parts.plate.x=x-190;parts.ramp.x=x-190;parts.funnel.x=x;parts.tube.x=x;parts.bucket.x=x;
  const original={parts,cold:true,angle:20},d=newDiagnosis(original,fault);
- assert.equal(collectorTrial(d.working.parts,d.working.cold,d.working.angle).ok,false);
+ const bad=collectorTrial(d.working.parts,d.working.cold,d.working.angle);assert.equal(bad.ok,false);
  d.working=structuredClone(original);const good=collectorTrial(parts,true,20);assert.equal(diagnosisResolved(d,good),false);
- d.hypothesis=fault;d.evidence=fault==='cooling'?4:5;assert.equal(diagnosisResolved(d,good),true);assert.deepEqual(original.parts,parts);
+ d.hypothesis=fault;d.evidence=fault==='cooling'?4:5;d.tests.push(bad,good);assert.equal(diagnosisResolved(d,good),true);assert.deepEqual(original.parts,parts);
  }
 });
 test('local wiping only removes nearby droplets and changes external water mass',()=>{

@@ -1,10 +1,11 @@
+import {observationSpeed} from './observation-speed.js';
 import {initialInquiry,sanitizeInquiry} from './inquiry-model.js';
 import {initialActivities,validateActivities} from './activity-model.js';
 import {defaultParts,canEnter} from './domain.js';
 import {initialFieldwork,cleanFieldwork,migrateFieldwork} from './fieldwork-model.js';
 import {restoreDrawingMetadata} from './drawing-records.js';
 export const KEY='water-drop-lab:v1';
-export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,adminUnlock:false},lab:{
+export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,autoplay:true,observationSpeed:.5,adminUnlock:false},lab:{
   observe:{selected:0,seen:[],pour:0,ice:false,cloth:0,wipe:0,canTime:0},
   classify:{current:0,records:[],type:'',proof:false},
   freeze:{initial:false,tare:false,prediction:65,phase:'water',measured:false,melted:false,compared:false},
@@ -14,7 +15,7 @@ export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwor
   condensation:{wiped:false,sealed:false,tare:false,initial:false,time:0,later:false,snapshots:[]},
   evidence:{chain:[],selected:[],transfer:''},
   workshop:{parts:defaultParts(),selected:'plate',cold:false,angle:0,trials:[]},
-  final:{submitted:[],connected:false,valve:0,tested:false,lever:0,cooling:false}
+  final:{submitted:[],connected:false,valve:0,tested:false,lever:0,cooling:false,coreHeight:90}
 }};}
 function matches(value,template){if(Array.isArray(template))return Array.isArray(value);if(template&&typeof template==='object')return !!value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(template).every(k=>matches(value[k],template[k]));return typeof value===typeof template&&(typeof value!=='number'||Number.isFinite(value));}
 function preservesSource(source,clean,derivedDone=false){
@@ -41,6 +42,7 @@ function loadState(storage){
   raw.fieldwork=migrateFieldwork(raw.fieldwork);s.schemaVersion=2;s.inquiry=sanitizeInquiry(raw.inquiry);s.fieldwork=cleanFieldwork(raw.fieldwork);
   // Sanitized data can be shown, but rejected observations must not replace their source.
   if(raw.inquiry!==undefined&&!preservesSource(raw.inquiry,s.inquiry)||raw.fieldwork!==undefined&&!preservesSource(raw.fieldwork,s.fieldwork,true))repaired=true;
+  s.settings.observationSpeed=observationSpeed(s.settings);
   s.settings.sfx=typeof raw.settings?.sfx==='boolean'?raw.settings.sfx:s.settings.sound;
   // The old synthesized score defaulted to off; saves from that time hear the real themes once, then their choice sticks.
   if(raw.settings?.themeMusic!==true){s.settings.bgm=true;s.settings.themeMusic=true;}
@@ -51,9 +53,11 @@ function loadState(storage){
   if(!Object.hasOwn(raw.inquiry||{},'drawPredictionLocked'))restoreDrawingMetadata(s.inquiry,s.activities.draw);
   for(const k of Object.keys(s.lab))s.lab[k]={...fallback.lab[k],...raw.lab[k]};
   if(!matches(s.lab,fallback.lab)||!matches(s.settings,fallback.settings)||!Array.isArray(s.completed)||!Array.isArray(s.pages)||!s.evidence||typeof s.evidence!=='object'||Array.isArray(s.evidence)||typeof s.restored!=='boolean')return result(fallback,'damaged');
+  if(raw.lab.final?.coreHeight===undefined&&s.lab.final.tested)s.lab.final.coreHeight=60;
+  s.lab.final.coreHeight=Math.max(25,Math.min(95,Number(s.lab.final.coreHeight)||90));
   // Teacher preview is a session-only copy, never a saved permission or progress.
   s.settings.adminUnlock=false;
-  const start=defaultParts();if(['plate','ramp','tube','bucket'].some(k=>s.lab.workshop.parts?.[k]&&(s.lab.workshop.parts[k].x!==start[k].x||s.lab.workshop.parts[k].y!==start[k].y)))s.lab.workshop={parts:start,selected:'plate',cold:false,angle:0,trials:[]};
+  // Valid saved designs are learner evidence, not a layout migration target.
   const parts=s.lab.workshop.parts;
   if(!Object.hasOwn(parts,s.lab.workshop.selected)||s.lab.observe.selected<0||s.lab.observe.selected>3||s.lab.classify.current<0||s.lab.classify.current>3)return result(fallback,'damaged');
   if(!s.completed.every(n=>Number.isInteger(n)&&n>=1&&n<=5)||!s.pages.every(n=>Number.isInteger(n)&&n>=1&&n<=10))return result(fallback,'damaged');
@@ -129,6 +133,6 @@ export function reset(token){
  resetTokens.delete(token);
  const current=currentSource();if(!unchanged(current)||current.raw!==token.raw)return fail(current?'conflict':'unavailable');
  const next=initialState();
- for(const key of ['sound','bgm','sfx','bgmVolume','reduced'])next.settings[key]=state.settings[key];
+ for(const key of ['sound','bgm','sfx','bgmVolume','reduced','observationSpeed'])next.settings[key]=state.settings[key];
  try{const serialized=JSON.stringify(next);current.storage.setItem(KEY,serialized);lastSource=serialized;storageCode='ready';protectedCode=null;writeStatus='saved';state=next;emitStorageStatus();return true;}catch{return fail('full');}
 }

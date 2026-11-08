@@ -1,4 +1,5 @@
-import {activityReady,experimentActivities} from './activity-model.js';
+import {coreTransfer} from './core-transfer.js';
+import {activityReady,experimentActivities,pipeStep} from './activity-model.js';
 import {testCollector} from './domain.js';
 import {observationClockBusy} from './inquiry.js';
 
@@ -22,9 +23,7 @@ function heatStep(c){
  if(!c.baseline)return c.time<100?watch('가열하지 않아도 물이 줄어드는지 봐','두 컵의 물높이를 지켜봐.'):step('ix-record',1800,'끓이지 않아도 조금씩 줄어들어','표면에서 물이 수증기로 변해. 이게 증발이야.');
  if(c.heat<55)return null;
  if(!c.records.some(r=>r.boiling))return c.time<100?watch('B 컵의 물이 끓고 있어','물속에서 기포가 올라오는지 지켜봐.'):step('ix-record',1800,'물속에서 기포가 올라와','끓을 때는 물속에서도 수증기가 생겨.');
- const site=['surface','inside','level'].find(key=>!c.pins.includes(key));
- if(!site)return null;
- return step('ix-lens-'+site,2800,({surface:'A 표면을 돋보기로 볼게',inside:'B 물속을 돋보기로 볼게',level:'두 컵의 물높이를 비교할게'})[site],'돋보기 속 모습을 살펴봐.');
+ return null;
 }
 function dewStep(d,q){
  if(!q.dewHypothesis||!d.wiped.includes('cold'))return null;
@@ -42,7 +41,7 @@ function explainStep(a,q){
  if(e.chain.length<3||!q.transferPrediction)return null;
  if(!e.bottleWiped)return step('ix-bottle-start',1000,'두 음료병의 겉면을 닦을게','닦은 뒤 어떻게 되는지 지켜봐.');
  if(e.time<100)return watch('음료병을 지켜봐','어느 병 바깥에 물방울이 생기는지 봐.');
- return e.transfer?null:step('ix-record',1600,'차가운 병에도 물방울이 생겼어','차가운 표면이면 어디서든 같은 일이 일어나.');
+ return e.transfer?null:step('ix-record',1600,'차가운 병에도 물방울이 생겼어','공기 중 수증기가 충분하고 표면이 충분히 차가우면 물방울이 생겨.');
 }
 function workshopStep(s){
  const last=s.trials.at(-1);
@@ -57,7 +56,7 @@ function finalStep(final){
  if(!last)return step('diagnosis-test',1200,'장치를 시험해 볼게','물이 어디서 멈추는지 지켜봐.');
  if(d.resolved){
   if(!f.connected)return step('connect-core',1400,'다 고쳤어! 코어에 이을게','고친 장치와 코어를 연결하는 중이야.');
-  if(!f.valve)return step('core-open-valve',1100,'밸브를 열게','물이 지나갈 길을 여는 중이야.');
+  if(!f.valve||!coreTransfer(f,d.working).downhill)return null;
   return step('test-core',1200,'코어로 물을 보낼게','물이 코어까지 닿는지 지켜봐.');
  }
  const changed=last.signature!==testCollector(d.working.parts,d.working.cold,d.working.angle).signature;
@@ -79,13 +78,14 @@ export function assistStep(n,state,final=null){
 /** How long the automatic demonstration stays on a screen before its next step. */
 export function observationDwell(n,state){
  const o=state.activities.observe;
- if(n===3&&state.activities.freeze.records.some(r=>r.kind==='ice'))return 5200; // The freezing animation finishes first.
+ if(n===4)return ['reduce','add'].includes(pipeStep(state.activities.pipe))?260:2200;
+ if(n===3)return 900; // Active cooling is awaited by the shared playback controller.
  if(n===9)return 3200; // Long enough to read why the water stopped.
  return n===1&&(o.step===0?o.pours.length===2:o.step===1&&o.iceMoved)?3600:1250;
 }
 
 let timer=0,pending=null;
-const motionOff=state=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Reduced motion removes movement, never the time needed to read an observation.
 function arm(wait){
  clearTimeout(timer);
  if(!pending)return;
@@ -99,7 +99,7 @@ function arm(wait){
 export function bindAssist(state,run,final){
  const route=state.route,next=typeof route==='number'?assistStep(route,state,final):null;
  pending=next?{run,step:next}:null;
- arm(next?(motionOff(state)?150:next.delay):0);
+ arm(next?next.delay:0);
 }
 document.addEventListener('pointerdown',()=>clearTimeout(timer),true);
 document.addEventListener('pointerup',()=>{if(pending)arm(pending.step.delay);},true);

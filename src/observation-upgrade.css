@@ -1,0 +1,123 @@
+/* Observation controls belong to the workspace, with the experiment using the remaining area. */
+.activity-scene.has-observation-board{display:flex;flex-direction:column;gap:8px;padding:12px;min-height:0}
+.observation-board{display:grid;grid-template-rows:minmax(0,1fr) auto;position:relative;flex:1;min-height:0;min-width:0;width:100%;border:1px solid #c8d6c5;border-radius:18px;background:#f5faf0a6;overflow:hidden}
+.experiment-shell .observation-board>.phaser-stage{grid-row:1;min-height:0;height:100%;width:100%;max-height:none;aspect-ratio:auto;margin:0;border:0;border-radius:16px 16px 0 0;flex:1}
+.observation-board>.phaser-stage canvas{max-width:100%;max-height:100%;object-fit:contain}
+.observation-board .time-controls{grid-row:2;display:grid!important;grid-template-columns:72px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;max-width:none;margin:0;padding:5px 14px;border:0;border-top:1px solid #bbcdbb;border-radius:0;background:#f4f8eefa;min-height:78px}
+.observation-board .time-scrubber{display:grid;grid-template-rows:auto 26px auto;gap:0;padding:0;border:0;border-radius:0;background:none;min-width:0;min-height:0}
+.observation-board .time-scrubber>span:first-child{font:16px/1.25 var(--font-display)}
+.observation-board .time-scrubber output{font:13px/1.2 var(--font-body);padding:2px 8px}
+.observation-board .time-scrubber input{height:30px;min-height:30px;margin:0;width:100%}
+.observation-board .time-stops{font-size:13px;line-height:1.2;padding:0 4px}
+.observation-board .time-actions{display:flex;align-items:center;gap:6px;margin:0}
+.observation-board .time-actions .btn{min-height:44px;font-size:14px;padding:5px 9px}
+.observation-board #time-description{grid-column:2/-1;margin:0;font-size:12px;line-height:1.2}
+.observation-board #time-description:empty{display:none}
+.observation-clock{position:relative;width:66px;height:66px;flex:none}
+.observation-clock img{display:block;width:100%;height:100%;object-fit:contain}
+.observation-clock i{position:absolute;left:50%;top:47%;display:block;transform-origin:50% 100%;border-radius:3px;background:#224e55}
+.observation-clock .clock-minute{height:23px;width:2px;margin-left:-1px;margin-top:-23px;transform:rotate(var(--clock-angle,0deg))}
+.observation-clock .clock-hour{height:16px;width:4px;margin-left:-2px;margin-top:-16px;transform:rotate(var(--clock-hour,0deg))}
+.observation-clock .clock-pivot{height:6px;width:6px;margin-left:-3px;margin-top:-3px;border-radius:50%;background:#ad8246}
+@media(prefers-reduced-motion:no-preference){html:not(.reduce-motion) .observation-clock i{transition:transform .25s linear}}
+.scene-5 .activity-scene .picture-records,.scene-7 .activity-scene .picture-records{display:flex;flex:none;gap:8px;min-height:0;max-height:96px;margin:0 0 0 96px;padding:0}
+.scene-5 .picture-records .picture-record,.scene-7 .picture-records .picture-record{flex:1;min-width:0;padding:5px 8px;font-size:13px}
+.scene-5 .picture-record .record-pair svg{height:44px;max-height:44px}
+.scene-5 .picture-record .record-pair b{font-size:12px}
+.scene-5 .activity-stage-caption{flex:none;margin:0;padding:5px;font-size:18px}
+.heat-observation-note{margin:0;padding:3px 8px;font-size:13px;color:#58776b;text-align:right;flex:none}
+/* A visible companion is fully contained; its label must never fall below the screen. */
+.experiment-shell .compact-guide{bottom:12px;left:12px;max-width:calc(100% - 24px);padding:0 3px 5px;box-sizing:border-box}
+.experiment-shell .compact-guide .coach-trigger{min-height:80px;width:82px;min-width:82px;justify-content:flex-end;gap:1px;overflow:visible}
+.experiment-shell .compact-guide .coach-trigger .buddy-pose{width:62px;height:62px;flex:none}
+.experiment-shell .coach-trigger-label{font-size:13px;padding:2px 6px;line-height:1.25}
+.experiment-shell .coach-trigger-badge{top:0;min-height:22px;font-size:18px;right:0}
+@media(min-width:801px) and (max-height:740px){
+ .activity-scene.has-observation-board{padding:8px;gap:5px}.observation-board .time-controls{min-height:68px;grid-template-columns:56px minmax(0,1fr) auto;gap:8px;padding:3px 10px}.observation-clock{width:54px;height:54px}.observation-clock .clock-minute{height:19px;margin-top:-19px}.observation-clock .clock-hour{height:13px;margin-top:-13px}
+ .scene-5 .activity-scene .picture-records,.scene-7 .activity-scene .picture-records{max-height:76px}.scene-5 .picture-record .record-pair svg{height:30px}.observation-board .time-actions .btn{font-size:12px;padding:4px 6px}
+}
+@media(max-width:800px),(orientation:portrait){
+ .observation-board{flex:none;height:360px;min-height:300px}.observation-board .time-controls{grid-template-columns:52px minmax(0,1fr);min-height:74px;gap:6px;padding:5px 9px}.observation-clock{width:50px;height:50px}.observation-board .time-actions{grid-column:1/-1;justify-content:center;flex-wrap:wrap}.observation-board .time-actions .btn{font-size:13px;min-height:44px}.observation-clock .clock-minute{height:17px;margin-top:-17px}.observation-clock .clock-hour{height:12px;margin-top:-12px}
+ .scene-5 .activity-scene .picture-records,.scene-7 .activity-scene .picture-records{margin-left:0;max-height:none}.experiment-shell .compact-guide{left:auto;bottom:auto;margin:0;padding:2px 4px 10px}.experiment-shell .compact-guide .coach-trigger{width:auto;min-width:0;min-height:52px;flex-direction:row;align-items:center}.experiment-shell .compact-guide .coach-trigger .buddy-pose{width:46px;height:46px}
+}
+/* Day / night makes the freezing condition explicit; no mechanical lever advances time. */
+.cold-art{max-width:250px;object-fit:contain}
+.cold-stream{fill:none!important;stroke:#76d9ed;stroke-width:5;stroke-linecap:round;opacity:0}
+.cold-splash{opacity:0}.is-pouring .cold-stream,.is-pouring .cold-splash{opacity:1}
+.cold-lid.is-open{transform:translate(43px,15px) rotate(20deg);transform-box:fill-box;transform-origin:center}
+.cold-night-watch{display:grid;justify-items:center;gap:10px;padding:18px 12px;border:1.5px solid #b9c9c1;border-radius:18px;background:#fffdf3ed;text-align:center;align-self:end;color:#315d60}
+.cold-night-watch>b{font:21px/1.2 var(--font-display)}
+.cold-night-watch>p{margin:0;font-size:15px;line-height:1.5;word-break:keep-all}
+.cold-night-watch .btn{width:100%;min-height:54px;font-size:17px;line-height:1.4;padding:10px}
+.night-sky-symbol{display:grid;place-items:center;width:66px;height:66px;border:1px solid #e0cb8a;border-radius:50%;background:#fff0c3;color:#aa7932}
+.cold-yard[data-sky="night"] .night-sky-symbol{background:#27456b;color:#ecf4ff;border-color:#a0bfdc}
+.cold-yard[data-sky="night"] .cold-night-watch{background:#203855e8;color:#eff9ff;border-color:#94b7d0}
+.cold-row{padding-left:0}.cold-name{min-height:48px}
+@media(prefers-reduced-motion:no-preference){
+ html:not(.reduce-motion) .is-pouring .cold-stream{stroke-dasharray:18 3;animation:tap-flow .45s linear infinite}
+ html:not(.reduce-motion) .is-pouring .cold-splash>ellipse{transform-box:fill-box;transform-origin:center;animation:tap-ripple .7s ease-out infinite}
+ @keyframes tap-flow{to{stroke-dashoffset:-42}}
+ @keyframes tap-ripple{from{scale:.4;opacity:1}to{scale:1.2;opacity:.1}}
+}
+@media(max-width:800px),(orientation:portrait){
+ .cold-night-watch{grid-template-columns:48px minmax(0,1fr);gap:5px 10px;padding:10px}.night-sky-symbol{grid-row:1/3;width:44px;height:44px}.cold-night-watch>b{font-size:18px}.cold-night-watch>p{font-size:13px}.cold-night-watch .btn{grid-column:1/-1;min-height:48px}.cold-side{grid-template-columns:minmax(0,1fr)!important}.cold-row{padding-left:0}.cold-vessel{grid-template-columns:minmax(0,1fr);grid-template-rows:48px minmax(180px,1fr) auto}.cold-taps{grid-column:1;grid-row:1;flex-direction:row}.cold-art{grid-column:1;grid-row:2}.cold-name{grid-column:1;grid-row:3}
+}
+.collector-concept-body{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(230px,.75fr);gap:24px;padding:24px;min-height:0}
+.collector-concept-art{position:relative;min-height:330px;aspect-ratio:1.35;border:1px solid #a8c5b5;border-radius:20px;background:radial-gradient(ellipse at 45% 30%,#e6f7f4,#f8f8e9);overflow:hidden}
+.collector-air-label{position:absolute;top:8%;left:5%;font:18px/1.3 var(--font-display);color:#426e6a;max-width:30%}.collector-air-label small{display:block;font:13px/1.5 var(--font-body)}
+.collector-plate{position:absolute;left:28%;top:5%;width:40%;height:40%;object-fit:contain}.collector-pack{position:absolute;left:59%;top:12%;width:20%;height:28%;object-fit:contain;opacity:0}
+.collector-catch{position:absolute;left:33%;top:66%;width:31%;height:26%}.collector-catch img{position:relative;width:100%;height:100%;object-fit:contain;z-index:1}.collector-catch span{position:absolute;left:19%;right:19%;bottom:17%;height:0;border-radius:0 0 25% 25%;background:#55bad6;transition:height 1.5s}
+.collector-condensation,.collector-falling{position:absolute;inset:0;pointer-events:none}.collector-condensation img{position:absolute;left:calc(34% + mod(var(--i),4)*7%);top:calc(30% + mod(var(--i),2)*4%);width:8px;height:12px;opacity:0}
+.collector-falling img{position:absolute;left:calc(39% + var(--i)*6%);top:40%;width:10px;height:14px;opacity:0}
+.collector-state{position:absolute;left:8%;right:8%;bottom:1%;margin:0;padding:7px;border:1px solid #b7c9ab;border-radius:20px;background:#f7fbec;text-align:center;font:15px/1.3 var(--font-display);color:#375e51}
+.collector-concept-art:not([data-phase="0"]) .collector-pack,.collector-concept-art:not([data-phase="0"]) .collector-condensation img{opacity:1}
+.collector-concept-art[data-phase="3"] .collector-catch span{height:38%}
+.collector-concept-copy{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:12px;color:#285758}.collector-concept-copy .buddy-pose{width:72px;height:72px}.collector-concept-copy h3{font:25px/1.3 var(--font-display);margin:0}.collector-concept-copy p{font-size:21px;line-height:1.6;margin:0;word-break:keep-all}
+.collector-concept-steps{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.collector-concept-steps button{display:grid;justify-items:center;gap:3px;padding:7px;border:1px solid #b7c9ad;border-radius:12px;min-width:48px;min-height:48px;background:#fffdf1;color:#456a5a;font:18px var(--font-display)}.collector-concept-steps button span{font-size:11px}.collector-concept-steps button[aria-pressed="true"]{background:#2b7365;color:white;border-color:#2b7365}
+.npc-voice-control{display:flex;align-items:center;gap:12px;padding:0 24px 18px}.npc-voice-status{font-size:14px;color:#57796b}.npc-voice-control .btn{min-height:48px}.npc-speaking .letter-stamp img,.npc-speaking .resident-chat>img{filter:drop-shadow(0 0 8px #75a58c55)}
+@media(prefers-reduced-motion:no-preference){html:not(.reduce-motion) .collector-concept-art:is([data-phase="2"],[data-phase="3"]) .collector-falling img{animation:concept-fall 1.7s linear infinite;animation-delay:calc(var(--i)*-.38s)}@keyframes concept-fall{0%{top:39%;opacity:0;scale:.5}15%{opacity:1}90%{top:72%;opacity:1}100%{top:77%;opacity:0;scale:1.1}}}
+@media(prefers-reduced-motion:reduce){.collector-concept-art:is([data-phase="2"],[data-phase="3"]) .collector-falling img{opacity:1;top:calc(45% + var(--i)*6%)}}
+.reduce-motion .collector-concept-art:is([data-phase="2"],[data-phase="3"]) .collector-falling img{opacity:1;top:calc(45% + var(--i)*6%)}
+@media(max-width:800px){.collector-concept-body{grid-template-columns:1fr;gap:14px;padding:14px}.collector-concept-art{min-height:230px;aspect-ratio:1.6}.collector-concept-copy .buddy-pose{display:none}.collector-concept-copy h3{font-size:21px}.collector-concept-copy p{font-size:17px}.collector-concept-steps{margin-top:0}.collector-state{font-size:13px}.collector-air-label{font-size:15px}.npc-voice-control{flex-wrap:wrap;padding:0 16px 14px}}
+.core-valve-control{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border:1.5px solid #9cb9ad;border-radius:16px;background:#f0f8ed;color:#2e615c;text-align:left;min-height:70px}
+.core-valve-control img{width:58px;height:58px;object-fit:contain;transition:transform .4s ease-out;flex:none}.core-valve-control span{font:19px/1.3 var(--font-display)}.core-valve-control small{display:block;margin-top:3px;font:13px/1.3 var(--font-body)}
+.core-height-note{margin:4px 0 10px;font-size:15px;line-height:1.45;color:#416d61;word-break:keep-all}
+.final-layout .control-panel:has(.core-valve-control) .range-label{font-size:16px}.final-layout .control-panel:has(.core-valve-control) input[type=range]{min-height:42px;height:42px}
+@media(min-width:801px){.observation-board .time-controls{padding-left:100px}.observation-board .time-actions [data-action="ix-forward"]{display:none}}
+.scene-5 .picture-records .picture-record,.scene-7 .picture-records .picture-record{height:88px;min-height:48px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.scene-5 .picture-records .picture-record>.record-pair{margin:0;gap:8px;width:100%;flex:1;min-height:0}.scene-5 .picture-records .record-pair>div{min-height:0;display:grid;grid-template-rows:14px minmax(0,1fr);gap:2px}.scene-5 .picture-records .record-pair b{line-height:1.1}
+.scene-5 .picture-records .picture-record>span,.scene-7 .picture-records .picture-record>span{font-size:13px;line-height:1.2;margin:0;padding:0}
+@media(min-width:801px) and (max-height:740px){.scene-5 .picture-records .picture-record,.scene-7 .picture-records .picture-record{height:68px}.observation-board .time-controls{padding-left:96px}}
+.app-dialog[open]:has(.npc-voice-control){display:flex;flex-direction:column;max-height:calc(100dvh - 24px)}
+.app-dialog:has(.npc-voice-control)>.dialog-head{flex:none}
+.app-dialog:has(.npc-voice-control)>.dialog-body{flex:1;min-height:0;overflow:auto}
+.app-dialog:has(.npc-voice-control)>.npc-voice-control{flex:none}
+
+/* On compact screens the hint gets its own row, away from clocks and experiment controls. */
+@media(max-width:1100px),(max-height:650px),(orientation:portrait){
+ .experiment-shell .scene-workspace{grid-template-rows:minmax(0,1fr) auto;row-gap:8px}
+ .experiment-shell .scene-workspace>.compact-guide{position:relative;grid-row:2;order:2;align-self:start;left:auto;bottom:auto;margin:0;padding:0;max-width:100%;transform:none}
+ .experiment-shell .scene-workspace>.compact-guide .coach-trigger{width:auto;min-width:0;min-height:52px;flex-direction:row;align-items:center;gap:6px;padding:2px 6px}
+ .experiment-shell .scene-workspace>.compact-guide .buddy-pose{width:46px;height:46px}
+ .experiment-shell .scene-workspace>.compact-guide .coach-trigger-label{font-size:16px}
+ .experiment-shell .scene-workspace>.compact-guide .coach-trigger-badge{position:static;min-width:26px;min-height:24px}
+ .experiment-shell .coach-help{position:fixed;left:16px;right:auto;bottom:16px;width:min(600px,calc(100vw - 32px));max-height:calc(100dvh - var(--hud-size) - 2 * var(--hud-inset) - 32px);transform:none}
+}
+
+.collector-transfer{display:flex;align-items:center;gap:10px;width:100%;border-radius:14px;background:#f2f2e6;padding:4px 10px;color:#315c51}
+.collector-transfer [data-transfer-can]{flex:0 0 82px;height:96px}
+.collector-transfer .can-art{display:block;width:82px;height:96px}
+.collector-transfer span{font-size:17px;line-height:1.4;word-break:keep-all}
+@media(max-height:640px){.collector-transfer [data-transfer-can],.collector-transfer .can-art{height:68px}.collector-transfer span{font-size:16px}}
+/* Short tablets keep explanation steps separate from the fixed return footer. */
+.collector-concept-body{overflow:auto;overscroll-behavior:contain}
+@media(min-width:801px) and (max-height:640px){
+ .collector-concept-body{grid-template-columns:1fr 1fr;gap:16px;padding:14px 20px}
+ .collector-concept-art{min-height:260px;aspect-ratio:1.2}
+ .collector-concept-copy{gap:8px}
+ .collector-concept-copy h3{font-size:21px}
+ .collector-concept-copy p{font-size:18px;line-height:1.4}
+ .collector-concept-steps{margin-top:0}
+ .collector-transfer [data-transfer-can]{flex-basis:64px}
+ .collector-transfer .can-art{width:64px}
+}

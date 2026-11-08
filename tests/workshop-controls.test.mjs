@@ -52,3 +52,12 @@ test('moving a part after a good run asks for a new run',()=>{
  handleWorkshop('ramp-tilt',ctx);
  assert.equal(currentTrialValid(s),false);
 });
+
+test('fast edits retain the initial condition and can finish after the first successful run',()=>{
+ const s=fresh();
+ for(const action of ['toggle-cold','ramp-tilt','funnel-fix','test-workshop'])handleWorkshop(action,ctx);
+ assert.equal(s.trials[0].source,'initial-model');
+ assert.equal(s.trials[0].design.cold,false);
+ assert.equal(currentTrialValid(s),true);
+ assert.equal(s.trials.length,2);
+});

@@ -3,12 +3,12 @@
 // so a device without WebGL or a failed download just keeps the explanation in the dialog.
 import {modal,esc} from './ui.js';
 import {state} from './state.js';
-import {MODEL_DIR,deviceModels,islandModels,deviceLayout,pointAlong} from './three-layout.js';
+import {MODEL_DIR,deviceModels,islandModels,deviceLayout,pointAlong,MILL} from './three-layout.js';
 import {islandWater} from './island-water.js';
 
 const BASE='/assets/vendor/three/';
 // Mill placement beside the island and the wheel's axle on the stand (model units: metres).
-export const MILL={x:.24,y:0,z:.16,scale:1.15,yaw:-2.1,wheel:{x:0,y:.115,z:-.019}};
+export {MILL} from './three-layout.js';
 let libs=null,active=null;
 const loadLibs=()=>libs??=Promise.all([import(BASE+'three.module.min.js'),import(BASE+'GLTFLoader.js')]).then(([THREE,m])=>({THREE,loader:new m.GLTFLoader()})).catch(e=>{libs=null;throw e;});
 const reduced=()=>!!state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -71,8 +71,8 @@ function drops(THREE,root,count){
  return Array.from({length:count},()=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.0055,12,8),mat);root.add(m);return m;});
 }
 
-export function openDevice(design,{withCore=false,flowing=false}={}){
- const layout=deviceLayout(design,withCore),status=withCore?(flowing?'물이 코어까지 도착했어!':'아직 물이 코어에 닿지 않았어.'):(flowing?'시험한 물길로 물이 흘러.':'시험해서 물길이 이어지면 물이 흘러.');
+export function openDevice(design,{withCore=false,flowing=false,coreInletY=272}={}){
+ const layout=deviceLayout(design,withCore,coreInletY),status=withCore?(flowing?'물이 코어까지 도착했어!':'아직 물이 코어에 닿지 않았어.'):(flowing?'시험한 물길로 물이 흘러.':'시험해서 물길이 이어지면 물이 흘러.');
  open(withCore?'내 장치와 물방울 코어':'내 장치',`드래그해서 돌려 봐. 냉각판 ${layout.cold?'켜짐':'꺼짐'} · ${status}`,async({THREE,root,load})=>{
   const entries=Object.entries(layout.parts),models=await Promise.all(entries.map(([key])=>load(deviceModels[key])));
   entries.forEach(([,p],i)=>{const m=models[i];m.position.set(p.x,p.y,0);m.rotation.z=p.rotation;m.scale.setScalar(p.scale);root.add(m);});
@@ -90,6 +90,9 @@ export function openDevice(design,{withCore=false,flowing=false}={}){
 export async function buildIsland({THREE,root,decor,load}){
  const [island,stand,wheel]=await Promise.all([load(islandModels.island),load(islandModels.stand),load(islandModels.wheel)]);
  const mill=new THREE.Group();mill.add(stand);wheel.position.set(MILL.wheel.x,MILL.wheel.y,MILL.wheel.z);mill.add(wheel);
+ const base=new THREE.Box3().setFromObject(stand),size=base.getSize(new THREE.Vector3()),centre=base.getCenter(new THREE.Vector3()),height=MILL.y/MILL.scale;
+ const foundation=new THREE.Mesh(new THREE.BoxGeometry(size.x*1.025,height,size.z*1.025),new THREE.MeshStandardMaterial({color:0xd7cdb6,roughness:.86}));
+ foundation.position.set(centre.x,base.min.y-height/2,centre.z);mill.add(foundation);
  mill.position.set(MILL.x,MILL.y,MILL.z);mill.rotation.y=MILL.yaw;mill.scale.setScalar(MILL.scale);root.add(island,mill);
  const flow=islandWater(THREE,{island,mill,decor});
  return (dt,t,still)=>{
@@ -98,5 +101,5 @@ export async function buildIsland({THREE,root,decor,load}){
  };
 }
 export function openIsland(){
- open('되살린 연구섬','드래그해서 섬을 둘러봐. 네가 모은 물로 물레가 다시 돌아.',buildIsland);
+ open('되살린 연구섬','모은 물이 물레의 받이에서 수로를 따라 마을로 흘러. 드래그해서 이어진 물길을 둘러봐.',buildIsland);
 }

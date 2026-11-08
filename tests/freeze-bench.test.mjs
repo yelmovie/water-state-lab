@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialActivities,pipeTrial} from '../src/activity-model.js';
+import {initialActivities,pipeTrial,pipeStep,recordPipeTrial,activityReady} from '../src/activity-model.js';
 import {benchMarkup,benchFill,shelfTrials,fillAtHeight,canMark} from '../src/freeze-bench.js';
 
 const pipe=(...fills)=>({...initialActivities().pipe,trials:fills.map(pipeTrial)});
@@ -34,4 +34,62 @@ test('the handle, the drag target and the button alternative are all on the benc
  assert.match(html,/data-bench-tube/);assert.match(html,/data-bench-freezer/);assert.match(html,/data-bench-run/);
  assert.match(html,/data-action="act-complete-2"[^>]*disabled/);
  assert.doesNotMatch(benchMarkup({...pipe(95,70),chosen:1,marked:true},true),/data-action="act-complete-2"[^>]*disabled/);
+});
+
+test('lowering the water changes the instruction from adjusting to freezing',()=>{
+ const s=pipe();
+ assert.equal(pipeStep(s),'first');
+ recordPipeTrial(s);
+ assert.equal(pipeStep(s),'reduce');
+ s.fill=90;assert.equal(pipeStep(s),'reduce','a nearly full tube still needs more space');
+ s.fill=70;assert.equal(pipeStep(s),'freeze');
+ recordPipeTrial(s);assert.equal(pipeStep(s),'compare');
+ const a=initialActivities();a.pipe=s;
+ assert.equal(activityReady(4,a),false,'both results must be observed and a space selected');
+ s.chosen=1;s.marked=true;
+ assert.equal(pipeStep(s),'done');assert.equal(activityReady(4,a),true);
+});
+
+test('starting with less water asks for the contrasting full tube',()=>{
+ const s=pipe(70);s.fill=70;
+ assert.equal(pipeStep(s),'add');
+ s.fill=95;assert.equal(pipeStep(s),'freeze');
+ recordPipeTrial(s);assert.equal(pipeStep(s),'compare');
+});
+
+test('autoplay compares two amounts and leaves choosing the empty space to the learner',async()=>{
+ globalThis.document??={addEventListener(){},querySelector(){return null;},getElementById(){return null;}};
+ const {observationStep,replayStep}=await import('../src/observation-play.js');
+ for(const fill of [95,60]){
+  const state={activities:initialActivities(),fieldwork:{active:0},inquiry:{}};state.activities.pipe.fill=fill;
+  const p=state.activities.pipe;
+  for(let i=0;i<30;i++){
+   const action=observationStep(4,state);if(!action)break;
+   if(action==='bench-run')recordPipeTrial(p);else p.fill=benchFill(p.fill+(action==='bench-less'?-5:5));
+  }
+  assert.equal(canMark(p.trials),true);assert.equal(p.trials.length,2);
+  assert.equal(p.marked,false);assert.equal(activityReady(4,state.activities),false);
+  assert.equal(observationStep(4,state),null);assert.equal(replayStep(4,state),'bench-run');
+  state.fieldwork.active=4;assert.equal(observationStep(4,state),'@[data-night-next], [data-night-start]');assert.equal(replayStep(4,state),null);
+ }
+});
+
+test('repeated trials keep the contrasting result visible and selectable',()=>{
+ const s=pipe(95);
+ for(const fill of [70,65,60,55,50,45,40,75,80]){s.fill=fill;recordPipeTrial(s);}
+ assert.ok(s.trials.length<=8);
+ assert.ok(s.trials.some(t=>!t.safe),'the full-tube evidence survives retries');
+ const shelf=shelfTrials(s.trials);
+ assert.ok(shelf.some(x=>!x.t.safe));assert.ok(shelf.some(x=>x.t.safe));
+ assert.equal(shelf.at(-1).t.fill,80,'the latest result is on the shelf');
+});
+
+test('the pending action and the next mission are named explicitly',()=>{
+ const s=pipe(95);s.fill=70;
+ assert.match(benchMarkup(s,false),/data-bench-less/);
+ assert.match(benchMarkup(s,false),/data-bench-more/);
+ assert.match(benchMarkup(s,false),/70만큼 담아 얼리기/);
+ assert.match(benchMarkup(s,false),/5눈금 이상/);
+ s.trials.push(pipeTrial(70));s.chosen=1;s.marked=true;
+ assert.match(benchMarkup(s,true),/한파가 온다/);
 });

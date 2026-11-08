@@ -262,3 +262,33 @@ Production transparent sprite atlas with exactly THREE isolated realistic school
 - 실행 파일: `village/stage-1~10-on.webp`(켜지는 장면 4초), `village/stage-1~10-idle.webp`(반복 장면 2초).
 - 제작: `scripts/map-clips`의 Remotion 코드로 직접 그린 투명 벡터 애니메이션. 외부 이미지·음원을 쓰지 않았다.
 - 도구: Remotion 4.0.541(개인·소규모 조직 무료 라이선스, 직원 4명 이상 회사는 회사 라이선스 필요). 게임 실행에는 Remotion이 들어가지 않는다.
+
+
+## 2026-11-07 실험 소품과 NPC 음성
+
+- `learning/experiment-props-20261107/`: OpenAI imagegen으로 제작한 시험관·마개, 냉동고, 나무 물통, 유리병, 목이 좁은 병, 수도꼭지, 물방울, 시계, 밸브 손잡이. 학습 상태에 따라 물높이·얼음·시계 바늘·물줄기를 코드로 합성한다. 생성 이미지는 실제 실험 사진을 기록한 자료가 아니다.
+- 컵·금속판·물 받이·냉각팩은 기존 `real-dew.webp`, `real-tools.webp`, `workshop-atlas.webp`에서 단일 소품으로 분리했다. 원본의 기존 출처 고지를 유지한다.
+- `audio/npc-20261107/`: 모모 도구로 생성한 한국어 합성 음성 33개(시작 편지 10, 첫인사 10, 추가 대화 10, 현장 의뢰 3). 실존 인물 음성 복제를 사용하지 않았다. 읽은 글·목소리 ID·길이는 `src/npc-audio.js`에 기록한다.
+- `audio/npc-cute-20261107/`: 위 녹음 중 성인·노년 프리셋 23개를 모모의 어린이 프리셋 `preset-01`·`preset-02`로 다시 생성했다. 밝은 감정·높은 톤·귀여운 동물 친구 연기 지시를 적용했다. 기존 어린이 음성 10개와 합쳐 NPC 음성 33개 모두 어린이 프리셋을 사용한다. 원본과 생성 설정·원래 URL은 외장 SSD `assets/source-media/npc-voice-cute-20261107/manifest.json`에 보존한다.
+- 생성 원본과 작업 파일은 이 프로젝트의 외장 SSD `assets/source-media/`에 보존한다.
+
+## 얼음틀로 얼리기 · 2026-11-08
+
+- `learning/ending-collector-20261108/collector-plate-dry.webp`: 프로젝트 파이널 영상의 원형 은색 응결판을 참고해 OpenAI 기본 imagegen으로 생성한 교육용 일러스트. 투명 원본은 외장 SSD `assets/source-media/ending-collector-20261108/`에 보관한다. 물방울·뒷면 냉각팩·물 받이·물줄기는 학습 단계에 따라 코드로 합성한다.
+
+- `learning/ice-tray-20261108/ice-tray-empty.webp`, `freezer-open.webp`: OpenAI 기본 imagegen으로 각각 생성한 빈 얼음틀과 문 열린 냉동고. 투명 PNG 원본을 alpha 유지 WebP로 최적화했다. 실험 사진이 아닌 교육용 일러스트다.
+- `learning/freeze-props-20261108/freezer-closed.webp`, `ice-pop-soft.webp`, `ice-pop-frozen.webp`: 2026-11-08 OpenAI 기본 imagegen으로 생성한 문 닫힌 냉동고와 쭈쭈바의 얼리기 전·얼어 부푼 뒤 모습. 투명 배경과 같은 구도·크기를 유지해 WebP로 최적화했다. 실제 실험 사진이나 상표 제품이 아닌 교육용 일러스트이며, 부푼 정도는 정량 측정값이 아니다. 원본과 프롬프트는 외장 SSD의 `assets/source-media/freeze-props-20261108/`에 보관한다.
+- `learning/freeze-props-20261108/bench-freezer-closed.webp`: 같은 날 기본 imagegen으로 기존 4장 실험용 냉동고의 닫힌 모습을 생성했다. 열린 그림과 동일한 600×545 좌표계로 맞추어 선반·시험관 애니메이션에 사용한다.
+- 물 붓기, 여섯 칸의 물·얼음, 냉동고 문 닫힘, 시간과 조작 안내는 DOM·SVG·CSS로 합성한다. 같은 얼음틀을 얼기 전·후와 다음 녹이기에 함께 사용한다.
+- 생성 원본·해시는 외장 SSD `assets/source-media/ice-tray-20261108/`에 보존한다. 적용 흐름과 프롬프트는 `docs/design/ICE-TRAY-20261108.md`에 기록했다.
+
+## 건물 대표 주민 직접 음성 · 2026-11-08
+
+- `audio/npc-sohee-20261108/`: 사용자가 선택한 한국어 Sohee 음색을 Qwen3-TTS 공식 Python API로 직접 생성한 음성 23개. 시작 편지 10개, 건물 대표 주민 5명의 인사·추가 대화 10개, 현장 의뢰 3개다. 모모 도구·API를 거치지 않았다. [Qwen3-TTS 공식 모델](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice)은 Apache-2.0으로 공개되었으며, 다운로드 커밋은 `0c0e3051f131929182e2c023b9537f8b1c68adfe`다.
+- 캐릭터별 연기 지시로 한국어 어조를 먼저 조절하고, Apple AVAudioUnitTimePitch를 오프라인으로 적용했다. 파랑은 +100 cents/1.04배, 뚝딱은 −100 cents/0.99배, 보리는 −40 cents/0.97배, 송이는 +40 cents/1.00배, 느티는 −140 cents/0.94배다. 100 cents는 반음 하나다. 실존 인물 목소리를 복제하지 않았다.
+- 생성 원본 WAV·보정 WAV·대사·설정·모델 출처·해시는 외장 SSD `assets/source-media/npc-qwen-sohee-20261108/`에 보존한다. 게임에는 검증한 24 kHz 모노 MP3를 사용한다. 이전 음성 원본은 보존한다.
+
+
+## 2026-11-08 응결 캔
+- `learning/overnight-20261108/condensation-can.webp`: OpenAI image_gen에서 생성한 단일 투명 캔 일러스트. Imagen 아님. 구체적 모델 버전 미제공. 실제 사진이나 학생 관찰 결과가 아닌 설명용 모형. 물방울은 앱의 관찰 상태가 별도로 표시한다.
+- 원본: `assets/source-media/overnight-20261108/condensation-can.png`. WebP 변환은 sharp 사용.

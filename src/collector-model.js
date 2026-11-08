@@ -15,5 +15,6 @@ export function collectorTrial(parts,cold,angle){
  const collected=Math.round(amount*10)/10;retained=Math.round(retained*10)/10;const lost=Math.round((generated-collected-retained)*10)/10;
  return {modelVersion:2,generated,collected,lost,retained,steps,links,passed:steps.findIndex(s=>!s.ok)<0?steps.length:steps.findIndex(s=>!s.ok),ok:collected>=60&&steps.every(s=>s.ok),signature:JSON.stringify({parts,cold,angle}),design:{parts:structuredClone(parts),cold,angle}};
 }
-export function newDiagnosis(design,fault='cooling') {const working=structuredClone(design);if(fault==='cooling')working.cold=false;else working.parts.funnel.x=working.parts.funnel.x>470?working.parts.funnel.x-180:working.parts.funnel.x+180;return {fault,hypothesis:'',evidence:0,working,tests:[],resolved:false};}
-export function diagnosisResolved(d,result){return d.hypothesis===d.fault&&d.evidence===(d.fault==='cooling'?4:5)&&result.ok;}
+export const chooseDiagnosisFault=(random=Math.random)=>random()<.5?'cooling':'connection';
+export function newDiagnosis(design,fault='cooling') {const working=structuredClone(design);if(fault==='cooling')working.cold=false;else working.parts.funnel.x=working.parts.funnel.x>470?working.parts.funnel.x-180:working.parts.funnel.x+180;return {processVersion:3,fault,hypothesis:'',evidence:0,working,tests:[],resolved:false};}
+export function diagnosisResolved(d,result){return d.hypothesis===d.fault&&d.evidence===(d.fault==='cooling'?4:5)&&result.ok&&(d.processVersion!==3||d.tests.length>=2&&d.tests[0].ok===false&&d.tests[0].signature!==result.signature);}

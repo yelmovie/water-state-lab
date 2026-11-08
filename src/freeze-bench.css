@@ -1,64 +1,88 @@
-/* Chapter 4 experiment: a workbench with a tube, a freezer and a shelf instead of the shared board and tool panel. */
-.activity.bench{display:grid;grid-template-columns:minmax(190px,.85fr) minmax(150px,.7fr) minmax(0,1.75fr);grid-template-rows:minmax(0,1fr) auto;gap:clamp(6px,1vh,12px) clamp(8px,1.2vw,16px);width:100%;height:100%;min-height:0;padding:clamp(8px,1.3vh,16px) clamp(10px,1.4vw,18px);overflow:hidden;border:2px solid #b5a06c;border-radius:var(--radius-md);background:linear-gradient(to top,#b58c52 0 var(--counter),#d6b27c var(--counter) calc(var(--counter) + 7px),transparent calc(var(--counter) + 7px)),linear-gradient(#f6f7f0,#e2ebe9);--counter:clamp(62px,10vh,92px);box-shadow:var(--shadow-card);color:#244f51}
-.bench-zone{display:grid;justify-items:center;min-height:0;min-width:0}
-.bench-prep{grid-template-rows:minmax(0,1fr) auto;gap:4px}
-.bench-tube{position:relative;height:100%;min-height:0;aspect-ratio:110/264;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+/* Chapter 4: three connected stations on one fitted laboratory bench. */
+.activity.bench{display:grid;grid-template-columns:minmax(190px,.85fr) minmax(190px,.9fr) minmax(0,1.5fr);grid-template-rows:minmax(0,1fr) auto;gap:12px;width:100%;height:100%;min-height:0;padding:16px;overflow:hidden;border:2px solid #b6a578;border-radius:var(--radius-md);background:linear-gradient(180deg,#fbfcf7 0,#eef4ef 85%,#d8e6e2);box-shadow:var(--shadow-card);color:#244f51}
+.bench-zone{display:grid;justify-items:center;align-content:stretch;grid-template-rows:auto minmax(0,1fr) auto auto;gap:6px;min-height:0;min-width:0;padding:0 12px}
+.bench-zone+.bench-zone{border-left:1px solid #bdd2cd}
+.bench-zone-title{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0;font:clamp(16px,1.45vw,22px)/1.25 var(--font-display);color:#285d5c;text-align:center}
+.bench-zone-title>span{display:grid;place-items:center;flex:none;width:28px;height:28px;background:#e0ece7;border:1px solid #afc9bd;border-radius:50%;font-size:16px}
+.bench-tube-space{display:flex;align-items:center;justify-content:center;width:100%;min-height:0;padding-right:25px}
+.bench-tube{position:relative;height:100%;max-height:350px;min-height:0;aspect-ratio:110/264;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .bench-tube.is-carried{z-index:5;cursor:grabbing}
-.bench-tube.is-flying{z-index:5;transition:transform .38s ease-in,opacity .2s .34s;opacity:0}
+.bench-flight{position:fixed;z-index:40;pointer-events:none;transform-origin:0 0;overflow:visible}
 .bench-art{display:block;width:100%;height:100%;overflow:visible}
-.bench-glass{fill:#ffffffb8}
-.bench-water{fill:#4fb6d3;opacity:.92}
-.bench-ice{fill:#c3ecf7;stroke:#7fc4d9;stroke-width:2}
-.bench-wall{fill:none;stroke:#6f93a0;stroke-width:4;stroke-linecap:round}
-.bench-tick{stroke:#6f93a0;stroke-width:2}
-.bench-start{stroke:#8a5a2c;stroke-width:3;stroke-dasharray:7 5}
-.bench-cork{fill:#b98a55;stroke:#7a5c26;stroke-width:2;stroke-linejoin:round}
-.bench-space{fill:#2a9d7c33;stroke:#217a60;stroke-width:3;stroke-dasharray:6 4}
-.bench-handle{position:absolute;left:78%;display:grid;place-items:center;width:58px;height:48px;margin-top:-24px;border:2px solid #8f6b1f;border-radius:14px;background:#f0c75b;color:#4b3a10;font-size:24px;line-height:1;box-shadow:0 3px 0 #a9832f;touch-action:none;cursor:ns-resize}
+.bench-ice{stroke:#83c6da;stroke-width:.7}
+.bench-wall{fill:none;stroke:#5f91a5;stroke-width:2.1;stroke-linecap:round}
+.bench-tick{stroke:#48788c;stroke-width:1.1}
+.bench-start{stroke:#b3763d;stroke-width:1.8;stroke-dasharray:4 3}
+.bench-space{fill:#53b58d38;stroke:#258367;stroke-width:1.6;stroke-dasharray:4 2}
+.bench-handle{position:absolute;left:73%;display:grid;place-items:center;width:48px;height:48px;margin-top:-24px;border:2px solid #9c751f;border-radius:14px;background:linear-gradient(#ffe79a,#efc255);color:#62491b;font-size:26px;line-height:1;box-shadow:0 3px 0 #b58a34;touch-action:none;cursor:ns-resize}
 .bench-handle.is-held{background:#ffdc80;box-shadow:0 1px 0 #a9832f}
-.bench-handle:focus-visible,.bench-mark:focus-visible{outline:3px solid #1f6f7c;outline-offset:2px}
-.bench-readout{margin:0;padding:2px 12px;border-radius:12px;background:#fffaeef0;font-size:clamp(16px,1.6vw,20px);line-height:1.3}
-.bench-run{width:100%;min-height:48px}
-.bench-freezer{grid-template-rows:minmax(0,1fr) auto;gap:4px;width:100%;padding:6px;border:2px solid transparent;border-radius:18px}
-.bench-freezer.is-target{border-color:#1f6f7c;background:#d5eef4b0}
-.bench-freezer-inside{position:relative;width:100%;height:100%;min-height:0;overflow:hidden;border:9px solid #eef6f8;border-radius:18px;background:radial-gradient(circle at 0 0,#ffffffb0,transparent 34%),radial-gradient(circle at 100% 100%,#ffffff90,transparent 30%),repeating-linear-gradient(transparent 0 31%,#a9d7e8 31% 32.5%),linear-gradient(#3f8bb0,#245a80);box-shadow:0 0 0 2px #7ea3b2,0 5px 0 #6e8c98,inset 0 0 22px #bdeaf580}
-.bench-freezer-door{position:absolute;inset:0;background:linear-gradient(90deg,transparent 80%,#7ea3b2 80% 86%,transparent 86%),linear-gradient(115deg,#f7fcfd,#cfe5ec);transform:scaleX(0);transform-origin:left}
-.bench-freezer.is-closed .bench-freezer-door{transform:none;transition:transform .22s ease-out}
-.bench-shelf{align-content:center;width:100%}
-.bench-rack{align-self:stretch;display:grid;grid-template-columns:repeat(var(--count),minmax(0,clamp(100px,14vw,190px)));justify-content:space-evenly;gap:clamp(4px,.8vw,12px);width:100%;height:100%;min-height:0}
+.bench-handle:focus-visible,.bench-mark:focus-visible,.bench-fill-controls button:focus-visible{outline:3px solid #1f6f7c;outline-offset:3px}
+.bench-fill-controls{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:300px}
+.bench-fill-controls button{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;min-width:60px;min-height:54px;padding:4px 7px;border:1.5px solid #aac1b6;border-radius:12px;background:#fffdf4;color:#2e625b;font:bold 24px/1 var(--font-display);box-shadow:0 2px 0 #b8c9bc}
+.bench-fill-controls button small{font:14px/1.2 var(--font-display)}
+.bench-fill-controls button:disabled{opacity:.45}
+.bench-readout{display:grid;justify-items:center;gap:0;flex:1;margin:0;font-size:14px;line-height:1.2;white-space:nowrap}
+.bench-readout b{font:clamp(24px,2.2vw,34px)/1.1 var(--font-display);color:#18788a}
+.bench-readout small{font-size:12px;color:#6f8983}
+.bench-tip{margin:0;min-height:18px;font-size:clamp(12px,1vw,15px);line-height:1.25;text-align:center;word-break:keep-all;color:#597973}
+.bench-run{width:100%;min-height:48px;margin:0;font-size:clamp(16px,1.5vw,21px);padding:7px 10px;background:#e7f5f6;border-color:#729fa6;color:#1c5963}
+.bench-freezer{width:100%;border-radius:16px}
+.bench-freezer.is-target{background:#d9f0f2;outline:3px solid #66a9b1;outline-offset:-3px}
+.bench-freezer-inside{position:relative;display:grid;place-items:center;container-type:size;width:100%;height:100%;max-height:350px;align-self:center;min-height:0}
+.bench-freezer-frame{position:relative;width:min(100%,calc(100cqh * 600 / 545));aspect-ratio:600/545}
+.bench-cabinet{display:block;width:100%;height:100%;object-fit:contain;transition:opacity .25s ease-out}
+.bench-cabinet-closed{position:absolute;inset:0;opacity:0;z-index:3}
+.bench-freezer.is-closed .bench-cabinet-open{opacity:0}
+.bench-freezer.is-closed .bench-cabinet-closed{opacity:1}
+.bench-freezer-display{position:absolute;left:59%;top:3%;padding:1px 4px;border-radius:4px;background:#284d5d;color:#b3f3e9;font:clamp(8px,.8vw,11px)/1.3 var(--font-display);z-index:4}
+/* Percentages use the 600×545 art frame. The specimen base rests on its middle shelf. */
+.bench-chamber-tube{display:block;visibility:hidden;position:absolute;left:66.8%;bottom:36.2%;height:18%;aspect-ratio:110/264;transform:translateX(-50%);z-index:2}
+.bench-freeze-progress{position:absolute;left:43%;right:9%;height:4px;bottom:17%;background:#b7f3fa;transform:scaleX(0);transform-origin:left;z-index:4}
+.bench-freezer.is-closed .bench-freeze-progress{transform:scaleX(1);transition:transform var(--bench-freeze-duration,1800ms) linear}
+.bench-shelf{grid-template-rows:auto minmax(0,1fr) auto;position:relative}
+.bench-rack{align-self:stretch;display:grid;grid-template-columns:repeat(var(--count),minmax(0,1fr));justify-content:center;align-items:stretch;gap:8px;width:100%;height:100%;min-height:0;padding-bottom:7px;border-bottom:7px solid #b69469;box-shadow:0 3px 0 #8d7354}
 .bench-sample{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:4px;justify-items:center;min-height:0;min-width:0;margin:0}
-.bench-mark{display:block;height:100%;min-height:48px;min-width:48px;aspect-ratio:110/264;padding:0;border:0;border-radius:14px;background:none}
+.bench-mark{position:relative;display:block;height:100%;max-height:340px;min-height:0;min-width:0;width:100%;max-width:150px;aspect-ratio:110/264;padding:0;border:0;border-radius:14px;background:none}
 button.bench-mark{cursor:pointer}
-.bench-sample figcaption{display:grid;justify-items:center;gap:1px;width:100%;padding:3px 5px;border:2px solid transparent;border-radius:12px;background:#fffaeef5;text-align:center;font-size:clamp(16px,1.45vw,19px);line-height:1.2;word-break:keep-all}
-.bench-sample[data-risk="높음"] figcaption{border:2px dashed var(--color-wrong);color:var(--color-wrong)}
-.bench-sample[data-risk="보통"] figcaption{border:2px dashed #9c6c23;color:#7a5413}
-.bench-sample[data-risk="낮음"] figcaption{border:2px solid var(--color-correct);color:var(--color-correct)}
-.bench-empty{margin:0;padding:10px 16px;border:2px dashed #b9a878;border-radius:14px;background:#fffaeee0;text-align:center;font-size:clamp(16px,1.6vw,20px);line-height:1.35;word-break:keep-all}
-.bench-foot{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;min-width:0;padding:6px 10px 6px clamp(74px,8vw,104px);border-radius:14px;background:#fffaeef5}
-.bench-foot .activity-status{flex:1 1 280px;margin:0;padding:0;border:0;background:none;font-size:clamp(17px,1.8vw,22px);line-height:1.3;word-break:keep-all}
-.bench-foot .activity-primary{flex:none;width:auto;min-height:48px;margin:0;padding:6px 16px}
-.bench-foot .science-detail{flex:none;margin:0}
-.bench-foot .science-detail summary{display:flex;align-items:center;min-height:48px}
-.bench-foot .science-detail[open]{flex:1 1 100%}
-.bench-foot .science-detail p{font-size:16px}
+.bench-space-prompt{position:absolute;bottom:8%;left:3%;right:0;margin:auto;width:max-content;max-width:100%;padding:3px 7px;border:1px solid #97b9aa;border-radius:20px;background:#f9fff4;font:13px/1.3 var(--font-display);color:#357762}
+.bench-sample[data-risk="높음"] .bench-space-prompt,.bench-sample[data-risk="보통"] .bench-space-prompt{display:none}
+.bench-sample.is-marked .bench-space-prompt{background:#2f7e64;color:white}
+.bench-sample figcaption{display:grid;justify-items:center;gap:3px;width:100%;padding:6px;border:1.5px solid transparent;border-radius:10px;background:#fffcf5;text-align:center;font-size:clamp(13px,1.15vw,17px);line-height:1.25;word-break:keep-all}
+.bench-sample figcaption span{font-size:.9em}
+.bench-sample[data-risk="높음"] figcaption{border-color:#bd735b;color:#a34d36;background:#fff2e9}
+.bench-sample[data-risk="보통"] figcaption{border-color:#c4a061;color:#7a5413}
+.bench-sample[data-risk="낮음"] figcaption{border-color:#83ad91;color:#2b755a;background:#f0f8ec}
+.bench-sample.is-marked figcaption{box-shadow:0 0 0 2px #3d8d69}
+.bench-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;align-self:stretch;width:100%;margin:14px 0;border:2px dashed #b6cbbd;border-radius:16px;background:#ffffff70;text-align:center;font-size:clamp(14px,1.3vw,18px);line-height:1.5;word-break:keep-all;color:#6c857a}
+.bench-empty p{margin:0}.bench-empty>span{display:block;width:80px;height:8px;border-radius:4px;background:#bfa986;box-shadow:0 4px 0 #9d8767}
+.bench-legend{padding-top:5px}.bench-legend i{display:inline-block;width:20px;border-top:2px dashed #b3763d;vertical-align:middle;margin-right:6px}
+.bench-foot{grid-column:1/-1;display:flex;align-items:center;gap:10px;min-width:0;min-height:86px;padding:9px 12px 9px 100px;border:1px solid #d5cba9;border-radius:14px;background:#fffaf0}
+.bench-feedback{flex:1;min-width:0}.bench-foot .activity-status{margin:0;padding:0;border:0;background:none;font-size:clamp(16px,1.45vw,21px);line-height:1.35;word-break:keep-all}
+.bench-gate{display:block;margin-top:4px;color:#668078;font-size:clamp(12px,1vw,15px);line-height:1.3;word-break:keep-all}
+.bench-foot .activity-primary{flex:none;width:auto;max-width:34%;min-height:48px;margin:0;padding:8px 14px;font-size:clamp(16px,1.4vw,21px);line-height:1.3}
+.bench-foot .science-detail{position:relative;flex:none;margin:0}.bench-foot .science-detail summary{display:flex;align-items:center;min-height:48px;font-size:14px;cursor:pointer;white-space:nowrap}
+.bench-foot .science-detail[open] p{position:absolute;z-index:8;right:0;bottom:100%;width:260px;margin:0;padding:16px;border:1px solid #b7cbbd;border-radius:12px;background:#fffdf5;box-shadow:0 6px 22px #29463d26;font-size:16px}
+/* Keep the companion label and its shadow inside the experiment's clipping boundary. */
+.scene-4 .compact-guide{left:20px;bottom:16px;max-width:calc(100% - 40px)}
+.scene-4 .compact-guide .coach-trigger{width:76px;min-width:76px;min-height:82px}
+.scene-4 .compact-guide .coach-trigger .buddy-pose{width:64px;height:64px}
 @media(prefers-reduced-motion:no-preference){
  html:not(.reduce-motion) .bench-sample.is-fresh .bench-ice{animation:bench-rise .8s ease-out both;transform-box:fill-box;transform-origin:50% 100%}
  @keyframes bench-rise{from{transform:scaleY(var(--from))}to{transform:none}}
  html:not(.reduce-motion) .bench-sample.is-fresh .bench-cork.is-popped{animation:bench-pop .45s .55s ease-out both}
- @keyframes bench-pop{from{opacity:0;transform:translate(-34px,24px) rotate(-16deg)}to{opacity:1;transform:none}}
- html:not(.reduce-motion) .bench-freezer.is-closed .bench-freezer-door{animation:bench-frost 1.1s .3s ease-in-out infinite alternate}
- @keyframes bench-frost{to{opacity:.82}}
+ @keyframes bench-pop{from{opacity:0;translate:-35px 25px}to{opacity:1;translate:0 0}}
 }
-@media(orientation:portrait),(max-width:760px){
- .activity.bench{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:clamp(300px,36dvh,380px) clamp(260px,30dvh,340px) auto;height:auto}
- .bench-shelf{grid-column:1/-1;grid-row:2}
- .bench-rack{grid-template-columns:repeat(var(--count),minmax(0,1fr))}
+@media(min-width:801px) and (max-height:740px){
+ .activity.bench{padding:10px;gap:8px}.bench-zone{padding:0 6px;gap:4px}.bench-zone-title{font-size:16px}.bench-zone-title>span{width:24px;height:24px;font-size:14px}
+ .bench-foot{min-height:78px;padding-left:98px;gap:8px}.bench-foot .activity-status{font-size:16px}.bench-gate{font-size:12px}.bench-tip{font-size:12px}.bench-fill-controls button{min-height:48px;min-width:54px}.bench-foot .science-detail summary{font-size:12px}
 }
-@media(max-height:500px) and (orientation:landscape){
- .activity.bench{padding:5px 8px;gap:4px 8px}
- .bench-readout{font-size:15px}
- .bench-run{padding:2px 4px;font-size:15px}
- .bench-sample figcaption{font-size:14px}
- .bench-foot{padding:2px 8px 2px 88px}
- .bench-foot .activity-status{font-size:15px}
+@media(orientation:portrait),(max-width:800px){
+ .activity.bench{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:340px 300px auto;height:auto;gap:12px;padding:12px}
+ .bench-shelf{grid-column:1/-1;grid-row:2;border-left:0!important;border-top:1px solid #c5d7cf;padding-top:12px}.bench-zone{padding:0 3px}.bench-zone-title{font-size:15px}.bench-zone-title>span{width:24px;height:24px;font-size:13px}.bench-rack{gap:6px}.bench-mark{max-width:110px}
+ .bench-foot{flex-wrap:wrap;padding:12px;gap:8px;min-height:0}.bench-feedback{flex:1 1 100%}.bench-foot .activity-primary{max-width:100%;flex:1}.bench-tip{font-size:12px}.bench-foot .activity-status{font-size:17px}.bench-gate{font-size:13px}
+ .bench-fill-controls{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:4px;max-width:100%}.bench-fill-controls button{width:48px;min-width:48px;padding:4px}.bench-fill-controls button small{font-size:12px}.bench-readout{min-width:0}.bench-readout small{white-space:normal}
+ .scene-4 .compact-guide{left:auto;bottom:auto;margin-top:4px;padding:0 6px 8px}.scene-4 .compact-guide .coach-trigger{width:auto;min-width:0;min-height:52px}.scene-4 .compact-guide .coach-trigger .buddy-pose{width:48px;height:48px}
+}
+@media(min-width:801px) and (max-height:540px){
+ .scene-4 .experiment-main:has(.activity.bench){overflow:auto;grid-template-rows:auto auto minmax(350px,1fr)}.activity.bench{min-height:350px}.bench-tip{display:none}.bench-zone{grid-template-rows:auto minmax(0,1fr) auto}.bench-shelf{grid-template-rows:auto minmax(0,1fr) auto}.bench-foot{min-height:72px}
 }

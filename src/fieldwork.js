@@ -1,6 +1,8 @@
+import {cycleView,bindCycle} from './greenhouse-cycle.js';
 import {openFieldBriefing} from './field-briefing.js';
 import {transformView,bindTransform} from './field-transform.js';
 import {coldNightView,bindColdNight} from './field-coldnight.js';
+import {seedColdNight} from './cold-night-model.js';
 import {drawStudyArt,drawRealDrop,studySheets} from './study-materials.js';
 import {fieldTask} from './field-guidance.js';
 import {drawFreezePhoto,drawFreezeBeaker,photoLevel} from './freeze-photos.js';
@@ -16,8 +18,8 @@ import {openConcept} from './concepts.js';
 let cleanups=[];
 export function cleanupFieldwork(){cleanups.splice(0).forEach(fn=>fn());}
 export function fieldChapter(n){return state.fieldwork.chapters[n]??=chapterState(n);}
-export function hasFieldSeal(n){return fieldReady(n,state.fieldwork.chapters[n]);}
-export function startFieldwork(n,pending,ctx){state.fieldwork.active=n;state.fieldwork.pending=pending;fieldChapter(n);save();ctx.render();}
+export function hasFieldSeal(n){return [6,8].includes(n)?state.completed.includes(n/2):fieldReady(n,state.fieldwork.chapters[n]);}
+export function startFieldwork(n,pending,ctx){if(!fieldMissions[n])return;state.fieldwork.active=n;state.fieldwork.pending=pending;const c=fieldChapter(n);if(n===4)seedColdNight(c,state.activities.pipe);save();ctx.render();}
 const names={water:'물',ice:'얼음',warm:'따뜻한 받침',time:'잠깐 기다리기',cold:'냉각팩',condition:'찾은 조건',weight:'100 g 추',melt:'녹인 뒤 사진',pack:'냉각팩',tray:'물 받이',destination:'줄어든 물',A:'A의 줄어든 물',B:'B의 줄어든 물',lens:'돋보기'};
 const destinations={tall:'길쭉한 그릇',wide:'넓은 그릇',freeze:'물 → 얼음',melt:'얼음 → 물',evaporate:'물 → 수증기',condense:'수증기 → 물',first:'① 냉각팩을 대기 전',middle:'② 냉각팩을 댄 뒤',last:'③ 따뜻하게 한 뒤',balance:'저울',air:'공기 중',surface:'A 표면',inside:'B 물속',level:'두 수위',A:'A컵',B:'B컵',plate:'금속판',under:'판 아래'};
 const weighingOpen=c=>c.marks.includes('order')||c.done;
@@ -67,6 +69,7 @@ function fieldControls(n,c,task){
 export function fieldworkView(n){
  if(n===2)return transformView(fieldChapter(n));
  if(n===4)return coldNightView(fieldChapter(n));
+ if(n===10)return cycleView(fieldChapter(n));
  const m=fieldMissions[n],c=fieldChapter(n),task=fieldTask(n,c);
  const zones=n===6?`<div class="spread-coverage"><label for="spread-coverage">B판의 물자국</label><meter id="spread-coverage" min="0" max="12" value="${Math.min(12,c.spread.length)}"></meter><output id="spread-count" for="spread-coverage">${c.spread.length}/12칸</output></div>`:n===8?`<div class="cooling-checks"><span class="${task.beforeCooling?'done':''}">냉각 전 · ${task.beforeCooling?'관찰함':'아직'}</span><span class="${task.afterCooling?'done':''}">냉각 후 · ${task.afterCooling?'관찰함':'아직'}</span></div>`:'';
  const result=c.message?`<div class="challenge-status field-observed" role="status"><b>본 결과</b> <span>${esc(task.result)}</span></div>`:'';
@@ -76,9 +79,9 @@ export function fieldworkView(n){
 export function handleFieldwork(action,ctx){
  if(!action.startsWith('field-'))return false;
  const n=state.fieldwork.active||Number(state.route);
- if(action==='field-help'){openFieldBriefing(n);return true;}
- if(!fieldMissions[n])return true;
+ if(action==='field-help'){if(fieldMissions[n])openFieldBriefing(n);else import('./field-briefing.js').then(m=>m.openStageLetter(n));return true;}
  if(action==='field-help-close'){document.querySelector('#dialog')?.close();return true;}
+ if(!fieldMissions[n])return true;
  if(action==='field-back'){state.fieldwork.active=0;save();ctx.render();return true;}
  if(action==='field-finish'||action==='field-continue'){
   if(!hasFieldSeal(n)){toast('조건을 바꿔 보고, 관찰한 근거로 문제를 해결해 줘.');return true;}
@@ -107,13 +110,9 @@ export function handleFieldwork(action,ctx){
 }
 export function bindFieldwork(n,ctx){
  cleanupFieldwork();
- if(!state.fieldwork.briefed.includes(n))queueMicrotask(()=>{
-  if(state.route===n&&state.fieldwork.active===n&&!document.querySelector('dialog[open]')){
-   state.fieldwork.briefed.push(n);save();openFieldBriefing(n);
-  }
- });
  if(n===2){const host=document.getElementById('field-transform');if(host)cleanups.push(bindTransform(host,()=>fieldChapter(n)));return;}
  if(n===4){const host=document.getElementById('field-coldnight');if(host)cleanups.push(bindColdNight(host,()=>fieldChapter(n),c=>{state.fieldwork.chapters[n]=c;}));return;}
+ if(n===10){const host=document.getElementById('field-greenhouse');if(host)cleanups.push(bindCycle(host,()=>fieldChapter(n),(step,time)=>{state.fieldwork.chapters[n]=fieldAction(n,fieldChapter(n),'greenhouse-cycle',{step,time});save();},()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches));return;}
  const canvas=document.getElementById('field-canvas');if(!canvas)return;
  const g=canvas.getContext('2d'),assets={},layout=setup(n),f=state.fieldwork,guidance=fieldTask(n,fieldChapter(n)),hasCoach=!!document.querySelector('.coach-trigger');
   let beam=0,drag=null,activePointer=null,lineStart=null,brush=false,frame,tapItem=null,tapNode=null;

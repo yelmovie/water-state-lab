@@ -7,10 +7,14 @@ export function initialActivities(){return {
  freeze:{onScale:false,prediction:66,phase:'water',records:[],predicted:false,compared:false,talk:0,popSeen:'',pipeTry:'',challenge:{amount:0,prediction:0,trials:[]}},
  pipe:{fill:95,trials:[],chosen:-1,marked:false},
  draw:{strokes:[],time:0,records:[],faster:'',destination:''},
- compare:{heat:0,time:0,baseline:false,records:[],pins:[],destination:''},
+ compare:{heat:0,time:0,baseline:false,batchPrepared:false,records:[],pins:[],destination:''},
  dew:{wiped:[],sealed:false,time:0,records:[],rewiped:false,againTime:0,again:false},
  explain:{evidence:[],chain:[],bottleWiped:false,time:0,transfer:false}
 };}
+export function prepareHeatingComparison(s){
+ if(!s.baseline||s.heat!==0||s.batchPrepared)return false;
+ s.batchPrepared=true;s.time=0;s.pins=[];s.destination='';return true;
+}
 export function heatingTrial(heat,time){
  heat=limit(heat);time=limit(time);
  const warming=heat*time/100;
@@ -22,6 +26,21 @@ export function heatingTrial(heat,time){
 }
 export const iceVolume=fill=>Math.round(fill*1.09*10)/10;
 export function pipeTrial(fill){fill=limit(fill,40,100);const expanded=iceVolume(fill);return {fill,expanded,space:Math.max(0,Math.round((100-expanded)*10)/10),safe:expanded<=95,risk:expanded>100?'높음':expanded>95?'보통':'낮음'};}
+/** One source for the bench instructions, controls and completion gate. */
+export function pipeStep(s){
+ const safe=s.trials.some(t=>t.safe),full=s.trials.some(t=>!t.safe);
+ if(safe&&full)return s.marked&&s.trials[s.chosen]?.safe?'done':'compare';
+ if(!s.trials.length)return 'first';
+ if(!safe)return pipeTrial(s.fill).safe?'freeze':'reduce';
+ return pipeTrial(s.fill).safe?'add':'freeze';
+}
+export function recordPipeTrial(s){
+ const trial=pipeTrial(s.fill);
+ // Keep a contrasting specimen when repeated experiments fill the saved shelf.
+ if(s.trials.length>=8){const i=s.trials.findIndex((t,i)=>t.safe===trial.safe||s.trials.slice(i+1).some(other=>other.safe===t.safe));s.trials.splice(Math.max(0,i),1);}
+ s.trials.push(trial);s.chosen=-1;s.marked=false;
+ return trial;
+}
 export function pipeAssessment(fill,goal='reserve'){
  const trial=pipeTrial(fill),fits=trial.expanded<=100;
  return {...trial,fits,extraReserve:trial.safe,goal,met:goal==='capacity'?fits:trial.safe};
@@ -57,9 +76,9 @@ export function activityReady(n,a){switch(n){
  case 1:return a.observe.pours.length===2&&a.observe.iceMoved&&a.observe.records.some(r=>r.kind==='cloth'&&r.time>=80);
  case 2:return sortedTypes(a.sort).size===3;
  case 3:return ['water','ice','melt'].every(k=>a.freeze.records.some(r=>r.kind===k))&&a.freeze.compared;
- case 4:return a.pipe.trials.some(t=>!t.safe)&&a.pipe.trials[a.pipe.chosen]?.safe===true&&a.pipe.marked;
+ case 4:return pipeStep(a.pipe)==='done';
  case 5:return a.draw.strokes.some(s=>s.length>=3)&&[0,1,2].every(b=>a.draw.records.some(r=>r.band===b))&&a.draw.faster==='thin'&&a.draw.destination==='air';
- case 6:return a.compare.baseline&&a.compare.records.some(r=>r.boiling)&&['surface','inside','level'].every(k=>a.compare.pins.includes(k))&&a.compare.destination==='air';
+ case 6:return a.compare.baseline&&a.compare.records.some(r=>r.boiling)&&a.compare.destination==='air';
  case 7:return a.dew.records.length>=2&&a.dew.rewiped&&a.dew.again;
  case 8:return a.explain.evidence.length>=2&&a.explain.chain.join(',')==='air,cold,drops'&&a.explain.transfer&&activityReady(7,a);
  default:return false;
@@ -77,6 +96,8 @@ export function validateActivities(value){
  if(!Number.isInteger(value.observe.step)||value.observe.step<0||value.observe.step>2)return false;
  if(!Object.entries(value.sort.placed).every(([id,type])=>sortCards.some(c=>c.id===id&&c.type===type)))return false;
  if(![0,1,2,3].includes(value.freeze.talk))return false;
+ if(value.freeze.processStage!==undefined&&!['start','measured','cooling','frozen','taken','ice-measured','resting','melted','melt-measured','compared'].includes(value.freeze.processStage))return false;
+ if(value.freeze.processTime!==undefined&&(!Number.isFinite(value.freeze.processTime)||value.freeze.processTime<0||value.freeze.processTime>100))return false;
  if(!value.freeze.records.every(r=>['water','ice','melt'].includes(r.kind)&&Number.isFinite(r.level)&&Number.isFinite(r.mass)))return false;
  if(!Object.entries(value.sort.hidden.placed).every(([id,type])=>hiddenScenes.some(c=>c.id===id&&c.type===type))||!Object.entries(value.sort.hidden.tries).every(([id,n])=>hiddenScenes.some(c=>c.id===id)&&Number.isInteger(n)&&n>=0&&n<100))return false;
  if(value.freeze.challenge.trials.length>20||!value.freeze.challenge.trials.every(t=>t&&['amount','prediction','actual','error'].every(k=>Number.isFinite(t[k]))))return false;

@@ -18,3 +18,12 @@ docs/reviews/screenshots/
 .claude/worktrees/
 .claude/launch.json
 ._*
+
+# Original generated media stays on the external SSD; only optimized runtime assets are shipped.
+assets/source-media/experiment-props-20261107/
+assets/source-media/npc-voice-20261107/
+assets/source-media/npc-voice-cute-20261107/
+assets/source-media/ice-tray-20261108/
+assets/source-media/freeze-props-20261108/
+assets/source-media/ending-collector-20261108/
+assets/source-media/npc-qwen-sohee-20261108/

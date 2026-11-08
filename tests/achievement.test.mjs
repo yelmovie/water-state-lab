@@ -5,7 +5,7 @@ const {passportView,certificateView}=await import('../src/achievement.js');
 const {state,initialState}=await import('../src/state.js');
 const {chapterState,fieldAction}=await import('../src/fieldwork-model.js');
 
-const earnSpring=()=>{let c=chapterState(2);for(const [target,item] of [['freeze','cold'],['melt','warm'],['evaporate','warm'],['condense','cold']])c=fieldAction(2,c,'try-route',{target,item,time:100});state.fieldwork.chapters[2]=c;};
+const earnSpring=()=>{let c=chapterState(2);for(const step of ['fill','load','wait','take','compare'])c=fieldAction(2,c,'freeze-tray',{step,time:100});for(const [kind,steps] of Object.entries({melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']}))for(const step of steps)c=fieldAction(2,c,'phase-process',{kind,step,time:100});state.fieldwork.chapters[2]=c;};
 
 test('the passport shows one page per area and counts what is left',()=>{
  Object.assign(state,initialState());
@@ -24,4 +24,6 @@ test('the certificate names what was learned, and the nickname field stays out o
  assert.equal(html.match(/class="seal"/g).length,5);
  assert.match(html,/&lt;b&gt;/);
  assert.doesNotMatch(html,/student-name/);
+ for(const label of ['학교','반','번호','이름'])assert.ok(html.includes(`aria-label="${label} 쓰는 빈칸"`));
+ assert.match(html,/탐구 완료 인증 도장/);assert.doesNotMatch(html,/<input|<textarea/);
 });

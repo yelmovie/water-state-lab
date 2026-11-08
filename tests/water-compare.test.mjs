@@ -69,7 +69,7 @@ test('the automatic demonstration lingers on each comparison',()=>{
  assert.equal(observationDwell(1,pouring),1250);
  assert.ok(observationDwell(1,poured)>=3000);
  assert.ok(observationDwell(1,moved)>=3000);
- assert.equal(observationDwell(3,world()),1250);
+ assert.equal(observationDwell(3,world()),900);
 });
 
 test('ice guidance names the vessels used for the water',()=>{

@@ -1,3 +1,4 @@
+import {cycleTask} from './greenhouse-cycle.js';
 import {fieldMissions,fieldReady,coolingBaseline} from './fieldwork-model.js';
 import {move} from './stage-guide.js';
 
@@ -13,7 +14,7 @@ export function fieldTask(n,c){
   step=move('drag',key==='ice'?'이번에는 얼음을 옮겨 봐':'물병을 새 그릇으로 옮겨 봐','왼쪽에서 잡고 원하는 그릇에 놓아 봐. 먼저 누르고 그릇을 눌러도 돼.',canvas);
   items=[key];targets=['tall','wide'];
  }
- if(n===2)step=move('tap','다음 변신을 직접 만들어 봐','도구를 골라 쓰고, 처음과 나중 모습을 비교해 봐.',canvas);
+ if(n===2)step=c.marks.includes('freeze')?move('tap','준비하고 관찰한 뒤 비교해 봐','화면에 표시된 순서대로 준비하고, 시간이 지난 모습을 비교하자.','[data-process-action],[data-transform-next]'):move('tap','얼음틀과 냉동고로 물을 얼려 봐','물을 틀에 붓고, 냉동고에 넣어 충분히 얼린 뒤 꺼내 비교하자.','[data-tray-action]');
  if(n===3){
   const slot=[['water','first','① 냉각팩을 대기 전','냉각팩이 어디 있는지 봐. 아직 쓰지 않은 사진은 뭘까?'],['ice','middle','② 냉각팩을 댄 뒤','물 윗면과 빨간 선을 비교해 봐. 어떤 사진이 달라 보여?'],['melt','last','③ 따뜻하게 한 뒤','비커 아래를 봐. 따뜻한 받침이 있는 사진은 뭘까?']].find(([photo,dest])=>c.moves[photo]!==dest);
   const sample=[['water','처음 물'],['ice','얼음'],['melt','녹인 물']].find(([key])=>!c.marks.includes('weigh-'+key));
@@ -53,7 +54,7 @@ export function fieldTask(n,c){
   if(i>=0)step=move('connect',`${parts[i]}에서 다음 부품까지 이어 봐`,'물을 받을 바로 아래 부품을 찾아 선을 그어 봐. 두 부품을 차례로 눌러도 돼.',canvas);
   if(i>=0)zones=[[[165,55],[300,135],[450,210],[450,280],[450,350]][i].concat([80,78])];
  }
- if(n===10)step=!c.marks.includes('evaporate')?move('slide','시간을 보내 물을 공기 중으로 보내 봐','시간 손잡이를 끝까지 밀어 물이 표면에서 증발하게 해 봐.','#field-cycle-time'):move('tap','냉각판을 켜서 물방울을 모아 봐','공기 중 수증기가 차가운 판에 닿으면 물방울이 돼. 온실까지 가는 물을 따라가 봐.','[data-action="field-cycle-condense"]');
+ if(n===10)step=move('tap',cycleTask(c),'준비하고, 기다리고, 관찰한 뒤 다음 과정으로 이어 봐.','[data-cycle-action]');
  if(done)step=move('next','주민의 부탁을 해결했어!','이번 구역에서 알아낸 것을 영상으로 정리해 봐.','[data-action="field-finish"]');
  return {...step,done,items,targets,zones,result:c.message,beforeCooling:before,afterCooling:after};
 }

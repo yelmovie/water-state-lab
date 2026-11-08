@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import {STANDARDS,SETTINGS_CONTENT} from '../src/settings-content.js';
 
 class FakeElement{
- constructor(doc){this.doc=doc;this.nodes=new Map();this.events=new Map();this.attributes=new Map();this.open=false;this.isConnected=true;}
+ constructor(doc){this.doc=doc;this.nodes=new Map();this.events=new Map();this.attributes=new Map();this.dataset={};this.open=false;this.isConnected=true;}
  setAttribute(key,value){this.attributes.set(key,value);}
+ removeAttribute(key){this.attributes.delete(key);}
  querySelectorAll(){return [];}
  querySelector(selector){if(!this.nodes.has(selector))this.nodes.set(selector,new FakeElement(this.doc));return this.nodes.get(selector);}
  addEventListener(type,fn){this.events.set(type,fn);}
@@ -12,9 +13,11 @@ class FakeElement{
  showModal(){this.open=true;}
  close(){this.open=false;this.events.get('close')?.();}
  remove(){this.isConnected=false;}
+ pause(){}
+ load(){}
 }
 function mockDocument(){
- const doc={hidden:false,events:new Map(),created:[],addEventListener(type,fn){this.events.set(type,fn);},documentElement:{classList:{toggle(){}}}};
+ const doc={hidden:false,events:new Map(),created:[],addEventListener(type,fn){this.events.set(type,fn);},removeEventListener(type){this.events.delete(type);},documentElement:{classList:{toggle(){}}}};
  doc.activeElement=new FakeElement(doc);doc.createElement=()=>{const el=new FakeElement(doc);doc.created.push(el);return el;};doc.body={append(){}};return doc;
 }
 function fakeAudio(){
@@ -92,6 +95,25 @@ test('settings include all three original standards, local saving policy, and se
  assert.equal(STANDARDS[2].text,'물의 상태 변화를 이용하여 물을 얻을 수 있는 장치를 설계하고 만들 수 있다.');
  assert.equal(SETTINGS_CONTENT.teacher.standardsTitle,'성취기준');
  assert.ok(SETTINGS_CONTENT.credits.own);assert.ok(SETTINGS_CONTENT.credits.external);
+});
+
+test('completed comparison buildings unlock and open their replays without a field chapter',async t=>{
+ const previousDocument=globalThis.document,doc=mockDocument();globalThis.document=doc;
+ t.after(()=>{globalThis.document=previousDocument;});
+ doc.querySelector=selector=>selector==='dialog[open]'?doc.created.find(el=>el.open):null;
+ const {openSettings}=await import('../src/settings.js');
+ const state={settings:{reduced:true,adminUnlock:false},completed:[3,4],restored:false,fieldwork:{chapters:{}}};
+ const dialog=openSettings({state,storageStatus:()=>({})});
+ try{
+  for(const id of [1,2,5])assert.match(dialog.innerHTML,new RegExp(`data-settings-concept="${id}"[^>]*disabled`),'unfinished buildings stay locked');
+  for(const id of [3,4]){
+   assert.doesNotMatch(dialog.innerHTML,new RegExp(`data-settings-concept="${id}"[^>]*disabled`));
+   const button={dataset:{settingsConcept:String(id)},disabled:false};
+   dialog.querySelector('#settings-concept-list').onclick({target:{closest:()=>button}});
+   const replay=doc.created.at(-1);assert.notEqual(replay,dialog,'the enabled replay also passes its click guard');
+   assert.match(replay.className,/concept-dialog/);assert.equal(replay.open,true);replay.close();
+  }
+ }finally{dialog.close();}
 });
 
 test('the five area clips share one timeline with the player',async()=>{

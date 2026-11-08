@@ -29,6 +29,10 @@ function clipMarkup(returned,fresh){
  }).join('')}</div>`;
 }
 export function villageLights(returned,fresh,festival,motion=true){
+ // One representative now signs off both discoveries in a building. Legacy odd-place records still work.
+ const restored=new Set(returned.flatMap(({stage})=>stage%2?[stage]:[stage-1,stage]));
+ returned=[...restored].sort((a,b)=>a-b).map(stage=>({stage}));
+ fresh=[...new Set(fresh.flatMap(stage=>stage%2?[stage]:[stage-1,stage]))];
  const dormant=lamps.map(({x,y,rx,ry},i)=>returned.some(r=>r.stage===i+1)?'':`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#village-sleep)"/>`).join('');
  const lights=returned.map(({stage})=>{
   const {x,y,rx,ry,cool,art}=lamps[stage-1];

@@ -71,10 +71,10 @@ export function createClothScene(scene){
 }
 export function createWaterDrawing(scene){
  const d=state.activities.draw,q=state.inquiry;
- for(const x of [185,535])scene.add.image(x,167,'real-painting','0').setDisplaySize(335,335);
+ for(const x of [185,535]){if(scene.textures.exists('drawing-board'))scene.add.image(x,166,'drawing-board').setDisplaySize(340,248);else scene.add.image(x,167,'real-painting','0').setDisplaySize(350,350);}
  scene.text(185,23,'A · 물을 조금 묻힌 붓',18);scene.text(535,23,'B · 물을 많이 묻힌 붓',18);
  const brushes=[scene.add.image(320,60,'real-painting','2'),scene.add.image(670,60,'real-painting','3')];
- brushes.forEach(b=>b.setDisplaySize(65,65).setDepth(8));
+ brushes.forEach((b,i)=>b.setDisplaySize(i?74:50,65).setDepth(8));
  scene.text(360,314,'물감 없이 맑은 물로 그려. A에 그리면 B에도 같은 그림이 생겨.',16);
  const texture=scene.textures.createCanvas('water-painting',1440,660),g=texture.context;
  const grain=g.createPattern(scene.textures.get('water-material').getSourceImage(),'repeat');
@@ -106,6 +106,7 @@ export function createDewScene(scene,wipe){
  scene.add.image(205,165,'real-dew',d.sealed?'2':'0').setDisplaySize(265,265);
  scene.add.image(510,165,'real-dew',d.sealed?'1':'0').setDisplaySize(265,265);
  if(!d.sealed)scene.add.image(282,175,'real-tools','1').setDisplaySize(75,105);
+ const wetMask=scene.add.graphics().setVisible(false),wet=scene.add.image(205,165,'real-dew','3').setDisplaySize(265,265).setDepth(6);wet.setMask(wetMask.createGeometryMask());
  const texture=scene.textures.createCanvas('real-dew-drops',1440,660),g=texture.context;
  scene.add.image(360,165,'real-dew-drops').setDisplaySize(720,330).setDepth(7);
  let ids=[],kind=null;
@@ -119,9 +120,13 @@ export function createDewScene(scene,wipe){
  scene.finishPointer=()=>{if(kind){const k=kind,removed=ids;kind=null;ids=[];queueMicrotask(()=>wipe(k,removed));}};
  scene.tick=()=>{
   g.setTransform(2,0,0,2,0,0);g.clearRect(0,0,720,330);
+  wetMask.clear();
   for(const [k,cx] of [['cold',205],['room',510]]){
    const drops=k==='room'?(!d.wiped.includes('room')?visibleDew(50,q.dewRoomRemoved):[]):!d.wiped.includes('cold')?visibleDew(50,q.dewRemoved):!d.rewiped?visibleDew(observationTime(7),q.dewRemoved):visibleDew(d.time,q.dewRemoved).concat(visibleDew(observationTime(7)).filter(p=>q.dewRegion.includes(p.id)));
-   for(const p of drops)if(kind!==k||!ids.includes(p.id))drawRealDrop(g,cx+p.x-120,p.y-5,4+p.id%3);
+   for(const p of drops)if(kind!==k||!ids.includes(p.id)){
+    if(k==='cold'&&d.sealed){const time=d.rewiped&&q.dewRegion.includes(p.id)?observationTime(7):d.time;wetMask.fillStyle(0xffffff).fillCircle(cx+p.x-120,p.y-5,Math.min(24,8+Math.max(0,time-p.id*5)/2));}
+    else drawRealDrop(g,cx+p.x-120,p.y-5,2.5+p.id%2,.58);
+   }
   }
   texture.refresh();
  };

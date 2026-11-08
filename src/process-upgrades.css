@@ -1,0 +1,80 @@
+/* Measurement and transfer processes share the existing cream / teal learning palette. */
+#freeze-measure,#field-greenhouse{min-width:0}
+.measure-stations{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-block:10px}
+.measure-station{position:relative;min-width:0;border:2px solid #d7dfc8;border-radius:18px;background:#fffef4;padding:12px;text-align:center}
+.measure-station.is-active{border-color:#3f929b;background:#eefafd}
+.measure-station h3,.cycle-scene h3{margin:0 0 6px;font-size:18px}
+.measure-freezer{position:relative;max-width:260px;margin:auto;aspect-ratio:1}
+.measure-freezer>img{width:100%;height:100%;object-fit:contain}
+.measure-specimen{position:relative;max-width:230px;margin:auto}
+.measure-specimen .beaker{display:block;width:100%;max-height:230px}
+.measure-specimen>span{display:block;font-size:14px;font-weight:700;color:#345c63;line-height:1.35}
+.measure-empty{display:grid;place-items:center;min-height:220px;color:#517579}
+.measure-scale{border:2px solid #6e9390;background:#e4efdc;border-radius:12px;max-width:250px;margin:5px auto 0;padding:7px;display:grid;gap:2px}
+.measure-scale span{font-size:14px;font-weight:700}.measure-scale b{font-size:25px;font-variant-numeric:tabular-nums}
+.measure-records{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.measure-records figure{margin:0;background:#fffef5;border:2px solid #cfddc5;border-radius:12px;padding:10px 6px;text-align:center;display:grid;gap:4px;font-size:16px}
+.measure-records figcaption{font-weight:700;color:#44686d}.measure-records b{font-size:20px}
+.measure-life{min-height:250px;display:grid;place-items:center}.measure-life img{max-width:90%;max-height:300px;object-fit:contain}
+.measure-life.measure-pop-compare{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.measure-life figure{display:grid;justify-items:center;gap:8px;margin:0;min-width:0}
+.measure-life figcaption{font-size:16px;line-height:1.4;text-align:center;color:#345c63}
+.process-clock{display:grid;gap:8px;font-size:16px;margin:12px 0}.process-clock progress{width:100%;height:18px;accent-color:#2c818b}
+.cycle-heading h2{font-size:24px;margin:12px 0 6px}.cycle-heading p{margin:0 0 10px;font-size:16px}
+.cycle-scene{display:grid;grid-template-columns:minmax(0,1fr) 160px minmax(0,1fr);align-items:stretch;gap:12px}
+.cycle-scene article{border:2px solid #c9ddcf;border-radius:18px;text-align:center;background:#fffef5;padding:12px;min-width:0}
+.cycle-scene article>.beaker{display:block;margin:auto;width:210px;max-width:100%;height:215px}
+.cycle-scene article>b{display:block;font-size:20px}.cycle-scene article>p{font-size:15px;margin:6px 0}
+.cycle-plate-art{display:block;width:100%;height:215px}.cycle-placeholder{height:215px;display:grid;place-items:center;border:2px dashed #c4d7cc;border-radius:12px;color:#537b78}
+.cycle-air{align-self:center;text-align:center;color:#315d66;display:grid;gap:8px;font-size:16px}.cycle-air b{font-size:19px}.cycle-air p{font-size:15px;line-height:1.5}.cycle-air>span:last-child{font-size:36px}
+.cycle-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin-top:12px;padding:14px;background:#eaf4e1;border:2px solid #c5dbc2;border-radius:16px}.cycle-controls p{margin:0;font-size:17px;line-height:1.5}.cycle-controls .process-clock{grid-column:1/-1;margin:0}.cycle-controls .btn{min-height:48px}
+.freeze-bench .bench-hint,.freeze-bench small,.freeze-bench .bench-instruction,.freeze-bench .bench-unit{font-size:14px;line-height:1.45}
+[data-time-controls] button{font-size:14px;min-height:44px}
+@media(max-width:1000px){.measure-station{padding:8px}.measure-freezer{max-width:220px}.measure-specimen .beaker{max-height:200px}.measure-empty{min-height:195px}.cycle-scene{grid-template-columns:minmax(0,1fr) 125px minmax(0,1fr)}.cycle-scene h3{font-size:16px}.cycle-controls{grid-template-columns:1fr}.cycle-controls>.btn{justify-self:start}.cycle-air b{font-size:17px}.cycle-scene article>.beaker,.cycle-plate-art,.cycle-placeholder{height:180px}}
+@media(max-width:600px){.measure-stations{gap:6px}.measure-station h3{font-size:16px}.measure-specimen .beaker{max-height:180px}.measure-freezer{min-height:185px}.measure-empty{min-height:180px;font-size:14px}.measure-station{padding:6px}.measure-scale span{font-size:13px}.measure-specimen>span{font-size:13px}.measure-records figure{font-size:14px}.measure-records b{font-size:17px}.cycle-scene{grid-template-columns:1fr 1fr;gap:8px}.cycle-air{grid-column:1/-1;grid-row:2;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;align-items:center;background:#edf7ee;padding:8px;border-radius:12px}.cycle-air p{margin:0}.cycle-air>span:last-child{display:none}.cycle-scene article{padding:8px}.cycle-scene article>.beaker,.cycle-plate-art,.cycle-placeholder{height:160px}.cycle-scene article>b{font-size:17px}.cycle-heading h2{font-size:21px}.cycle-controls p{font-size:16px}}
+
+/* Keep the same readable minimum in the compact bench and clock docks. */
+.activity.bench .bench-tip,.activity.bench .bench-gate,.activity.bench .bench-fill-controls span,.activity.bench .science-detail summary{font-size:14px}
+
+.collector-conditions{margin:6px 0;font-size:14px;line-height:1.4;color:#3f6265}
+
+#field-greenhouse{display:grid;grid-template-rows:auto auto minmax(170px,1fr) auto auto;gap:8px;overflow:auto;align-content:stretch}
+#field-greenhouse .cycle-heading h2{margin:0 0 3px;font-size:clamp(20px,2vw,26px)}
+#field-greenhouse .cycle-heading p{margin:0;font-size:15px}
+#field-greenhouse .cycle-scene{min-height:0}
+#field-greenhouse .cycle-scene article{display:flex;flex-direction:column;min-height:0}
+#field-greenhouse .cycle-scene article>.beaker,#field-greenhouse .cycle-plate-art,#field-greenhouse .cycle-placeholder{height:auto;min-height:90px;flex:1;max-height:210px}
+#field-greenhouse .cycle-scene article>.beaker{width:100%;object-fit:contain}
+#field-greenhouse .cycle-air{font-size:14px}
+#field-greenhouse .cycle-air p{font-size:14px;margin:0}
+#field-greenhouse .cycle-controls{margin:0;padding:10px}
+#freeze-measure .activity-tools>h3{display:block;font-size:19px}
+@media(min-width:601px) and (max-height:650px){#field-greenhouse .cycle-heading p{display:none}#field-greenhouse .cycle-scene{min-height:180px}.measure-stations{margin:5px 0}.measure-specimen .beaker{max-height:170px}.measure-empty{min-height:160px}.measure-freezer{max-width:180px}.measure-records figure{padding:6px}}
+@media(max-width:600px){#field-greenhouse{grid-template-rows:auto auto auto auto auto;overflow:visible}#field-greenhouse .cycle-scene article{min-height:220px}}
+
+.activity.bench .bench-readout small{font-size:14px}
+
+@media(min-width:601px) and (max-height:520px){
+ #freeze-measure .activity-scene{display:grid;grid-template-rows:auto minmax(115px,1fr) auto;gap:4px;align-content:stretch;padding:8px}
+ #freeze-measure .activity-scene{overflow:auto;overscroll-behavior:contain;scroll-padding:8px}
+ #freeze-measure .activity-stage-caption{font-size:14px;padding:3px}
+ #freeze-measure .measure-stations{margin:0;min-height:0;gap:6px}
+ #freeze-measure .measure-station{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0;padding:4px}
+ #freeze-measure .measure-station h3{font-size:14px;margin:0}
+ #freeze-measure .measure-freezer{height:100%;width:100%;max-height:110px;max-width:160px;min-height:0}
+ #freeze-measure .measure-specimen .beaker{max-height:80px}
+ #freeze-measure .measure-specimen>span{display:none}
+ #freeze-measure .measure-empty{min-height:60px;font-size:14px}
+ #freeze-measure .measure-scale{padding:2px 6px;margin:0 auto;gap:0}
+ #freeze-measure .measure-scale span{font-size:13px}
+ #freeze-measure .measure-scale b{font-size:20px}
+ #freeze-measure .measure-records{gap:5px}
+ #freeze-measure .measure-records figure{padding:4px;gap:1px;font-size:13px}
+ #freeze-measure .measure-records b{font-size:16px}
+ #freeze-measure .measure-life{min-height:100px}#freeze-measure .measure-life img{max-height:110px}
+}
+
+#field-greenhouse{grid-template-rows:auto minmax(185px,1fr) auto auto}
+#field-greenhouse .cycle-heading{display:none}
+#field-greenhouse .cycle-scene article{overflow:hidden}
+@media(max-width:600px){#field-greenhouse{grid-template-rows:auto auto auto auto}.cycle-scene article{overflow:visible}}

@@ -3,10 +3,13 @@ import assert from 'node:assert/strict';
 import {fieldMissions,fieldStages,initialFieldwork,chapterState,fieldAction,fieldReady,cleanFieldwork,migrateFieldwork} from '../src/fieldwork-model.js';
 import {state,initialState,readState,save,setPreviewMode,KEY} from '../src/state.js';
 
+function freezeTray(c){for(const step of ['fill','load','wait','take','compare'])c=fieldAction(2,c,'freeze-tray',{step,time:100});return c;}
+const processes={melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']};
+function process(c,kind){for(const step of processes[kind])c=fieldAction(2,c,'phase-process',{kind,step,time:100});return c;}
 function solve(n){let c=chapterState(n);const act=(a,p)=>c=fieldAction(n,c,a,p),put=(item,target)=>act('place',{item,target});
  if(n===1)for(const item of ['water','ice'])for(const target of ['tall','wide'])put(item,target);
- if(n===2)for(const [target,item] of [['freeze','cold'],['melt','warm'],['evaporate','warm'],['condense','cold']])act('try-route',{target,item,time:100});
- if(n===10){act('run-cycle',{step:'evaporate',time:100});act('run-cycle',{step:'condense'});}
+ if(n===2){c=freezeTray(c);for(const kind of Object.keys(processes))c=process(c,kind);}
+ if(n===10)for(const step of ['prepare','wait','observe','receiver','cool','wait','collect','compare'])act('greenhouse-cycle',{step,time:100});
  if(n===3){for(const [item,target] of [['water','first'],['ice','middle'],['melt','last']])put(item,target);act('test');act('guess-weight',{guess:'same'});put('weight','balance');for(const item of ['water','ice','melt'])put(item,'pan');}
  if(n===4){for(const [night,count] of [[1,1],[2,2],[3,3]]){for(let index=0;index<count;index++)act('fill',{night,index,value:85});act('freeze-night',{night});}act('reason',{choice:'grow'});}
  if(n===6){for(let cell=0;cell<16;cell++)act('spread',{cell});act('test');put('destination','air');}
@@ -24,7 +27,7 @@ test('every field application needs a distinct observed solution, with no time o
  }
 });
 test('the boiling task requires sufficient heating and changing a tool invalidates its result',()=>{
- let c=solve(2);assert.equal(c.moves.evaporate,'warm');
+ let c=solve(2);assert.equal(c.moves.evaporate,'hotplate-process');
  c=fieldAction(2,c,'place',{item:'warm',target:'freeze'});
  assert.equal(fieldReady(2,c),false);
  c=fieldAction(2,c,'test');assert.equal(fieldReady(2,c),false);
@@ -32,6 +35,16 @@ test('the boiling task requires sufficient heating and changing a tool invalidat
 test('drying comparisons retain their evidence and require a trial of the current condition',()=>{
  let d=solve(6);d=fieldAction(6,d,'spread',{cell:17});assert.equal(fieldReady(6,d),false);
  d=fieldAction(6,d,'test');assert.equal(fieldReady(6,d),true);
+});
+
+test('retired extra activities resume the experiment and preserve old evidence',()=>{
+ for(const n of [6,8]){
+  const original={...initialFieldwork(),active:n,pending:`act-complete-${n/2}`,chapters:{[n]:solve(n)}};
+  const moved=migrateFieldwork(original);
+  assert.equal(moved.active,0);assert.equal(moved.pending,'');
+  assert.deepEqual(moved.chapters,original.chapters);
+  assert.deepEqual(migrateFieldwork(moved),moved,'migration is idempotent');
+ }
 });
 test('swapped cup identities still need the shared cold-surface explanation',()=>{
  let c=solve(7);c=fieldAction(7,c,'place',{item:'condition',target:'identity'});
@@ -87,20 +100,158 @@ test('a transformation confirms only the one the student tried and keeps earlier
  const draft=fieldAction(2,chapterState(2),'place',{target:'melt',item:'warm'});
  const wrong=run(draft,'freeze','warm');
  assert.deepEqual(wrong.marks,[]);
- const frozen=run(wrong,'freeze','cold');
+ assert.deepEqual(run(wrong,'freeze','cold').marks,[],'a cooling pack cannot turn a cup into ice cubes');
+ const frozen=freezeTray(wrong);
  assert.deepEqual(frozen.marks,['freeze']);
  assert.deepEqual(run(frozen,'freeze','warm').marks,['freeze']);
- const melted=run(frozen,'melt','warm');
+ assert.deepEqual(run(frozen,'melt','warm').marks,['freeze'],'a warm prop does not instantly melt the tray');
+ const melted=process(frozen,'melt');
  assert.deepEqual(run(melted,'evaporate','time',100).marks,['freeze','melt']);
  assert.deepEqual(run(melted,'evaporate','warm',35).marks,['freeze','melt']);
- const evaporated=run(melted,'evaporate','warm',80);
- const done=run(evaporated,'condense','cold');
+ assert.deepEqual(run(melted,'evaporate','warm',100).marks,['freeze','melt']);
+ const evaporated=process(melted,'evaporate');
+ assert.deepEqual(run(evaporated,'condense','cold').marks,['freeze','melt','evaporate']);
+ const done=process(evaporated,'condense');
  assert.ok(fieldReady(2,done));
 });
 
+test('melting needs a room-temperature tray, time and a comparison, without instant tool awards',()=>{
+ let c=freezeTray(chapterState(2));
+ const act=(step,time)=>c=fieldAction(2,c,'phase-process',{kind:'melt',step,time});
+ act('wait',100);act('compare');assert.equal(c.moves.meltStage,undefined);
+ act('place');assert.equal(c.moves.meltStage,'resting');assert.equal(c.moves.meltTime,'0');
+ act('wait',45);assert.equal(c.moves.meltStage,'resting');act('compare');assert.ok(!c.marks.includes('melt'));
+ act('wait',100);assert.equal(c.moves.meltStage,'melted');assert.ok(!c.marks.includes('melt'));
+ act('compare');assert.equal(c.moves.meltStage,'compared');assert.equal(c.moves.melt,'room-time');assert.ok(c.marks.includes('melt'));
+});
+
+test('boiling requires equal-water preparation, heating, sufficient time, stopping and comparison',()=>{
+ let c=process(freezeTray(chapterState(2)),'melt');
+ const act=(step,time)=>c=fieldAction(2,c,'phase-process',{kind:'evaporate',step,time});
+ act('heat');act('wait',100);act('stop');act('compare');assert.equal(c.moves.boilStage,undefined);
+ act('fill');assert.equal(c.moves.boilStage,'ready');act('wait',100);assert.equal(c.moves.boilTime,'0');
+ act('heat');act('wait',40);act('stop');assert.equal(c.moves.boilStage,'heating');assert.ok(!c.marks.includes('evaporate'));
+ act('wait',100);assert.equal(c.moves.boilStage,'boiling');act('compare');assert.ok(!c.marks.includes('evaporate'));
+ act('stop');assert.equal(c.moves.boilStage,'observed');act('compare');assert.equal(c.moves.evaporate,'hotplate-process');assert.ok(c.marks.includes('evaporate'));
+ assert.match(c.message,/수증기/);
+});
+
+test('condensation needs dry surfaces, cooling, new drops, wiping and observing their return',()=>{
+ let c=process(process(freezeTray(chapterState(2)),'melt'),'evaporate');
+ const act=(step,time)=>c=fieldAction(2,c,'phase-process',{kind:'condense',step,time});
+ act('cool');act('wait',100);act('wipe');act('compare');assert.equal(c.moves.dewStage,undefined);
+ act('dry');assert.equal(c.moves.dewStage,'dry');act('wait',100);assert.equal(c.moves.dewTime,'0');
+ act('cool');act('wait',60);assert.equal(c.moves.dewStage,'cooling');act('compare');assert.ok(!c.marks.includes('condense'));
+ act('wait',100);assert.equal(c.moves.dewStage,'wet');act('compare');assert.ok(!c.marks.includes('condense'));
+ act('wipe');assert.equal(c.moves.dewStage,'rewiped');assert.equal(c.moves.dewTime,'0');
+ act('compare');assert.ok(!c.marks.includes('condense'));act('wait',100);assert.equal(c.moves.dewStage,'again');
+ act('compare');assert.equal(c.moves.condense,'cold-surface-process');assert.ok(c.marks.includes('condense'));assert.ok(fieldReady(2,c));assert.match(c.message,/공기/);
+});
+
+test('later transformations cannot bypass their preceding observation',()=>{
+ for(const [kind,recipe] of Object.entries(processes)){
+  let c=chapterState(2);for(const step of recipe)c=fieldAction(2,c,'phase-process',{kind,step,time:100});
+  assert.deepEqual(c.marks,[]);assert.deepEqual(c.moves,{});
+ }
+});
+
+test('all process clocks reject malformed and backwards time without mutating earlier records',()=>{
+ for(const [kind,prerequisite,start,clock] of [['melt',freezeTray(chapterState(2)),['place'],'meltTime'],['evaporate',process(freezeTray(chapterState(2)),'melt'),['fill','heat'],'boilTime'],['condense',process(process(freezeTray(chapterState(2)),'melt'),'evaporate'),['dry','cool'],'dewTime']]){
+  let c=prerequisite;for(const step of start)c=fieldAction(2,c,'phase-process',{kind,step});
+  c=fieldAction(2,c,'phase-process',{kind,step:'wait',time:60});
+  for(const time of [-1,40,101,Infinity,NaN,'100']){
+   const next=fieldAction(2,c,'phase-process',{kind,step:'wait',time});assert.equal(next.moves[clock],'60',kind+' clock');
+  }
+  assert.equal(c.moves[clock],'60');assert.ok(!c.marks.includes(kind));
+ }
+});
+
+test('all in-progress transformations, poured water and completed process fields survive reload',()=>{
+ let c=freezeTray(chapterState(2));
+ for(const [kind,recipe] of Object.entries(processes)){
+  const first=recipe.slice(0,recipe.indexOf('wait'));
+  let partial=c;for(const step of first)partial=fieldAction(2,partial,'phase-process',{kind,step});
+  partial=fieldAction(2,partial,'phase-process',{kind,step:'wait',time:55});
+  const raw=initialState();raw.fieldwork.chapters[2]=partial;
+  const loaded=readState({getItem:()=>JSON.stringify(raw)}).fieldwork.chapters[2];
+  assert.deepEqual(loaded.moves,partial.moves);assert.deepEqual(loaded.marks,partial.marks);assert.equal(loaded.done,false);
+  c=process(c,kind);
+ }
+ const raw=initialState();raw.fieldwork.chapters[2]=c;const loaded=readState({getItem:()=>JSON.stringify(raw)}).fieldwork.chapters[2];
+ assert.equal(c.moves.freezeFill,'100');assert.equal(Object.keys(c.moves).length,13);assert.deepEqual(loaded.moves,c.moves);assert.equal(fieldReady(2,loaded),true);
+ raw.fieldwork.chapters[2]={...c,moves:{oldTool:'time',...c.moves}};
+ const withEarlierAttempt=readState({getItem:()=>JSON.stringify(raw)}).fieldwork.chapters[2];
+ assert.deepEqual(withEarlierAttempt.moves,raw.fieldwork.chapters[2].moves,'earlier attempts must not push the new evidence past the save limit');
+ assert.equal(fieldReady(2,withEarlierAttempt),true);
+});
+
+test('new transformation badges require their final observations even if done is forged',()=>{
+ const c=solve(2);
+ for(const [key,value] of [['meltStage','resting'],['meltTime','30'],['boilStage','heating'],['boilTime','30'],['dewStage','wet'],['dewTime','30']]){
+  const forged={...c,moves:{...c.moves,[key]:value},done:true};assert.equal(fieldReady(2,forged),false,key);
+  assert.equal(cleanFieldwork({...initialFieldwork(),chapters:{2:forged}}).chapters[2].done,false,key);
+ }
+});
+
+test('freezing requires filling a tray, loading a closed freezer, enough cooling, taking it out and comparing',()=>{
+ let c=chapterState(2);
+ for(const step of ['load','wait','take','compare']){
+  c=fieldAction(2,c,'freeze-tray',{step,time:100});
+  assert.equal(c.moves.freezeTray,undefined);assert.deepEqual(c.marks,[]);
+ }
+ c=fieldAction(2,c,'freeze-tray',{step:'fill'});assert.equal(c.moves.freezeTray,'water');
+ c=fieldAction(2,c,'freeze-tray',{step:'take'});assert.equal(c.moves.freezeTray,'water');
+ c=fieldAction(2,c,'freeze-tray',{step:'load'});assert.equal(c.moves.freezeTray,'cooling');
+ c=fieldAction(2,c,'freeze-tray',{step:'wait',time:45});assert.equal(c.moves.freezeTray,'cooling');assert.equal(c.moves.freezeTime,'45');
+ c=fieldAction(2,c,'freeze-tray',{step:'take'});assert.equal(c.moves.freezeTray,'cooling');
+ c=fieldAction(2,c,'freeze-tray',{step:'wait',time:100});assert.equal(c.moves.freezeTray,'frozen');assert.deepEqual(c.marks,[]);
+ c=fieldAction(2,c,'freeze-tray',{step:'compare'});assert.deepEqual(c.marks,[]);
+ c=fieldAction(2,c,'freeze-tray',{step:'take'});assert.equal(c.moves.freezeTray,'taken');assert.deepEqual(c.marks,[]);
+ c=fieldAction(2,c,'freeze-tray',{step:'compare'});assert.equal(c.moves.freezeTray,'compared');assert.equal(c.moves.freeze,'freezer');assert.deepEqual(c.marks,['freeze']);
+ assert.match(c.message,/얼음틀/);assert.equal(fieldReady(2,c),false,'other transformations still require their observations');
+ assert.deepEqual(fieldAction(2,c,'freeze-tray',{step:'compare'}),c,'comparison is idempotent');
+});
+
+test('cooling cannot rewind or skip its prerequisites, and rejects non-finite times',()=>{
+ let c=fieldAction(2,chapterState(2),'freeze-tray',{step:'fill'});
+ const before=c;c=fieldAction(2,c,'freeze-tray',{step:'wait',time:100});assert.deepEqual(c.moves,before.moves);
+ c=fieldAction(2,c,'freeze-tray',{step:'load'});c=fieldAction(2,c,'freeze-tray',{step:'wait',time:60});
+ for(const time of [-1,40,101,Infinity,NaN,'100']){
+  const next=fieldAction(2,c,'freeze-tray',{step:'wait',time});
+  assert.equal(next.moves.freezeTime,'60');assert.equal(next.moves.freezeTray,'cooling');assert.deepEqual(next.marks,[]);
+ }
+ assert.equal(before.moves.freezeTray,'water','actions do not mutate earlier evidence');
+});
+
+test('freezer work resumes after a reload without awarding unobserved changes',()=>{
+ let c=fieldAction(2,chapterState(2),'freeze-tray',{step:'fill'});
+ c=fieldAction(2,c,'freeze-tray',{step:'load'});c=fieldAction(2,c,'freeze-tray',{step:'wait',time:55});
+ const raw=initialState();raw.fieldwork.chapters[2]=c;
+ const loaded=readState({getItem:()=>JSON.stringify(raw)}).fieldwork.chapters[2];
+ assert.deepEqual(loaded.moves,c.moves);assert.deepEqual(loaded.marks,[]);
+ assert.equal(loaded.done,false);
+ const done=freezeTray(chapterState(2));
+ const restored=cleanFieldwork({...initialFieldwork(),chapters:{2:done}}).chapters[2];
+ assert.deepEqual(restored.moves,done.moves);assert.deepEqual(restored.marks,['freeze']);
+});
+
+test('older completed transformations keep their recorded discoveries',()=>{
+ const c={...chapterState(2),moves:{freeze:'cold',melt:'warm',evaporate:'warm',condense:'cold'},marks:['freeze','melt','evaporate','condense'],done:true};
+ const loaded=cleanFieldwork({...initialFieldwork(),chapters:{2:c}}).chapters[2];
+ assert.equal(fieldReady(2,loaded),true);assert.deepEqual(loaded.moves,c.moves);assert.deepEqual(loaded.marks,c.marks);
+});
+
+test('a new freezer completion cannot be granted by a done flag without the full comparison',()=>{
+ const solved=solve(2);
+ for(const moves of [{...solved.moves,freezeTray:'frozen'},{...solved.moves,freezeTime:'40'}]){
+  const forged={...solved,moves,done:true};assert.equal(fieldReady(2,forged),false);
+  assert.equal(cleanFieldwork({...initialFieldwork(),chapters:{2:forged}}).chapters[2].done,false);
+ }
+});
+
 test('each area ends with exactly one request',()=>{
- assert.deepEqual(fieldMissions.flatMap((m,n)=>m?[n]:[]),[2,4,6,8,10]);
- assert.deepEqual(fieldStages,[2,4,6,8,10]);
+ assert.deepEqual(fieldMissions.flatMap((m,n)=>m?[n]:[]),[2,4,10]);
+ assert.deepEqual(fieldStages,[2,4,10]);
 });
 test('an old save keeps its drying seal after the request moved to the end of the area',()=>{
  const raw={...initialFieldwork(),version:1,active:5,pending:'act-next-5',chapters:{5:solve(6),6:solve(5)}};

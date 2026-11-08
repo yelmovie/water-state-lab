@@ -1,3 +1,5 @@
+import {coreTransfer} from './core-transfer.js';
+import {drawRealDrop} from './study-materials.js';
 import {addStudyFrames,studySheets} from './study-materials.js';
 import {createIceScene,createClothScene,createWaterDrawing,createDewScene} from './study-scenes.js';
 import {createPouringScene,drawBeakerWater} from './pouring-scene.js';
@@ -31,18 +33,18 @@ function makeScene(P,route,ctx,host,hidden,regions){
    this.load.on('loaderror',()=>{this.assetLoadFailed=true;});
    this.load.image('buddy','/assets/v2/buddy-poses-clean.webp');
    if(route!=='map'){
-    const materials=route===1?['cloth','ice']:route===5?['painting']:route===7?['dew','tools']:[9,10].includes(route)?['tools']:[];
+    const materials=route===1?['cloth','ice']:route===5?['painting']:[7,8].includes(route)?['dew','tools']:[9,10].includes(route)?['tools']:[];
     for(const key of materials)this.load.image('real-'+key,'/assets/learning/'+studySheets[key].file);
     this.load.image('equipment','/assets/v2/equipment-atlas.webp');
     this.load.image('workshop','/assets/v2/workshop-atlas.webp');
     if(route===1){this.load.image('pouring-glass','/assets/v2/pouring-glass.webp');this.load.image('pouring-jug','/assets/v2/pouring-jug.webp');}
     if(route===3){this.load.image('learning-scale','/assets/learning/scale.webp');for(const key of ['ice-pop-soft','ice-pop-frozen','pipe-water','pipe-burst'])this.load.image(key,`/assets/learning/${key}.webp`);}
     if(route===2)this.load.image('water-search','/assets/stages/water-search.webp');
-    if(route===8)this.load.image('drink-bottle','/assets/stages/drink-bottle.webp');
+    if(route===8){this.load.image('drink-bottle','/assets/stages/drink-bottle.webp');this.load.image('drink-bottle-wet','/assets/learning/condensation-20261108/bottle-wet.webp');}
     if(route===5)this.load.image('drawing-board','/assets/learning/drawing-board.webp');
     if(route===6)this.load.image('hotplate','/assets/learning/heat-plate-guide.webp');
     if(route===5)this.load.image('water-material','/assets/learning/water-material.webp');
-    if(route===10)this.load.image('water-core','/assets/learning/water-core.webp');
+    if(route===10){this.load.image('water-core','/assets/learning/water-core.webp');this.load.image('core-valve','/assets/learning/experiment-props-20261107/valve.webp');}
    }
   }
   create(){
@@ -132,7 +134,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
    const seats={1:[55,312],2:[655,165],3:[80,313],5:[674,326],6:[54,318],7:[670,318],8:[47,318],9:[660,126],10:[657,120]},[x,y]=seats[route];
    this.buddyHome={x,y};this.buddyShadow=this.add.ellipse(x,y-3,43,12,0x39616b,.16).setDepth(10);
    this.buddy=this.prop(x,y,0,96,'buddy').setOrigin(.5,1).setDepth(11).setInteractive({useHandCursor:true});
-   const hints={1:'도구를 잡고 옮겨 봐. 달라진 모습을 함께 찾자!',2:'그림을 아래 칸으로 옮겨 줘. 관찰한 성질이 단서야.',3:'같은 물을 얼리고 녹여 보자. 높이와 무게를 비교해!',5:'왼쪽 판에 네 그림을 그려 봐. 내가 옆에도 똑같이 그릴게!',6:'돋보기를 물 위로 옮겨 봐. 물속과 처음 눈금도 살펴보자.',7:'물방울을 손가락으로 문질러 봐. 닦은 자리에 다시 생길까?',8:'직접 모은 증거로 물방울이 온 길을 이어 줘.',9:'부품을 옮겨 물길을 만들자. 경사판 손잡이도 움직여 봐!',10:'고친 물길에서 코어까지 물을 보내 줘!'};
+   const hints={1:'도구를 잡고 옮겨 봐. 달라진 모습을 함께 찾자!',2:'그림을 아래 칸으로 옮겨 줘. 관찰한 성질이 단서야.',3:'같은 물을 얼리고 녹여 보자. 높이와 무게를 비교해!',5:'왼쪽 판에 네 그림을 그려 봐. 내가 옆에도 똑같이 그릴게!',6:'뜨거운 컵은 만지지 않아. 떨어져서 물속 기포와 처음 물높이를 비교해 보자.',7:'물방울을 손가락으로 문질러 봐. 닦은 자리에 다시 생길까?',8:'직접 모은 증거로 물방울이 온 길을 이어 줘.',9:'부품을 옮겨 물길을 만들자. 경사판 손잡이도 움직여 봐!',10:'고친 물길에서 코어까지 물을 보내 줘!'};
    this.buddyHint=hints[route];this.buddy.on('pointerdown',()=>{this.buddySpeak(this.buddyHint);this.reactAt(this.buddy.x,this.buddy.y-30);});
    if(!reduced())this.buddyIdle=this.tweens.add({targets:this.buddy,y:y-4,duration:1700,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
   }
@@ -232,37 +234,35 @@ function makeScene(P,route,ctx,host,hidden,regions){
   freezeScene(){createFreezeScene(this,reduced);}
   drawingScene(){createWaterDrawing(this);}
   heatScene(){
-   const s=a().compare;this.text(220,23,'A · 가열하지 않음');this.text(490,23,'B · 가열 조절');
-   this.panel(135,45,170,235);this.panel(405,45,170,235);
-   for(const x of [220,490])this.add.image(x,166.55,'equipment','beaker-shell').setDisplaySize(187.5,225.5).setDepth(3);
-   if(!q().lens)visual.lens={x:650,y:150};
-    const lens=this.prop(visual.lens.x,visual.lens.y,7,100,'equipment',true).setDepth(12);this.text(643,245,'돋보기',22);
-   const glass=this.add.graphics().setDepth(15),mask=this.add.graphics().setVisible(false),magnified=this.add.graphics().setDepth(16);magnified.setMask(mask.createGeometryMask());
-    // A real hot plate replaces the flat heater bar; its glow follows the heat setting under cup B.
-    const plate=this.textures.exists('hotplate')?this.add.image(490,264,'hotplate').setOrigin(.5,.42).setDisplaySize(134,92).setDepth(1):null,plateGlow=plate?this.add.graphics().setDepth(2):null;
-    const lensLabel=this.text(360,plate?322:302,'A 표면 · B 물속 · 수위 비교',18);
-   lens.onMove=()=>{visual.lens={x:lens.x,y:lens.y};const site=lensRegion(lens.x,lens.y);lensLabel.setText(({surface:'A 표면 · 물은 눈에 보이지 않는 수증기로 변해',inside:'B 물속 · 기포가 생기는지 관찰해',level:'금색 선 = 처음 높이 · 지금 높이와 비교해'})[site]);};
-   const inspect=()=>{const site=lensRegion(lens.x,lens.y);q().lens=site;visual.lens={x:lens.x,y:lens.y};this.reactAt(lens.x,lens.y);this.action('ix-lens-'+site);};lens.onRelease=()=>{if(lens.x<585)inspect();else{lens.setPosition(650,150);visual.lens={x:650,y:150};}};
-   this.tick=t=>{const h=heatingTrial(s.heat,observationTime(6));this.dynamic.clear();const wave=h.boiling&&!reduced()?1.6:0;
-    this.paintWater([h.room,h.heated,wave&&t].join(':'),(w,atlas)=>{this.cup(w,atlas,220,267,125,205,h.room);this.cup(w,atlas,490,267,125,205,h.heated,wave,t);});
-    // A fixed initial line makes a falling water level comparable in both vessels.
-    this.dynamic.lineStyle(2,0xa78037,.9).lineBetween(157,267-waterHeight(70,125),282,267-waterHeight(70,125)).lineBetween(427,267-waterHeight(70,125),552,267-waterHeight(70,125));
-    if(h.boiling)for(let i=0;i<9;i++){const depth=Math.max(1,waterHeight(h.heated,125)-18),y=259-(((reduced()?0:t/30)+i*19)%depth);this.dynamic.lineStyle(2,0xc3f9ff,.9).strokeCircle(460+i%4*19,y,4+i%3);}
-    if(plate){plateGlow.clear();if(s.heat)plateGlow.fillStyle(0xff8a3d,.18+s.heat/100*.5).fillEllipse(490,264,132,34);}else this.dynamic.fillStyle(s.heat?0xe8a257:0x94a5a1).fillRoundedRect(421,277,138,18,8);
-    glass.clear();mask.clear();magnified.clear();if(lens.x>585)return;
-    const site=lensRegion(lens.x,lens.y),x=clamp(lens.x+(lens.x<360?100:-100),66,654),y=clamp(lens.y-45,78,213),r=56;
-    mask.fillStyle(0xffffff).fillCircle(x,y,r);glass.fillStyle(0xfffef2).fillCircle(x,y,r+6);glass.lineStyle(4,0x4b8991).strokeCircle(x,y,r+5);glass.lineStyle(2,0x7caaac,.6).lineBetween(lens.x,lens.y,x,y);
-    magnified.fillStyle(0xf1fbf5).fillCircle(x,y,r);
-    if(site==='level'){
-     for(const [i,amount] of [h.room,h.heated].entries()){const cx=x-28+i*55,base=y+45,level=waterHeight(amount,125)*.65; magnified.fillStyle(0x4fc4ee,.85).fillRect(cx-19,base-level,38,level);magnified.lineStyle(3,0x9d7c36).lineBetween(cx-21,base-waterHeight(70,125)*.65,cx+21,base-waterHeight(70,125)*.65);magnified.lineStyle(2,0x8eacb2).strokeRect(cx-21,y-47,42,92);}
-    }else if(site==='surface'){
-     magnified.fillStyle(0x4fc4ee,.85).fillRect(x-r,y+5,r*2,r);magnified.lineStyle(3,0xb7f4fc).lineBetween(x-r,y+5,x+r,y+5);
-     // Water vapour is invisible: no decorative cloud or visible gas particles.
-    }else{
-     magnified.fillStyle(0x4fc4ee,.85).fillRect(x-r,y-r,r*2,r*2);if(h.boiling)for(let i=0;i<7;i++){const by=y+r-((reduced()?i*17:t/15+i*17)%(r*2));magnified.lineStyle(3,0xe5ffff).strokeCircle(x-33+(i%4)*22,by,7+i%3);}
-    }
+   const s=a().compare,base=210,width=105,height=160;
+   const inner=beakerInner(beakerShell(510,base,width,height)),floor=inner.floor-3;
+   this.text(210,22,'A · 가열하지 않음',22);this.text(510,22,'B · 전기 가열판',22);
+   for(const x of [210,510]){this.panel(x-122,43,244,268);this.add.image(x,base-height*.49,'equipment','beaker-shell').setDisplaySize(width*1.5,height*1.1).setName('heat-beaker-'+x).setDepth(3);}
+   const plate=this.textures.exists('hotplate')?this.add.image(510,base,'hotplate').setOrigin(.5,.2875).setDisplaySize(220,220*400/520).setName('heat-hotplate').setDepth(1):null;
+   const plateGlow=this.add.graphics().setDepth(2),caption=this.text(360,320,'처음 선과 지금 물높이를 비교해 봐.',17);
+   this.tick=t=>{
+    const h=heatingTrial(s.heat,observationTime(6)),moving=!reduced(),wave=h.boiling&&moving?2.8:0;
+    this.dynamic.clear();plateGlow.clear();
+    this.paintWater([h.room,h.heated,wave&&Math.floor(t/50)].join(':'),(w,atlas)=>{this.cup(w,atlas,210,base,width,height,h.room,.3,moving?t:0);this.cup(w,atlas,510,base,width,height,h.heated,wave,moving?t:0);});
+    const initial=base-waterHeight(70,width);
+    for(const x of [210,510])this.dynamic.lineStyle(2,0xa78037,.85).lineBetween(x-50,initial,x+50,initial);
+    if(s.heat){
+     const pulse=moving?.7+Math.sin(t/250)*.12:.7;
+     plateGlow.fillStyle(0xff994b,pulse*.32).fillEllipse(510,base,150,28);
+     for(let i=0;i<3;i++)plateGlow.lineStyle(2.2,0xff7846,pulse).strokeEllipse(510,base,138-i*24,20-i*4);
+    }else if(!plate)this.dynamic.fillStyle(0x94a5a1).fillRoundedRect(400,base-9,220,18,8);
+    if(h.boiling){
+     const surface=base-waterHeight(h.heated,width),depth=Math.max(1,floor-surface),stamp=moving?t:1200;
+     for(let i=0;i<28;i++){
+      const travel=((stamp/(1050+i%5*110)+i*.137)%1),bx=472+(i*31%76)+Math.sin(travel*8+i)*2,by=floor-travel*(depth-8),r=1.2+travel*(2.2+i%4);
+      this.dynamic.fillStyle(0xd8fbff,.12+travel*.13).fillCircle(bx,by,r);
+      this.dynamic.lineStyle(1.2,0xc9f8ff,.45+travel*.4).strokeCircle(bx,by,r);
+      this.dynamic.fillStyle(0xffffff,.85).fillCircle(bx-r*.3,by-r*.4,Math.max(.6,r*.2));
+     }
+     for(let i=0;i<5;i++){const life=(stamp/950+i*.21)%1;this.dynamic.lineStyle(1,0xe5ffff,(1-life)*.65).strokeEllipse(478+i*16,surface+Math.sin(stamp/200+i)*1.7,6+life*15,2+life*3);}
+     caption.setText('B 물속 기포 · 두 컵 물높이를 비교해.');
+    }else caption.setText(s.heat?'B만 데우는 중 · 물속을 살펴봐.':'가열하지 않아도 표면에서 증발해.');
    };
-    // The shared guide carries the instruction; keep the canvas for objects and labels.
   }
   dewScene(){createDewScene(this,(kind,ids)=>ctx.wipe(kind,ids));}
   explainScene(){
@@ -272,7 +272,8 @@ function makeScene(P,route,ctx,host,hidden,regions){
     const rubbed={cold:0,room:0};let last=null,starting=false;
     this.input.on('pointerdown',()=>{last=null;});this.finishPointer=()=>{last=null;};
     this.input.on('pointermove',p=>{if(!p.isDown||p.worldY<50||p.worldY>280||s.bottleWiped||starting){last=null;return;}if(!q().transferPrediction){this.cue('어느 병에 물방울이 생길지 예상부터 해 보자.');return;}const key=Math.abs(p.worldX-205)<95?'cold':Math.abs(p.worldX-510)<95?'room':null;if(key&&last?.key===key)rubbed[key]+=Math.hypot(p.worldX-last.x,p.worldY-last.y);last={key,x:p.worldX,y:p.worldY};if(rubbed.cold>85&&rubbed.room>85){starting=true;this.action('ix-bottle-start');}else if(rubbed[key]>85)this.cue('이 병은 닦았어. 다른 병도 문질러 줘.');});
-    this.tick=()=>{this.dynamic.clear();for(const p of visibleDew(s.bottleWiped?observationTime(8):0))this.dynamic.fillStyle(0x66c9e3,.95).fillEllipse(205+p.x-120,p.y-5,9,13);};
+    const wetBottle=this.learningSprite('drink-bottle-wet',205,166,185,278).setAlpha(0).setDepth(7);
+    this.tick=()=>wetBottle.setAlpha(s.bottleWiped?Math.min(1,observationTime(8)/100):0);
     this.text(360,310,s.bottleWiped?'시간 손잡이를 움직여 두 병을 비교해 봐':'예상한 뒤 두 병의 겉면을 문질러 봐',20);return;
    }
    if(s.evidence.length>=2){
@@ -284,17 +285,17 @@ function makeScene(P,route,ctx,host,hidden,regions){
    }
    const proofs=[['sealed','입구를 막았어',4],['contrast','차가운 컵에 생겼어',5],['again','닦아도 다시 생겼어',3]];
    this.panel(180,195,360,110);this.text(360,248,'내 설명에 쓸 증거 놓는 곳',20);
-   proofs.forEach(([key,label,index],i)=>{const x=130+i*230,obj=this.prop(x,85,index,100,'equipment',true);this.text(x,153,label,17);if(s.evidence.includes(key)){obj.setTint(0xa9e9cf);this.text(x,27,'✓ 연결한 증거',17,'#21785d');}let tapStart;obj.on('pointerdown',p=>{tapStart={x:p.worldX,y:p.worldY};});obj.on('pointerup',p=>{if(tapStart&&Math.hypot(p.worldX-tapStart.x,p.worldY-tapStart.y)<12)this.action('ix-evidence-'+key);tapStart=null;});obj.onRelease=()=>{if(obj.y>190&&!s.evidence.includes(key))this.action('ix-evidence-'+key);else obj.setPosition(x,85);};});
+   proofs.forEach(([key,label,index],i)=>{const x=130+i*230,obj=this.add.image(x,85,'real-dew',key==='contrast'?'3':'2').setDisplaySize(115,115).setInteractive({useHandCursor:true});this.input.setDraggable(obj);this.text(x,153,label,17);if(s.evidence.includes(key)){obj.setTint(0xa9e9cf);this.text(x,27,'✓ 연결한 증거',17,'#21785d');}let tapStart;obj.on('pointerdown',p=>{tapStart={x:p.worldX,y:p.worldY};});obj.on('pointerup',p=>{if(tapStart&&Math.hypot(p.worldX-tapStart.x,p.worldY-tapStart.y)<12)this.action('ix-evidence-'+key);tapStart=null;});obj.onRelease=()=>{if(obj.y>190&&!s.evidence.includes(key))this.action('ix-evidence-'+key);else obj.setPosition(x,85);};});
   }
   workshopScene(){
    const final=route===10,context=final?finalContext():null,s=final?context.progress.diagnosis.working:state.lab.workshop;
    const names=['plate','ramp','funnel','tube','bucket'];const scale=.64,offset=10;
    const result=final?context.progress.diagnosis.tests.at(-1):s.trials.at(-1);
    const valid=()=>!this.dragging&&result?.signature===testCollector(s.parts,s.cold,s.angle).signature;
-   const firstBreak=result?.steps?.find(step=>!step.ok);const breakLabel=firstBreak?this.text(clamp(firstBreak.point.x,100,620),Math.min(290,firstBreak.point.y*scale+offset+30),'처음 멈춘 곳',17,'#9a3629').setDepth(12):null;
+   const firstBreak=result?.steps?.find(step=>!step.ok);const breakLabel=firstBreak?this.text(555,27,'붉은 표시: 처음 멈춘 곳',17,'#9a3629').setBackgroundColor('#fff1e6').setPadding(8,4).setDepth(12):null;
    const labelPosition=(obj,key)=>key==='plate'?[obj.x,Math.max(19,obj.y-44)]:key==='ramp'?[obj.x+65,Math.max(19,obj.y-44)]:[obj.x+(obj.x>570?-68:68),obj.y];
    this.parts={};names.forEach((key,i)=>{
-    const p=s.parts[key],obj=this.prop(p.x,p.y*scale+offset,i,key==='plate'?120:key==='ramp'?150:85,'workshop',key==='funnel');this.parts[key]=obj;
+    const p=s.parts[key],obj=this.prop(p.x,p.y*scale+offset,i,key==='plate'?120:key==='ramp'?150:85,'workshop',key==='funnel'&&(!final||context.progress.diagnosis.processVersion!==3||context.progress.diagnosis.tests.length>0));this.parts[key]=obj;
     if(key==='funnel'||!final&&key==='ramp')obj.setInteractive({pixelPerfect:true,alphaTolerance:96,useHandCursor:true});
     obj.setDepth(s.selected===key?8:2);
     obj.on('pointerdown',()=>{if(final)return;s.selected=key;Object.entries(this.parts).forEach(([k,part])=>part.setDepth(k===key?8:2));});
@@ -319,24 +320,35 @@ function makeScene(P,route,ctx,host,hidden,regions){
     // The core art keeps its inlet at the lower left; pipe and glow coordinates follow that image.
     const f=context.progress,coreArt=this.textures.exists('water-core');core=(coreArt?this.add.image(638,214,'water-core').setDisplaySize(84,170):this.prop(638,245,5,119,'workshop')).setDepth(6).setInteractive({useHandCursor:true});if(coreArt&&!f.tested)core.setTint(0xc4d2d6);else core.setAlpha(f.tested?1:.65);
     this.coreInlet=coreArt?{x:598,y:272}:{x:596,y:245};this.coreGlow=coreArt?{x:642,y:188,r:30}:{x:638,y:240,r:46};
-    coreLabel=this.text(600,coreArt?316:310,f.tested?'코어에 물 도착!':f.connected?'코어로 물 보내기':'코어 연결이 필요해',17);
-    core.on('pointerdown',()=>{if(f.tested)this.cue('물이 도착했어! 마지막 레버를 당겨 줘.');else if(!f.connected)this.cue('장치가 모은 물을 코어로 보낼 수 있게 먼저 연결해 줘.');else this.action('test-core');});
-    if(f.connected&&!f.tested){
-     valve=this.touchGrip(this.add.circle(549,270-f.valve*.35,23,0xffdf91).setStrokeStyle(4,0x6b8e7f).setDepth(10),23,40);
-     valveText=this.text(549,297,`밸브 ${f.valve}%`,17);this.text(549,192,'위로 열기',16);
-     valve.onMove=()=>{valve.x=549;valve.y=clamp(valve.y,235,270);f.valve=Math.round((270-valve.y)/.35/10)*10;valveText.setText(`밸브 ${f.valve}%`);};
-     valve.onRelease=()=>{f.tested=false;f.lever=0;if(!context.preview)save();later(()=>ctx.render());};
+    coreLabel=this.text(600,27,f.tested?'코어에 물 도착!':f.connected?'코어로 물 보내기':'코어 연결이 필요해',17);
+    core.on('pointerdown',()=>{if(f.tested)this.action('core-activate');else if(!f.connected)this.cue('장치가 모은 물을 코어로 보낼 수 있게 먼저 연결해 줘.');else this.action('test-core');});
+    if(f.connected){
+     valve=this.textures.exists('core-valve')?this.add.image(549,270,'core-valve').setDisplaySize(49,49):this.add.circle(549,270,23,0x4c8a7d).setStrokeStyle(4,0xc2a263);
+     valve.setDepth(10).setInteractive({useHandCursor:true});
+     valveText=this.text(549,304,`밸브 ${f.valve}%`,15);
+     valve.on('pointerup',()=>this.action('core-toggle-valve'));
     }
    }
    this.tick=t=>{
     this.dynamic.clear();const isValid=valid(),progress=1,bucket=s.parts.bucket,bx=bucket.x,by=bucket.y*scale+offset;
+    if(final){
+     const f=context.progress,tr=coreTransfer(f,s),delta=tr.inletY-(this.textures.exists('water-core')?272:245);
+     core.setY((this.textures.exists('water-core')?214:245)+delta);this.coreInlet.y=tr.inletY;this.coreGlow.y=(this.textures.exists('water-core')?188:240)+delta;
+     if(valve){valve.setPosition(549,by+13+(tr.inletY-by-13)*.55).setAngle(f.valve*2.7);valveText.setPosition(549,valve.y-36).setText(`밸브 ${f.valve}%`);}
+     if(f.connected){
+      const pipe=(width,color,alpha=1)=>this.dynamic.lineStyle(width,color,alpha).beginPath().moveTo(bx+28,by+13).lineTo(520,by+13).lineTo(this.coreInlet.x,tr.inletY).strokePath();
+      pipe(16,0x9c8150);pipe(11,0xc5d9db);pipe(7,0x345566,.72);
+      this.dynamic.lineStyle(1.5,0xd5a554,.9).lineBetween(bx-35,tr.sourceY,bx+70,tr.sourceY);
+      this.dynamic.lineStyle(1.5,tr.downhill?0x368578:0xbc654a,.9).lineBetween(578,tr.inletY,615,tr.inletY);
+     }
+    }
     if(breakLabel)breakLabel.setVisible(isValid);
     // Connection entrances are visual model points, not auto-placement targets.
     for(const key of names){const obj=this.parts[key];this.dynamic.lineStyle(2,0x245f72,.95).strokeCircle(obj.x,obj.y,7);}
     if(isValid){const broken=result.steps.find(step=>!step.ok);if(broken)this.dynamic.lineStyle(5,0xc44d39,.95).strokeCircle(broken.point.x,broken.point.y*scale+offset,18);}
     // The cold surface and the downhill end remain visible while the design is edited.
     if(s.cold){const plate=this.parts.plate;this.dynamic.lineStyle(3,0x94e4ef,.8).lineBetween(plate.x-35,plate.y+19,plate.x+35,plate.y+19);}
-    if(this.dragging||!isValid){if(final&&context.progress.connected){this.dynamic.lineStyle(6,0x839a94,.65).lineBetween(bx+30,by,596,245);}return;}
+    if(this.dragging||!isValid)return;
     for(const [index,l] of (result.links||[]).entries()){
      if(!l.incoming)continue;const start={x:l.from.x,y:l.from.y*scale+offset},end={x:l.to.x,y:l.to.y*scale+offset};
      if(l.outgoing>0){this.dynamic.lineStyle(Math.max(2,l.outgoing/22),0x58c5dc,.5).lineBetween(start.x,start.y,end.x,end.y);for(let i=0;i<4;i++){const k=reduced()?i/4:(t/1250+i/4-index*.08)%1;if(k<0)continue;this.dynamic.fillStyle(0x64daeb,.98).fillCircle(start.x+(end.x-start.x)*k,start.y+(end.y-start.y)*k,Math.max(2,l.outgoing/28));}}
@@ -345,8 +357,12 @@ function makeScene(P,route,ctx,host,hidden,regions){
     if(result.retained>0){const ramp=s.parts.ramp;this.dynamic.fillStyle(0x6bd8ec,.8).fillRoundedRect(ramp.x+15,ramp.y*scale+offset-3,138,8,4);}
     if(result.collected>0){const height=result.collected*.27*progress;this.dynamic.fillStyle(0x55c6df,.8).fillRoundedRect(bx-24,by+21-height,48,height,4);this.dynamic.lineStyle(2,0xc2f9ff,.9).lineBetween(bx-24,by+21-height,bx+24,by+21-height);}
     if(final&&context.progress.connected){
-     const f=context.progress;this.dynamic.lineStyle(9,f.tested?0x65bcb9:0x839a94,.75).lineBetween(bx+30,by,596,245);
-     if(f.tested){const {x:ix,y:iy}=this.coreInlet,{x:gx,y:gy,r:gr}=this.coreGlow;this.dynamic.lineStyle(4,0xa3fcf1,.95).lineBetween(bx+30,by,ix,iy);for(let i=0;i<5;i++){const k=reduced()?(i+1)/6:(t/1400+i/5)%1;this.dynamic.fillStyle(0xe5fff5,.95).fillCircle(bx+30+(ix-bx-30)*k,by+(iy-by)*k,4);}this.dynamic.fillStyle(0x9ff7ff,.3*progress).fillCircle(gx,gy,gr+progress*10);this.dynamic.lineStyle(3,0x8af3db,.8).strokeCircle(gx,gy,gr+progress*6);core.setAlpha(.7+progress*.3);coreLabel.setText(progress<1?'코어로 흐르는 중…':'물 도착! 레버를 당겨');}
+     const f=context.progress,tr=coreTransfer(f,s),ix=this.coreInlet.x,iy=tr.inletY;
+     if(f.tested&&tr.canFlow){
+      this.dynamic.lineStyle(5,0x4fcbdb,.85).beginPath().moveTo(bx+28,by+13).lineTo(520,by+13).lineTo(ix,iy).strokePath();
+      for(let i=0;i<9;i++){const k=reduced()?(i+1)/10:(t/(2400-f.valve*10)+i/9)%1,x=bx+28+(ix-bx-28)*k,y=x<520?by+13:by+13+(iy-by-13)*(x-520)/(ix-520);this.dynamic.fillStyle(0xc6ffff,.95).fillCircle(x,y,2.8);}
+      const {x:gx,y:gy,r:gr}=this.coreGlow;this.dynamic.fillStyle(0x9ff7ff,.2).fillCircle(gx,gy,gr+7);this.dynamic.lineStyle(3,0x8af3db,.75).strokeCircle(gx,gy,gr+3);core.setAlpha(1);core.clearTint();coreLabel.setText('물이 도착했어 · 코어 깨우기');
+     }else coreLabel.setText(!tr.downhill?'코어 입구를 낮춰 봐':f.valve?'물 보내기를 눌러 봐':'밸브를 돌려 열어 봐');
     }
    };
   }
@@ -356,7 +372,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
 export function mountPhaser(route,ctx,regions=[]){
  const P=window.Phaser;if(!P)return;
  let hidden=[],anchor,mode=route;
- if(route==='home')return;// The title screen is plain DOM art; only the map gets the island canvas.
+ if(route==='home'||route===3)return;// The title screen is plain DOM art; only the map gets the island canvas.
  if(route==='map'){
   mode='map';anchor=document.querySelector('.journey-world');hidden=[...anchor.querySelectorAll('.journey-paths')];
  }else{
@@ -368,6 +384,14 @@ export function mountPhaser(route,ctx,regions=[]){
  if(!anchor)return;
  const host=document.createElement('div');host.className='phaser-stage '+(mode==='map'?'phaser-island':'');host.setAttribute('role','img');host.setAttribute('aria-label',mode==='map'?'방울이가 길을 따라 걷는 연구섬 지도':'그림 속 도구를 직접 움직이는 실험 무대');
  if(mode==='map')anchor.insertBefore(host,anchor.firstChild.nextSibling);else anchor.insertBefore(host,hidden[0]);
+ if(mode!=='map'){
+  const dock=anchor.querySelector('[data-time-controls]');
+  if(dock){
+   const board=document.createElement('div');board.className='observation-board';
+   anchor.insertBefore(board,host);board.append(host,...hidden,dock);
+   anchor.classList.add('has-observation-board');
+  }
+ }
  const token=generation;
  const start=()=>{if(token!==generation||!host.isConnected)return;game=new P.Game({type:P.CANVAS,parent:host,width:mode==='map'?2000:2880,height:mode==='map'?1126:1320,transparent:true,resolution:1,scale:{mode:P.Scale.FIT,autoCenter:P.Scale.CENTER_BOTH},input:{activePointers:1},loader:{imageLoadType:'HTMLImageElement'},audio:{noAudio:true},banner:false,fps:{target:30,forceSetTimeOut:true},scene:makeScene(P,mode,ctx,host,hidden,regions)});};
  // Canvas text is rasterised once, so wait briefly for the local display font.

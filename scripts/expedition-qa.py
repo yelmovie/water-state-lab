@@ -167,21 +167,19 @@ with sync_playwright() as p:
             if n==1:
                 for source,target in [((110,100),(365,205)),((110,265),(570,205))]:drag(*source,*target)
             elif n==2:
-                choose=lambda tool:page.locator(f'[data-transform-tool="{tool}"]').click()
-                apply=page.locator('[data-transform-apply]')
                 onward=page.locator('[data-transform-next]')
-                choose('warm');apply.click()
-                page.locator('.transform-feedback[data-correct=false]').wait_for()
+                page.locator('[data-tray-source="cup"]').drag_to(page.locator('[data-tray-target="tray"]'))
+                page.locator('[data-tray-source="tray"]').drag_to(page.locator('.tray-freezer-drop'))
+                page.locator('#tray-freeze-time').press('End')
                 assert read('state.fieldwork.chapters[2].marks.length')==0
+                page.locator('[data-tray-action="take"]').click()
+                assert page.locator('.tray-comparison .tray-solid').count()==6
+                page.locator('[data-tray-action="compare"]').click()
                 onward.click()
-                cold=page.locator('[data-transform-tool="cold"]');sample=page.locator('[data-transform-sample]')
-                cold.drag_to(sample)
-                page.locator('.transform-feedback[data-correct=true]').wait_for()
-                onward.click()
-                choose('warm');apply.click();onward.click()
-                choose('time');page.locator('#transform-time').press('End');assert page.locator('.transform-feedback[data-correct=false]').is_visible();onward.click()
-                page.locator('#transform-time').press('End');assert page.locator('.is-boiling .bubble').count()>0;onward.click()
-                choose('cold');apply.click();onward.click()
+                for kind,steps in [('melt',['place','wait','compare']),('evaporate',['fill','heat','wait','stop','compare']),('condense',['dry','cool','wait','wipe','wait','compare'])]:
+                    for step in steps:page.locator(f'[data-process-action="{step}"]').click()
+                    assert read(f'state.fieldwork.chapters[2].marks.includes("{kind}")')
+                    onward.click()
             elif n==3:
                 for item,target in [('water','first'),('ice','middle'),('melt','last'),('weight','balance')]:alternative(item,target)
             elif n==4:
@@ -349,7 +347,7 @@ with sync_playwright() as p:
                     let c=chapterState(n);const act=(action,payload={})=>c=fieldAction(n,c,action,payload);
                     const place=(item,target)=>act('place',{item,target});
                     if(n===1)for(const item of ['water','ice'])for(const target of ['tall','wide'])place(item,target);
-                    if(n===2){for(const [item,target] of [['cold','freeze'],['warm','melt'],['warm','evaporate'],['cold','condense']])act('try-route',{item,target,time:100});}
+                    if(n===2){for(const step of ['fill','load','wait','take','compare'])act('freeze-tray',{step,time:100});for(const [kind,steps] of Object.entries({melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']}))for(const step of steps)act('phase-process',{kind,step,time:100});}
                     if(n===3){for(const [item,target] of [['water','first'],['ice','middle'],['melt','last'],['weight','balance']])place(item,target);act('test');}
                     if(n===4){act('setting',{value:100});act('test');act('setting',{value:75});act('test');}
                     if(n===5){for(let cell=0;cell<24;cell++)act('spread',{cell});place('destination','air');act('test');}

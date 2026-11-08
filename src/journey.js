@@ -1,4 +1,4 @@
-import {residentMarkers,residentCounter,returnedResidents,nextGreeting,villageFriend} from './island-residents.js';
+import {residentForStage,returnedResidents,nextGreeting,villageFriend} from './island-residents.js';
 import {finalContext} from './workshop.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
@@ -42,13 +42,13 @@ const islandNames=['물모양 샘터','얼음 다리','햇살 마당','이슬 �
 export function journeyView(){
  const next=nextMission(),done=state.completed.length,entry=mapEntryScreen(next.id);
  const names=islandNames,returned=returnedResidents(state),fresh=state.villageArrivals;
- const latest=returned.find(r=>r.stage===fresh.at(-1)&&!state.residentsMet.includes(r.stage));
- const arrival=latest?`<button class="village-welcome" data-action="resident-talk-${latest.stage}"><img src="/assets/v2/resident-${latest.stage}.webp" alt=""><span><small>${latest.stage}장 복구 · ${latest.spot}</small><strong>${latest.news}</strong></span><em>${latest.name} 만나기 ›</em></button>`:'';
- return `<main class="journey-main"><div class="journey-heading"><div class="${arrival?'has-village-news':''}"><span class="eyebrow">물방울 연구실</span><h1${arrival?' class="sr-only"':''}>방울이의 물길 탐험</h1>${arrival}</div>${residentCounter(state)}</div>
+ const latest=returned.find(r=>r.stage===residentForStage(fresh.at(-1))?.stage&&r===nextGreeting(state));
+ const arrival=latest?`<button class="village-welcome" data-action="mission-${latest.stage/2}"><img src="/assets/v2/resident-${latest.stage}.webp" alt=""><span><small>${latest.spot} 복구</small><strong>${latest.news}</strong></span><em>${latest.name}의 실험실 ›</em></button>`:'';
+ return `<main class="journey-main"><div class="journey-heading"><div class="${arrival?'has-village-news':''}"><span class="eyebrow">물방울 연구실</span><h1${arrival?' class="sr-only"':''}>방울이의 물길 탐험</h1>${arrival}</div></div>
  <div class="map-viewport" tabindex="0" aria-label="연구섬 지도. 화면 화살표나 방향키로 걷고, 가까운 장소를 누르거나 엔터로 선택할 수 있어."><div class="journey-world"><img class="journey-art" src="/assets/v2/research-island-v4.webp" draggable="false" alt="샘터, 얼음 다리, 햇살 마당, 이슬 정원과 물길 공방이 오솔길로 이어진 연구섬">
  ${villageLights(returned,fresh,villageFriend(state),!state.settings.reduced&&!matchMedia('(prefers-reduced-motion: reduce)').matches)}
- ${missions.map((m,i)=>{const finished=state.completed.includes(m.id),locked=!canEnter(m.screens[0],state),[x,y]=islandStops[i];return `<button class="journey-node ${finished?'finished':''} ${next.id===m.id&&!finished?'current':''}" style="left:${x/10}%;top:${Math.max(9,y/5.63-10)}%" data-action="mission-${m.id}" ${locked?'disabled':''} aria-label="${m.id}. ${names[i]}, ${finished?'다시 탐험':locked?'잠김':'길 따라 출발'}"><b>${locked?icon('lock',18):finished?icon('check',18):`<em>${m.id}</em>`}${names[i]}</b>${!locked&&finished?'<span class="node-state">연결 완료</span>':''}</button>`;}).join('')}
- ${residentMarkers(state)}<div class="journey-traveler" role="img" aria-label="탐험 중인 방울이"><span class="map-walk-sprite"></span></div></div><div class="map-nearby" role="group" aria-label="가까이에서 할 수 있는 행동" hidden></div><span class="sr-only map-nearby-status" role="status"></span><div class="map-hand-hint" aria-hidden="true">${icon('hand',40)}<span>화살표를 눌러 걷고, 가까운 장소를 눌러 봐!</span></div></div>
+ ${missions.map((m,i)=>{const finished=state.completed.includes(m.id),locked=!canEnter(m.screens[0],state),[x,y]=islandStops[i];return `<button class="journey-node ${finished?'finished':''} ${next.id===m.id&&!finished?'current':''}" style="left:${x/10}%;top:${Math.max(9,y/5.63-10)}%" data-action="mission-${m.id}" ${locked?'disabled':''} aria-label="${m.id}. ${names[i]}, 담당 ${residentForStage(m.screens[0]).name}. ${finished?'다시 탐험':locked?'잠김':'길 따라 출발'}"><b>${locked?icon('lock',18):finished?icon('check',18):`<em>${m.id}</em>`}${names[i]}</b>${!locked&&finished?'<span class="node-state">연결 완료</span>':''}</button>`;}).join('')}
+ <div class="journey-traveler" role="img" aria-label="탐험 중인 방울이"><span class="map-walk-sprite"></span></div></div><div class="map-nearby" role="group" aria-label="가까이에서 할 수 있는 행동" hidden></div><span class="sr-only map-nearby-status" role="status"></span><div class="map-hand-hint" aria-hidden="true">${icon('hand',40)}<span>화살표를 눌러 걷고, 가까운 장소를 눌러 봐!</span></div></div>
  <div class="journey-bottom"><div class="journey-companion"><button class="map-coach" data-action="map-hint" aria-label="방울이의 다음 탐험 안내" aria-expanded="false" aria-controls="map-coach-help">${buddy(state.restored?'celebrate':'wave')}<span class="coach-trigger-badge">…</span><span class="coach-trigger-label">방울이 힌트</span></button><div id="map-coach-help" class="map-coach-help" hidden><b>방울이의 부탁</b><p>${state.restored?'네가 만든 물길이 섬을 살렸어! 우리의 발견을 보러 갈까?':done?journey[next.id-1].story:'물길이 끊겨 연구실이 멈췄어. 나랑 첫 샘터부터 살펴보자!'}</p></div></div><div class="map-pad" role="group" aria-label="지도 조작"><div class="map-arrows" role="group" aria-label="방울이 이동"><span class="map-arrow-label" aria-hidden="true">방울이<br>이동</span>${[['up','위'],['left','왼쪽'],['down','아래'],['right','오른쪽']].map(([d,label])=>`<button type="button" class="map-arrow map-arrow-${d}" data-map-move="${d}" aria-label="방울이 ${label}${d==='left'||d==='right'?'으':''}로 이동">${icon('arrow',24)}</button>`).join('')}</div><div class="map-modes"><button type="button" class="map-mode" data-map-mode="hand" aria-pressed="false">${icon('hand',22)}<span>손으로 밀기</span></button><button type="button" class="map-mode" data-map-mode="overview" aria-pressed="false">${icon('expand',22)}<span>한눈에 보기</span></button></div></div><div class="journey-next"><small>${state.restored?'물길 복구 완료':`이번 발견으로 얻을 것 · ${journey[next.id-1].tool}`}</small>${btn(state.restored?'우리의 발견 보기':done===5?'마지막 코어 연결':`${names[next.id-1]}${[0,1].includes(next.id-1)?'로':'으로'}${entry%2===0?'':' 출발'} ${icon('arrow')}`,state.restored?'ending':done===5?'screen-10':`mission-${next.id}`,'primary')}</div></div></main>`;
 }
 
@@ -66,19 +66,12 @@ export function mountMapCamera(){
  const root=view.closest('.journey-main'),hint=view.querySelector('.map-hand-hint'),controller=new AbortController(),{signal}=controller;
  const done=state.completed.length,actor=world.querySelector('.journey-traveler'),sprite=actor.querySelector('.map-walk-sprite');
  const nearby=view.querySelector('.map-nearby'),announcement=view.querySelector('.map-nearby-status');
- const targets=[
-  ...returnedResidents(state).map(r=>({feet:r.feet,name:r.name,verb:'대화하기',action:'resident-talk-'+r.stage})),
-  ...missions.filter(m=>canEnter(m.screens[0],state)).map(m=>({feet:islandStops[m.id-1],name:islandNames[m.id-1],verb:'들어가기',action:'mission-'+m.id}))
- ];
- const arrival=returnedResidents(state).find(r=>r.stage===state.villageArrivals.at(-1));
+ const targets=missions.filter(m=>canEnter(m.screens[0],state)).map(m=>({feet:islandStops[m.id-1],name:islandNames[m.id-1],verb:'들어가기',action:'mission-'+m.id}));
+ const arrival=returnedResidents(state).find(r=>r.stage===residentForStage(state.villageArrivals.at(-1))?.stage);
  let position=!state.pages.length&&!done?islandLanding:islandStops[clamp(done-1,0,islandStops.length-1)];
- if(arrival){
-  // Stay on the road beside the newcomer, with their conversation as the Enter action.
-  const offsets=[[-24,6],[24,6],[-20,-5],[20,-5],[20,0],[0,18],[0,-18],[0,0]];
-  const spots=offsets.map(([x,y])=>walkIslandStep(arrival.feet,x,y));
-  position=spots.find(p=>nearbyMapActions(p,targets)[0]?.action==='resident-talk-'+arrival.stage)??spots.at(-1);
- }
- let focus=arrival?.feet??nextGreeting(state)?.feet??position,free=null,scale=1,ox=0,oy=0,grab=null,dragged=false,hintTimer=0;
+ // Residents guide the experiments indoors; map movement always arrives at a building entrance.
+ if(arrival)position=islandStops[arrival.stage/2-1];
+ let focus=position,free=null,scale=1,ox=0,oy=0,grab=null,dragged=false,hintTimer=0;
  const blocked=()=>document.querySelector('dialog[open]');
  const held=new Map();
  let frame=0,lastTime=0,departing=false,arrivalFrame=0,facing=0,stride=0,nearKey='';
@@ -192,8 +185,8 @@ export function mountMapCamera(){
  addEventListener('blur',stopWalking,{signal});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWalking();},{signal});
  world.addEventListener('focusin',e=>{
-  const button=e.target.closest('.island-resident:focus-visible');if(!button)return;
-  focus=[parseFloat(button.style.left)*10,parseFloat(button.style.top)*5.63];free=null;draw();
+  const button=e.target.closest('.journey-node:focus-visible');if(!button)return;
+  focus=islandStops[Number(button.dataset.action.slice(8))-1];free=null;draw();
  },{signal});
  world.addEventListener('transitionend',()=>world.classList.remove('glide'),{signal});
  const observer=new ResizeObserver(()=>draw());observer.observe(view);
