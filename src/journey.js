@@ -52,7 +52,7 @@ export function journeyView(){
  <div class="journey-bottom"><div class="journey-companion"><button class="map-coach" data-action="map-hint" aria-label="방울이의 다음 탐험 안내" aria-expanded="false" aria-controls="map-coach-help">${buddy(state.restored?'celebrate':'wave')}<span class="coach-trigger-badge">…</span><span class="coach-trigger-label">방울이 힌트</span></button><div id="map-coach-help" class="map-coach-help" hidden><b>방울이의 부탁</b><p>${state.restored?'네가 만든 물길이 섬을 살렸어! 우리의 발견을 보러 갈까?':done?journey[next.id-1].story:'물길이 끊겨 연구실이 멈췄어. 나랑 첫 샘터부터 살펴보자!'}</p></div></div><div class="map-pad" role="group" aria-label="지도 조작"><div class="map-arrows" role="group" aria-label="방울이 이동"><span class="map-arrow-label" aria-hidden="true">방울이<br>이동</span>${[['up','위'],['left','왼쪽'],['down','아래'],['right','오른쪽']].map(([d,label])=>`<button type="button" class="map-arrow map-arrow-${d}" data-map-move="${d}" aria-label="방울이 ${label}${d==='left'||d==='right'?'으':''}로 이동">${icon('arrow',24)}</button>`).join('')}</div><div class="map-modes"><button type="button" class="map-mode" data-map-mode="hand" aria-label="손으로 밀기" aria-pressed="false">${icon('hand',28)}</button><button type="button" class="map-mode" data-map-mode="overview" aria-label="한눈에 보기" aria-pressed="false">${icon('expand',28)}</button></div></div><div class="journey-next"><small>${state.restored?'물길 복구 완료':`이번 발견으로 얻을 것 · ${journey[next.id-1].tool}`}</small>${btn(state.restored?'우리의 발견 보기':done===5?'마지막 코어 연결':`${names[next.id-1]}${[0,1].includes(next.id-1)?'로':'으로'}${entry%2===0?'':' 출발'} ${icon('arrow')}`,state.restored?'ending':done===5?'screen-10':`mission-${next.id}`,'primary')}</div></div></main>`;
 }
 
-// Map camera: the 16:9 island always covers the screen (no bands) and is zoomed in on Bangul.
+// Normal camera covers the screen and follows Bangul; overview fits the entire island between the controls.
 // Drag pans the view. Directional controls move the traveler in island coordinates.
 const MAP_W=1000,MAP_H=563,MAP_ZOOM=1.3;
 const directions={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
@@ -96,18 +96,23 @@ export function mountMapCamera(){
  }
  function draw(glide=false,follow=false){
   const w=view.clientWidth,h=view.clientHeight;if(!w||!h)return;
-  scale=Math.max(w/MAP_W,h/MAP_H)*(mapView.overview?1:MAP_ZOOM);
-  const ww=MAP_W*scale,wh=MAP_H*scale,box=view.getBoundingClientRect();
+  const box=view.getBoundingClientRect();
   // Aim between the title and the bottom panels so Bangul is not hidden behind the controls.
   const top=root.querySelector('.journey-heading')?.getBoundingClientRect().bottom??box.top,low=root.querySelector('.journey-bottom')?.getBoundingClientRect().top??box.bottom;
   const cy=low-top>120?(top+low)/2-box.top:h*.55;
-  if(follow){
+  const fitTop=low-top>120?clamp(top-box.top+12,0,h):12,fitBottom=low-top>120?clamp(low-box.top-12,fitTop+1,h):h-12;
+  scale=mapView.overview?Math.min(Math.max(1,w-24)/MAP_W,Math.max(1,fitBottom-fitTop)/MAP_H):Math.max(w/MAP_W,h/MAP_H)*MAP_ZOOM;
+  const ww=MAP_W*scale,wh=MAP_H*scale;
+  if(follow&&!mapView.overview){
    // Let Bangul cross the middle of the screen before scrolling the scenery.
    const x=position[0]*scale+ox,y=(position[1]-36)*scale+oy,band=Math.max(30,(low-top)*.25);
    free={x:ox+clamp(x,w*.32,w*.68)-x,y:oy+clamp(y,cy-band,cy+band)-y};
   }
-  ox=clamp(free?free.x:w*.5-focus[0]*scale,w-ww,0);oy=clamp(free?free.y:cy-(focus[1]-30)*scale,h-wh,0);
-  if(free)free={x:ox,y:oy};
+  if(mapView.overview){ox=(w-ww)/2;oy=fitTop+(fitBottom-fitTop-wh)/2;}
+  else{
+   ox=clamp(free?free.x:w*.5-focus[0]*scale,w-ww,0);oy=clamp(free?free.y:cy-(focus[1]-30)*scale,h-wh,0);
+   if(free)free={x:ox,y:oy};
+  }
   if(!nearby.hidden){
    const x=position[0]*scale+ox,y=position[1]*scale+oy;
    // Keep the action beside Bangul, inside the visible map and clear of the pad.
@@ -151,7 +156,7 @@ export function mountMapCamera(){
   if(grab?.id!==e.pointerId)return;const dx=e.clientX-grab.x,dy=e.clientY-grab.y;
   if(!dragged&&Math.hypot(dx,dy)<8)return;
   if(!dragged){dragged=true;view.dataset.drag='1';view.classList.add('grabbing');}
-  free={x:grab.ox+dx,y:grab.oy+dy};draw();
+  if(!mapView.overview)free={x:grab.ox+dx,y:grab.oy+dy};draw();
  },{signal});
  // The island canvas reads drag/dragEnd so a released drag is not taken as a tap on a place.
  const letGo=e=>{if(grab?.id!==e.pointerId)return;grab=null;view.classList.remove('grabbing');if(dragged)view.dataset.dragEnd=String(performance.now());delete view.dataset.drag;};
@@ -171,7 +176,7 @@ export function mountMapCamera(){
   button.addEventListener('click',e=>{if(e.detail===0&&!blocked()){hideHint();step(...direction,8);paintPose();}},{signal});
  });
  root.querySelector('[data-map-mode="hand"]')?.addEventListener('click',()=>{mapView.hand=!mapView.hand;hideHint();draw();},{signal});
- root.querySelector('[data-map-mode="overview"]')?.addEventListener('click',()=>{mapView.overview=!mapView.overview;free=null;draw(true);},{signal});
+ root.querySelector('[data-map-mode="overview"]')?.addEventListener('click',()=>{mapView.overview=!mapView.overview;draw(true);},{signal});
  document.addEventListener('keydown',e=>{
   if(blocked()||departing||e.target.closest?.('input,textarea,select,[contenteditable="true"]')||e.altKey||e.ctrlKey||e.metaKey)return;
   if(e.key==='Enter'&&!nearby.hidden&&(e.target===view||e.target===document.body)){
