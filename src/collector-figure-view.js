@@ -78,7 +78,7 @@ export function openCollectorFigure(result){
  }
  function playLabel(){
   play.querySelector('svg').outerHTML=playing?pauseIcon:playIcon;
-  play.querySelector('span').textContent=playing?'일시정지':time!==null&&time>=layout().duration?'다시 재생':time===null?'자동재생':'이어서 재생';
+  play.querySelector('span').textContent=playing?'직접 해보기':time!==null&&time>=layout().duration?'다시 재생':time===null?'자동재생':'이어서 재생';
  }
  function stop(){playing=false;cancelAnimationFrame(frame);frame=0;last=0;playLabel();}
  const stepTimes=()=>[...new Set(layout().tracks.map(t=>t.start+(t.end-t.start)*.6))].sort((a,b)=>a-b).concat(layout().duration);
