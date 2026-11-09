@@ -100,6 +100,8 @@ npm run preview
 
 도입과 엔딩은 자막을 입힌 전체 화면 이야기 영상이다. 원본은 `assets/source-media/`에 두고 `PW_PATH=<playwright-core 경로> node scripts/render-film.mjs`로 `public/assets/story/`에 다시 만든다. 자막은 화면에 새겨져 있고 VTT는 보조 기술용으로 함께 제공한다. 구역을 마치면 개념 영상 5편을 제공한다. 영상은 `SHARP_PATH=<sharp 폴더> ENCODER=<컴파일한 encode-mac> npm run concepts:render`로 다시 만든다. 배경 음악은 Suno로 만든 메인 테마(탐험 중 반복)와 엔딩 테마(복구 완료 화면에서 한 번)이며 영상을 보는 동안 멈춘다. 효과음은 로컬 Kenney CC0 음원을 사용하고 재생 실패 시 합성음으로 대체한다. 설정에서 따로 켜고 끌 수 있고 배경 음악만 음량을 조절한다. 교사용 전체 해금은 학생 기록과 분리된 시연이다. 터치 실기기, 학교 네트워크, 전자칠판 뒷자리 가독성은 별도 확인이 필요하다. 공개 주소는 맨 위에 적었다. 처음 접속에는 네트워크가 필요하고, 그 뒤에는 아래 오프라인 수업 준비를 따른다.
 
+구역 개념 영상 5편은 HyperFrames 원본이 `films/concept-zone-1~5/`에 있다(공통 모습·움직임은 `films/kit/`, 게임 그림·효과음 자르기는 `node films/prepare-assets.cjs`). `SHARP_PATH=<sharp 폴더> npm run concepts:render [편 번호]`가 1920×1080으로 렌더한 뒤 `public/assets/concepts/zone-N.mp4`(1280×720 H.264, 2.5MB 이하)와 마지막 장면 `zone-N.webp`를 같은 이름으로 바꾼다. hyperframes CLI 0.9.26과 ffmpeg가 필요하다. 자막 시각은 `src/concept-data.js`의 `at`(초)이다. 4번째 구역은 조작형 설명이 먼저 열리고 '영상으로 보기'로 같은 영상을 본다.
+
 ## 2026-10-15 활동 개편
 
 - 1~2: 두 그릇에 붓기, 얼음 이동, 천 문지르기·시간 관찰, 실험/생활 장면 분류.

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>2편 물이 얼면</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/kit.css" />
+    <style>
+      /* 게임 3장과 같은 눈금통(그림도 게임에서 CSS로 그린다) */
+      .beaker{position:absolute;width:240px;height:380px}
+      .beaker .glass{position:absolute;inset:0;border:6px solid #8fbfc8;border-top:none;border-radius:0 0 26px 26px;background:rgba(255,255,255,.45);overflow:hidden}
+      .beaker .rim{position:absolute;left:-14px;right:-14px;top:-8px;height:12px;border-radius:6px;background:#9cc9d1}
+      .beaker .water{position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(#8fdbe8,var(--water));transform-origin:50% 100%}
+      .beaker .ice{position:absolute;left:0;right:0;bottom:0;height:66%;background:linear-gradient(115deg,transparent 0 30%,rgba(255,255,255,.9) 30% 32%,transparent 32% 62%,rgba(255,255,255,.85) 62% 64%,transparent 64%),linear-gradient(#cdeff7,#86cbdb);border-top:5px solid #5fb3c6;opacity:0}
+      .beaker .ticks{position:absolute;left:14px;top:40px;bottom:24px;width:26px;background:repeating-linear-gradient(#1F4A4D 0 3px,transparent 3px 44px);opacity:.55}
+      .beaker .red{position:absolute;left:-22px;right:-22px;height:5px;background:#D9443A;top:calc(40% - 2px)}
+      #bk{left:330px;top:450px}
+      #redTag{position:absolute;left:612px;top:566px;color:#C8352B;font-size:52px;opacity:0}
+      #freezer{left:900px;top:358px;width:520px;height:480px}
+      #freezer img{position:absolute;left:0;bottom:0;width:100%}
+      #bangul{left:1540px;top:520px}
+      #q{left:820px;top:200px}
+      #riseLine{left:304px;top:578px;width:292px;opacity:0}
+      .scale{position:absolute;width:600px}
+      .scale img{width:100%}
+      .scale .read{position:absolute;left:0;right:0;top:104px;text-align:center;font-size:40px;line-height:1;color:#1F4A4D}
+      #sc1{left:150px;top:637px}#sc2{left:860px;top:637px}
+      .mini{transform-origin:50% 100%}
+      #bk1{left:330px;top:272px}#bk2{left:1040px;top:272px}
+      #pops{position:absolute;inset:0;opacity:0}
+      #popS{left:640px;top:250px;width:160px}
+      #popF{left:1080px;top:250px;width:166px}
+      .bottle{position:absolute;width:240px;height:440px}
+      .bottle img{position:absolute;left:0;bottom:0;width:100%}
+      .bottle .bw{position:absolute;background:var(--water);opacity:.5}
+      .bottle .bi{position:absolute;background:#e3f5f9;opacity:0}
+      #bt1{left:560px;top:392px}#bt2{left:1130px;top:392px}
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="25" data-width="1920" data-height="1080">
+      <div class="paper"></div>
+      <div class="table" style="top:830px"></div>
+
+      <!-- 장면 1~2: 처음 선 → 냉동고 → 선보다 높아짐 -->
+      <div id="partA" class="stack">
+        <div id="freezer" class="obj"><img id="fzOpen" src="assets/img/freezer-open.webp" alt="" /><img id="fzClosed" src="assets/img/freezer-closed.webp" alt="" style="opacity:0" /></div>
+        <div id="bk" class="beaker obj"><div class="rim"></div><div class="glass"><div class="water"></div><div class="ice"></div><div class="ticks"></div></div><div class="red"></div></div>
+        <div id="redTag">처음 선</div>
+        <div id="riseLine" class="dash-amber"></div>
+        <div id="tagIce" class="tag up hot" style="left:330px;top:578px;opacity:0"><div class="lead" style="height:200px"></div><div class="card" style="bottom:200px;translate:-30% 0">선보다 높아졌어</div></div>
+        <div id="tagIce2" class="tag down" style="left:450px;top:840px;opacity:0"><div class="lead" style="height:30px"></div><div class="card" style="top:30px;translate:-50% 0">얼음</div></div>
+      </div>
+
+      <!-- 장면 3: 저울은 그대로 -->
+      <div id="partB" class="stack" style="opacity:0">
+        <div id="bk1" class="beaker obj mini"><div class="rim"></div><div class="glass"><div class="water"></div><div class="ticks"></div></div><div class="red"></div></div>
+        <div id="bk2" class="beaker obj mini"><div class="rim"></div><div class="glass"><div class="ice" style="opacity:1"></div><div class="ticks"></div></div><div class="red"></div></div>
+        <div id="sc1" class="scale obj"><img src="assets/img/scale.webp" alt="" /><div class="read" id="r1">100 g</div></div>
+        <div id="sc2" class="scale obj"><img src="assets/img/scale.webp" alt="" /><div class="read" id="r2">100 g</div></div>
+        <div id="tagB1" class="tag down" style="left:450px;top:845px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0">얼기 전</div></div>
+        <div id="tagB2" class="tag down" style="left:1160px;top:845px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0">언 뒤</div></div>
+      </div>
+      <div id="bigW" class="big" style="top:80px" data-words>무게는 <b>그대로</b></div>
+
+      <!-- 장면 4: 같은 쭈쭈바 -->
+      <div id="pops">
+        <div id="popS" class="obj"><img src="assets/img/pop-soft.webp" alt="" /></div>
+        <div id="popF" class="obj"><img src="assets/img/pop-frozen.webp" alt="" /></div>
+        <div class="arrow" id="aP" style="left:880px;top:470px">→</div>
+        <div id="tagP1" class="tag down" style="left:720px;top:820px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0">얼기 전</div></div>
+        <div id="tagP2" class="tag up hot" style="left:1163px;top:250px;opacity:0"><div class="lead" style="height:60px"></div><div class="card" style="bottom:60px;translate:-50% 0">얼면 부풀어</div></div>
+      </div>
+
+      <!-- 장면 5: 가득 채운 병과 빈 공간 남긴 병 -->
+      <div id="bottles" class="stack" style="opacity:0">
+        <div id="bt1" class="bottle obj"><img src="assets/img/bottle.webp" alt="" /><div class="bw" style="left:12%;right:12%;top:40%;bottom:3%;border-radius:0 0 30px 30px"></div><div class="bw" style="left:37%;right:37%;top:8%;height:33%"></div><div class="bi" id="bi1" style="left:12%;right:12%;top:40%;bottom:3%"></div><img id="crk" src="assets/img/bottle-cracked.webp" alt="" style="opacity:0" /></div>
+        <div id="bt2" class="bottle obj"><img src="assets/img/bottle.webp" alt="" /><div class="bw" id="bw2" style="left:12%;right:12%;top:58%;bottom:3%;border-radius:0 0 30px 30px"></div><div class="bi" id="bi2" style="left:12%;right:12%;top:46%;bottom:3%;border-radius:0 0 30px 30px"></div></div>
+        <div id="tagF" class="tag down hot" style="left:680px;top:842px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0">가득 채운 병: 쩍!</div></div>
+        <div id="tagR" class="tag down" style="left:1250px;top:842px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0">빈 공간 남긴 병: 괜찮아</div></div>
+        <div id="tagSpace" class="tag up" style="left:1190px;top:470px;opacity:0"><div class="lead" style="height:4px;width:110px;left:-110px;bottom:-2px"></div><div class="card" style="left:-320px;top:-40px">빈 공간</div></div>
+      </div>
+      <div id="bigV" class="big" style="top:80px" data-words>물이 얼면 <b>부피</b>가 커져</div>
+
+      <div id="bangul">
+        <img id="b-curious" src="assets/img/bangul-curious.webp" alt="" />
+        <img id="b-pointer" src="assets/img/bangul-pointer.webp" alt="" />
+        <img id="b-surprised" src="assets/img/bangul-surprised.webp" alt="" />
+        <img id="b-magnifier" src="assets/img/bangul-magnifier.webp" alt="" />
+        <img id="b-thumbs" src="assets/img/bangul-thumbs.webp" alt="" />
+      </div>
+      <div id="q" class="bubble" data-words>물이 얼면 어떻게 될까?</div>
+
+      <audio id="sfx-tag0" class="clip" data-start="2.83" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-door1" class="clip" data-start="4.98" data-duration="0.26" data-track-index="2" data-volume="0.7" src="assets/sfx/door.ogg"></audio>
+      <audio id="sfx-door2" class="clip" data-start="6.38" data-duration="0.26" data-track-index="2" data-volume="0.7" src="assets/sfx/door.ogg"></audio>
+      <audio id="sfx-tag1" class="clip" data-start="8.03" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-tag2" class="clip" data-start="11.53" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-tag3" class="clip" data-start="16.23" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-crack" class="clip" data-start="19.93" data-duration="0.5" data-track-index="2" data-volume="0.8" src="assets/sfx/crack.ogg"></audio>
+      <audio id="sfx-found" class="clip" data-start="21.83" data-duration="0.29" data-track-index="3" data-volume="0.6" src="assets/sfx/discover.ogg"></audio>
+    </div>
+    <script src="assets/kit.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const k = kit(tl);
+      tl.set(['#bigW', '#bigV'], { opacity: 1 }, 0);
+      // 0–3 질문 + 처음 선
+      tl.set('#b-curious', { opacity: 1 }, 0);
+      k.enter('#bangul', 0.15, { x: 420 });
+      k.bubble('#q', 0.6);
+      tl.fromTo('#redTag', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.4, ease: 'expo.out' }, 2.8);
+      k.leave('#q', 3.2, { y: -20 });
+      // 3.4–9.5 냉동고에 넣었다가 꺼내기
+      tl.to('#redTag', { opacity: 0, duration: 0.25 }, 3.5);
+      tl.to('#bk', { x: 788, y: 47, scale: 0.42, duration: 0.9, ease: 'power2.inOut' }, 3.6);
+      tl.to('#bk', { opacity: 0, duration: 0.15 }, 4.85);
+      tl.to('#fzClosed', { opacity: 1, duration: 0.15 }, 4.9);
+      tl.to('#fzOpen', { opacity: 0, duration: 0.15 }, 4.95);
+      k.pose('magnifier', 5.2);
+      tl.set('#bk .water', { opacity: 0 }, 5.5);
+      tl.set('#bk .ice', { opacity: 1 }, 5.5);
+      tl.to('#fzOpen', { opacity: 1, duration: 0.15 }, 6.3);
+      tl.to('#fzClosed', { opacity: 0, duration: 0.15 }, 6.35);
+      tl.to('#bk', { opacity: 1, duration: 0.15 }, 6.45);
+      tl.to('#bk', { x: 0, y: 0, scale: 1, duration: 0.9, ease: 'power2.inOut' }, 6.6);
+      k.pose('surprised', 7.4);
+      tl.fromTo('#riseLine', { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.3, ease: 'power2.out' }, 7.6);
+      k.tag('#tagIce', 7.8);
+      k.tag('#tagIce2', 8.1);
+      tl.to('#partA', { x: -300, opacity: 0, duration: 0.35, ease: 'power3.in' }, 9.15);
+      // 9.5–14 저울: 무게 그대로
+      k.pose('pointer', 9.55);
+      tl.fromTo('#partB', { opacity: 0, x: 140 }, { opacity: 1, x: 0, duration: 0.5, ease: 'expo.out' }, 9.6);
+      tl.fromTo(['#r1', '#r2'], { opacity: 0 }, { opacity: 1, duration: 0.2, stagger: 0.5 }, 10.4);
+      k.tag('#tagB1', 10.6);
+      k.tag('#tagB2', 11.3);
+      k.words('#bigW', 11.9);
+      tl.to('#bigW', { opacity: 0, filter: 'blur(8px)', duration: 0.25, ease: 'power3.in' }, 13.7);
+      tl.to('#partB', { x: -300, opacity: 0, duration: 0.35, ease: 'power3.in' }, 13.7);
+      // 14–18.6 같은 쭈쭈바가 부풂
+      k.pose('magnifier', 14.05);
+      tl.to('#pops', { opacity: 1, duration: 0.01 }, 14.1);
+      tl.fromTo('#popS', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out' }, 14.1);
+      k.tag('#tagP1', 14.6);
+      tl.to('#aP', { opacity: 1, duration: 0.2 }, 15.2);
+      tl.fromTo('#popF', { opacity: 0, scaleX: 0.92 }, { opacity: 1, scaleX: 1.06, duration: 0.6, ease: 'expo.out' }, 15.5);
+      k.tag('#tagP2', 16.2);
+      tl.to('#pops', { x: -300, opacity: 0, duration: 0.35, ease: 'power3.in' }, 18.25);
+      // 18.6–25 가득 채운 병은 쩍, 빈 공간 남긴 병은 괜찮아
+      k.pose('surprised', 18.65);
+      tl.fromTo('#bottles', { opacity: 0, x: 140 }, { opacity: 1, x: 0, duration: 0.5, ease: 'expo.out' }, 18.65);
+      k.tag('#tagSpace', 19.1);
+      tl.to(['#bi1', '#bi2'], { opacity: 0.9, duration: 0.5 }, 19.4);
+      tl.to('#crk', { opacity: 1, duration: 0.08 }, 19.9);
+      tl.fromTo('#bt1', { x: 0 }, { x: 8, duration: 0.05, yoyo: true, repeat: 3, ease: 'none' }, 19.9);
+      k.tag('#tagF', 20.1);
+      k.tag('#tagR', 20.6);
+      k.words('#bigV', 21.8);
+      k.pose('thumbs', 23.2);
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

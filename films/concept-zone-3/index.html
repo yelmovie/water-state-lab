@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>3편 사라진 물</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/kit.css" />
+    <style>
+      #board{left:260px;top:196px;width:900px}
+      .mark{position:absolute;background:radial-gradient(ellipse at 40% 40%,rgba(120,205,222,.75),rgba(64,170,195,.7) 70%,rgba(47,143,163,.75));box-shadow:inset 0 0 0 4px rgba(47,143,163,.35)}
+      #mA{left:420px;top:420px;width:170px;height:150px;border-radius:52% 48% 44% 56%/56% 46% 54% 44%}
+      #mB{left:720px;top:380px;width:360px;height:230px;border-radius:40% 60% 52% 48%/48% 38% 62% 52%}
+      #gB{left:720px;top:380px;width:360px;height:230px;border-radius:40% 60% 52% 48%/48% 38% 62% 52%;border:5px dashed var(--ink);opacity:0}
+      .vapor{transform-origin:50% 100%;opacity:0}
+      #va1{left:470px;top:220px;height:190px}#va2{left:520px;top:200px;height:210px}#va3{left:570px;top:230px;height:180px}
+      #vb1{left:820px;top:170px;height:200px}#vb2{left:900px;top:150px;height:220px}#vb3{left:980px;top:180px;height:190px}
+      #bangul{left:1560px;top:520px}
+      #q{left:1000px;top:200px}
+      .beaker{position:absolute;width:220px;height:320px}
+      .beaker .glass{position:absolute;inset:0;border:6px solid #8fbfc8;border-top:none;border-radius:0 0 24px 24px;background:rgba(255,255,255,.5);overflow:hidden}
+      .beaker .rim{position:absolute;left:-12px;right:-12px;top:-8px;height:12px;border-radius:6px;background:#9cc9d1}
+      .beaker .water{position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(#8fdbe8,var(--water));transform-origin:50% 100%}
+      .bub{position:absolute;width:20px;height:20px;border-radius:50%;border:3px solid #fff;background:rgba(255,255,255,.25);bottom:8px}
+      #bkL{left:430px;top:510px}
+      #bkR{left:1050px;top:290px}
+      #hot{left:950px;top:529px;width:420px}
+      #ve1{left:510px;top:330px;height:170px}#ve2{left:570px;top:300px;height:200px}
+      #vh1{left:1100px;top:150px;height:130px}#vh2{left:1160px;top:140px;height:140px}#vh3{left:1220px;top:160px;height:120px}
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1920" data-height="1080">
+      <div class="paper"></div>
+      <div class="table" style="top:830px"></div>
+
+      <!-- 장면 1~3: 같은 양, 좁게·넓게 → 넓은 쪽이 먼저 마름 → 수증기 -->
+      <div id="partA" class="stack">
+        <div id="board" class="obj"><img src="assets/img/board.webp" alt="" /></div>
+        <div id="gB" class="obj"></div>
+        <div id="mA" class="mark"></div>
+        <div id="mB" class="mark"></div>
+        <div id="va1" class="vapor"></div><div id="va2" class="vapor"></div><div id="va3" class="vapor"></div>
+        <div id="vb1" class="vapor"></div><div id="vb2" class="vapor"></div><div id="vb3" class="vapor"></div>
+        <div id="tagA" class="tag down" style="left:505px;top:575px;opacity:0"><div class="lead" style="height:300px"></div><div class="card" style="top:300px;translate:-50% 0">좁게 · 같은 양</div></div>
+        <div id="tagB" class="tag down" style="left:900px;top:612px;opacity:0"><div class="lead" style="height:263px"></div><div class="card" style="top:263px;translate:-50% 0">넓게 · 같은 양</div></div>
+        <div id="tagDry" class="tag up hot" style="left:1080px;top:470px;opacity:0"><div class="lead" style="height:4px;width:140px;left:0;bottom:-2px"></div><div class="card" style="left:140px;top:-44px">먼저 말랐어</div></div>
+        <div id="tagV" class="tag up hot" style="left:985px;top:270px;opacity:0"><div class="lead" style="height:4px;width:120px;left:0;bottom:-2px"></div><div class="card" style="left:120px;top:-56px">수증기<small>눈에 안 보여</small></div></div>
+      </div>
+      <div id="bigAir" class="big" style="top:60px" data-words>사라진 게 아니라 <b>공기</b> 속으로</div>
+
+      <!-- 장면 4~5: 증발과 끓음 -->
+      <div id="partB" class="stack" style="opacity:0">
+        <div id="bkL" class="beaker obj"><div class="rim"></div><div class="glass"><div class="water" id="wL"></div></div></div>
+        <div id="hot" class="obj"><img src="assets/img/hotplate.webp" alt="" /></div>
+        <div id="bkR" class="beaker obj"><div class="rim"></div><div class="glass"><div class="water" id="wR"></div>
+          <div class="bub" id="u1" style="left:30px"></div><div class="bub" id="u2" style="left:80px"></div><div class="bub" id="u3" style="left:130px"></div><div class="bub" id="u4" style="left:170px"></div><div class="bub" id="u5" style="left:55px"></div><div class="bub" id="u6" style="left:110px"></div></div></div>
+        <div id="ve1" class="vapor"></div><div id="ve2" class="vapor"></div>
+        <div id="vh1" class="vapor"></div><div id="vh2" class="vapor"></div><div id="vh3" class="vapor"></div>
+        <div id="tagE" class="tag down" style="left:540px;top:840px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0">끓지 않을 때: 표면에서</div></div>
+        <div id="tagEv" class="tag up hot" style="left:600px;top:320px;opacity:0"><div class="lead" style="height:110px"></div><div class="card" style="bottom:110px;translate:-50% 0">증발</div></div>
+        <div id="tagB2" class="tag down" style="left:1160px;top:840px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0">끓을 때: 물속에서도 기포</div></div>
+        <div id="tagBo" class="tag up hot" style="left:1250px;top:440px;opacity:0"><div class="lead" style="height:4px;width:110px;left:0;bottom:-2px"></div><div class="card" style="left:110px;top:-44px">끓음</div></div>
+      </div>
+      <div id="bigVap" class="big" style="top:40px" data-words>둘 다 <b>수증기</b>가 돼</div>
+
+      <div id="bangul">
+        <img id="b-curious" src="assets/img/bangul-curious.webp" alt="" />
+        <img id="b-magnifier" src="assets/img/bangul-magnifier.webp" alt="" />
+        <img id="b-surprised" src="assets/img/bangul-surprised.webp" alt="" />
+        <img id="b-pointer" src="assets/img/bangul-pointer.webp" alt="" />
+        <img id="b-thumbs" src="assets/img/bangul-thumbs.webp" alt="" />
+      </div>
+      <div id="q" class="bubble" data-words>물은 어디로 갔을까?</div>
+
+      <audio id="sfx-tag1" class="clip" data-start="2.73" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-tag2" class="clip" data-start="6.83" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-tag3" class="clip" data-start="10.03" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-tag4" class="clip" data-start="15.03" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-bub" class="clip" data-start="18.83" data-duration="0.36" data-track-index="2" data-volume="0.7" src="assets/sfx/bubble.ogg"></audio>
+      <audio id="sfx-bub2" class="clip" data-start="19.73" data-duration="0.36" data-track-index="2" data-volume="0.5" src="assets/sfx/bubble.ogg"></audio>
+      <audio id="sfx-found" class="clip" data-start="21.53" data-duration="0.29" data-track-index="3" data-volume="0.6" src="assets/sfx/discover.ogg"></audio>
+    </div>
+    <script src="assets/kit.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const k = kit(tl);
+      tl.set(['#bigAir', '#bigVap'], { opacity: 1 }, 0);
+      tl.set('.vapor', { opacity: 0 }, 0);
+      // 0–3 질문과 두 물그림
+      tl.set('#b-curious', { opacity: 1 }, 0);
+      k.enter('#bangul', 0.15, { x: 420 });
+      k.bubble('#q', 0.6);
+      k.tag('#tagA', 2.5);
+      k.tag('#tagB', 2.7);
+      k.leave('#q', 3.3, { y: -20 });
+      // 3.5–8.5 시간이 지나며 넓게 편 쪽이 먼저 마름
+      k.pose('magnifier', 3.6);
+      tl.to('#gB', { opacity: 0.7, duration: 0.3 }, 3.8);
+      tl.to('#mB', { opacity: 0, duration: 2.6, ease: 'power1.in' }, 3.9);
+      tl.to('#mA', { opacity: 0.45, scale: 0.86, duration: 4.3, ease: 'power1.in' }, 3.9);
+      k.rise(['#vb1', '#vb2', '#vb3'], 4.2, 1.6);
+      tl.to(['#vb1', '#vb2', '#vb3'], { opacity: 0, duration: 0.5 }, 6.4);
+      k.pose('surprised', 6.5);
+      k.tag('#tagDry', 6.6);
+      // 8.5–13 사라진 게 아니라 수증기가 되어 공기 속으로
+      k.untag('#tagDry', 8.4);
+      k.pose('pointer', 8.5);
+      k.rise(['#va1', '#va2', '#va3'], 8.6, 1.3);
+      tl.to('#mA', { opacity: 0, duration: 2.6, ease: 'power1.in' }, 8.8);
+      k.rise(['#vb1', '#vb2', '#vb3'], 9.2, 1.1);
+      k.tag('#tagV', 9.8);
+      k.words('#bigAir', 10.4);
+      tl.to('#bigAir', { opacity: 0, filter: 'blur(8px)', duration: 0.25, ease: 'power3.in' }, 12.7);
+      tl.to('#partA', { x: -300, opacity: 0, duration: 0.35, ease: 'power3.in' }, 12.7);
+      // 13–18.5 끓지 않는 물: 표면에서 증발
+      k.pose('magnifier', 13.05);
+      tl.to('#partB', { opacity: 1, duration: 0.01 }, 13.1);
+      tl.set(['#bkR', '#hot'], { opacity: 0 }, 13.1);
+      tl.fromTo('#bkL', { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.5, ease: 'expo.out' }, 13.1);
+      k.tag('#tagE', 13.7);
+      k.rise(['#ve1', '#ve2'], 14.2, 1.4);
+      k.tag('#tagEv', 14.8);
+      tl.to('#wL', { scaleY: 0.9, duration: 9, ease: 'none' }, 14.2);
+      // 18.5–24 끓을 때: 물속에서도 기포
+      k.pose('surprised', 18.5);
+      tl.fromTo(['#hot', '#bkR'], { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.5, ease: 'expo.out', stagger: 0.08 }, 18.4);
+      ['#u1', '#u2', '#u3', '#u4', '#u5', '#u6'].forEach((id, i) => {
+        tl.fromTo(id, { y: 0, scale: 0.5, opacity: 0 }, { y: -135, scale: 1.2, opacity: 1, duration: 0.9, ease: 'power1.in', repeat: 4, delay: 0 }, 18.8 + i * 0.16);
+      });
+      tl.to('#wR', { scaleY: 0.88, duration: 5, ease: 'none' }, 19);
+      k.rise(['#vh1', '#vh2', '#vh3'], 19.0, 1.0);
+      k.tag('#tagB2', 19.3);
+      k.tag('#tagBo', 19.9);
+      k.words('#bigVap', 21.5);
+      k.pose('thumbs', 22.6);
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

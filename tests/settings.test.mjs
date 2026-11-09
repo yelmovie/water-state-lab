@@ -116,12 +116,31 @@ test('completed comparison buildings unlock and open their replays without a fie
  }finally{dialog.close();}
 });
 
-test('the five area clips share one timeline with the player',async()=>{
+test('the five area films share one timeline with the player',async()=>{
  const {concepts}=await import('../src/concept-data.js');
  assert.equal(concepts.filter(Boolean).length,5);
  for(const clip of concepts.filter(Boolean)){
-  assert.ok(clip.seconds>=9&&clip.seconds<=15,clip.title);
+  assert.ok(clip.seconds>=18&&clip.seconds<=26,clip.title);
   for(const q of clip.cues)assert.doesNotMatch(q.text,/분자|육각형/,'particle explanations are out of scope for grade 4');
-  clip.cues.reduce((at,q)=>{assert.equal(q.at,at);assert.ok(q.to>q.from);return at+q.to-q.from;},0);
+  assert.equal(clip.cues[0].at,0,'the first caption starts with the film');
+  clip.cues.reduce((at,q)=>{assert.ok(q.at>at&&q.at<clip.seconds-2,`${clip.title} cue at ${q.at}`);return q.at;},-1);
  }
+});
+
+test('area 4 keeps the hands-on explanation and opens its film from the same place',async t=>{
+ const previousDocument=globalThis.document,doc=mockDocument();globalThis.document=doc;
+ t.after(()=>{globalThis.document=previousDocument;});
+ const {openConcept}=await import('../src/concepts.js');
+ let continued=0;
+ openConcept(4,{reduced:true,continueLabel:'주민 만나기',onContinue:()=>continued++});
+ const collector=doc.created.at(-1);
+ assert.match(collector.className,/collector-concept/,'the interactive explanation still opens first');
+ assert.match(collector.innerHTML,/data-collector-film/,'a film button sits next to replay');
+ const button={dataset:{},hasAttribute:name=>name==='data-collector-film'};
+ collector.events.get('click')({target:{closest:()=>button}});
+ const film=doc.created.find(el=>el!==collector&&/concept-dialog/.test(el.className||''));
+ assert.ok(film,'the film dialog opens');assert.doesNotMatch(film.className,/collector-concept/);
+ assert.equal(film.open,true);assert.equal(film.querySelector('video').src,'/assets/concepts/zone-4.mp4');
+ assert.match(film.innerHTML,/주민 만나기/,'the film keeps the same way forward');
+ film.close();assert.equal(continued,0,'closing the film does not skip ahead');
 });

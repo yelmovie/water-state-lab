@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>5편 물의 순환</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/kit.css" />
+    <style>
+      #photo{left:330px;top:190px;width:880px;border:4px solid var(--ink);border-radius:18px;overflow:hidden}
+      #tub{left:500px;top:560px;width:440px}
+      #tubWater{position:absolute;left:548px;top:610px;width:344px;height:46px;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#9fe0ea,var(--water) 70%);transform-origin:50% 100%}
+      #tubBody{position:absolute;left:556px;top:633px;width:328px;height:168px;background:linear-gradient(#8fdbe8,#4fb6ca);transform-origin:50% 100%}
+      #plate{left:560px;top:150px;width:760px}
+      #catch{left:1120px;top:560px;width:280px}
+      #pool{position:absolute;left:1168px;top:612px;width:184px;height:40px;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#9fe0ea,var(--water) 70%);opacity:0;transform-origin:50% 100%}
+      .vapor{transform-origin:50% 100%;opacity:0;top:330px;height:225px}
+      #v1{left:600px}#v2{left:680px}#v3{left:760px}#v4{left:840px}
+      .bead{position:absolute;top:322px;opacity:0}
+      #d1{left:720px}#d2{left:860px}#d3{left:1000px}#d4{left:1140px}#d5{left:1240px}
+      .fall{position:absolute;left:1240px;top:322px;opacity:0}
+      #pipe{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:visible}
+      #bangul{left:1560px;top:520px}
+      #q{left:820px;top:90px}
+      .ring{position:absolute;font-size:80px;color:#9A6408;opacity:0}
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1920" data-height="1080">
+      <div class="paper"></div>
+      <div class="table" style="top:830px"></div>
+
+      <div id="photo" class="obj"><img src="assets/img/greenhouse.webp" alt="" /></div>
+
+      <div id="cycle" class="stack" style="opacity:0">
+        <svg id="pipe" viewBox="0 0 1920 1080">
+          <path id="pipeBase" d="M1190 800 C 1120 900, 1010 905, 930 790" fill="none" stroke="#8fbfc8" stroke-width="30" stroke-linecap="round" />
+          <path id="pipeWater" d="M1190 800 C 1120 900, 1010 905, 930 790" fill="none" stroke="#5CC4D6" stroke-width="16" stroke-linecap="round" stroke-dasharray="420" stroke-dashoffset="420" />
+        </svg>
+        <div id="tubBody"></div>
+        <div id="tub" class="obj"><img src="assets/img/tub.webp" alt="" /></div>
+        <div id="tubWater"></div>
+        <div id="v1" class="vapor"></div><div id="v2" class="vapor"></div><div id="v3" class="vapor"></div><div id="v4" class="vapor"></div>
+        <div id="plate" class="obj"><img src="assets/img/condenser.webp" alt="" /></div>
+        <div class="drop bead" id="d1"></div><div class="drop bead" id="d2"></div><div class="drop bead" id="d3"></div><div class="drop bead" id="d4"></div><div class="drop bead" id="d5"></div>
+        <div class="drop fall" id="f1"></div><div class="drop fall" id="f2"></div><div class="drop fall" id="f3"></div>
+        <div id="catch" class="obj"><img src="assets/img/catcher.webp" alt="" /></div>
+        <div id="pool"></div>
+        <div class="ring" id="r1" style="left:470px;top:380px">↑</div>
+        <div class="ring" id="r2" style="left:950px;top:350px">→</div>
+        <div class="ring" id="r3" style="left:1330px;top:380px">↓</div>
+        <div class="ring" id="r4" style="left:1030px;top:880px">←</div>
+        <div id="tagTub" class="tag down" style="left:720px;top:840px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0;left:-130px">온실의 물</div></div>
+        <div id="tagEv" class="tag up hot" style="left:600px;top:470px;opacity:0"><div class="lead" style="height:4px;width:150px;left:-150px;bottom:-2px"></div><div class="card" style="left:-440px;top:-56px">증발 · 수증기<small>눈에 안 보여</small></div></div>
+        <div id="tagCo" class="tag up hot" style="left:1320px;top:250px;opacity:0"><div class="lead" style="height:4px;width:60px;left:0;bottom:-2px"></div><div class="card" style="left:60px;top:-56px">응결<small>다시 물방울</small></div></div>
+        <div id="tagPipe" class="tag down" style="left:1060px;top:880px;opacity:0"><div class="lead" style="height:4px;width:0"></div><div class="card" style="top:18px;translate:-50% 0;left:200px">다시 온실로</div></div>
+      </div>
+      <div id="bigR" class="big" style="top:30px" data-words>물은 모습을 바꾸며 다시 <b>돌아와</b></div>
+
+      <div id="bangul">
+        <img id="b-curious" src="assets/img/bangul-curious.webp" alt="" />
+        <img id="b-magnifier" src="assets/img/bangul-magnifier.webp" alt="" />
+        <img id="b-pointer" src="assets/img/bangul-pointer.webp" alt="" />
+        <img id="b-surprised" src="assets/img/bangul-surprised.webp" alt="" />
+        <img id="b-cheer" src="assets/img/bangul-cheer.webp" alt="" />
+      </div>
+      <div id="q" class="bubble" data-words>온실의 물은 어디로 갈까?</div>
+
+      <audio id="sfx-tag1" class="clip" data-start="5.03" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-tag2" class="clip" data-start="10.33" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-drip1" class="clip" data-start="12.08" data-duration="0.19" data-track-index="2" data-volume="0.7" src="assets/sfx/drip.ogg"></audio>
+      <audio id="sfx-drip2" class="clip" data-start="12.78" data-duration="0.19" data-track-index="2" data-volume="0.6" src="assets/sfx/drip.ogg"></audio>
+      <audio id="sfx-pour" class="clip" data-start="15.03" data-duration="0.36" data-track-index="2" data-volume="0.6" src="assets/sfx/pour.ogg"></audio>
+      <audio id="sfx-found" class="clip" data-start="19.83" data-duration="0.29" data-track-index="3" data-volume="0.6" src="assets/sfx/discover.ogg"></audio>
+    </div>
+    <script src="assets/kit.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const k = kit(tl);
+      tl.set('#bigR', { opacity: 1 }, 0);
+      // 0–3.4 온실과 질문
+      tl.set('#b-curious', { opacity: 1 }, 0);
+      tl.fromTo('#photo', { scale: 0.97 }, { scale: 1, duration: 0.5, ease: 'expo.out' }, 0);
+      k.enter('#bangul', 0.15, { x: 420 });
+      k.bubble('#q', 0.6);
+      k.leave('#q', 3.1, { y: -20 });
+      // 3.4–8 온실 물이 증발
+      tl.to('#photo', { scale: 0.3, x: -360, y: 300, opacity: 0, duration: 0.6, ease: 'power3.in' }, 3.3);
+      tl.fromTo('#cycle', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.6);
+      tl.set(['#plate', '#catch', '#pipeBase'], { opacity: 0 }, 3.6);
+      tl.fromTo(['#tub', '#tubBody', '#tubWater'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out' }, 3.6);
+      k.tag('#tagTub', 4.1);
+      k.pose('magnifier', 4.5);
+      k.rise(['#v1', '#v2', '#v3', '#v4'], 4.6, 1.5);
+      k.tag('#tagEv', 4.8);
+      tl.to('#tubBody', { scaleY: 0.82, duration: 6, ease: 'none' }, 4.6);
+      tl.to('#tubWater', { y: 30, duration: 6, ease: 'none' }, 4.6);
+      // 8–14.5 차가운 판에서 응결 → 물방울 → 받이
+      k.pose('pointer', 8.0);
+      tl.fromTo('#plate', { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out' }, 8.1);
+      tl.fromTo(['#d1', '#d2', '#d3', '#d4', '#d5'], { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.6)', stagger: 0.14 }, 9.3);
+      tl.to(['#v1', '#v2', '#v3', '#v4'], { opacity: 0.5, duration: 0.3 }, 9.6);
+      k.tag('#tagCo', 10.1);
+      tl.fromTo('#catch', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out' }, 10.8);
+      [['#f1', 11.5], ['#f2', 12.2], ['#f3', 12.9]].forEach(([id, t]) => {
+        tl.fromTo(id, { opacity: 0, y: 0 }, { opacity: 1, duration: 0.15 }, t);
+        tl.to(id, { y: 300, duration: 0.4, ease: 'power2.in' }, t + 0.15);
+        tl.to(id, { opacity: 0, duration: 0.05 }, t + 0.55);
+      });
+      tl.fromTo('#pool', { opacity: 0, scaleY: 0.2 }, { opacity: 0.9, scaleY: 1, duration: 2, ease: 'power1.out' }, 12.0);
+      // 14.5–24 모은 물을 아래로 이어 보내면 다시 온실로
+      k.pose('surprised', 14.5);
+      tl.to('#pipeBase', { opacity: 1, duration: 0.3 }, 14.6);
+      tl.to('#pipeWater', { strokeDashoffset: 0, duration: 1.4, ease: 'power1.inOut' }, 15.0);
+      tl.to('#pool', { scaleY: 0.4, duration: 1.4, ease: 'power1.inOut' }, 15.0);
+      tl.to('#tubBody', { scaleY: 1, duration: 1.4, ease: 'power1.inOut' }, 15.6);
+      tl.to('#tubWater', { y: 0, duration: 1.4, ease: 'power1.inOut' }, 15.6);
+      k.tag('#tagPipe', 16.2);
+      tl.fromTo(['#r1', '#r2', '#r3', '#r4'], { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.6)', stagger: 0.3 }, 17.4);
+      k.words('#bigR', 19.8);
+      k.pose('cheer', 21.2);
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

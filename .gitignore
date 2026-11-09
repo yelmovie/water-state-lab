@@ -28,3 +28,8 @@ assets/source-media/ice-tray-20261108/
 assets/source-media/freeze-props-20261108/
 assets/source-media/ending-collector-20261108/
 assets/source-media/npc-qwen-sohee-20261108/
+
+# HyperFrames 개념 영상: 원본(HTML·assets)만 추적, 검사·스냅샷·렌더 산출물은 제외
+films/*/.hyperframes/
+films/*/renders/
+films/*/node_modules/

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>1편 물의 세 가지 모습</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/kit.css" />
+    <style>
+      #jug{left:120px;top:527px;width:300px}
+      #tall{left:560px;top:402px;width:200px;height:432px}
+      #wide{left:900px;top:432px;width:420px;height:402px}
+      .stream{position:absolute;width:18px;border-radius:9px;background:linear-gradient(90deg,#8fd9e6,var(--water) 60%,#3fa9bd);transform-origin:50% 0}
+      #s1{left:651px;top:372px;height:430px}
+      #s2{left:1001px;top:398px;height:405px}
+      #bangul{left:1520px;top:520px}
+      #q{left:900px;top:236px}
+      #hiTall{left:572px;top:480px;width:176px}
+      #hiWide{left:912px;top:638px;width:396px}
+      #plate{left:300px;top:690px;width:400px}
+      #ice{left:390px;top:552px;width:220px}
+      #iceGhost{left:390px;top:552px;width:220px;height:200px;border:5px dashed var(--ink);border-radius:26px;opacity:0}
+      #iceGlass{left:1000px;top:432px;width:420px}
+      #row-ice{left:180px;top:560px;width:260px}
+      #row-glass{left:780px;top:430px;width:190px}
+      #lid{left:650px;top:190px;width:450px}
+      .vapor{top:322px;height:104px;transform-origin:50% 100%}
+      #v1{left:820px}#v2{left:870px}#v3{left:920px}
+      .bead{position:absolute;top:298px}
+      #a1{left:520px;top:600px}#a2{left:1000px;top:300px}
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1920" data-height="1080">
+      <div class="paper"></div>
+      <div class="table" style="top:830px"></div>
+
+      <!-- 장면 1~3: 붓기와 비교 -->
+      <div id="pour" class="stack">
+        <div id="s1" class="stream" style="opacity:0"></div>
+        <div id="s2" class="stream" style="opacity:0"></div>
+        <div id="tall" class="obj"><img src="assets/img/glass-tall-empty.webp" alt="" /><img id="tallFull" src="assets/img/glass-tall-full.webp" alt="" style="position:absolute;left:0;bottom:0;clip-path:inset(100% 0% 0% 0%)" /></div>
+        <div id="wide" class="obj"><img src="assets/img/glass-wide-empty.webp" alt="" /><img id="wideFull" src="assets/img/glass-wide-full.webp" alt="" style="position:absolute;left:0;bottom:0;clip-path:inset(100% 0% 0% 0%)" /></div>
+        <div id="jug" class="obj"><img src="assets/img/jug.webp" alt="" /></div>
+        <div id="hiTall" class="dash-amber" style="opacity:0"></div>
+        <div id="hiWide" class="dash-amber" style="opacity:0"></div>
+        <div id="tagTall" class="tag down" style="left:660px;top:840px;opacity:0"><div class="lead" style="height:30px"></div><div class="card" style="top:30px;translate:-50% 0">물 200mL</div></div>
+        <div id="tagWide" class="tag down" style="left:1110px;top:840px;opacity:0"><div class="lead" style="height:30px"></div><div class="card" style="top:30px;translate:-50% 0">물 200mL</div></div>
+        <div id="tagHigh" class="tag up hot" style="left:660px;top:478px;opacity:0"><div class="lead" style="height:120px"></div><div class="card" style="bottom:120px;translate:-50% 0">높아</div></div>
+        <div id="tagLow" class="tag up hot" style="left:1240px;top:636px;opacity:0"><div class="lead" style="height:250px"></div><div class="card" style="bottom:250px;translate:-50% 0">낮아</div></div>
+      </div>
+      <div id="bigSame" class="big" style="top:70px" data-words>양은 같아도 모양은 <b>그릇</b> 따라</div>
+
+      <!-- 장면 4: 얼음은 모양 그대로 -->
+      <div id="icePart" class="stack" style="opacity:0">
+        <div id="plate" class="obj"><img src="assets/img/plate.webp" alt="" /></div>
+        <div id="iceGhost" class="obj"></div>
+        <div id="iceGlass" class="obj"><img src="assets/img/glass-wide-empty.webp" alt="" /></div>
+        <div id="ice" class="obj"><img src="assets/img/ice-cubes.webp" alt="" /></div>
+        <div id="tagIce" class="tag up hot" style="left:1210px;top:610px;opacity:0"><div class="lead" style="height:300px"></div><div class="card" style="bottom:300px;translate:-50% 0">얼음: 모양 그대로</div></div>
+      </div>
+
+      <!-- 장면 5: 얼음 · 물 · 수증기 -->
+      <div id="rowPart" class="stack" style="opacity:0">
+        <div id="row-ice" class="obj"><img src="assets/img/ice-cubes.webp" alt="" /></div>
+        <div id="a1" class="arrow">→</div>
+        <div id="row-glass" class="obj"><img src="assets/img/glass-tall-full.webp" alt="" /></div>
+        <div id="v1" class="vapor"></div><div id="v2" class="vapor"></div><div id="v3" class="vapor"></div>
+        <div id="lid" class="obj"><img src="assets/img/lid.webp" alt="" /></div>
+        <div class="drop bead" id="d1" style="left:800px;opacity:0"></div>
+        <div class="drop bead" id="d2" style="left:858px;opacity:0"></div>
+        <div class="drop bead" id="d3" style="left:916px;opacity:0"></div>
+        <div id="tagI" class="tag down" style="left:310px;top:830px;opacity:0"><div class="lead" style="height:30px"></div><div class="card" style="top:30px;translate:-50% 0">얼음</div></div>
+        <div id="tagW" class="tag down" style="left:875px;top:840px;opacity:0"><div class="lead" style="height:30px"></div><div class="card" style="top:30px;translate:-50% 0">물</div></div>
+        <div id="tagV" class="tag up hot" style="left:930px;top:375px;opacity:0"><div class="lead" style="height:4px;width:150px;left:0;bottom:-2px"></div><div class="card" style="left:150px;top:-50px">수증기<small>눈에 안 보여</small></div></div>
+        <div id="tagD" class="tag up" style="left:798px;top:316px;opacity:0"><div class="lead" style="height:4px;width:160px;left:-160px;bottom:-2px"></div><div class="card" style="left:-350px;top:-40px">물방울</div></div>
+      </div>
+      <div id="bigAll" class="big" style="top:60px;opacity:1" data-words>모두 <b>물</b>이야</div>
+
+      <!-- 방울이와 말풍선 -->
+      <div id="bangul">
+        <img id="b-curious" src="assets/img/bangul-curious.webp" alt="" />
+        <img id="b-pointer" src="assets/img/bangul-pointer.webp" alt="" />
+        <img id="b-magnifier" src="assets/img/bangul-magnifier.webp" alt="" />
+        <img id="b-surprised" src="assets/img/bangul-surprised.webp" alt="" />
+        <img id="b-thumbs" src="assets/img/bangul-thumbs.webp" alt="" />
+      </div>
+      <div id="q" class="bubble" data-words>그릇을 바꾸면 물은 어떻게 될까?</div>
+
+      <audio id="sfx-pour1" class="clip" data-start="4.83" data-duration="0.36" data-track-index="2" data-volume="0.7" src="assets/sfx/pour.ogg"></audio>
+      <audio id="sfx-tag1" class="clip" data-start="6.53" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-pour2" class="clip" data-start="7.73" data-duration="0.36" data-track-index="2" data-volume="0.7" src="assets/sfx/pour.ogg"></audio>
+      <audio id="sfx-tag2" class="clip" data-start="10.23" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-ice" class="clip" data-start="14.63" data-duration="0.27" data-track-index="2" data-volume="0.8" src="assets/sfx/ice.ogg"></audio>
+      <audio id="sfx-found" class="clip" data-start="20.53" data-duration="0.29" data-track-index="3" data-volume="0.6" src="assets/sfx/discover.ogg"></audio>
+    </div>
+    <script src="assets/kit.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const k = kit(tl);
+      tl.set(['#bigSame', '#bigAll'], { opacity: 1 }, 0);
+      tl.set(['#tallFull', '#wideFull'], { clipPath: 'inset(100% 0% 0% 0%)' }, 0);
+      // 0.0–3.5 질문
+      tl.set('#b-curious', { opacity: 1 }, 0);
+      k.enter('#bangul', 0.15, { x: 420 });
+      tl.fromTo('#bangul', { scaleY: 1 }, { scaleY: 0.92, duration: 0.12, ease: 'power2.in' }, 0.62);
+      tl.to('#bangul', { scaleY: 1, duration: 0.25, ease: 'back.out(1.6)' }, 0.74);
+      k.bubble('#q', 0.6);
+      k.leave('#q', 3.4, { y: -20 });
+      // 3.5–6.6 주전자 → 길쭉한 컵
+      tl.to('#jug', { x: 255, y: -345, duration: 0.8, ease: 'power2.inOut' }, 3.6);
+      tl.to('#jug', { rotation: 38, duration: 0.45, ease: 'power2.inOut' }, 4.35);
+      tl.fromTo('#s1', { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.25, ease: 'power1.in' }, 4.8);
+      k.fill('#tallFull', 4.95, 1.4);
+      tl.to('#s1', { opacity: 0, duration: 0.2 }, 6.25);
+      tl.to('#jug', { rotation: 0, x: 0, y: 0, duration: 0.7, ease: 'power2.inOut' }, 6.3);
+      k.tag('#tagTall', 6.5);
+      // 6.6–9.4 길쭉한 컵 → 넓은 그릇 (같은 물을 옮겨 붓기)
+      k.untag('#tagTall', 6.9);
+      tl.to('#tall', { x: 161, y: -126, rotation: 62, duration: 0.8, ease: 'power2.inOut' }, 6.95);
+      tl.fromTo('#s2', { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.25, ease: 'power1.in' }, 7.7);
+      k.drain('#tallFull', 7.75, 1.3);
+      k.fill('#wideFull', 7.85, 1.4);
+      tl.to('#s2', { opacity: 0, duration: 0.2 }, 9.05);
+      tl.to('#tall', { x: 0, y: 0, rotation: 0, duration: 0.7, ease: 'power2.inOut' }, 9.1);
+      k.tag('#tagWide', 9.3);
+      // 9.5–13.0 높이 비교: 아까 물 높이(빈 컵 위 호박색 점선) · 지금 물 높이
+      k.pose('pointer', 9.55);
+      tl.fromTo('#pour', { scale: 1 }, { scale: 1.08, duration: 0.8, ease: 'power2.inOut', transformOrigin: '900px 640px' }, 9.6);
+      tl.fromTo('#hiTall', { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.3, ease: 'power2.out' }, 10.0);
+      tl.fromTo('#hiWide', { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.3, ease: 'power2.out' }, 10.15);
+      k.tag('#tagHigh', 10.2);
+      k.tag('#tagLow', 10.45);
+      k.words('#bigSame', 10.9);
+      tl.to('#bigSame', { opacity: 0, filter: 'blur(8px)', duration: 0.25, ease: 'power3.in' }, 12.75);
+      tl.to('#pour', { x: -260, opacity: 0, duration: 0.35, ease: 'power3.in' }, 12.8);
+      // 13.0–17.0 얼음은 옮겨도 모양 그대로
+      k.pose('magnifier', 13.05);
+      tl.fromTo('#icePart', { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.5, ease: 'expo.out' }, 13.1);
+      tl.to('#iceGhost', { opacity: 0.75, duration: 0.2 }, 13.75);
+      tl.to('#ice', { x: 720, duration: 1.0, ease: 'none' }, 13.6);
+      tl.to('#ice', { y: -230, duration: 0.5, ease: 'power2.out' }, 13.6);
+      tl.to('#ice', { y: 48, duration: 0.5, ease: 'power2.in' }, 14.1);
+      k.tag('#tagIce', 14.9);
+      tl.to('#icePart', { x: -260, opacity: 0, duration: 0.35, ease: 'power3.in' }, 16.75);
+      tl.set('#bigSame', { opacity: 0 }, 17);
+      // 17.0–24.0 얼음 · 물 · 수증기, 모두 물
+      k.pose('surprised', 17.05);
+      tl.fromTo('#rowPart', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 17.1);
+      tl.set(['#row-glass', '#lid', '#a1', '#v1', '#v2', '#v3'], { opacity: 0 }, 17.1);
+      tl.fromTo('#row-ice', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'expo.out' }, 17.15);
+      k.tag('#tagI', 17.45);
+      tl.to('#a1', { opacity: 1, duration: 0.2 }, 17.85);
+      tl.fromTo('#row-glass', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'expo.out' }, 17.95);
+      k.tag('#tagW', 18.25);
+      tl.fromTo('#lid', { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out' }, 18.55);
+      k.rise(['#v1', '#v2', '#v3'], 18.75, 1.1);
+      k.tag('#tagV', 19.4);
+      tl.fromTo(['#d1', '#d2', '#d3'], { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.6)', stagger: 0.15 }, 20.0);
+      tl.to(['#v1', '#v2', '#v3'], { opacity: 0.6, duration: 0.3 }, 20.3);
+      k.tag('#tagD', 20.4);
+      k.words('#bigAll', 20.5);
+      k.pose('thumbs', 22.3);
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

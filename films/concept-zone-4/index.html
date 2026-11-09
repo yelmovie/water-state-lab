@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>4편 물방울</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/kit.css" />
+    <style>
+      #cup{left:560px;top:346px;width:400px;height:484px}
+      #cup img{position:absolute;left:0;bottom:0;width:100%}
+      #pack{left:110px;top:620px;width:240px}
+      #bangul{left:1540px;top:520px}
+      #q{left:640px;top:180px}
+      .vh{position:absolute;height:0;border-top:6px dotted var(--vapor);opacity:0}
+      .vh.l{transform-origin:0 50%}.vh.r{transform-origin:100% 50%}
+      #h1{left:270px;top:520px;width:330px}#h2{left:250px;top:640px;width:350px}#h3{left:280px;top:750px;width:320px}
+      #h4{left:945px;top:560px;width:320px}#h5{left:945px;top:690px;width:300px}
+      .bead{opacity:0}
+      #e1{left:588px;top:508px}#e2{left:588px;top:628px}#e3{left:592px;top:738px}#e4{left:912px;top:548px}#e5{left:912px;top:678px}
+      #plateBox{left:640px;top:236px;width:380px;height:363px}
+      #plateBox img{position:absolute;left:0;top:0;width:100%}
+      #pack2{left:930px;top:316px;width:200px}
+      #catcher{left:620px;top:520px;width:420px}
+      #pool{position:absolute;left:700px;top:590px;width:260px;height:60px;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#9fe0ea,var(--water) 70%);opacity:0;transform-origin:50% 100%}
+      .fall{position:absolute;opacity:0}
+      #f1{left:760px;top:396px}#f2{left:830px;top:366px}#f3{left:900px;top:406px}#f4{left:795px;top:426px}
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="22" data-width="1920" data-height="1080">
+      <div class="paper"></div>
+      <div class="table" style="top:830px"></div>
+
+      <!-- 장면 1~3: 입구 막은 컵 + 냉각팩 → 바깥에 물방울 → 공기 중 수증기 -->
+      <div id="partA" class="stack">
+        <div id="h1" class="vh l"></div><div id="h2" class="vh l"></div><div id="h3" class="vh l"></div>
+        <div id="h4" class="vh r"></div><div id="h5" class="vh r"></div>
+        <div id="cup" class="obj"><img id="cS" src="assets/img/cup-sealed.webp" alt="" /><img id="cC" src="assets/img/cup-cold.webp" alt="" style="opacity:0" /><img id="cW" src="assets/img/cup-wet.webp" alt="" style="opacity:0" /></div>
+        <div id="pack" class="obj"><img src="assets/img/icepack.webp" alt="" /></div>
+        <div class="drop bead" id="e1"></div><div class="drop bead" id="e2"></div><div class="drop bead" id="e3"></div><div class="drop bead" id="e4"></div><div class="drop bead" id="e5"></div>
+        <div id="tagLid" class="tag up" style="left:700px;top:395px;opacity:0"><div class="lead" style="height:120px"></div><div class="card" style="bottom:120px;translate:-50% 0">입구를 막은 컵</div></div>
+        <div id="tagWet" class="tag down hot" style="left:620px;top:700px;opacity:0"><div class="lead" style="height:4px;width:200px;left:-200px;top:-2px"></div><div class="card" style="left:-470px;top:-40px">바깥에 물방울</div></div>
+        <div id="tagAir" class="tag up hot" style="left:330px;top:516px;opacity:0"><div class="lead" style="height:150px"></div><div class="card" style="bottom:150px;translate:-50% 0">공기 중 수증기<small>눈에 안 보여</small></div></div>
+        <div id="tagCold" class="tag down" style="left:760px;top:840px;opacity:0"><div class="lead" style="height:24px"></div><div class="card" style="top:24px;translate:-50% 0">차가운 표면</div></div>
+      </div>
+      <div id="bigC" class="big" style="top:60px" data-words>차가운 표면에서 <b>응결</b></div>
+
+      <!-- 장면 4: 차가운 판 아래 받이 -->
+      <div id="partB" class="stack" style="opacity:0">
+        <div id="pack2" class="obj"><img src="assets/img/icepack.webp" alt="" /></div>
+        <div id="catcher" class="obj"><img src="assets/img/catcher.webp" alt="" /></div>
+        <div id="pool"></div>
+        <div id="plateBox" class="obj"><img id="pD" src="assets/img/plate-dry.webp" alt="" /><img id="pW" src="assets/img/plate-wet.webp" alt="" style="opacity:0" /></div>
+        <div class="drop fall" id="f1"></div><div class="drop fall" id="f2"></div><div class="drop fall" id="f3"></div><div class="drop fall" id="f4"></div>
+        <div id="tagPlate" class="tag up hot" style="left:1010px;top:366px;opacity:0"><div class="lead" style="height:4px;width:190px;left:0;bottom:-2px"></div><div class="card" style="left:190px;top:-44px">차가운 판</div></div>
+        <div id="tagCatch" class="tag down" style="left:830px;top:860px;opacity:0"><div class="lead" style="height:20px"></div><div class="card" style="top:20px;translate:-50% 0">받이에 모인 물</div></div>
+      </div>
+      <div id="bigM" class="big" style="top:50px" data-words>떨어지는 물방울을 <b>모아</b></div>
+
+      <div id="bangul">
+        <img id="b-curious" src="assets/img/bangul-curious.webp" alt="" />
+        <img id="b-magnifier" src="assets/img/bangul-magnifier.webp" alt="" />
+        <img id="b-surprised" src="assets/img/bangul-surprised.webp" alt="" />
+        <img id="b-pointer" src="assets/img/bangul-pointer.webp" alt="" />
+        <img id="b-thumbs" src="assets/img/bangul-thumbs.webp" alt="" />
+      </div>
+      <div id="q" class="bubble" data-words>컵 바깥 물방울은 어디서 왔을까?</div>
+
+      <audio id="sfx-tag1" class="clip" data-start="3.68" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-pack" class="clip" data-start="4.43" data-duration="0.26" data-track-index="2" data-volume="0.5" src="assets/sfx/door.ogg"></audio>
+      <audio id="sfx-tag2" class="clip" data-start="7.03" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-tag3" class="clip" data-start="10.53" data-duration="0.19" data-track-index="3" data-volume="0.6" src="assets/sfx/label.ogg"></audio>
+      <audio id="sfx-drip1" class="clip" data-start="17.58" data-duration="0.19" data-track-index="2" data-volume="0.7" src="assets/sfx/drip.ogg"></audio>
+      <audio id="sfx-drip2" class="clip" data-start="18.28" data-duration="0.19" data-track-index="2" data-volume="0.6" src="assets/sfx/drip.ogg"></audio>
+      <audio id="sfx-drip3" class="clip" data-start="18.98" data-duration="0.19" data-track-index="2" data-volume="0.7" src="assets/sfx/drip.ogg"></audio>
+      <audio id="sfx-found" class="clip" data-start="19.63" data-duration="0.29" data-track-index="3" data-volume="0.6" src="assets/sfx/discover.ogg"></audio>
+    </div>
+    <script src="assets/kit.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const k = kit(tl);
+      tl.set(['#bigC', '#bigM'], { opacity: 1 }, 0);
+      // 0–3.3 질문
+      tl.set('#b-curious', { opacity: 1 }, 0);
+      k.enter('#bangul', 0.15, { x: 420 });
+      k.bubble('#q', 0.6);
+      k.tag('#tagLid', 3.45);
+      k.leave('#q', 3.2, { y: -20 });
+      // 3.3–8.5 냉각팩을 붙이고 기다리면 바깥에 물방울
+      tl.to('#pack', { x: 660, y: -90, rotation: -90, scale: 0.8, duration: 0.9, ease: 'power2.inOut' }, 3.5);
+      tl.to('#cC', { opacity: 1, duration: 0.2 }, 4.4);
+      tl.to('#pack', { opacity: 0, duration: 0.2 }, 4.45);
+      k.untag('#tagLid', 5.2);
+      k.pose('magnifier', 4.9);
+      tl.to('#cW', { opacity: 1, duration: 1.2, ease: 'power1.inOut' }, 5.4);
+      tl.to('#cup', { scale: 1.1, duration: 0.8, ease: 'power2.inOut', transformOrigin: '50% 80%' }, 6.0);
+      k.pose('surprised', 6.7);
+      k.tag('#tagWet', 6.8);
+      // 8.5–15 공기 중 수증기가 차가운 표면에 닿아 물방울로
+      k.untag('#tagWet', 8.3);
+      tl.to('#cup', { scale: 1, duration: 0.6, ease: 'power2.inOut' }, 8.4);
+      k.pose('pointer', 8.6);
+      tl.fromTo(['#h1', '#h2', '#h3', '#h4', '#h5'], { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 1.1, ease: 'power1.out', stagger: 0.15 }, 9.0);
+      k.tag('#tagAir', 10.3);
+      tl.fromTo(['#e1', '#e2', '#e3', '#e4', '#e5'], { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.6)', stagger: 0.12 }, 10.6);
+      tl.to(['#h1', '#h2', '#h3', '#h4', '#h5'], { opacity: 0.45, duration: 0.3 }, 11.2);
+      k.tag('#tagCold', 11.4);
+      k.words('#bigC', 12.0);
+      tl.to('#bigC', { opacity: 0, filter: 'blur(8px)', duration: 0.25, ease: 'power3.in' }, 14.7);
+      tl.to('#partA', { x: -300, opacity: 0, duration: 0.35, ease: 'power3.in' }, 14.7);
+      // 15–22 차가운 판에 맺힌 물방울이 받이로
+      k.pose('magnifier', 15.05);
+      tl.fromTo('#partB', { opacity: 0, x: 140 }, { opacity: 1, x: 0, duration: 0.5, ease: 'expo.out' }, 15.1);
+      k.tag('#tagPlate', 15.6);
+      tl.to('#pW', { opacity: 1, duration: 1.0, ease: 'power1.inOut' }, 16.0);
+      tl.to('#pD', { opacity: 0, duration: 1.0, ease: 'power1.inOut' }, 16.3);
+      [['#f1', 17.0], ['#f2', 17.7], ['#f3', 18.4], ['#f4', 19.1]].forEach(([id, t]) => {
+        tl.fromTo(id, { opacity: 0, y: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.2, ease: 'back.out(1.6)' }, t);
+        tl.to(id, { y: 260, duration: 0.3, ease: 'power2.in' }, t + 0.25);
+        tl.to(id, { opacity: 0, duration: 0.05 }, t + 0.55);
+      });
+      tl.fromTo('#pool', { opacity: 0, scaleY: 0.2 }, { opacity: 0.85, scaleY: 1, duration: 2.4, ease: 'power1.out' }, 17.3);
+      k.tag('#tagCatch', 19.3);
+      k.words('#bigM', 19.6);
+      k.pose('thumbs', 20.6);
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
