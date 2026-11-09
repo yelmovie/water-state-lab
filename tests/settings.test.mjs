@@ -17,7 +17,7 @@ class FakeElement{
  load(){}
 }
 function mockDocument(){
- const doc={hidden:false,events:new Map(),created:[],addEventListener(type,fn){this.events.set(type,fn);},removeEventListener(type){this.events.delete(type);},documentElement:{classList:{toggle(){}}}};
+ const doc={hidden:false,events:new Map(),created:[],addEventListener(type,fn){this.events.set(type,fn);},dispatchEvent(event){this.events.get(event.type)?.(event);return true;},removeEventListener(type){this.events.delete(type);},documentElement:{classList:{toggle(){}}}};
  doc.activeElement=new FakeElement(doc);doc.createElement=()=>{const el=new FakeElement(doc);doc.created.push(el);return el;};doc.body={append(){}};return doc;
 }
 function fakeAudio(){

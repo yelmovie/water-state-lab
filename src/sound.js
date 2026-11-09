@@ -52,6 +52,7 @@ export function setSoundSettings(next={}){
  settings.bgm=settings.bgm!==false;settings.sfx=settings.sfx!==false;settings.sound=settings.sound!==false;
  const volume=Number(settings.bgmVolume);settings.bgmVolume=Number.isFinite(volume)?Math.max(0,Math.min(100,volume)):35;
  if(!settings.sound||!settings.sfx)stopCue();
+ if(typeof document!=='undefined')document.dispatchEvent(new Event('game-audio-settings'));
  syncMusic();
 }
 /** Compatibility for the shared speaker button: mute or enable both channels. */
@@ -86,7 +87,7 @@ export async function playCue(kind='click'){
   if(request!==cueSequence||!settings.sound||!settings.sfx||hidden()||ctx.state!=='running')return;
   const oscillator=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime;
   oscillator.type='sine';
-  const tones={click:[660,440],drop:[420,780],success:[523,1047],discover:[440,880],error:[270,180]};
+  const tones={click:[660,440],drop:[420,780],success:[523,1047],discover:[440,880],error:[270,180],hint:[523,659],connect:[260,520],pour:[680,180],bubble:[220,920],page:[480,240],wipe:[320,160],latch:[180,540]};
   const [from,to]=tones[kind]||tones.click;
   oscillator.frequency.setValueAtTime(from,now);oscillator.frequency.exponentialRampToValueAtTime(to,now+.065);
   gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(SFX_VOLUME,now+.008);gain.gain.exponentialRampToValueAtTime(.0001,now+.08);
