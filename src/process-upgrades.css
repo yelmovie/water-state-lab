@@ -11,7 +11,7 @@
 .measure-specimen>span{display:block;font-size:14px;font-weight:700;color:#345c63;line-height:1.35}
 .measure-empty{display:grid;place-items:center;min-height:220px;color:#517579}
 .measure-scale{border:2px solid #6e9390;background:#e4efdc;border-radius:12px;max-width:250px;margin:5px auto 0;padding:7px;display:grid;gap:2px}
-.measure-scale span{font-size:14px;font-weight:700}.measure-scale b{font-size:25px;font-variant-numeric:tabular-nums}
+.measure-scale span{font-size:16px;font-weight:700}.measure-scale b{font-size:25px;font-variant-numeric:tabular-nums}
 .measure-records{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .measure-records figure{margin:0;background:#fffef5;border:2px solid #cfddc5;border-radius:12px;padding:10px 6px;text-align:center;display:grid;gap:4px;font-size:16px}
 .measure-records figcaption{font-weight:700;color:#44686d}.measure-records b{font-size:20px}
@@ -60,13 +60,13 @@
  .experiment-shell:not(.guided-shell) #freeze-measure .activity-stage-caption{font-size:14px;padding:3px}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-stations{margin:0;min-height:0;gap:6px}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-station{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0;padding:4px}
- .experiment-shell:not(.guided-shell) #freeze-measure .measure-station h3{font-size:14px;margin:0}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-station h3{font-size:16px;margin:0}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-freezer{height:100%;width:100%;max-height:110px;max-width:160px;min-height:0}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-specimen .beaker{max-height:80px}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-specimen>span{display:none}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-empty{min-height:60px;font-size:14px}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-scale{padding:2px 6px;margin:0 auto;gap:0}
- .experiment-shell:not(.guided-shell) #freeze-measure .measure-scale span{font-size:13px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-scale span{font-size:16px}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-scale b{font-size:20px}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-records{gap:5px}
  .experiment-shell:not(.guided-shell) #freeze-measure .measure-records figure{padding:4px;gap:1px;font-size:13px}

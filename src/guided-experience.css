@@ -119,7 +119,7 @@
  .guided-shell .activity-scene{padding:8px}.guided-shell .activity-stage-caption{font-size:13px}.guided-shell .tray-prep,.guided-shell .tray-freezer{padding:6px 8px}.guided-shell .tray-cup{width:min(100%,85px)}.guided-shell .tray-workbench h3{font-size:15px}.guided-shell .tray-cup span,.guided-shell .tray-seat>span{font-size:12px}.guided-shell .tray-seat{height:95%}.guided-shell .tray-prep-art{padding:0;gap:5px}
  .guided-shell .tray-steps li,.guided-shell .transform-progress li,.guided-shell .process-steps li{min-height:24px;font-size:12px;padding:2px 5px}.guided-shell .transform-progress li>span,.guided-shell .tray-steps li>span{width:18px;height:18px}
  .guided-shell .bench-zone-title{font-size:14px}.guided-shell .bench-zone-title>span{display:none}.guided-shell .bench-sample figcaption{font-size:13px}.guided-shell .bench-sample figcaption span{font-size:12px}.guided-shell .bench-zone{padding:0 5px}
- .guided-shell .measure-records figure{padding:4px;font-size:13px}.guided-shell .measure-records b{font-size:17px}.guided-shell .measure-station h3{font-size:15px}.guided-shell .measure-scale{padding:4px;gap:0}.guided-shell .measure-scale span{font-size:12px}.guided-shell .measure-scale b{font-size:18px}.guided-shell .measure-empty{font-size:16px}
+ .guided-shell .measure-records figure{padding:4px;font-size:13px}.guided-shell .measure-records b{font-size:17px}.guided-shell .measure-station h3{font-size:16px}.guided-shell .measure-scale{padding:4px;gap:0}.guided-shell .measure-scale span{font-size:16px}.guided-shell .measure-scale b{font-size:18px}.guided-shell .measure-empty{font-size:16px}
  .guided-shell .cycle-scene{grid-template-columns:minmax(0,1fr) 90px minmax(0,1fr)}.guided-shell .cycle-air{font-size:12px;gap:4px}.guided-shell .cycle-air b{font-size:14px}.guided-shell .cycle-air p{display:none}.guided-shell .cycle-scene h3{font-size:14px}.guided-shell .cycle-scene article>b{font-size:16px}
  .cold-intro{grid-template-columns:100px minmax(0,1fr);gap:8px}.cold-intro .cold-bubble img{width:52px;height:52px}.cold-intro .cold-bubble p{font-size:16px}
  .guided-shell .field-transform:not(.cold-night):has(.tray-lab,.process-lab){grid-template-columns:96px minmax(0,1fr);padding:6px;gap:6px}
@@ -279,7 +279,7 @@
 .workspace-stage .water-chain,.workspace-stage .lab-stage>.stage-tag{display:none!important}
 .workspace-stage>.lab-stage{padding-top:var(--workspace-header-height)!important}
 .workspace-stage .trial-result,.workspace-stage .observation-strip{font-size:15px;margin:0;padding:4px 8px}
-.workspace-stage .jug-remaining{position:absolute;z-index:6;left:16px;top:var(--workspace-header-height);width:auto;margin:0;padding:4px 8px;border-radius:8px;background:#fffdf0ed;font-size:14px}
+.workspace-stage .jug-remaining{position:absolute;z-index:6;left:16px;top:var(--workspace-header-height);width:auto;margin:0;padding:4px 8px;border-radius:8px;background:#fffdf0ed;font-size:16px}
 .guided-shell .workspace-stage .scene-lens{right:16px!important;top:calc(var(--workspace-header-height) + 4px)!important;z-index:8}
 .workspace-controls>details>summary{min-height:44px;padding:8px 12px;border:1px solid #b8cbb5;border-radius:10px;background:#fffdf0;font-size:14px}
 .guided-shell .workspace-stage.cold-night{padding:0!important}
@@ -302,7 +302,7 @@
  .guided-shell .building-guide{inset:0 104px auto;min-height:48px;padding:3px 6px}.guided-shell .building-guide-copy h1{font-size:18px}.guided-shell .building-guide-npc{width:40px;height:40px}
  .guided-shell .guided-play{min-width:96px;min-height:44px;font-size:12px}.guided-shell .guided-clock{width:26px!important;height:26px!important}
  .workspace-controls{gap:4px 6px;bottom:6px;max-height:30%}.workspace-controls .activity-status,.workspace-controls .process-status{font-size:13px!important}
- .workspace-controls .activity-button,.workspace-controls>.btn{font-size:15px;padding:5px 10px}.workspace-controls .time-scrubber>span:first-child{display:none}
+ .workspace-controls .activity-button,.workspace-controls>.btn{font-size:16px;padding:5px 10px}.workspace-controls .time-scrubber>span:first-child{display:none}
 }
 @media(max-width:700px) and (orientation:portrait){
  .guided-shell .experiment-main{height:auto;min-height:100dvh;padding-top:0!important}.guided-shell .scene-workspace{height:auto;padding-top:140px}
@@ -400,3 +400,5 @@
 .prediction-chosen{display:flex;align-items:center;gap:10px;padding:6px 10px;border:2px dashed #2f7f73;border-radius:12px;background:#f2fbf6;font:clamp(17px,1.3vw,21px)/1.2 var(--font-display);color:#24433f}
 .prediction-chosen b{font-weight:400;color:#9a5a00}
 .prediction-chosen .btn{min-height:44px;padding:4px 12px;font-size:16px}
+/* 1920 전자칠판 뒷자리: 실험 화면의 작은 안내 글자도 18px 하한(C20) */
+@media(min-width:1600px){.workspace-stage .jug-remaining,.measure-scale span{font-size:18px}}

@@ -519,7 +519,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 @media(prefers-reduced-motion:reduce){.start-bangul,.start-actions .btn.primary.start-cta{animation:none}}
 .reduce-motion .start-bangul,.reduce-motion .start-actions .btn.primary.start-cta{animation:none}
 /* Low landscape windows (phones, folds, 1024x600 tablets). */
-@media(max-height:620px) and (orientation:landscape){.start-main{padding-bottom:16px}.start-copy{gap:8px}.start-title img{max-height:34dvh}.start-tagline{font-size:clamp(17px,1.6vw,22px)}.start-actions .btn{min-height:52px;padding:0 20px;font-size:20px}.start-kicker{font-size:15px;padding:4px 14px 4px 10px}.start-save{font-size:16px}.start-bangul{height:60dvh;bottom:6px}}
+@media(max-height:620px) and (orientation:landscape){.start-main{padding-bottom:16px}.start-copy{gap:8px}.start-title img{max-height:34dvh}.start-tagline{font-size:clamp(17px,1.6vw,22px)}.start-actions .btn{min-height:52px;padding:0 20px;font-size:20px}.start-kicker{font-size:16px;padding:4px 14px 4px 10px}.start-save{font-size:16px}.start-bangul{height:60dvh;bottom:6px}}
 /* Portrait and narrow screens: copy on top, Bangul smaller at the bottom right. */
 @media(orientation:portrait),(max-width:760px){.start-main{justify-content:flex-start;padding:calc(var(--hud-inset) + var(--hud-size) + 24px) 16px 24px}.start-main::before{background:linear-gradient(180deg,#f5fbfcf0 0,#eef8fbc7 52%,transparent 78%)}.start-copy{width:100%;align-items:center;text-align:center}.start-title img{max-width:min(100%,560px);max-height:30dvh}.start-actions{justify-content:center}.start-copy{position:relative;z-index:1}.start-bangul{right:6%;bottom:12px;height:min(24dvh,300px)}}
 
