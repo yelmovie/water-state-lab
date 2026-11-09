@@ -141,3 +141,26 @@ export function markStageControls(root,task){
   if(target.matches('button,input,summary')&&!target.hasAttribute('aria-describedby'))target.setAttribute('aria-describedby','stage-how');
  }
 }
+
+/** Keep a question and its answers together. Runs after every experiment render. */
+export function pinQuestion(root){
+ const main=root.querySelector('.experiment-main'),heading=root.querySelector('#stage-direction');if(!main||!heading)return;
+ const text=heading.textContent.trim(),isQuestion=/[?？]\s*$/.test(text);
+ heading.classList.toggle('is-question',isQuestion);
+ if(!isQuestion||!main.classList.contains('manual-tools'))return; // while watching, the question panel already holds both
+ const panel=root.querySelector('.guided-question-panel'),shown=el=>el.offsetParent!==null&&!el.disabled;
+ let answers;
+ if(panel){
+  const actions=[...panel.querySelectorAll('[data-action]')].map(b=>b.dataset.action);
+  answers=actions.flatMap(a=>[...root.querySelectorAll(`[data-action="${CSS.escape(a)}"]`)]).filter(b=>!panel.contains(b)&&shown(b));
+  // The tools hold no answer buttons for this question: show the question card itself.
+  if(!answers.length){panel.classList.add('show-in-manual');return;}
+ }else answers=[...root.querySelectorAll('.guided-control')].filter(shown);
+ if(!answers.length)return;
+ let group=answers.length>1?answers[0].parentElement:(answers[0].matches('button,input,summary,label')?answers[0].parentElement:answers[0]);
+ while(group&&!answers.every(b=>group.contains(b)))group=group.parentElement;
+ if(!group||group===main)return;
+ // The question becomes the first row of the answer group, so it sits on top of the answers in any layout.
+ group.classList.add('stage-answer-group');group.classList.toggle('qa-wrap',getComputedStyle(group).display.includes('flex'));
+ group.insertAdjacentHTML('afterbegin',`<div class="stage-question-pop" role="note"><b>❓ 문제</b><span>${esc(text)}</span></div>`);
+}

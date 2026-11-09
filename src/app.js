@@ -1,6 +1,6 @@
 import {observationSpeed,OBSERVATION_SPEEDS} from './observation-speed.js';
 import {openStageLetter} from './field-briefing.js';
-import {experimentMove,stageGuide,markStageControls} from './stage-guide.js';
+import {experimentMove,stageGuide,markStageControls,pinQuestion} from './stage-guide.js';
 import {fieldTask} from './field-guidance.js';
 import {playStoryFilm} from './story-film.js';
 import {residentReward,openResidentList,talkToResident,stageEndTalk,residentForStage} from './island-residents.js';
@@ -177,7 +177,7 @@ export function render(){
  }
  bindObservation(state,routeAction,state.route===10?finalContext():null,persist,manual=>{manualToolsRoute=manual?state.route:null;render();});
  if(typeof route==='number')bindCompactGuide();
- if(typeof route==='number'){syncCoach(route,route<=8?getActivityProgress(route):workshopProgress(route),state.fieldwork.active===route,hasFieldSeal(route),currentTask);markStageControls(app,currentTask);integrateWorkspaceControls();}
+ if(typeof route==='number'){syncCoach(route,route<=8?getActivityProgress(route):workshopProgress(route),state.fieldwork.active===route,hasFieldSeal(route),currentTask);markStageControls(app,currentTask);pinQuestion(app);integrateWorkspaceControls();}
  app.querySelectorAll('details').forEach(d=>{if(d.closest('.workspace-controls')&&!d.matches('.essential-controls'))d.open=false;else if(openPanels.has(panelKey(d)))d.open=openPanels.get(panelKey(d));else if(d.matches(".workshop-keyboard")&&matchMedia("(max-width:800px)").matches)d.open=false;});
  for(const [id,value] of fieldSelections){const select=document.getElementById(id);if(select&&[...select.options].some(o=>o.value===value))select.value=value;}
  syncStorageNotice();
