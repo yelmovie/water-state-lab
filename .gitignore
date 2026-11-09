@@ -6,6 +6,7 @@ graphify-out/
 *.log
 artifacts/
 tmp/
+output/
 files/
 image/
 samplepages/

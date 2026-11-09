@@ -1,3 +1,12 @@
+# 물길탐험 인계 · 2026-11-09 (구역 통합·학습 결론·여권·인증서·3D 물)
+
+운영 배포: 2026-11-09 커밋 7130fdd → Cloudflare Pages `bbdd5dc8`, 205개 파일 SHA-256 일치 확인. 직전 운영본 `90f1813d`(되돌릴 때 사용). GitHub main 푸시 완료. 빌드는 `git -c core.autocrlf=false archive`로 꺼낸 커밋본에서 했다. Wrangler 로그인 정보는 `/Volumes/T7 Shield/DevCaches/tools/wrangler-home`에 있어서 `HOME`과 `XDG_CONFIG_HOME`을 그쪽으로 주고 실행한다.
+
+- 현장 의뢰·개념 영상을 구역당 하나(5개)로 줄였다. 스테이지가 끝나면 "알게 된 것"과 주민 대화가 바로 이어진다. 자세한 내용은 `docs/reviews/STAGE-LEARNING-REVIEW-20261107.md`.
+- 9장은 고장 두 곳(경사판·깔때기)만 고치는 구조와 ▶ 자동재생으로 바꿨다.
+- 엔딩 영상 전체 화면, 탐구 여권·인증서 재디자인(`src/achievement.js`), 연구섬 3D 물 효과(`src/island-water.js`).
+- 미검증: 학교 태블릿에서 3D 물 셰이더 성능, 아이 대상 수업, iPad Safari.
+
 # 물길탐험 인계 · 2026-11-04 (BGM·이야기 영상)
 
 운영 배포: 2026-11-04 커밋 ca12f5b → Cloudflare Pages `90f1813d`, 169개 파일 SHA-256 일치 확인. 직전 운영본 `6274b70c`(되돌릴 때 사용). 작업은 main에 병합했고 GitHub 푸시는 하지 않았다. 빌드는 `git -c core.autocrlf=false archive`로 꺼낸 커밋본에서 했다. 이 PC는 `npx wrangler`가 `ECOMPROMISED`로 실패해서 임시 폴더에 `npm install wrangler@4`로 설치해 썼다.
