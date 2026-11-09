@@ -5,7 +5,7 @@ import {defaultParts,canEnter} from './domain.js';
 import {initialFieldwork,cleanFieldwork,migrateFieldwork} from './fieldwork-model.js';
 import {restoreDrawingMetadata} from './drawing-records.js';
 export const KEY='water-drop-lab:v1';
-export function initialState(){return {schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,autoplay:true,observationSpeed:.5,adminUnlock:false},lab:{
+export function initialState(){return {mapRunId:globalThis.crypto?.randomUUID?.()||`run-${Date.now()}-${Math.random().toString(36).slice(2)}`,schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,autoplay:true,observationSpeed:.5,adminUnlock:false},lab:{
   observe:{selected:0,seen:[],pour:0,ice:false,cloth:0,wipe:0,canTime:0},
   classify:{current:0,records:[],type:'',proof:false},
   freeze:{initial:false,tare:false,prediction:65,phase:'water',measured:false,melted:false,compared:false},
@@ -37,6 +37,7 @@ function loadState(storage){
   if(!raw.lab||typeof raw.lab!=='object'||Array.isArray(raw.lab)||!Array.isArray(raw.completed)||!Array.isArray(raw.pages)||!raw.evidence||typeof raw.evidence!=='object'||Array.isArray(raw.evidence))return result(fallback,'damaged');
   let repaired=false;
   const s={...fallback,...raw,settings:{...fallback.settings,...raw.settings},lab:{...fallback.lab}};
+  s.mapRunId=typeof raw.mapRunId==='string'&&raw.mapRunId.length<100?raw.mapRunId:'legacy';
   s.residentsMet=Array.isArray(raw.residentsMet)?[...new Set(raw.residentsMet.filter(n=>Number.isInteger(n)&&n>=1&&n<=10))]:[];
   s.villageArrivals=Array.isArray(raw.villageArrivals)?[...new Set(raw.villageArrivals.filter(n=>Number.isInteger(n)&&n>=1&&n<=10))]:[];
   raw.fieldwork=migrateFieldwork(raw.fieldwork);s.schemaVersion=2;s.inquiry=sanitizeInquiry(raw.inquiry);s.fieldwork=cleanFieldwork(raw.fieldwork);

@@ -198,19 +198,24 @@ function makeScene(P,route,ctx,host,hidden,regions){
    const bonus=activityReady(2,a()),hidden=a().sort.hidden;
    const hiddenActive=bonus&&hiddenScenes.find(c=>c.id===q().hiddenProof&&!hidden.placed[c.id]);
    const texture=this.textures.get('water-search'),photo=texture.getSourceImage();
-   const width=148,height=114,caption=33;
+   const width=148,height=97,caption=50;
    sortCards.forEach((c,i)=>{
     const col=i%3,row=Math.floor(i/3),x=12+col*155,y=4+row*151;
     // Include the waterfall next to the dry cloth in the right-hand photograph.
     const left=Math.round(photo.width*(col/3-(c.id==='vapor'?.032:0))),top=Math.round(photo.height*row/2);
-    texture.add(c.id,0,left,top,Math.floor(photo.width/3),Math.floor(photo.height/2));
+    const frameH=Math.floor(photo.height/2*height/114);
+    texture.add(c.id,0,left,top+Math.floor((photo.height/2-frameH)/2),Math.floor(photo.width/3),frameH);
     const extra=bonus&&hiddenScenes.find(s=>s.card===c.id);
     const done=!!a().sort.placed[c.id],selected=card?.id===c.id||!!extra&&extra===hiddenActive;
     this.g.fillStyle(selected?0xffe2a1:done?0xe2f0e2:0xfff9e9).fillRoundedRect(x-2,y-2,width+4,height+caption+4,6);
     this.g.lineStyle(selected?3:1,selected?0x9a6a21:0x779485).strokeRoundedRect(x-2,y-2,width+4,height+caption+4,6);
     this.add.image(x,y,'water-search',c.id).setOrigin(0).setDisplaySize(width,height);
     const labelY=y+height+caption/2;
-    this.text(x+(width-(extra?36:0))/2,labelY,`${i+1}  ${c.label??c.name}${done?' ✓':''}`,14).setFontSize(14).setWordWrapWidth(width-(extra?38:8),true);
+    this.add.graphics().setDepth(5).fillStyle(0xfff9e9,.92).fillCircle(x+13,y+13,11).lineStyle(1,0x779485).strokeCircle(x+13,y+13,11);
+    this.text(x+13,y+13,String(i+1),14);
+    const label=this.text(x+(width-(extra?36:0))/2,labelY,`${c.label??c.name}${done?' ✓':''}`,14).setWordWrapWidth(width-(extra?38:4),true).setLineSpacing(-4);
+    // Start from the helper's small-screen floor and shrink only until the caption fits its box.
+    for(let size=parseFloat(label.style.fontSize);label.height>caption-2&&size>14;)label.setFontSize(--size);
     this.zone(x+width/2,y+(height+caption)/2,width,height+caption,()=>this.action('ix-sort-card-'+c.id));
     if(extra){
      const found=!!hidden.placed[extra.id],buttonX=x+width-17;

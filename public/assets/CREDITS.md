@@ -292,3 +292,9 @@ Production transparent sprite atlas with exactly THREE isolated realistic school
 ## 2026-11-08 응결 캔
 - `learning/overnight-20261108/condensation-can.webp`: OpenAI image_gen에서 생성한 단일 투명 캔 일러스트. Imagen 아님. 구체적 모델 버전 미제공. 실제 사진이나 학생 관찰 결과가 아닌 설명용 모형. 물방울은 앱의 관찰 상태가 별도로 표시한다.
 - 원본: `assets/source-media/overnight-20261108/condensation-can.png`. WebP 변환은 sharp 사용.
+
+## 지도 악당 밸브 두더지·방울이 전투 · 2026-11-09
+
+- `v2/map-villain-mole.webp`: 4×2칸(256px) 밸브 두더지. 대기·걷기·도발·웅크림 / 돌진·맞음·밀려남·쓰러짐 순서. 원본 `v2/valve-mole-sheet.png`에서 만든 `valve-mole-sheet.webp`의 초록·빨강 배경 번짐(반투명 가장자리 4,076픽셀)을 로컬에서 지우고, 투명 픽셀의 색값을 0으로 정리했다. 새 이미지 생성 없음.
+- `v2/bangul-combat-sheet.webp`: 4×1칸(256px) 방울이 준비·물대포·놀람·안도 자세. 원본 `v2/bangul-combat-sheet.png`.
+- 두 원본 시트는 2026-11-09 오후 다른 작업 세션에서 만들어졌고, 사용한 생성 도구와 프롬프트 기록이 남아 있지 않다. 배포 전 생성 도구와 이용 조건을 확인해 이 항목에 적어야 한다.

@@ -1,0 +1,44 @@
+{
+  "columns": 4,
+  "rows": 1,
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "baseline": 240,
+  "source": {
+    "format": "raw",
+    "width": 2172,
+    "height": 724,
+    "channels": 4,
+    "depth": "uchar",
+    "premultiplied": false,
+    "hasAlpha": true,
+    "size": 6290112
+  },
+  "sourceFrames": [
+    {
+      "left": 130,
+      "top": 101,
+      "width": 306,
+      "height": 519
+    },
+    {
+      "left": 587,
+      "top": 102,
+      "width": 511,
+      "height": 515
+    },
+    {
+      "left": 1167,
+      "top": 128,
+      "width": 380,
+      "height": 489
+    },
+    {
+      "left": 1666,
+      "top": 181,
+      "width": 380,
+      "height": 453
+    }
+  ],
+  "scale": 0.4238921001926782
+}

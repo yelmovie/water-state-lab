@@ -1,10 +1,11 @@
+import { mountMapVillains } from './map-villains.js';
 import {residentForStage,returnedResidents,nextGreeting,villageFriend} from './island-residents.js';
 import {finalContext} from './workshop.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
 import {villageLights} from './village-lights.js';
 import {missions,canEnter,currentTrialValid,testCollector} from './domain.js';
-import {buddy,icon,btn,propArt} from './ui.js';
+import {buddy,icon,btn,propArt,toast} from './ui.js';
 import {islandStops,islandLanding,walkIslandStep,islandWalkTo,nearbyMapActions,routeDistance,pointOnRoute,clampValue as clamp} from './scene-model.js';
 
 export const journey=[
@@ -64,6 +65,11 @@ export function mountMapCamera(){
  cleanupMapCamera();
  const view=document.querySelector('.map-viewport'),world=view?.querySelector('.journey-world');if(!world)return;
  const root=view.closest('.journey-main'),hint=view.querySelector('.map-hand-hint'),controller=new AbortController(),{signal}=controller;
+ const removeVillains=mountMapVillains(world,{key:'water-state-lab:map-villains:v1',power:'물방울 파동',reduced:state.settings.reduced,preview:state.settings.adminUnlock,stages:missions.map((m,i)=>({name:islandNames[i],x:islandStops[i][0]/10+5,y:islandStops[i][1]/5.63-1,ready:state.completed.includes(m.id),token:state.mapRunId+JSON.stringify(state.evidence[m.id]||null)})),sound:final=>playCue(final?'success':'click'),notify:toast,fighter:{
+  at:()=>({x:position[0]/MAP_W*100,y:position[1]/MAP_H*100}),
+  pose:(frame,flip=false)=>{const on=frame!=null;if(on)stopWalking();actor.classList.toggle('in-combat',on);if(!on){sprite.style.transform='';paintPose();return;}sprite.style.transform=flip?'scaleX(-1)':'';sprite.style.backgroundPosition=`${frame*100/3}% 0`;},
+  shake:()=>{if(!reduceMotion())sprite.animate([{translate:'0 0'},{translate:'-5px 0'},{translate:'4px 0'},{translate:'0 0'}],{duration:260});}
+ }});
  const done=state.completed.length,actor=world.querySelector('.journey-traveler'),sprite=actor.querySelector('.map-walk-sprite');
  const nearby=view.querySelector('.map-nearby'),announcement=view.querySelector('.map-nearby-status');
  const targets=missions.filter(m=>canEnter(m.screens[0],state)).map(m=>({feet:islandStops[m.id-1],name:islandNames[m.id-1],verb:'들어가기',action:'mission-'+m.id}));
@@ -77,6 +83,7 @@ export function mountMapCamera(){
  let frame=0,lastTime=0,departing=false,arrivalFrame=0,facing=0,stride=0,nearKey='';
  const reduceMotion=()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
  function paintPose(moving=false){
+  if(actor.classList.contains('in-combat'))return;
   const col=moving&&!reduceMotion()?[0,1,2,1][Math.floor(stride/10)%4]:1;
   sprite.style.backgroundPosition=(col*50)+'% '+(facing*100/3)+'%';
  }
@@ -84,6 +91,7 @@ export function mountMapCamera(){
   const hits=departing?[]:nearbyMapActions(position,targets),key=hits.map(t=>t.action).join(' ');
   if(key===nearKey)return;
   nearKey=key;nearby.hidden=!hits.length;
+  for(const node of world.querySelectorAll('.journey-node'))node.toggleAttribute('data-near',hits.some(t=>t.action===node.dataset.action));
   nearby.innerHTML=hits.map((t,i)=>`<button type="button" data-action="${t.action}" aria-label="${t.name} ${t.verb}"><small>${t.name}</small><b>${t.verb}</b>${i===0?'<kbd>Enter</kbd>':''}</button>`).join('');
   announcement.textContent=hits.length?`${hits[0].name} ${hits[0].verb}. 누르거나 엔터로 선택할 수 있어.`:'';
  }
@@ -117,6 +125,9 @@ export function mountMapCamera(){
    nearby.style.top=clamp(above>=top-box.top+6?above:y+6,6,Math.max(6,low-box.top-nearby.offsetHeight-4))+'px';
    nearby.style.visibility=x<0||x>w||y<0||y>h?'hidden':'visible';
   }
+  // A villain's caption steps aside while the action bubble sits on it.
+  const bubble=nearby.hidden?null:nearby.getBoundingClientRect();
+  for(const tag of world.querySelectorAll('.mv-label'))tag.style.visibility=bubble&&(r=>r.left<bubble.right&&r.right>bubble.left&&r.top<bubble.bottom&&r.bottom>bubble.top)(tag.getBoundingClientRect())?'hidden':'';
   world.classList.toggle('glide',glide&&!state.settings.reduced);
   world.style.width=ww+'px';world.style.height=wh+'px';world.style.transform=`translate3d(${ox}px,${oy}px,0)`;
   view.classList.toggle('hand-on',mapView.hand);
@@ -177,6 +188,9 @@ export function mountMapCamera(){
   if(e.key==='Enter'&&!nearby.hidden&&(e.target===view||e.target===document.body)){
    e.preventDefault();if(!e.repeat){stopWalking();nearby.querySelector('button')?.click();}return;
   }
+  if(e.key===' '&&(e.target===view||e.target===document.body||e.target.closest?.('.map-pad'))){
+   e.preventDefault();if(!e.repeat){view.focus({preventScroll:true});removeVillains.attackNearest();}return;
+  }
   if(!Object.hasOwn(directions,e.key))return;
   e.preventDefault();
   if(!e.repeat){view.focus({preventScroll:true});press(e.key,directions[e.key]);}
@@ -217,6 +231,6 @@ export function mountMapCamera(){
    }
    arrivalFrame=requestAnimationFrame(walk);
   },
-  destroy(){stopWalking();cancelAnimationFrame(arrivalFrame);clearTimeout(hintTimer);observer.disconnect();controller.abort();}
+  destroy(){removeVillains();stopWalking();cancelAnimationFrame(arrivalFrame);clearTimeout(hintTimer);observer.disconnect();controller.abort();}
  };
 }

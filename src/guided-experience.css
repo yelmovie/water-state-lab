@@ -27,12 +27,12 @@
 .guided-shell .building-guide .compact-guide{position:relative;inset:auto;display:block;width:62px;min-width:62px;min-height:0;margin:0;padding:0;z-index:30}
 .guided-shell .building-guide .compact-guide .coach-trigger{width:62px;min-width:62px;height:54px;min-height:54px;gap:0;flex-direction:column}
 .guided-shell .building-guide .coach-trigger .buddy-pose{width:36px;height:36px}
-.guided-shell .building-guide .coach-trigger-label{font-size:10px;padding:1px 4px}
-.guided-shell .building-guide .coach-trigger-badge{position:absolute;top:0;right:2px;min-width:18px;min-height:18px;padding:0 3px;font-size:13px}
+.guided-shell .building-guide .coach-trigger-label{font-size:16px;line-height:1;padding:1px 6px}
+.guided-shell .building-guide .coach-trigger-badge{position:absolute;top:0;right:2px;min-width:18px;min-height:18px;padding:0 3px;font-size:16px}
 .guided-shell .building-guide .coach-help{position:fixed;inset:110px 16px auto auto;width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 126px);transform:none;z-index:40}
 .guided-shell .compact-guide .coach-trigger{pointer-events:auto}
 .guided-shell .coach-trigger{width:64px;height:82px;min-width:48px;min-height:48px}.guided-shell .coach-trigger>.buddy-pose{width:55px;height:62px}
-.guided-shell .coach-trigger-label{font-size:11px}
+.guided-shell .coach-trigger-label{font-size:16px}.guided-shell .coach-label-name{display:none}
 .guided-question-panel{grid-column:2;grid-row:1;display:flex;flex-direction:column;justify-content:center;gap:16px;min-width:0;min-height:0;padding:24px 20px;border:2px solid #c8ae70;border-radius:20px;background:#fffbecf7;box-shadow:0 5px 0 #89703322;overflow:auto;color:#254e50}
 .guided-question-label{align-self:flex-start;padding:5px 12px;border:1px solid #dfc579;border-radius:99px;background:#fff0bb;color:#89601a;font:16px/1.1 var(--font-display)}
 .guided-question-panel h2{margin:0;font:clamp(23px,1.8vw,29px)/1.3 var(--font-display);color:#285958;word-break:keep-all}
@@ -209,8 +209,8 @@
 .guided-shell .guided-play{min-height:46px;min-width:122px;font-size:14px}
 .guided-shell .guided-tools-toggle span{display:none}
 .guided-shell .building-guide-actions .compact-guide,.guided-shell .building-guide-actions .compact-guide .coach-trigger{width:48px;min-width:48px;height:48px;min-height:48px}
-.guided-shell .building-guide-actions .compact-guide .coach-trigger .buddy-pose{width:32px;height:32px}
-.guided-shell .building-guide .coach-trigger-label{font-size:9px}
+.guided-shell .building-guide-actions .compact-guide .coach-trigger .buddy-pose{width:28px;height:28px}
+.guided-shell .building-guide .coach-trigger-label{font-size:16px;padding:0 6px}
 .guided-shell .workspace-stage{position:relative;display:block!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;width:100%;height:100%!important;min-height:0!important;margin:0;padding:0!important;overflow:hidden;--workspace-header-height:76px;--workspace-controls-height:72px}
 .guided-shell .workspace-stage>.activity-scene,.guided-shell .workspace-stage>.lab-stage{position:relative;display:flex!important;flex-direction:column;gap:0;box-sizing:border-box;height:100%;min-height:0;padding:var(--workspace-header-height) 12px var(--workspace-controls-height)!important}
 .guided-shell .workspace-stage:is(.activity,.experiment-layout){background-image:linear-gradient(#fffaf089,#fffaf05c),var(--stage-art);background-size:cover;background-position:center;border:2px solid #cbb682;border-radius:22px}
@@ -233,7 +233,7 @@
 .workspace-controls .essential-controls[open]>summary{display:none}
 .workspace-controls .activity-status,.workspace-controls .process-status,.workspace-controls .cycle-controls>p{flex:1 1 100%;max-width:1100px;margin:0;padding:4px 10px;border:0;border-radius:8px;background:#fffdf0ed;font-size:16px!important;line-height:1.3;text-align:center}
 .workspace-controls .bench-feedback{display:contents}
-.workspace-controls :is(.science-detail,.tool-drawer)>summary{min-height:44px;padding:8px;font-size:14px;cursor:pointer}
+.workspace-controls :is(.science-detail,.tool-drawer)>summary{min-height:44px;padding:8px;font-size:16px;cursor:pointer}
 .workspace-controls :is(.science-detail,.tool-drawer)>summary{border:1px solid #b8cbb5;border-radius:10px;background:#fffdf0}
 .workspace-controls details[open]:not(.essential-controls){max-width:600px;max-height:160px;overflow:auto;border-radius:10px;background:#fffdf0}
 .guided-shell .manual-tools .workspace-controls>[data-time-controls]{display:flex!important;align-items:center;gap:8px;flex:0 1 570px;min-height:48px;margin:0;padding:4px 10px;border:1px solid #b4cbb9;border-radius:12px;background:#f7fbefed}
@@ -308,8 +308,8 @@
 }
 
 .observation-speed-control{position:relative;display:block;flex:none;width:76px;height:48px;border:1px solid #a7bfb0;border-radius:10px;background:#fffdf1;color:#315c55}
-.observation-speed-control>span{position:absolute;top:2px;left:8px;font-size:10px;line-height:1;pointer-events:none}
-.observation-speed-control select{display:block;width:100%;height:46px;min-height:44px;margin:0;padding:10px 3px 0 6px;border:0;border-radius:10px;background:transparent;color:inherit;font:16px/1.2 var(--font-display);cursor:pointer}
+.observation-speed-control>span{position:absolute;top:3px;left:8px;font-size:16px;line-height:1;pointer-events:none}
+.observation-speed-control select{display:block;width:100%;height:46px;min-height:44px;margin:0;padding:18px 3px 0 6px;border:0;border-radius:10px;background:transparent;color:inherit;font:16px/1.1 var(--font-display);cursor:pointer}
 .observation-speed-control:focus-within{outline:3px solid #d5a537;outline-offset:2px}
 .melt-room-zone .melt-landing{display:block;width:100%;height:100%;min-height:0;align-self:stretch;border:0;border-radius:0;background:none;box-shadow:none;object-fit:contain}
 .melt-bench-scene{position:relative;width:100%;height:100%;min-height:0;isolation:isolate}
@@ -318,7 +318,7 @@
 .melt-bench-tray .ice-tray-art{display:block!important;width:100%!important;height:100%!important;max-height:100%;object-fit:contain}
 .melt-live .melt-bench-scene{height:100%}
 .process-comparison>figure>.melt-bench-scene{height:100%}
-@media(max-height:520px) and (orientation:landscape){.observation-speed-control{width:64px;height:44px}.observation-speed-control select{height:42px;font-size:14px}}
+@media(max-height:520px) and (orientation:landscape){.observation-speed-control{width:70px;height:44px}.observation-speed-control>span{top:2px}.observation-speed-control select{height:42px;font-size:16px;padding-top:17px}}
 
 /* Keep the completion, actions and restart in the viewport together. */
 .ending-shell{height:100dvh;min-height:0;overflow:hidden}

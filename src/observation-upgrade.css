@@ -30,7 +30,7 @@
 .experiment-shell .compact-guide{bottom:12px;left:12px;max-width:calc(100% - 24px);padding:0 3px 5px;box-sizing:border-box}
 .experiment-shell .compact-guide .coach-trigger{min-height:80px;width:82px;min-width:82px;justify-content:flex-end;gap:1px;overflow:visible}
 .experiment-shell .compact-guide .coach-trigger .buddy-pose{width:62px;height:62px;flex:none}
-.experiment-shell .coach-trigger-label{font-size:13px;padding:2px 6px;line-height:1.25}
+.experiment-shell .coach-trigger-label{font-size:16px;padding:2px 6px;line-height:1.1}.experiment-shell .coach-label-name{display:none}
 .experiment-shell .coach-trigger-badge{top:0;min-height:22px;font-size:18px;right:0}
 @media(min-width:801px) and (max-height:740px){
  .activity-scene.has-observation-board{padding:8px;gap:5px}.observation-board .time-controls{min-height:68px;grid-template-columns:56px minmax(0,1fr) auto;gap:8px;padding:3px 10px}.observation-clock{width:54px;height:54px}.observation-clock .clock-minute{height:19px;margin-top:-19px}.observation-clock .clock-hour{height:13px;margin-top:-13px}
