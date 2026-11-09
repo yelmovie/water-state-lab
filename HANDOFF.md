@@ -1,3 +1,13 @@
+# 물길탐험 인계 · 2026-11-09 밤 (지도 악당 전투·16px 하한)
+
+운영 배포: 2026-11-09 커밋 09df655 → Cloudflare Pages `5b653c5b`, 338개 파일 SHA-256 일치 확인. 직전 운영본 `bbdd5dc8`(되돌릴 때 사용). 빌드는 `git -c core.autocrlf=false archive`로 꺼낸 커밋본(`tmp/deploy-09df655`)에서 했다. GitHub 푸시는 하지 않았다(로컬 main이 origin/main보다 앞섬).
+
+- 로컬 main은 origin/main보다 커밋 2개(bbbe4f7 지도 조작·관찰 재생, 39c2f06 섬 전체보기 맞춤) 뒤처져 있었다. 합쳐서 배포했고, 합치면서 `tests/map-camera.test.mjs`의 가짜 DOM에 악당 모듈이 쓰는 최소 기능을 채웠다.
+- 지도 악당: 밸브 두더지 스프라이트(`v2/map-villain-mole.webp`), 방울이 전투 시트(`v2/bangul-combat-sheet.webp`), 물대포·반격·퇴치 애니메이션, 스페이스로 가까운 악당 공격(`src/map-villains.js`, `src/journey.js`). 회귀 스크립트 `scripts/map-villains-*.cjs`는 `PLAYWRIGHT_MODULE`과 `TEST_URL`을 주고 돌린다.
+- 16px 하한·지도 겹침·2장 카드 캡션 정리. 자세한 내용은 `docs/reviews/SCORE-20261109.md`의 "이후 조치".
+- wrangler 로그인 토큰은 11/09 07:54에 만료돼 있었다. 비대화형 셸에서는 갱신되지 않아서, 터미널 패널에서 `tmp/deploy-09df655.sh`(HOME만 SSD로 지정, XDG_CONFIG_HOME은 주지 않음)로 배포했다.
+- 미확인: 두 전투 시트의 생성 도구·이용 조건(`public/assets/CREDITS.md` 마지막 항목), 실기기 터치로 악당 전투.
+
 # 물길탐험 인계 · 2026-11-09 (구역 통합·학습 결론·여권·인증서·3D 물)
 
 운영 배포: 2026-11-09 커밋 7130fdd → Cloudflare Pages `bbdd5dc8`, 205개 파일 SHA-256 일치 확인. 직전 운영본 `90f1813d`(되돌릴 때 사용). GitHub main 푸시 완료. 빌드는 `git -c core.autocrlf=false archive`로 꺼낸 커밋본에서 했다. Wrangler 로그인 정보는 `/Volumes/T7 Shield/DevCaches/tools/wrangler-home`에 있어서 `HOME`과 `XDG_CONFIG_HOME`을 그쪽으로 주고 실행한다.
