@@ -298,3 +298,14 @@ Production transparent sprite atlas with exactly THREE isolated realistic school
 - `v2/map-villain-mole.webp`: 4×2칸(256px) 밸브 두더지. 대기·걷기·도발·웅크림 / 돌진·맞음·밀려남·쓰러짐 순서. 원본 `v2/valve-mole-sheet.png`에서 만든 `valve-mole-sheet.webp`의 초록·빨강 배경 번짐(반투명 가장자리 4,076픽셀)을 로컬에서 지우고, 투명 픽셀의 색값을 0으로 정리했다. 새 이미지 생성 없음.
 - `v2/bangul-combat-sheet.webp`: 4×1칸(256px) 방울이 준비·물대포·놀람·안도 자세. 원본 `v2/bangul-combat-sheet.png`.
 - 두 원본 시트는 2026-11-09 오후 다른 작업 세션에서 OpenAI GPT Image로 만들었다(제작자 확인, 2026-11-09). 프롬프트 원문은 남아 있지 않다.
+
+## 밸브 두더지 전투 효과음 · 2026-11-09
+
+Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라이선스 `audio/Kenney-Impact-LICENSE.txt`). 4번 프로젝트에 받아 둔 같은 묶음에서 복사했다. 새로 내려받지 않았다.
+
+| 쓰임 | 파일 |
+|---|---|
+| 1·2타 금속 타격 | `audio/impactMetal_medium_000.ogg` |
+| 마지막 타격 | `audio/impactPunch_heavy_000.ogg` |
+| 두더지 반격 | `audio/impactSoft_heavy_000.ogg` |
+| 물총 발사 | `audio/splash_09.ogg`(기존 Kenney CC0) |

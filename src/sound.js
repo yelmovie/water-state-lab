@@ -3,7 +3,7 @@ let context,unlocked=false,music=null,musicGain=null,loadedTheme=null,endedTheme
 let settings={sound:true,bgm:true,sfx:true,bgmVolume:35};
 const SFX_VOLUME=.035;
 const themes={main:'/assets/audio/music/main-theme.mp3',ending:'/assets/audio/music/ending-theme.mp3'};
-const files={click:'click_003.ogg',drop:'drop_003.ogg',success:'confirmation_002.ogg',discover:'confirmation_001.ogg',error:'error_001.ogg',hint:'question_002.ogg',connect:'switch_002.ogg',pour:'splash_09.ogg',bubble:'bubble_02.ogg',page:'bookFlip1.ogg',wipe:'cloth1.ogg',latch:'metalLatch.ogg'};
+const files={click:'click_003.ogg',drop:'drop_003.ogg',success:'confirmation_002.ogg',discover:'confirmation_001.ogg',error:'error_001.ogg',hint:'question_002.ogg',connect:'switch_002.ogg',pour:'splash_09.ogg',bubble:'bubble_02.ogg',page:'bookFlip1.ogg',wipe:'cloth1.ogg',latch:'metalLatch.ogg',shoot:'splash_09.ogg',hit:'impactMetal_medium_000.ogg',finish:'impactPunch_heavy_000.ogg',thud:'impactSoft_heavy_000.ogg'};
 const players=new Map();let fileCue=null;
 const hidden=()=>typeof document!=='undefined'&&document.hidden;
 const desiredMusic=()=>settings.sound&&settings.bgm&&!quiet&&!hidden()&&unlocked;
@@ -78,7 +78,7 @@ export async function playCue(kind='click'){
  if(typeof Audio!=='undefined'){
   let player=players.get(kind);
   if(!player){player=new Audio('/assets/audio/'+(files[kind]||files.click));player.preload='auto';players.set(kind,player);}
-  player.volume=({click:.22,pour:.24,bubble:.20,page:.24,wipe:.18,latch:.24})[kind]??.32;fileCue=player;
+  player.volume=({click:.22,pour:.24,bubble:.20,page:.24,wipe:.18,latch:.24,shoot:.3,hit:.42,finish:.5,thud:.34})[kind]??.32;fileCue=player;
   try{await player.play();return;}catch{if(request!==cueSequence)return;fileCue=null;}
  }
  try{
@@ -87,7 +87,7 @@ export async function playCue(kind='click'){
   if(request!==cueSequence||!settings.sound||!settings.sfx||hidden()||ctx.state!=='running')return;
   const oscillator=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime;
   oscillator.type='sine';
-  const tones={click:[660,440],drop:[420,780],success:[523,1047],discover:[440,880],error:[270,180],hint:[523,659],connect:[260,520],pour:[680,180],bubble:[220,920],page:[480,240],wipe:[320,160],latch:[180,540]};
+  const tones={click:[660,440],drop:[420,780],success:[523,1047],discover:[440,880],error:[270,180],hint:[523,659],connect:[260,520],pour:[680,180],bubble:[220,920],page:[480,240],wipe:[320,160],latch:[180,540],shoot:[900,300],hit:[200,120],finish:[160,80],thud:[140,90]};
   const [from,to]=tones[kind]||tones.click;
   oscillator.frequency.setValueAtTime(from,now);oscillator.frequency.exponentialRampToValueAtTime(to,now+.065);
   gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(SFX_VOLUME,now+.008);gain.gain.exponentialRampToValueAtTime(.0001,now+.08);

@@ -65,7 +65,7 @@ export function mountMapCamera(){
  cleanupMapCamera();
  const view=document.querySelector('.map-viewport'),world=view?.querySelector('.journey-world');if(!world)return;
  const root=view.closest('.journey-main'),hint=view.querySelector('.map-hand-hint'),controller=new AbortController(),{signal}=controller;
- const removeVillains=mountMapVillains(world,{key:'water-state-lab:map-villains:v1',power:'물방울 파동',reduced:state.settings.reduced,preview:state.settings.adminUnlock,stages:missions.map((m,i)=>({name:islandNames[i],x:islandStops[i][0]/10+5,y:islandStops[i][1]/5.63-1,ready:state.completed.includes(m.id),token:state.mapRunId+JSON.stringify(state.evidence[m.id]||null)})),sound:final=>playCue(final?'success':'click'),notify:toast,fighter:{
+ const removeVillains=mountMapVillains(world,{key:'water-state-lab:map-villains:v1',power:'물방울 파동',reduced:state.settings.reduced,preview:state.settings.adminUnlock,stages:missions.map((m,i)=>({name:islandNames[i],x:islandStops[i][0]/10+5,y:islandStops[i][1]/5.63-1,ready:state.completed.includes(m.id),token:state.mapRunId+JSON.stringify(state.evidence[m.id]||null)})),sound:kind=>playCue(kind),notify:toast,fighter:{
   at:()=>({x:position[0]/MAP_W*100,y:position[1]/MAP_H*100}),
   pose:(frame,flip=false)=>{const on=frame!=null;if(on)stopWalking();actor.classList.toggle('in-combat',on);if(!on){sprite.style.transform='';paintPose();return;}sprite.style.transform=flip?'scaleX(-1)':'';sprite.style.backgroundPosition=`${frame*100/3}% 0`;},
   shake:()=>{if(!reduceMotion())sprite.animate([{translate:'0 0'},{translate:'-5px 0'},{translate:'4px 0'},{translate:'0 0'}],{duration:260});}
@@ -134,7 +134,7 @@ export function mountMapCamera(){
   world.style.width=ww+'px';world.style.height=wh+'px';world.style.transform=`translate3d(${ox}px,${oy}px,0)`;
   // A villain's caption steps aside while the action bubble sits on it.
   const bubble=nearby.hidden?null:nearby.getBoundingClientRect();
-  for(const tag of world.querySelectorAll('.mv-label'))tag.style.visibility=bubble&&(r=>r.left<bubble.right&&r.right>bubble.left&&r.top<bubble.bottom&&r.bottom>bubble.top)(tag.getBoundingClientRect())?'hidden':'';
+  for(const tag of world.querySelectorAll('.mv-say.show'))tag.style.visibility=bubble&&(r=>r.left<bubble.right&&r.right>bubble.left&&r.top<bubble.bottom&&r.bottom>bubble.top)(tag.getBoundingClientRect())?'hidden':'';
   view.classList.toggle('hand-on',mapView.hand);
   root.querySelector('[data-map-mode="hand"]')?.setAttribute('aria-pressed',String(mapView.hand));
   const overview=root.querySelector('[data-map-mode="overview"]');
