@@ -96,7 +96,9 @@ export function replayStep(n, state) {
  if(n===4&&state.fieldwork.active!==n&&state.activities.pipe.trials.some(t=>t.safe)&&state.activities.pipe.trials.some(t=>!t.safe))return 'bench-run';
  return n === 3 && state.fieldwork.active !== n && activityReady(3, state.activities) ? 'act-freeze-replay' : null;
 }
-let playingStage=null,playingField=false,timer,revision=0,visited=[],scope=null,pauseScope=null,pausedBy=null,preference=null;
+let playingStage=null,playingField=false,timer,revision=0,visited=[],scope=null,pauseScope=null,pausedBy=null,preference=null,stepsSincePause=0;
+// Watching hands back to the learner after this many steps so they can step in.
+export const CHECKPOINT_STEPS=2;
 export const observationPlaying = () => playingStage !== null;
 export function stopObservation(message='',reason='manual') {
  clearTimeout(timer);
@@ -106,7 +108,7 @@ export function stopObservation(message='',reason='manual') {
  stopClock();
  if(wasPlaying)document.dispatchEvent(new Event('observation-stop'));
  const button=document.getElementById('observation-play');
- if(button){button.disabled=false;button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','관찰 계속');button.title='자동으로 이어서 관찰해.';button.dataset.playState='paused';const label=button.querySelector?.('[data-guided-play-label]');if(label)label.textContent='관찰 계속';else button.textContent='▶ 자동재생';}
+ if(button){button.disabled=false;button.setAttribute('aria-pressed','false');const resumeText=reason==='checkpoint'?'이어서 보기':'자동으로 보기';button.setAttribute('aria-label',resumeText);button.title='자동으로 이어서 관찰해.';button.dataset.playState='paused';const label=button.querySelector?.('[data-guided-play-label]');if(label)label.textContent=resumeText;else button.textContent='▶ 자동재생';}
  const main=document.querySelector('.experiment-main');if(main)main.dataset.guidedPhase=reason==='question'?'question':'manual';
  if(typeof message==='string'&&message)toast(message);
 }
@@ -127,8 +129,11 @@ export function bindObservation(state, perform, final=null,onPreferenceChange=()
  const button=document.getElementById('observation-play'),guided=state.settings.autoplay!==false;
  if(!button||typeof state.route!=='number'){stopObservation('','transition');scope=null;return;}
  const nextScope=state.route+'|'+(state.fieldwork.active===state.route?'field':'experiment');
- if(nextScope!==scope){stopObservation('','transition');scope=nextScope;pauseScope=null;pausedBy=null;visited=[];}
- if(preference!==null&&preference!==guided){stopObservation('','transition');pauseScope=null;pausedBy=null;}
+ // Every stage opens with the learner's own hands on the tools; watching is an opt-in button.
+ const opening=nextScope!==scope;
+ if(opening){stopObservation('','transition');scope=nextScope;pauseScope=scope;pausedBy='manual';visited=[];}
+ if(preference!==null&&preference!==guided){stopObservation('','transition');pauseScope=scope;pausedBy='manual';}
+ if(opening&&guided){const opened=revision;queueMicrotask(()=>{if(revision===opened&&playingStage===null)onManualChange(true);});}
  preference=guided;
  binding=revision;
  const question=()=>guided?guidedQuestion(state.route,state,final):null;
@@ -136,14 +141,14 @@ export function bindObservation(state, perform, final=null,onPreferenceChange=()
   const q=question(),playing=playingStage!==null,main=document.querySelector('.experiment-main'),phase=q&&pausedBy==='question'?'question':playing?'observe':'manual';
   if(main)main.dataset.guidedPhase=phase;
   button.disabled=phase==='question';button.setAttribute('aria-pressed',String(playing));button.dataset.playState=phase==='question'?'question':playing?'playing':'paused';
-  const text=phase==='question'?'답을 고르면 계속':playing?'직접 해보기':'관찰 계속',label=button.querySelector?.('[data-guided-play-label]');
+  const text=phase==='question'?'답을 고르면 계속':playing?'직접 해보기':pausedBy==='checkpoint'?'이어서 보기':'자동으로 보기',label=button.querySelector?.('[data-guided-play-label]');
   if(label)label.textContent=text;else button.textContent=phase==='question'?text:playing?'직접 해보기':'▶ 자동재생';
   button.setAttribute('aria-label',text);button.title=phase==='question'?'답을 고르면 관찰이 이어져.':playing?'실험 도구를 직접 조작해 봐.':'자동으로 이어서 관찰해.';
  };
  const schedule=(delay,scaled=true)=>{clearTimeout(timer);timer=setTimeout(tick,scaled?observationDelay(delay,state.settings):delay);};
  const speedControl=document.getElementById('observation-speed');
- if(speedControl)speedControl.onchange=()=>{state.settings.observationSpeed=observationSpeed({observationSpeed:Number(speedControl.value)});onPreferenceChange();if(playingStage!==null)schedule(assistStep(state.route,state,final)?.delay??observationDwell(state.route,state));};
- const begin=()=>{resumeObservationTime();playingStage=state.route;playingField=state.fieldwork.active===state.route;pausedBy=null;pauseScope=null;};
+ if(speedControl)speedControl.onchange=()=>{state.settings.observationPace=observationSpeed({observationPace:Number(speedControl.value)});onPreferenceChange();if(playingStage!==null)schedule(assistStep(state.route,state,final)?.delay??observationDwell(state.route,state));};
+ const begin=()=>{resumeObservationTime();stepsSincePause=0;playingStage=state.route;playingField=state.fieldwork.active===state.route;pausedBy=null;pauseScope=null;};
  const notifyQuestion=q=>{
   const main=document.querySelector('.experiment-main');if(main&&(main.dataset.questionId||'')!==(q?.id||''))document.dispatchEvent(new Event('guided-question-change'));
  };
@@ -177,8 +182,11 @@ export function bindObservation(state, perform, final=null,onPreferenceChange=()
   if(awaitedMotion){awaitedMotion=false;return schedule(state.fieldwork.active===4?1400:500);}
   const q=question();if(q&&(playingStage!==null||pausedBy==='question'))return waitForAnswer(q);
   if(playingStage===null){if(pausedBy!=='question')return;begin();paint();notifyQuestion(null);if(revision!==binding)return;}
+  // Every few steps the learner gets the tools back, after the reading pause and any running motion.
+  if(stepsSincePause>=CHECKPOINT_STEPS){stepsSincePause=0;stopObservation('','checkpoint');paint();onManualChange(true);return;}
   const n=state.route,assist=assistStep(n,state,final),routine=guided?guidedRoutineAction(n,state,final):null,step=routine??assist?.action??observationStep(n,state,final,visited);
   if(!step||!run(step)){stopObservation(guided?'':observationPauseMessage(n,state),'complete');paint();return;}
+  stepsSincePause++;
   // In-place process animations do not render the app; keep the same controller alive for them.
   if(revision===binding&&playingStage!==null)schedule(routine?900:assist?.delay??observationDwell(n,state));
  }
@@ -206,5 +214,6 @@ document.addEventListener('wheel',manual,{capture:true,passive:true});
 document.addEventListener('keydown', event=>{
  if(event.key==='Escape')stopObservation();else manual(event);
 },true);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stopObservation();});
+// Hiding the page stops a running playback; a waiting question stays a question.
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&playingStage!==null)stopObservation();});
 

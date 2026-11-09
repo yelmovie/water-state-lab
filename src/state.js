@@ -5,7 +5,7 @@ import {defaultParts,canEnter} from './domain.js';
 import {initialFieldwork,cleanFieldwork,migrateFieldwork} from './fieldwork-model.js';
 import {restoreDrawingMetadata} from './drawing-records.js';
 export const KEY='water-drop-lab:v1';
-export function initialState(){return {mapRunId:globalThis.crypto?.randomUUID?.()||`run-${Date.now()}-${Math.random().toString(36).slice(2)}`,schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,autoplay:true,observationSpeed:.5,adminUnlock:false},lab:{
+export function initialState(){return {mapRunId:globalThis.crypto?.randomUUID?.()||`run-${Date.now()}-${Math.random().toString(36).slice(2)}`,schemaVersion:2,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,autoplay:true,observationPace:1,adminUnlock:false},lab:{
   observe:{selected:0,seen:[],pour:0,ice:false,cloth:0,wipe:0,canTime:0},
   classify:{current:0,records:[],type:'',proof:false},
   freeze:{initial:false,tare:false,prediction:65,phase:'water',measured:false,melted:false,compared:false},
@@ -43,7 +43,7 @@ function loadState(storage){
   raw.fieldwork=migrateFieldwork(raw.fieldwork);s.schemaVersion=2;s.inquiry=sanitizeInquiry(raw.inquiry);s.fieldwork=cleanFieldwork(raw.fieldwork);
   // Sanitized data can be shown, but rejected observations must not replace their source.
   if(raw.inquiry!==undefined&&!preservesSource(raw.inquiry,s.inquiry)||raw.fieldwork!==undefined&&!preservesSource(raw.fieldwork,s.fieldwork,true))repaired=true;
-  s.settings.observationSpeed=observationSpeed(s.settings);
+  s.settings.observationPace=observationSpeed(s.settings);delete s.settings.observationSpeed; // old scale is not carried over
   s.settings.sfx=typeof raw.settings?.sfx==='boolean'?raw.settings.sfx:s.settings.sound;
   // The old synthesized score defaulted to off; saves from that time hear the real themes once, then their choice sticks.
   if(raw.settings?.themeMusic!==true){s.settings.bgm=true;s.settings.themeMusic=true;}
@@ -134,6 +134,6 @@ export function reset(token){
  resetTokens.delete(token);
  const current=currentSource();if(!unchanged(current)||current.raw!==token.raw)return fail(current?'conflict':'unavailable');
  const next=initialState();
- for(const key of ['sound','bgm','sfx','bgmVolume','reduced','observationSpeed'])next.settings[key]=state.settings[key];
+ for(const key of ['sound','bgm','sfx','bgmVolume','reduced','observationPace'])next.settings[key]=state.settings[key];
  try{const serialized=JSON.stringify(next);current.storage.setItem(KEY,serialized);lastSource=serialized;storageCode='ready';protectedCode=null;writeStatus='saved';state=next;emitStorageStatus();return true;}catch{return fail('full');}
 }

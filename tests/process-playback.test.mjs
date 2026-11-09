@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {PACE} from '../src/observation-speed.js';
 import assert from 'node:assert/strict';
 import {initialActivities} from '../src/activity-model.js';
 import {chapterState} from '../src/fieldwork-model.js';
@@ -41,9 +42,9 @@ function playbackHarness(t,prefix){
  };
 }
 
-for(const speed of [.25,.5,1,2]){
+for(const pace of [.5,1,1.5,2]){const speed=pace*PACE; // engine rate
  test(`freezing and melting advance to the next stage at ${speed}×`,t=>{
-  const h=playbackHarness(t,'measure'),f=initialActivities().freeze,settings={observationSpeed:speed};
+  const h=playbackHarness(t,'measure'),f=initialActivities().freeze,settings={observationPace:pace};
   measureAction(f,'measure');f.predicted=true;measureAction(f,'load');
   let renders=0;
   const cleanup=bindMeasure(h.host,()=>f,{save(){},render(){renders++;h.action.disabled=false;h.pause.hidden=true;},reduced:()=>false,settings});h.onCleanup(cleanup);
@@ -56,7 +57,7 @@ for(const speed of [.25,.5,1,2]){
  });
 
  test(`greenhouse evaporation and condensation advance at ${speed}×`,t=>{
-  const h=playbackHarness(t,'cycle'),c=chapterState(10),settings={observationSpeed:speed};
+  const h=playbackHarness(t,'cycle'),c=chapterState(10),settings={observationPace:pace};
   const commit=(step,time)=>cycleAction(c,{step,time});commit('prepare');
   const cleanup=bindCycle(h.host,()=>c,commit,()=>false,settings);h.onCleanup(cleanup);
   h.click();assert.equal(h.frames.size,1,'waiting schedules an animation');
@@ -69,7 +70,7 @@ for(const speed of [.25,.5,1,2]){
 }
 
 test('freezing resumes its saved progress, honors live speed changes, and cancels on leaving',t=>{
- const h=playbackHarness(t,'measure'),f=initialActivities().freeze,settings={observationSpeed:.5};
+ const h=playbackHarness(t,'measure'),f=initialActivities().freeze,settings={observationPace:2};
  measureAction(f,'measure');f.predicted=true;measureAction(f,'load');
  const cleanup=bindMeasure(h.host,()=>f,{save(){},render(){h.action.disabled=false;h.pause.hidden=true;},reduced:()=>false,settings});h.onCleanup(cleanup);
  h.click();h.advance(1000);assert.equal(f.processTime,12);
@@ -77,19 +78,19 @@ test('freezing resumes its saved progress, honors live speed changes, and cancel
  assert.equal(h.frames.size,0);assert.equal(h.action.disabled,false);assert.equal(h.pause.hidden,true);
  h.advance(10000);assert.equal(f.processTime,12,'paused time is not counted');
  h.click();h.advance(1000);assert.equal(f.processTime,24);
- settings.observationSpeed=2;h.advance(1000);assert.equal(f.processTime,74,'the new speed continues without resetting');
+ settings.observationPace=1;h.advance(8000);assert.equal(f.processTime,74,'the new speed continues without resetting');
  cleanup();h.advance(10000);assert.equal(f.processTime,74);assert.equal(h.frames.size,0);
  h.click();assert.equal(h.frames.size,0,'old controls do nothing after navigation');
 });
 
 test('greenhouse pauses when hidden and does not retain callbacks after leaving',t=>{
- const h=playbackHarness(t,'cycle'),c=chapterState(10),settings={observationSpeed:1};
+ const h=playbackHarness(t,'cycle'),c=chapterState(10),settings={observationPace:2};
  const commit=(step,time)=>cycleAction(c,{step,time});commit('prepare');
  const cleanup=bindCycle(h.host,()=>c,commit,()=>false,settings);h.onCleanup(cleanup);
- h.click();h.advance(900);assert.equal(cycleStatus(c).time,20);
+ h.click();h.advance(1800);assert.equal(cycleStatus(c).time,20);
  h.doc.hidden=true;h.doc.dispatchEvent(new Event('visibilitychange'));
  assert.equal(h.frames.size,0);h.advance(10000);assert.equal(cycleStatus(c).time,20);
- h.doc.hidden=false;h.click();h.advance(900);assert.equal(cycleStatus(c).time,40);
+ h.doc.hidden=false;h.click();h.advance(1800);assert.equal(cycleStatus(c).time,40);
  cleanup();h.advance(10000);assert.equal(cycleStatus(c).time,40);assert.equal(h.frames.size,0);
  h.click();assert.equal(h.frames.size,0);
 });

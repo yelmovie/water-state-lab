@@ -370,3 +370,16 @@
  .ending-shell .ending-statement{padding:7px;gap:4px}.ending-shell .ending-statement h3{font-size:17px}.ending-shell .ending-statement .btn{font-size:13px;min-height:62px;padding:5px}
  .ending-shell .ending-copy .home-actions{gap:4px}.ending-shell .ending-copy .home-actions .btn{min-height:44px;padding:5px;font-size:14px}.ending-shell .classroom-making{font-size:14px;padding:4px}
 }
+/* 2026-11-09: make the question and its answers impossible to miss. */
+.guided-shell .guided-question-panel{max-height:44%;padding:10px 14px 12px;border:4px solid #e0a52a;background:#fffdf3f7;box-shadow:0 0 0 4px #fff3c8,0 6px 18px #5a3d0a40;animation:gq-glow 1.6s ease-in-out infinite}
+.guided-shell .guided-question-panel>:is(.guided-question-label,h2,.guided-answer-after){display:inline-block;vertical-align:middle}
+.guided-shell .guided-question-panel>.guided-question-label{margin:0 8px 8px 0;padding:4px 12px;border:2px solid #c7861a;background:#ffb938;color:#4a2a00;font:18px/1.1 var(--font-display)}
+.guided-shell .guided-question-panel>h2{margin:0 0 8px;font:clamp(20px,1.7vw,26px)/1.25 var(--font-display);color:#24433f}
+.guided-shell .guided-question-panel>.guided-answer-after{display:none}
+.guided-shell .guided-question-choices>.btn{min-height:56px;border:3px solid #2f7f73;background:linear-gradient(#ffffff,#e6f6ef);color:#174a42;box-shadow:0 4px 0 #2f7f73;font-weight:400}
+.guided-shell .guided-question-choices>.btn:hover{background:linear-gradient(#fffbe8,#ffe9a8);border-color:#c7861a;box-shadow:0 4px 0 #c7861a}
+.guided-shell .guided-question-choices>.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #2f7f73}
+.experiment-main[data-guided-phase=question] #stage-direction:before{content:'문제';display:inline-block;margin-right:8px;padding:2px 10px;border-radius:99px;background:#ffb938;color:#4a2a00;font-size:.75em;vertical-align:.12em}
+@keyframes gq-glow{0%,100%{box-shadow:0 0 0 4px #fff3c8,0 6px 18px #5a3d0a40}50%{box-shadow:0 0 0 8px #ffe08a,0 6px 22px #c7861a66}}
+@media(prefers-reduced-motion:reduce){.guided-shell .guided-question-panel{animation:none}}
+@media(max-height:520px){.guided-shell .guided-question-panel>h2{display:none}.guided-shell .guided-question-choices>.btn{min-height:48px}}
