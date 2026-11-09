@@ -134,7 +134,7 @@ export function getActivityProgress(n){const a=experimentActivities(n,state),s=(
    :'길쭉한')+' 그릇 위에 주전자를 놓아 봐.'
    :'왼쪽 주전자를 그릇 하나로 끌어 물을 부어 봐.'):s.step===1?(s.iceMoved?'‘사라지는 물을 찾아보자’를 눌러 봐.'
    :'얼음을 넓은 그릇으로 끌어 놓아 봐.') : !s.clothWet?'천 위를 문질러 물자국을 만들어 봐.'
-   :'시간 손잡이를 끝까지 밀고 ‘지금 모습 남기기’를 눌러 봐.';hint='물과 얼음은 옮겼을 때 모양이 같을까?';}
+   :'시간 손잡이를 끝까지 밀면 마른 모습이 기록돼.';hint='물과 얼음은 옮겼을 때 모양이 같을까?';}
  if(n===2){pairs=[['고체 찾기',sortCards.some(c=>c.type==='solid'&&s.placed[c.id]===c.type)],['액체 찾기',sortCards.some(c=>c.type==='liquid'&&s.placed[c.id]===c.type)],['기체 찾기',sortCards.some(c=>c.type==='gas'&&s.placed[c.id]===c.type)]];instruction=
   `‘${(sortCards.find(c=>c.id===state.inquiry.sortProof)||nextSortCard(s)).name}’은 어떤 상태일까? 알맞은 칸을 눌러 봐.`;hint='빨래 자체가 아니라 마르면서 공기 중으로 간 물을 생각해.';}
  if(n===3){pairs=[['처음 측정·높이 예상',s.predicted],['얼린 뒤 측정',s.records.some(r=>r.kind==='ice')],['녹인 뒤 비교',activityReady(3,a)]];instruction=measureTask(s);hint='눈금이 높아진 것과 무게가 늘어난 것은 같은 뜻일까? 같은 물의 세 측정값을 비교해 봐.';}
@@ -150,7 +150,7 @@ export function getActivityProgress(n){const a=experimentActivities(n,state),s=(
    :s.faster!=='thin'?'중간 기록에서 물자국을 비교하고 먼저 마른 쪽을 골라 봐.'
    :'그림에서 줄어든 물이 어디로 갔는지 눌러 봐.';hint='그림 모양·바닥·환경은 같고 물의 양만 달라.';}
  if(n===6){pairs=[['가열 전 같은 조건 비교',s.baseline],['끓는 변화 기록',s.records.some(r=>r.boiling)],['물의 행방 연결',activityReady(6,a)]];instruction=
-  !s.baseline?'가열하지 않은 채 시간을 밀고 ‘지금 모습 남기기’를 눌러 봐.'
+  !s.baseline?'가열하지 않은 채 시간을 밀어 봐. 그때 모습이 기록돼.'
    :!s.records.some(r=>r.boiling)?'B의 가열 세기를 높여 봐. 시간을 밀어 물속에서 기포가 올라오면 모습을 남겨.'
    :!s.destination?'처음 물높이 선과 지금을 비교하고, 줄어든 물의 행방을 골라 봐.'
    :'두 용기에서 줄어든 물이 무엇으로 변했는지 골라 봐.';hint='끓지 않는 A도 물의 양이 줄어들까?';}
@@ -162,7 +162,7 @@ export function getActivityProgress(n){const a=experimentActivities(n,state),s=(
    :!s.sealed?'‘두 컵 입구 막기’를 눌러 같은 조건을 만들어 봐.'
    :s.records.length<2?'시간을 ‘나중’까지 밀고 두 컵이 어떻게 다른지 모습을 남겨 봐.'
    :!s.rewiped?'차가운 컵의 물방울이 있는 자리를 다시 문질러 봐.'
-   :'시간을 다시 밀고 ‘지금 모습 남기기’를 눌러 닦은 자리를 기록해.';hint='입구는 막혀 있어. 차가운 용기와 실온 용기의 바깥을 비교해.';}
+   :'시간을 다시 끝까지 밀면 닦은 자리 모습이 기록돼.';hint='입구는 막혀 있어. 차가운 용기와 실온 용기의 바깥을 비교해.';}
  if(n===8){pairs=[['내 증거 두 장 연결',s.evidence.length>=2],['출처·조건·결과 연결',s.chain.join(',')==='air,cold,drops'],['음료병에 적용',s.transfer]];instruction=
   !activityReady(7,a)?'‘컵 실험으로’를 눌러 두 컵을 관찰한 기록을 모아 봐.'
    :s.evidence.length<2?'컵에서 관찰한 증거 그림 두 장을 눌러 내 설명에 담아 봐.'

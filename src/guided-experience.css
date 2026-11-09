@@ -394,3 +394,9 @@
 .stage-answer-group :is(button,.btn){min-height:52px;padding:8px 18px;font-size:clamp(18px,1.4vw,24px)}
 @media(max-height:520px){.stage-question-pop{max-width:42vw;font-size:16px;padding:4px 10px 4px 6px}.stage-answer-group :is(button,.btn){min-height:44px;padding:4px 10px;font-size:16px}}
 .guided-shell .manual-tools .guided-question-panel.show-in-manual{display:block!important}
+/* 2026-11-09: hands-on mode keeps a big "time forward" button beside the slider. */
+.guided-shell .manual-tools .workspace-controls .time-actions{display:flex!important;gap:6px}
+.guided-shell .manual-tools .workspace-controls .time-actions [data-action="ix-forward"]{display:inline-flex!important;min-height:52px;padding:8px 18px;font:clamp(18px,1.4vw,22px)/1.1 var(--font-display);border:3px solid #2f7f73;background:#e9f7f1;color:#174a42;box-shadow:0 4px 0 #2f7f73;border-radius:14px}
+.prediction-chosen{display:flex;align-items:center;gap:10px;padding:6px 10px;border:2px dashed #2f7f73;border-radius:12px;background:#f2fbf6;font:clamp(17px,1.3vw,21px)/1.2 var(--font-display);color:#24433f}
+.prediction-chosen b{font-weight:400;color:#9a5a00}
+.prediction-chosen .btn{min-height:44px;padding:4px 12px;font-size:16px}

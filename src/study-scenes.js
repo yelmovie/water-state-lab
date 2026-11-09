@@ -82,7 +82,7 @@ export function createWaterDrawing(scene){
  scene.add.image(360,165,'water-painting').setDisplaySize(720,330).setDepth(5);
  let stroke=null,lastDrawing='';
  const point=p=>{
-  if(stroke&&stroke.length<400)stroke.push([Math.max(0,Math.min(500,(p.worldX-25)/320*500)),Math.max(0,Math.min(310,(p.worldY-50)/230*310))]);
+  if(stroke&&stroke.length<400)stroke.push([Math.max(18,Math.min(482,(p.worldX-25)/320*500)),Math.max(20,Math.min(290,(p.worldY-50)/230*310))]); // keep the brush a stroke-width inside the frame
   if(stroke){brushes[0].setPosition(p.worldX-18,p.worldY+18);brushes[1].setPosition(p.worldX+332,p.worldY+18);}
  };
  scene.input.on('pointerdown',p=>{
@@ -96,7 +96,8 @@ export function createWaterDrawing(scene){
   const time=observationTime(5),revision=[time,d.strokes.length,d.strokes.at(-1)?.length].join(':');
   if(lastDrawing===revision)return;lastDrawing=revision;
   g.setTransform(2,0,0,2,0,0);g.clearRect(0,0,720,330);
-  for(let i=0;i<2;i++)drawWaterStroke(g,d.strokes,{left:25+i*350,top:50,width:320,height:230,amount:i+1,time,grain});
+  // Clip to the paper inside each wooden frame (board drawn at x±170, y 42–290) so a thick B stroke never crosses the frame.
+  for(let i=0;i<2;i++){g.save();g.beginPath();g.rect(27+i*350,55,316,222);g.clip();drawWaterStroke(g,d.strokes,{left:25+i*350,top:50,width:320,height:230,amount:i+1,time,grain});g.restore();}
   texture.refresh();
  };
 }

@@ -14,7 +14,7 @@ const gestures={
 const actions=(...names)=>names.map(name=>`[data-action="${name}"]`).join(',');
 export const move=(kind,title,instruction,target='',regions=[])=>({kind,title,instruction,target,regions});
 const board='.phaser-stage';
-const time=n=>`#inquiry-time-${n}`;
+const time=n=>`#inquiry-time-${n},[data-action="ix-forward"]`;
 const record=actions('ix-record');
 const next=['','act-next-1','act-complete-1','act-next-3','act-complete-2','act-next-5','act-complete-3','act-next-7','act-complete-4','complete-5'];
 const shortSteps=[[],['붓기','얼음 옮기기','물자국'],['고체','액체','기체'],['예상','얼리기','녹이기'],['가득 담기','덜 담기','남은 공간 찾기'],['그리기','시간 비교','물의 행방'],['가열 전','끓이기','물의 행방'],['닦기','겉면 비교','다시 닦기'],['증거','설명 잇기','새 병'],['판 차갑게','기울이기','고치기'],['증상','고치기','물 보내기']];
@@ -39,7 +39,7 @@ export function experimentMove(n,state,final){
   }
   if(s.step===1)return s.iceMoved?move('compare','물과 얼음을 나란히 비교해 봐','물은 그릇마다 모양이 달랐는데 얼음은 어때? 다 봤으면 물자국을 보러 가자.',actions('act-observe-step-2')):move('drag','얼음을 넓은 그릇으로 옮겨 봐','물을 담았던 것과 같은 두 그릇이야. 얼음도 모양이 바뀔까?',board,[[iceSeat('wide').x,158,166,176],[iceSeat('tall').x,158,106,176]]);
   if(!s.clothWet)return move('brush','천에 물자국을 만들어 봐','천 위를 손가락으로 문질러 봐.',board,[[280,157,276,185]]);
-  return s.time<80?move('slide','물자국이 마르는 모습을 봐','시간 손잡이를 오른쪽으로 밀어 봐.',time(n)):move('measure','마른 모습을 남겨 봐','‘지금 모습 남기기’를 눌러 관찰을 기록해 봐.',record);
+  return s.time<80?move('slide','물자국이 마르는 모습을 봐','시간 손잡이를 오른쪽으로 밀어 봐.',time(n)):move('slide','마른 모습을 끝까지 봐','시간 손잡이를 끝까지 밀면 관찰이 저절로 기록돼.',time(n));
  }
  if(n===2){
   const s=a.sort,card=sortCards.find(c=>c.id===q.sortProof)||nextSortCard(s);
@@ -70,12 +70,12 @@ export function experimentMove(n,state,final){
  if(n===6){
   const s=a.compare,t=heatingTrial(s.heat,s.time);
   if(!s.baseline&&s.time<30)return move('slide','불을 켜지 않고 물을 지켜봐','시간 손잡이를 오른쪽으로 밀어 두 컵의 물높이를 봐.',time(n));
-  if(!s.baseline)return move('measure','가열하기 전 모습을 남겨 봐','두 컵이 같은 조건일 때의 관찰을 ‘지금 모습 남기기’로 기록해 봐.',record);
+  if(!s.baseline)return move('slide','가열하기 전 모습을 봐','가열하지 않은 채 시간 손잡이를 밀면 두 컵의 모습이 기록돼.',time(n));
   if(!s.records.some(r=>r.boiling)){
    if(s.heat<55&&!s.batchPrepared)return move('tap','새 실험의 두 컵을 같은 양으로 준비해','첫 실험은 기록했어. 같은 두 컵에 같은 양을 다시 담아, 이번에는 B만 가열해서 비교하자.',actions('ix-heat-prepare'));
    if(s.heat<55)return move('tap','B 컵만 가열해 봐','같은 양으로 다시 준비했어. A는 그대로 두고 B만 가열해.',actions('ix-heat-on'));
    if(!t.boiling)return move('slide','B의 물속에 기포가 생기는지 봐','시간 손잡이를 더 밀고 B의 물속을 자세히 살펴봐.',time(n));
-   return move('measure','기포가 올라오는 모습을 남겨 봐','‘지금 모습 남기기’를 눌러 끓는 모습과 가열하지 않은 물을 기록해 봐.',record);
+   return move('slide','기포가 올라오는 모습을 봐','시간 손잡이를 밀면 끓는 모습이 기록돼.',time(n));
   }
   return move('tap','두 컵에서 줄어든 물은 어디로 갔을까?','끓은 물도, 끓지 않은 물도 줄었어. 공통점을 골라 봐.','[data-action^="ix-heat-where-"]');
  }
@@ -86,9 +86,9 @@ export function experimentMove(n,state,final){
    return move('brush','차가운 컵의 겉면을 닦아 봐','컵을 손가락으로 문지르거나 ‘A 전체 닦기’를 눌러 봐.',actions('ix-wipe-cold')+',#wipe-cold');
   }
   if(!s.sealed)return move('tap','두 컵의 입구를 막아 봐','컵 안의 물이 밖으로 나오지 않게 ‘두 컵 입구 막기’를 눌러 봐.',actions('act-dew-seal'));
-  if(s.records.length<2)return s.time<70?move('slide','같은 시간 뒤의 두 컵을 비교해 봐','시간 손잡이를 밀어 어느 컵 바깥에 물방울이 생기는지 봐.',time(n)):move('measure','두 컵에서 본 모습을 남겨 봐','‘지금 모습 남기기’를 눌러 겉면의 차이를 기록해 봐.',record);
+  if(s.records.length<2)return s.time<70?move('slide','같은 시간 뒤의 두 컵을 비교해 봐','시간 손잡이를 밀어 어느 컵 바깥에 물방울이 생기는지 봐.',time(n)):move('slide','두 컵의 겉면을 비교해 봐','시간 손잡이를 끝까지 밀면 두 컵의 모습이 기록돼.',time(n));
   if(!s.rewiped)return move('brush','차가운 컵의 물방울을 한 번 더 닦아 봐','물방울을 문지르거나 ‘A 가운데 닦기’를 눌러 봐.',actions('ix-wipe-middle'));
-  return s.againTime<70?move('slide','닦은 자리에 물방울이 다시 생길까?','시간 손잡이를 다시 오른쪽으로 밀어 봐.',time(n)):move('measure','다시 생긴 물방울을 기록해 봐','어느 자리에서 물방울이 다시 생겼는지 확인하고 기록해 봐.',record);
+  return s.againTime<70?move('slide','닦은 자리에 물방울이 다시 생길까?','시간 손잡이를 다시 오른쪽으로 밀어 봐.',time(n)):move('slide','다시 생긴 물방울을 봐','시간 손잡이를 끝까지 밀면 닦은 자리 모습이 기록돼.',time(n));
  }
  if(n===8){
   const s=a.explain;
@@ -97,7 +97,7 @@ export function experimentMove(n,state,final){
   if(s.chain.length<3)return move('connect',['물방울의 출발을 골라 봐','무엇을 만났는지 이어 봐','어떤 모습으로 바뀌었는지 이어 봐'][s.chain.length],'위쪽 그림을 누르거나 빈 칸으로 끌어 네 설명을 이어 봐.',board,[[125+s.chain.length*235,258,184,96]]);
   if(!q.transferPrediction)return move('tap','어느 음료병에 물방울이 생길까?','차가운 병과 실온 병을 보고 네 예상을 골라 봐.','[data-action^="ix-transfer-predict-"]');
   if(!s.bottleWiped)return move('brush','두 음료병의 겉면을 닦아 봐','두 병을 손가락으로 문질러. 아래 버튼으로 한 번에 닦아도 돼.',board);
-  return s.time<70?move('slide','음료병에도 같은 일이 생길까?','시간 손잡이를 밀어 두 병 바깥을 비교해 봐.',time(n)):move('measure','음료병에서 확인한 모습을 남겨 봐','어느 병 바깥에 물방울이 생겼는지 보고 기록해 봐.',record);
+  return s.time<70?move('slide','음료병에도 같은 일이 생길까?','시간 손잡이를 밀어 두 병 바깥을 비교해 봐.',time(n)):move('slide','음료병 바깥을 끝까지 봐','시간 손잡이를 끝까지 밀면 두 병의 모습이 기록돼.',time(n));
  }
  if(n===9){
   const s=state.lab.workshop,last=s.trials.at(-1),live=last?.signature===testCollector(s.parts,s.cold,s.angle).signature,seat=funnelSeat(s.parts.ramp);
