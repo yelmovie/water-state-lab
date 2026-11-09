@@ -297,4 +297,4 @@ Production transparent sprite atlas with exactly THREE isolated realistic school
 
 - `v2/map-villain-mole.webp`: 4×2칸(256px) 밸브 두더지. 대기·걷기·도발·웅크림 / 돌진·맞음·밀려남·쓰러짐 순서. 원본 `v2/valve-mole-sheet.png`에서 만든 `valve-mole-sheet.webp`의 초록·빨강 배경 번짐(반투명 가장자리 4,076픽셀)을 로컬에서 지우고, 투명 픽셀의 색값을 0으로 정리했다. 새 이미지 생성 없음.
 - `v2/bangul-combat-sheet.webp`: 4×1칸(256px) 방울이 준비·물대포·놀람·안도 자세. 원본 `v2/bangul-combat-sheet.png`.
-- 두 원본 시트는 2026-11-09 오후 다른 작업 세션에서 만들어졌고, 사용한 생성 도구와 프롬프트 기록이 남아 있지 않다. 배포 전 생성 도구와 이용 조건을 확인해 이 항목에 적어야 한다.
+- 두 원본 시트는 2026-11-09 오후 다른 작업 세션에서 OpenAI GPT Image로 만들었다(제작자 확인, 2026-11-09). 프롬프트 원문은 남아 있지 않다.
