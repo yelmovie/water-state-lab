@@ -55,23 +55,23 @@
 .activity.bench .bench-readout small{font-size:14px}
 
 @media(min-width:601px) and (max-height:520px){
- #freeze-measure .activity-scene{display:grid;grid-template-rows:auto minmax(115px,1fr) auto;gap:4px;align-content:stretch;padding:8px}
- #freeze-measure .activity-scene{overflow:auto;overscroll-behavior:contain;scroll-padding:8px}
- #freeze-measure .activity-stage-caption{font-size:14px;padding:3px}
- #freeze-measure .measure-stations{margin:0;min-height:0;gap:6px}
- #freeze-measure .measure-station{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0;padding:4px}
- #freeze-measure .measure-station h3{font-size:14px;margin:0}
- #freeze-measure .measure-freezer{height:100%;width:100%;max-height:110px;max-width:160px;min-height:0}
- #freeze-measure .measure-specimen .beaker{max-height:80px}
- #freeze-measure .measure-specimen>span{display:none}
- #freeze-measure .measure-empty{min-height:60px;font-size:14px}
- #freeze-measure .measure-scale{padding:2px 6px;margin:0 auto;gap:0}
- #freeze-measure .measure-scale span{font-size:13px}
- #freeze-measure .measure-scale b{font-size:20px}
- #freeze-measure .measure-records{gap:5px}
- #freeze-measure .measure-records figure{padding:4px;gap:1px;font-size:13px}
- #freeze-measure .measure-records b{font-size:16px}
- #freeze-measure .measure-life{min-height:100px}#freeze-measure .measure-life img{max-height:110px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .activity-scene{display:grid;grid-template-rows:auto minmax(115px,1fr) auto;gap:4px;align-content:stretch;padding:8px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .activity-scene{overflow:auto;overscroll-behavior:contain;scroll-padding:8px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .activity-stage-caption{font-size:14px;padding:3px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-stations{margin:0;min-height:0;gap:6px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-station{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0;padding:4px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-station h3{font-size:14px;margin:0}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-freezer{height:100%;width:100%;max-height:110px;max-width:160px;min-height:0}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-specimen .beaker{max-height:80px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-specimen>span{display:none}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-empty{min-height:60px;font-size:14px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-scale{padding:2px 6px;margin:0 auto;gap:0}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-scale span{font-size:13px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-scale b{font-size:20px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-records{gap:5px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-records figure{padding:4px;gap:1px;font-size:13px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-records b{font-size:16px}
+ .experiment-shell:not(.guided-shell) #freeze-measure .measure-life{min-height:100px}.experiment-shell:not(.guided-shell) #freeze-measure .measure-life img{max-height:110px}
 }
 
 #field-greenhouse{grid-template-rows:auto minmax(185px,1fr) auto auto}

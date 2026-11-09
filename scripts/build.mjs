@@ -11,14 +11,15 @@ await writeFile(path.join(root,'src/version.js'),versionModule(false));
 if(output!==path.join(path.resolve(root),'dist')&&path.dirname(output)!==path.join(path.resolve(root),'tmp'))throw new Error('Unexpected build path');
 await rm(output,{recursive:true,force:true});
 await mkdir(path.join(output,'assets/v2'),{recursive:true});
-const copyTree={recursive:true,filter:source=>!path.basename(source).startsWith('._')};
+// Skip metadata and unfinished hidden transfer files; only runtime files ship.
+const copyTree={recursive:true,filter:source=>!path.basename(source).startsWith('.')};
 await cp(path.join(root,'src'),path.join(output,'src'),copyTree);
 await writeFile(path.join(output,'src/version.js'),versionModule(true));
 await cp(path.join(root,'public/assets/vendor'),path.join(output,'assets/vendor'),copyTree);
 await cp(path.join(root,'public/assets/fonts'),path.join(output,'assets/fonts'),copyTree);
 for(const folder of ['audio','story','concepts','learning','stages','village','icons','models'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),copyTree);
 for(const file of await readdir(path.join(root,'public/assets/v2'))){
- if(!file.startsWith('._')&&file.endsWith('.webp'))await copyFile(path.join(root,'public/assets/v2',file),path.join(output,'assets/v2',file));
+ if(!file.startsWith('.')&&file.endsWith('.webp'))await copyFile(path.join(root,'public/assets/v2',file),path.join(output,'assets/v2',file));
 }
 await copyFile(path.join(root,'public/assets/CREDITS.md'),path.join(output,'assets/CREDITS.md'));
 await copyFile(path.join(root,'public/manifest.webmanifest'),path.join(output,'manifest.webmanifest'));
@@ -31,7 +32,7 @@ console.log(`Built standalone site in dist/; editable PNG originals stay in publ
 
 /** Precache lists come from the real dist files; the cache name is their content hash. */
 async function offlineLists(dir){
- const files=(await readdir(dir,{recursive:true,withFileTypes:true})).filter(e=>e.isFile()).map(e=>path.relative(dir,path.join(e.parentPath??e.path,e.name)).split(path.sep).join('/')).filter(f=>!f.split('/').some(p=>p.startsWith('._')))/* macOS ._* metadata on exFAT drives */.filter(f=>!['sw.js','build-info.json'].includes(f)&&!/\.(md|txt)$/.test(f)).sort();
+ const files=(await readdir(dir,{recursive:true,withFileTypes:true})).filter(e=>e.isFile()).map(e=>path.relative(dir,path.join(e.parentPath??e.path,e.name)).split(path.sep).join('/')).filter(f=>!f.split('/').some(p=>p.startsWith('.'))).filter(f=>!['sw.js','build-info.json'].includes(f)&&!/\.(md|txt)$/.test(f)).sort();
  const hash=createHash('sha256');for(const f of files)hash.update(f+'\0').update(await readFile(path.join(dir,f)));
  // Images of the title, opening map and story screen stay in the install set; other art waits for the idle warm-up.
  const firstScreen=['assets/v2/title-island.webp','assets/v2/title-logo.webp','assets/v2/bangul-title.webp','assets/v2/research-island-v4.webp','assets/v2/buddy-poses-clean.webp','assets/v2/bangul-walk.webp','assets/v2/story-repair.webp'];

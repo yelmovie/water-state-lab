@@ -42,3 +42,18 @@ test('default observation pauses at a question, resumes after its answer, and ke
   stopObservation();const before=actions.length;bindObservation(s,a=>actions.push(a));await new Promise(r=>setTimeout(r,330));assert.equal(actions.length,before);assert.equal(observationPlaying(),false);
  }finally{stopObservation();globalThis.document=original;}
 });
+
+test('direct interaction opens the controls and observation can resume across a render',()=>{
+ const original=globalThis.document;
+ const attrs={},label={textContent:''},button={dataset:{},disabled:false,setAttribute(k,v){attrs[k]=v;},querySelector(){return label;}},main={dataset:{questionId:''}};
+ globalThis.document={hidden:false,getElementById:()=>button,querySelector:selector=>selector==='.experiment-main'?main:null,dispatchEvent(){},addEventListener(){}};
+ const s=initialState();s.route=3;let manual=false;
+ const render=()=>bindObservation(s,()=>{},null,()=>{},value=>{manual=value;render();});
+ try{
+  render();assert.equal(observationPlaying(),true);assert.equal(label.textContent,'직접 해보기');assert.equal(attrs['aria-label'],'직접 해보기');
+  button.onclick();assert.equal(manual,true);assert.equal(observationPlaying(),false);assert.equal(label.textContent,'관찰 계속');assert.equal(attrs['aria-label'],'관찰 계속');
+  button.onclick();assert.equal(manual,false);assert.equal(observationPlaying(),true);assert.equal(label.textContent,'직접 해보기');
+  measureAction(s.activities.freeze,'measure');main.dataset.questionId='freeze-prediction';render();
+  assert.equal(button.disabled,true);assert.equal(observationPlaying(),false);assert.equal(label.textContent,'답을 고르면 계속');assert.equal(s.activities.freeze.predicted,false);
+ }finally{stopObservation();globalThis.document=original;}
+});

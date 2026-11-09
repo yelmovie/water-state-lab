@@ -112,7 +112,7 @@ export function bindFieldwork(n,ctx){
  cleanupFieldwork();
  if(n===2){const host=document.getElementById('field-transform');if(host)cleanups.push(bindTransform(host,()=>fieldChapter(n)));return;}
  if(n===4){const host=document.getElementById('field-coldnight');if(host)cleanups.push(bindColdNight(host,()=>fieldChapter(n),c=>{state.fieldwork.chapters[n]=c;}));return;}
- if(n===10){const host=document.getElementById('field-greenhouse');if(host)cleanups.push(bindCycle(host,()=>fieldChapter(n),(step,time)=>{state.fieldwork.chapters[n]=fieldAction(n,fieldChapter(n),'greenhouse-cycle',{step,time});save();},()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches));return;}
+ if(n===10){const host=document.getElementById('field-greenhouse');if(host)cleanups.push(bindCycle(host,()=>fieldChapter(n),(step,time)=>{state.fieldwork.chapters[n]=fieldAction(n,fieldChapter(n),'greenhouse-cycle',{step,time});save();},()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches,state.settings));return;}
  const canvas=document.getElementById('field-canvas');if(!canvas)return;
  const g=canvas.getContext('2d'),assets={},layout=setup(n),f=state.fieldwork,guidance=fieldTask(n,fieldChapter(n)),hasCoach=!!document.querySelector('.coach-trigger');
   let beam=0,drag=null,activePointer=null,lineStart=null,brush=false,frame,tapItem=null,tapNode=null;

@@ -566,17 +566,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .map-arrow-up svg{transform:rotate(-90deg)}.map-arrow-left svg{transform:rotate(180deg)}.map-arrow-down svg{transform:rotate(90deg)}
 .map-arrow:active{transform:translateY(2px);box-shadow:0 1px 0 #c9b57c}
 .map-modes{display:flex;flex-direction:column;gap:6px}
-.map-mode{display:inline-flex;align-items:center;gap:6px;min-height:48px;padding:0 14px;border:2px solid #c9b57c;border-radius:999px;background:#fffdf5;color:#3d4a2c;font:clamp(17px,1.1vw,21px)/1.2 var(--font-display);white-space:nowrap;cursor:pointer;touch-action:manipulation}
+.map-mode{display:inline-flex;align-items:center;justify-content:center;width:48px;min-width:48px;min-height:48px;padding:0;border:2px solid #c9b57c;border-radius:999px;background:#fffdf5;color:#3d4a2c;font:clamp(17px,1.1vw,21px)/1.2 var(--font-display);white-space:nowrap;cursor:pointer;touch-action:manipulation}
 .map-mode svg{flex:none;pointer-events:none}
 .map-mode[aria-pressed="true"]{background:#2f7a68;border-color:#245f51;color:#fff}
 @media(hover:hover) and (pointer:fine){.map-arrow:hover,.map-mode:hover{border-color:#8e7545}}
-@media(max-height:620px) and (orientation:landscape){.journey-shell .journey-bottom{bottom:10px;gap:10px}.map-pad{padding:6px 10px;gap:8px}.map-arrows{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px)}.map-arrow{width:44px;height:44px}.map-mode{min-height:44px;padding:0 10px;font-size:16px}}
+@media(max-height:620px) and (orientation:landscape){.journey-shell .journey-bottom{bottom:10px;gap:10px}.map-pad{padding:6px 10px;gap:8px}.map-arrows{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px)}.map-arrow{width:44px;height:44px}.map-mode{width:48px;min-width:48px;min-height:48px;padding:0}}
 /* Portrait and narrow: title under the top buttons, pad and hint on one row, next place full width below. */
 @media(max-width:800px) and (orientation:portrait){
  .journey-shell .journey-heading{position:absolute;top:76px;left:16px;right:16px;width:auto;margin:0}
  .journey-shell .journey-bottom{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"coach pad" "next next"}
  .journey-shell .journey-companion{grid-area:coach}.map-pad{grid-area:pad;justify-self:end}.journey-shell .journey-next{grid-area:next;justify-self:stretch;max-width:none}
- .map-modes .map-mode span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.map-mode{width:48px;padding:0;justify-content:center}
 }
 /* Ending on short landscape screens: the left column scrolls like the right one, so the 3D tour and stats stay reachable. */
 @media(max-height:620px) and (min-width:701px){.ending-illustration{align-self:stretch;max-height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:4px}}

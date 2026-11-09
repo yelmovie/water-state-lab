@@ -106,7 +106,7 @@ export function stopObservation(message='',reason='manual') {
  stopClock();
  if(wasPlaying)document.dispatchEvent(new Event('observation-stop'));
  const button=document.getElementById('observation-play');
- if(button){button.disabled=false;button.setAttribute('aria-pressed','false');button.dataset.playState='paused';const label=button.querySelector?.('[data-guided-play-label]');if(label)label.textContent='관찰 계속';else button.textContent='▶ 자동재생';}
+ if(button){button.disabled=false;button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','관찰 계속');button.title='자동으로 이어서 관찰해.';button.dataset.playState='paused';const label=button.querySelector?.('[data-guided-play-label]');if(label)label.textContent='관찰 계속';else button.textContent='▶ 자동재생';}
  const main=document.querySelector('.experiment-main');if(main)main.dataset.guidedPhase=reason==='question'?'question':'manual';
  if(typeof message==='string'&&message)toast(message);
 }
@@ -120,7 +120,7 @@ export function observationPauseMessage(n,state){
  if(n===10&&!state.lab.final.tested)return '고장 원인을 먼저 골라 줘. 그다음 자동으로 관찰할 수 있어.';
  return '관찰을 마쳤어. 결과를 비교하고 직접 선택해 봐.';
 }
-export function bindObservation(state, perform, final=null,onPreferenceChange=()=>{}) {
+export function bindObservation(state, perform, final=null,onPreferenceChange=()=>{},onManualChange=()=>{}) {
  clearTimeout(timer);
  let binding=++revision;
  let awaitedMotion=false;
@@ -136,9 +136,9 @@ export function bindObservation(state, perform, final=null,onPreferenceChange=()
   const q=question(),playing=playingStage!==null,main=document.querySelector('.experiment-main'),phase=q&&pausedBy==='question'?'question':playing?'observe':'manual';
   if(main)main.dataset.guidedPhase=phase;
   button.disabled=phase==='question';button.setAttribute('aria-pressed',String(playing));button.dataset.playState=phase==='question'?'question':playing?'playing':'paused';
-  const text=phase==='question'?'답을 고르면 계속':playing?'관찰 멈추기':'관찰 계속',label=button.querySelector?.('[data-guided-play-label]');
-  if(label)label.textContent=text;else button.textContent=phase==='question'?text:playing?'Ⅱ 멈추기':'▶ 자동재생';
-  button.setAttribute('aria-label',text);button.title=phase==='question'?'답을 고르면 관찰이 이어져.':'직접 실험 도구를 조작하면 자동 관찰이 멈춰.';
+  const text=phase==='question'?'답을 고르면 계속':playing?'직접 해보기':'관찰 계속',label=button.querySelector?.('[data-guided-play-label]');
+  if(label)label.textContent=text;else button.textContent=phase==='question'?text:playing?'직접 해보기':'▶ 자동재생';
+  button.setAttribute('aria-label',text);button.title=phase==='question'?'답을 고르면 관찰이 이어져.':playing?'실험 도구를 직접 조작해 봐.':'자동으로 이어서 관찰해.';
  };
  const schedule=(delay,scaled=true)=>{clearTimeout(timer);timer=setTimeout(tick,scaled?observationDelay(delay,state.settings):delay);};
  const speedControl=document.getElementById('observation-speed');
@@ -190,10 +190,10 @@ export function bindObservation(state, perform, final=null,onPreferenceChange=()
   paint();if(playingStage!==null)schedule(assistStep(state.route,state,final)?.delay??250);
  }
  button.onclick=()=>{
-  if (playingStage !== null) return stopObservation();
+  if (playingStage !== null){stopObservation();onManualChange(true);return;}
   binding=++revision;
   begin();visited=[];
-  paint();schedule(250);
+  paint();schedule(250);onManualChange(false);
  };
 }
 // Hand control back on the first manual interaction, including navigation and dialogs.
