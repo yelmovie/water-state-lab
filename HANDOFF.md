@@ -1,3 +1,14 @@
+# 물길탐험 인계 · 2026-11-09 늦은 밤 (직접 해보기 먼저·악당 배회·같은 봉지)
+
+운영 배포: 2026-11-09 커밋 85746bc → Cloudflare Pages `16d2457e`, 344개 파일 SHA-256 일치 확인. 직전 운영본 `5b653c5b`(되돌릴 때 사용). 빌드는 `tmp/deploy-85746bc`(git archive 커밋본), 배포는 터미널 패널에서 `tmp/deploy-85746bc.sh`.
+
+- 모든 스테이지가 직접 조작 화면으로 시작한다. 자동 관찰은 '자동으로 보기'를 눌러야 시작하고, 두 단계마다 멈춰 '이어서 보기'로 넘긴다(`src/observation-play.js` `CHECKPOINT_STEPS`).
+- 관찰 속도 메뉴 0.5·1·1.5·2배. 1배 = 예전 기본 0.5배의 절반 속도(`src/observation-speed.js` `PACE=.25`). 설정 키가 `observationPace`로 바뀌어 예전 저장의 속도는 1배로 시작한다.
+- 질문 칸: '❓ 문제' 표시·문제 문장·금색 강조·큰 답 버튼, 제목줄 '문제' 배지. 질문 대기 중 화면이 가려져도 질문 상태 유지.
+- 밸브 두더지: 배회·밸브 비틀기(끼익/쾅)·오염 웅덩이·악당 말풍선(방울이 접근 시), 퇴치 후 맑은 웅덩이. 효과음은 Kenney Impact Sounds(CC0) 3개 + 기존 물 튀는 소리.
+- 3장 쭈쭈바: GPT Image 2.6으로 한 장에 같은 봉지 두 개를 생성해 반으로 나눔(`public/assets/learning/freeze-props-20261109/`, 원본·프롬프트 `assets/source-media/freeze-props-20261109/`).
+- 미확인: 실기기에서 효과음 음량, 두 단계 멈춤의 전 스테이지 수동 확인(테스트로만 확인).
+
 # 물길탐험 인계 · 2026-11-09 밤 (지도 악당 전투·16px 하한)
 
 운영 배포: 2026-11-09 커밋 09df655 → Cloudflare Pages `5b653c5b`, 338개 파일 SHA-256 일치 확인. 직전 운영본 `bbdd5dc8`(되돌릴 때 사용). 빌드는 `git -c core.autocrlf=false archive`로 꺼낸 커밋본(`tmp/deploy-09df655`)에서 했다. GitHub 푸시는 하지 않았다(로컬 main이 origin/main보다 앞섬).
