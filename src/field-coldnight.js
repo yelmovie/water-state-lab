@@ -5,7 +5,7 @@ import {fieldAction,fieldReady} from './fieldwork-model.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
 
-const POUR_PER_SECOND=28,TAP_STEP=5,TAP_MS=180,FREEZE_MS=4200;
+const POUR_PER_SECOND=28,TAP_STEP=5,TAP_MS=180,FREEZE_MS=1400; // one night ≈5.6 s at 1×, 2.8 s at 2× (2026-11-09: three nights felt too long)
 const BOTTOM=250,HEIGHT=150,RIM=BOTTOM-HEIGHT;
 const briefs=['첫째 날이야. 내일 마을에서 물이 70만큼 필요해. 수도꼭지를 꾹 눌러 채우고, 추운 밤을 지켜보자.','둘째 날은 뚜껑 있는 모형 통도 써. 두 통에 물을 150만큼 모으되, 위쪽에 물을 채우지 않은 공간도 남겨 줘.','마지막 날이야! 세 통에 물을 240만큼 준비해. 통마다 위쪽에 물을 채우지 않은 공간이 있는지 확인해 줘.'];
 const outcomeLabels={ok:'멀쩡해',overflow:'넘쳤어',crack:'얼음이 커질 공간 부족',raised:'얼음이 위로 올라왔어'};
@@ -14,6 +14,9 @@ const outlines={
  jar:'M20 44q0-14 14-14h72q14 0 14 14V166q0 14-14 14H34q-14 0-14-14Z',
  bottle:'M52 30V62q0 13-16 20-16 7-16 22V166q0 14 14 14h72q14 0 14-14V104q0-15-16-22-16-7-16-20V30Z'
 };
+// Inside of jar-body.webp (glass walls inset), traced from the picture's alpha so water never shows outside the neck.
+const BOTTLE_INSIDE='M78.6 100.4L78.2 102.4L78.2 104.3L79.5 106.3L82.8 108.3L84.0 110.2L84.3 112.2L84.3 114.2L84.3 116.2L84.3 118.1L84.3 120.1L84.3 122.1L84.3 124.0L83.7 126.0L82.5 128.0L80.1 129.9L76.4 131.9L72.2 133.9L68.2 135.8L65.2 137.8L62.7 139.8L60.6 141.8L58.8 143.7L57.0 145.7L55.4 147.7L54.5 149.6L53.3 151.6L52.4 153.6L51.8 155.5L51.2 157.5L50.9 159.5L50.6 161.4L50.3 163.4L50.3 165.4L50.3 167.4L50.3 169.3L50.3 171.3L50.6 173.3L50.6 175.2L50.6 177.2L50.6 179.2L50.6 181.1L50.6 183.1L50.6 185.1L50.9 187.0L50.9 189.0L50.9 191.0L50.9 193.0L50.9 194.9L50.9 196.9L50.9 198.9L50.9 200.8L50.9 202.8L50.9 204.8L50.9 206.7L50.9 208.7L50.9 210.7L50.9 212.6L50.9 214.6L50.9 216.6L51.2 218.6L51.2 220.5L51.2 222.5L51.2 224.5L51.2 226.4L51.2 228.4L51.2 230.4L51.2 232.3L50.9 234.3L51.2 236.3L51.2 238.2L51.2 240.2L51.8 242.2L52.4 244.2L53.9 246.1L56.3 248.1L60.9 250.1L137.9 250.1L142.7 248.1L145.5 246.1L146.7 244.2L147.6 242.2L147.9 240.2L147.9 238.2L147.9 236.3L147.9 234.3L147.9 232.3L147.9 230.4L147.9 228.4L147.9 226.4L148.2 224.5L147.9 222.5L148.2 220.5L148.2 218.6L148.2 216.6L148.2 214.6L148.2 212.6L148.2 210.7L148.2 208.7L148.2 206.7L148.5 204.8L148.5 202.8L148.5 200.8L148.5 198.9L148.5 196.9L148.5 194.9L148.5 193.0L148.5 191.0L148.8 189.0L148.8 187.0L148.8 185.1L148.8 183.1L148.8 181.1L149.1 179.2L149.1 177.2L149.1 175.2L149.1 173.3L149.1 171.3L149.1 169.3L149.4 167.4L149.4 165.4L149.4 163.4L149.1 161.4L148.8 159.5L148.5 157.5L147.9 155.5L147.3 153.6L146.4 151.6L145.5 149.6L144.3 147.7L142.7 145.7L141.2 143.7L139.4 141.8L137.3 139.8L134.8 137.8L131.8 135.8L128.1 133.9L123.6 131.9L119.9 129.9L117.5 128.0L116.3 126.0L115.7 124.0L115.7 122.1L115.7 120.1L115.7 118.1L115.7 116.2L115.7 114.2L115.7 112.2L116.0 110.2L117.2 108.3L120.5 106.3L121.8 104.3L121.8 102.4L121.1 100.4Z';
+const JAR_INSIDE='M58.0 102.3L58.2 104.8L60.1 107.3L61.0 109.9L61.0 112.4L61.0 115.0L59.9 117.5L56.4 120.0L51.7 122.6L48.8 125.1L46.6 127.7L45.2 130.2L44.4 132.7L43.9 135.3L43.6 137.8L43.3 140.3L43.3 142.9L43.3 145.4L43.3 148.0L43.3 150.5L43.3 153.0L43.3 155.6L43.3 158.1L43.3 160.7L43.3 163.2L43.3 165.7L43.3 168.3L43.3 170.8L43.3 173.4L43.3 175.9L43.3 178.4L43.3 181.0L43.3 183.5L43.3 186.1L43.3 188.6L43.3 191.1L43.3 193.7L43.3 196.2L43.3 198.8L43.3 201.3L43.3 203.8L43.3 206.4L43.3 208.9L43.3 211.5L43.3 214.0L43.3 216.5L43.3 219.1L43.3 221.6L43.3 224.2L43.3 226.7L43.3 229.2L43.6 231.8L43.9 234.3L44.4 236.9L45.5 239.4L46.9 241.9L48.8 244.5L52.0 247.0L147.7 247.0L150.7 244.5L152.9 241.9L154.2 239.4L155.3 236.9L155.8 234.3L156.1 231.8L156.4 229.2L156.4 226.7L156.4 224.2L156.4 221.6L156.4 219.1L156.4 216.5L156.4 214.0L156.4 211.5L156.4 208.9L156.4 206.4L156.4 203.8L156.4 201.3L156.4 198.8L156.4 196.2L156.4 193.7L156.4 191.1L156.4 188.6L156.4 186.1L156.4 183.5L156.4 181.0L156.4 178.4L156.4 175.9L156.4 173.4L156.4 170.8L156.4 168.3L156.4 165.7L156.4 163.2L156.4 160.7L156.4 158.1L156.4 155.6L156.4 153.0L156.4 150.5L156.4 148.0L156.4 145.4L156.4 142.9L156.4 140.3L156.4 137.8L156.1 135.3L155.3 132.7L154.5 130.2L153.1 127.7L151.0 125.1L148.0 122.6L143.4 120.0L139.6 117.5L138.8 115.0L138.8 112.4L138.8 109.9L139.3 107.3L141.5 104.8L141.5 102.3Z';
 const motionOff=()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
 const surfaceY=(kind,volume)=>kind==='tub'?224-105*levelHeight(kind,volume):BOTTOM-HEIGHT*levelHeight(kind,volume);
 /** Ice in an open tub can rise past the rim; everywhere else the vessel stops it. */
@@ -21,19 +24,22 @@ const iceTopY=(kind,ice)=>kind==='tub'&&ice>100?RIM-(ice-100)*2:surfaceY(kind,ic
 
 function vesselArt(kind,index,volume,{frozen=false,ghost=null,outcome=''}={}){
  const id=`cold-clip-${index}`,top=frozen?iceTopY(kind,volume):surfaceY(kind,volume),closed=vessels[kind].closed;
- const path=kind==='bottle'?'M84 100V128Q84 138 67 145Q45 152 45 174V234Q45 250 60 250H140Q155 250 155 234V174Q155 152 133 145Q116 138 116 128V100Z':kind==='jar'?'M45 100H155V236Q155 250 140 250H60Q45 250 45 236Z':'M26 100H174L168 232Q168 250 151 250H49Q32 250 32 232Z';
+ const path=kind==='bottle'?BOTTLE_INSIDE:kind==='jar'?JAR_INSIDE:'M26 100H174L168 232Q168 250 151 250H49Q32 250 32 232Z';
+ // A full closed vessel that froze shows the generated cracked picture (ice inside, cracked glass, shards).
+ const cracked=outcome==='crack'&&kind!=='tub',crackH=kind==='jar'?163:164;
  const body=kind==='tub'?'tub':kind+'-body',x=kind==='tub'?17:kind==='jar'?39:46,w=kind==='tub'?166:kind==='jar'?122:108;
  return `<svg class="cold-art" viewBox="0 0 200 280" aria-hidden="true"><defs><clipPath id="${id}"><path d="${path}"/></clipPath><linearGradient id="${id}-water"><stop stop-color="#0d8bb4"/><stop offset=".3" stop-color="#6ddbed"/><stop offset=".7" stop-color="#2da8cf"/><stop offset="1" stop-color="#15739f"/></linearGradient><linearGradient id="${id}-ice" x2=".5" y2="1"><stop stop-color="#f0feff"/><stop offset=".4" stop-color="#b8e6f3"/><stop offset=".65" stop-color="#84c4de"/><stop offset="1" stop-color="#d7f5fc"/></linearGradient></defs>
  <ellipse cx="100" cy="259" rx="78" ry="7" fill="#31505d" opacity=".18"/>
+ ${cracked?`<image class="cold-cracked" href="/assets/learning/coldnight-20261109/${kind}-cracked.webp" x="${x}" y="${254-crackH}" width="${w}" height="${crackH}" preserveAspectRatio="none"/>`:`
  <image href="/assets/learning/experiment-props-20261107/${body}.webp" x="${x}" y="94" width="${w}" height="160" preserveAspectRatio="none"/>
  <g clip-path="url(#${id})"><rect class="cold-water ${frozen?'is-ice':''}" data-level="${index}" x="22" y="${top}" width="156" height="${Math.max(0,260-top)}" style="fill:url(#${id}-${frozen?'ice':'water'})"/>
- <ellipse data-surface="${index}" cx="100" cy="${top}" rx="${kind==='bottle'&&volume>88?15:55}" ry="5" opacity="${volume?1:0}" fill="${frozen?'#e3faff':'#90e6f3'}" stroke="#ecfeff" stroke-width="1.3"/>
+ <ellipse data-surface="${index}" cx="100" cy="${top}" rx="${kind==='bottle'&&volume>88?15:kind==='jar'&&top<121?36:55}" ry="5" opacity="${volume?1:0}" fill="${frozen?'#e3faff':'#90e6f3'}" stroke="#ecfeff" stroke-width="1.3"/>
  ${frozen?`<path d="M42 ${top+12}l35 24 47-17 26 25M77 ${top+36}l-15 47 35 33 40-22M97 ${top+116}l-28 29" fill="none" stroke="#f4feff" stroke-width="1.8" opacity=".7"/>`:''}</g>
- <image href="/assets/learning/experiment-props-20261107/${body}.webp" x="${x}" y="94" width="${w}" height="160" preserveAspectRatio="none" opacity="${kind==='tub'?1:.48}"/>
- ${closed?`<image class="cold-lid ${frozen?'':'is-open'}" href="/assets/learning/experiment-props-20261107/${kind}-lid.webp" x="${kind==='jar'?53:83}" y="${kind==='jar'?83:85}" width="${kind==='jar'?94:35}" height="18" preserveAspectRatio="none"/>`:''}
+ <image href="/assets/learning/experiment-props-20261107/${body}.webp" x="${x}" y="94" width="${w}" height="160" preserveAspectRatio="none" opacity="${kind==='tub'?1:.48}"/>`}
+ ${closed?`<image class="cold-lid ${cracked?'is-popped':frozen?'':'is-open'}" href="/assets/learning/experiment-props-20261107/${kind}-lid.webp" x="${kind==='jar'?53:83}" y="${kind==='jar'?83:85}" width="${kind==='jar'?94:35}" height="18" preserveAspectRatio="none"/>`:''}
  ${ghost===null?'':`<line class="cold-ghost" x1="22" x2="178" y1="${iceTopY(kind,ghost)}" y2="${iceTopY(kind,ghost)}"/>`}
  ${!frozen?`<image class="cold-faucet" href="/assets/learning/experiment-props-20261107/faucet.webp" x="-12" y="-5" width="146" height="104"/><path class="cold-stream" data-stream="${index}" d="M116 69 Q112 100 116 ${top}" fill="none" stroke="#7ddbec" stroke-width="5" stroke-linecap="round"/><g class="cold-splash" data-splash="${index}" transform="translate(116 ${top})"><path d="M-15 -4q8-8 15 0 8-8 15 0" fill="none" stroke="#dcfbff" stroke-width="2"/><ellipse rx="18" ry="4" fill="none" stroke="#b8f3fc" stroke-width="1.5"/></g>`:''}
- ${outcome==='crack'?'<path class="cold-crack" d="M100 102 84 141l22 20-17 28 20 25-9 35M84 141l-25 11M106 161l31 5"/><g class="cold-burst"><text x="100" y="170">쩍!</text></g>':''}
+ ${outcome==='crack'?'<g class="cold-burst"><text x="100" y="60">쩍!</text></g>':''}
  ${['overflow','raised'].includes(outcome)?`<path class="cold-dome" d="M30 103q70 -28 140 0"/><g class="cold-burst"><text x="100" y="170">위로 올라왔어</text></g>`:''}
  </svg>`;
 }

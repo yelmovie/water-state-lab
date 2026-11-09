@@ -179,7 +179,7 @@ export function bindObservation(state, perform, final=null,onPreferenceChange=()
   if(document.hidden)return stopObservation();
   if(document.querySelector('dialog[open]')){if(pausedBy==='question')return schedule(500,false);return stopObservation();}
   if(playingStage!==null&&(observationClockBusy()||document.querySelector('[aria-busy="true"], [data-measure-pause]:not([hidden]), [data-cycle-pause]:not([hidden])'))){awaitedMotion=true;return schedule(150,false);}
-  if(awaitedMotion){awaitedMotion=false;return schedule(state.fieldwork.active===4?1400:500);}
+  if(awaitedMotion){awaitedMotion=false;return schedule(state.fieldwork.active===4?600:500);}
   const q=question();if(q&&(playingStage!==null||pausedBy==='question'))return waitForAnswer(q);
   if(playingStage===null){if(pausedBy!=='question')return;begin();paint();notifyQuestion(null);if(revision!==binding)return;}
   // Every few steps the learner gets the tools back, after the reading pause and any running motion.

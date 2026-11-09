@@ -309,3 +309,7 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 | 마지막 타격 | `audio/impactPunch_heavy_000.ogg` |
 | 두더지 반격 | `audio/impactSoft_heavy_000.ogg` |
 | 물총 발사 | `audio/splash_09.ogg`(기존 Kenney CC0) |
+
+## 추운 밤 깨진 병·통 · 2026-11-09
+
+`learning/coldnight-20261109/jar-cracked.webp`, `bottle-cracked.webp`: Higgsfield GPT Image 2.6으로 게임의 병 그림을 참고해 생성. 원본·프롬프트는 외장 SSD `assets/source-media/coldnight-cracked-20261109/`.
