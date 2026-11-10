@@ -28,7 +28,7 @@ import {fieldworkView,bindFieldwork,cleanupFieldwork,handleFieldwork,startFieldw
 import {passportView,certificateView} from './achievement.js';
 const app=document.querySelector('#app');
 const ctx={render,go,pageDone,complete,action:routeAction,baseAction,wipe:(kind,ids)=>wipe(kind,ids,ctx),finishEnding,say:updateCoachMessage,enterMission:m=>{if(canEnter((m-1)*2+1,state))document.querySelector(`[data-action="mission-${m}"]`)?.click();}};
-let endingTimer,travelTimer,lastRenderedRoute,resetToken,manualToolsRoute=null,clockObserver=null;
+let endingTimer,travelTimer,lastRenderedRoute,resetToken,manualToolsRoute=null,clockObserver=null,workspaceObserver=null;
 function syncStorageNotice(){
  const status=getStorageStatus();let notice=document.querySelector('#learning-save-notice');
  if(!notice){notice=document.createElement('div');notice.id='learning-save-notice';notice.className='learning-save-notice';notice.setAttribute('role','status');document.body.append(notice);}
@@ -156,18 +156,24 @@ function integrateWorkspaceControls(){
  const phase=stage.querySelector('.cold-yard')?.dataset.sky;
  if(phase&&stage.dataset.workspacePhase!==phase)stage.dataset.workspacePhase=phase;
  const header=app.querySelector('.building-guide'),question=app.querySelector('.guided-question-panel');
- const top=Math.max(58,header?.getBoundingClientRect().height||0)+16;
- const bottom=Math.max(dock.getBoundingClientRect().height,question?.getBoundingClientRect().height||0)+16;
+ // Put the question in the same dock as the controls, so they cannot overlap.
+ if(question&&!dock.contains(question))dock.append(question);
+ dock.dataset.hasQuestion=String(!!question);
+ const stageRect=stage.getBoundingClientRect();
+ const top=Math.max(58,(header?.getBoundingClientRect().bottom||stageRect.top+58)-stageRect.top)+12;
+ const bottom=dock.getBoundingClientRect().height+20;
  for(const [name,value] of [['--workspace-header-height',top],['--workspace-controls-height',bottom]])if(stage.style.getPropertyValue(name)!==value+'px')stage.style.setProperty(name,value+'px');
 }
 function bindCompactGuide(){
- clockObserver?.disconnect();clockObserver=null;syncCompactGuide();integrateWorkspaceControls();const area=app.querySelector('.activity-area');if(!area)return;
+ clockObserver?.disconnect();clockObserver=null;workspaceObserver?.disconnect();workspaceObserver=null;syncCompactGuide();integrateWorkspaceControls();const area=app.querySelector('.activity-area');if(!area)return;
+ workspaceObserver=new ResizeObserver(()=>integrateWorkspaceControls());
+ for(const el of app.querySelectorAll('.building-guide,.workspace-controls'))workspaceObserver.observe(el);
  clockObserver=new MutationObserver(()=>{syncCompactGuide();integrateWorkspaceControls();});clockObserver.observe(area,{subtree:true,childList:true,attributes:true,attributeFilter:['value','height','aria-busy','hidden','open']});
 }
 window.addEventListener('resize',()=>{if(typeof state.route==='number')integrateWorkspaceControls();});
 document.addEventListener('guided-question-change',()=>{if(typeof state.route==='number')render();});
 export function render(){
- clockObserver?.disconnect();clockObserver=null;
+ clockObserver?.disconnect();clockObserver=null;workspaceObserver?.disconnect();workspaceObserver=null;
  cleanupCoach();closeConcept();cleanupMapCamera();
  clearInterval(endingTimer);cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);currentTask=null;app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():experimentShell(route);lastRenderedRoute=route;setMusicTheme(route==='ending'?'ending':'main');document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
  if(typeof route==='number'){const resident=residentForStage(route);if(!state.settings.adminUnlock&&!state.residentsMet.includes(resident.stage)){state.residentsMet.push(resident.stage);save();}if(state.fieldwork.active===route)bindFieldwork(route,ctx);else{if(route<=8)bindActivity(route,ctx);bindWorkshop(route,ctx);}}

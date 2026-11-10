@@ -3,7 +3,7 @@ import {observationTime,stop as stopClock} from './inquiry.js';
 import {dryTrace} from './activity-model.js';
 import {visibleDew,wipeDroplets} from './inquiry-model.js';
 import {resetDrawingExperiment} from './drawing-records.js';
-import {drawRealDrop,drawWaterStroke} from './study-materials.js';
+import {drawDewBead,drawWaterStroke} from './study-materials.js';
 import {compareStage,comparedPours,iceSeat,iceDropTarget} from './scene-model.js';
 import {drawVessel,drawVesselFront,waterSurfaceY,dashedLine} from './pouring-scene.js';
 const reduced=()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -126,11 +126,11 @@ export function createDewScene(scene,wipe){
    const drops=k==='room'?(!d.wiped.includes('room')?visibleDew(50,q.dewRoomRemoved):[]):!d.wiped.includes('cold')?visibleDew(50,q.dewRemoved):!d.rewiped?visibleDew(observationTime(7),q.dewRemoved):visibleDew(d.time,q.dewRemoved).concat(visibleDew(observationTime(7)).filter(p=>q.dewRegion.includes(p.id)));
    for(const p of drops)if(kind!==k||!ids.includes(p.id)){
     if(k==='cold'&&d.sealed){const time=d.rewiped&&q.dewRegion.includes(p.id)?observationTime(7):d.time;wetMask.fillStyle(0xffffff).fillCircle(cx+p.x-120,p.y-5,Math.min(24,8+Math.max(0,time-p.id*5)/2));}
-    else drawRealDrop(g,cx+p.x-120,p.y-5,2.5+p.id%2,.58);
+    drawDewBead(g,cx+p.x-120,p.y-5,6.5+p.id%3);
    }
   }
   texture.refresh();
  };
- scene.text(360,310,d.sealed?'랩과 고무줄로 두 컵 입구를 막았어. 겉면을 닦고 비교해 봐.':'두 컵의 겉면을 문질러 닦고, 입구를 막아 봐.',16);
+ scene.text(360,310,d.sealed?'차가운 컵 바깥: 수증기가 식어 생긴 액체 물방울':'두 컵의 겉면을 문질러 닦고, 입구를 막아 봐.',18);
 }
 
