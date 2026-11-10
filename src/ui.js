@@ -22,7 +22,7 @@ export function heatingRig(level=60,boiling=false,heated=false,active=false){
  return `<svg class="heating-rig" viewBox="0 0 320 370" role="img" aria-label="${heated?'비커 바닥보다 넓은 가열판 위의 물':'가열하지 않은 비커의 물'}"><title>${heated?'비커 바닥 전체가 가열판 안에 놓여 있어':'같은 크기의 비커 · 가열하지 않음'}</title>${support}${cup}</svg>`;
 }
 // Mark labels sit beside the beaker (not inside it) and never overlap, so they stay legible when the SVG is small.
-function markLines(marks){const ys=marks.map(m=>267-m.level*2.1),order=marks.map((_,i)=>i).sort((a,b)=>ys[a]-ys[b]),at=[];order.forEach((i,k)=>{at[i]=Math.min(286,Math.max(26,k?Math.max(ys[i],at[order[k-1]]+42):ys[i]));});return marks.map((m,i)=>`<path d="M48 ${ys[i]}h170L226 ${at[i]}" fill="none" stroke="${m.color}" stroke-width="2" ${i===1?'stroke-dasharray="5 4"':' '}/><text x="230" y="${at[i]}" dominant-baseline="middle" fill="${m.color}" font-size="40" font-family="NanumSquareNeo, sans-serif" stroke="#fffdf4" stroke-width="6" paint-order="stroke">${m.label}</text>`).join('');}
+function markLines(marks){const ys=marks.map(m=>267-m.level*2.1),order=marks.map((_,i)=>i).sort((a,b)=>ys[a]-ys[b]),at=[];order.forEach((i,k)=>{at[i]=Math.min(286,Math.max(26,k?Math.max(ys[i],at[order[k-1]]+42):ys[i]));});return marks.map((m,i)=>`<path d="M48 ${ys[i]}h170L226 ${at[i]}" fill="none" stroke="${m.color}" stroke-width="2" ${i===1?'stroke-dasharray="5 4"':' '}/><text x="230" y="${at[i]}" dominant-baseline="middle" fill="${m.color}" font-size="26" font-family="NanumSquareNeo, sans-serif" stroke="#fffdf4" stroke-width="4" paint-order="stroke">${m.label}</text>`).join('');}
 let beakerCount=0;
 // Cropped glass photograph, aligned to the shared 53..207 interior and 267 water floor.
 export function beakerGlass(){
