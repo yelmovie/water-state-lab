@@ -17,10 +17,40 @@ export const fieldLetters={
  10:['온실까지 물을 보내 주었구나. 마지막으로 물이 모습을 바꾸는 길을 이어 보렴.','물에서 눈에 보이지 않는 수증기로, 다시 물방울로 돌아오는 길이야. 네가 관찰했던 변화를 떠올려 알맞은 도구를 골라 주렴.']
 };
 export const npcVoiceProfiles={
- 2:{id:'sohee-parang',speaker:'Sohee',pitchCents:100,rate:1.04},
- 4:{id:'sohee-ttukttak',speaker:'Sohee',pitchCents:-100,rate:.99},
- 6:{id:'sohee-bori',speaker:'Sohee',pitchCents:-40,rate:.97},
- 8:{id:'sohee-songi',speaker:'Sohee',pitchCents:40,rate:1},
- 10:{id:'sohee-neuti',speaker:'Sohee',pitchCents:-140,rate:.94}
+  "2": {
+    "id": "momo-parang",
+    "speaker": "파랑",
+    "voice": "preset-01",
+    "pitch": 0,
+    "rate": 0.95
+  },
+  "4": {
+    "id": "momo-ttukttak",
+    "speaker": "뚝딱",
+    "voice": "preset-03",
+    "pitch": -1,
+    "rate": 1
+  },
+  "6": {
+    "id": "momo-bori",
+    "speaker": "보리",
+    "voice": "preset-06",
+    "pitch": 0,
+    "rate": 0.97
+  },
+  "8": {
+    "id": "momo-songi",
+    "speaker": "송이",
+    "voice": "preset-04",
+    "pitch": 1,
+    "rate": 1
+  },
+  "10": {
+    "id": "momo-neuti",
+    "speaker": "느티",
+    "voice": "preset-09",
+    "pitch": 0,
+    "rate": 0.92
+  }
 };
 export const npcVoices=Object.fromEntries(Array.from({length:10},(_,i)=>[i+1,npcVoiceProfiles[Math.ceil((i+1)/2)*2].id]));
