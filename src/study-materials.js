@@ -50,3 +50,16 @@ export function drawWaterStroke(ctx,lines,{left,top,width,height,amount=1,time=0
  ctx.restore();
 }
 
+
+/** Large, shaded liquid beads remain legible on glass on tablets and whiteboards. */
+export function drawDewBead(ctx,x,y,r){
+ ctx.save();
+ const body=ctx.createRadialGradient(x-r*.28,y-r*.4,r*.08,x,y,r*1.15);
+ body.addColorStop(0,'#ecffff');body.addColorStop(.3,'#b8edf0d9');body.addColorStop(.7,'#4fa0b0bd');body.addColorStop(1,'#17566da6');
+ ctx.fillStyle=body;ctx.strokeStyle='#236078c9';ctx.lineWidth=Math.max(.8,r*.13);
+ ctx.shadowColor='#18485c66';ctx.shadowBlur=r*.2;ctx.shadowOffsetY=r*.18;
+ ctx.beginPath();ctx.ellipse(x,y,r*.76,r,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+ ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.fillStyle='#ffffffef';
+ ctx.beginPath();ctx.ellipse(x-r*.22,y-r*.38,r*.2,r*.28,-.35,0,Math.PI*2);ctx.fill();
+ ctx.restore();
+}

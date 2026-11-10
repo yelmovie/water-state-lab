@@ -152,6 +152,7 @@ export function pinQuestion(root){
  heading.classList.toggle('is-question',isQuestion);
  if(!isQuestion||!main.classList.contains('manual-tools'))return; // while watching, the question panel already holds both
  const panel=root.querySelector('.guided-question-panel'),shown=el=>el.offsetParent!==null&&!el.disabled;
+ if(panel){panel.classList.add('show-in-manual');return;}
  let answers;
  if(panel){
   const actions=[...panel.querySelectorAll('[data-action]')].map(b=>b.dataset.action);
