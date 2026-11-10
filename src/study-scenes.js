@@ -121,14 +121,16 @@ export function createDewScene(scene,wipe){
  scene.finishPointer=()=>{if(kind){const k=kind,removed=ids;kind=null;ids=[];queueMicrotask(()=>wipe(k,removed));}};
  scene.tick=()=>{
   g.setTransform(2,0,0,2,0,0);g.clearRect(0,0,720,330);
-  wetMask.clear();
+  // One path for every drop: the canvas renderer clips to the current path only, so separate fillCircle calls left one visible drop.
+  wetMask.clear();wetMask.fillStyle(0xffffff);wetMask.beginPath();
   for(const [k,cx] of [['cold',205],['room',510]]){
    const drops=k==='room'?(!d.wiped.includes('room')?visibleDew(50,q.dewRoomRemoved):[]):!d.wiped.includes('cold')?visibleDew(50,q.dewRemoved):!d.rewiped?visibleDew(observationTime(7),q.dewRemoved):visibleDew(d.time,q.dewRemoved).concat(visibleDew(observationTime(7)).filter(p=>q.dewRegion.includes(p.id)));
    for(const p of drops)if(kind!==k||!ids.includes(p.id)){
-    if(k==='cold'&&d.sealed){const time=d.rewiped&&q.dewRegion.includes(p.id)?observationTime(7):d.time;wetMask.fillStyle(0xffffff).fillCircle(cx+p.x-120,p.y-5,Math.min(24,8+Math.max(0,time-p.id*5)/2));}
+    if(k==='cold'&&d.sealed){const time=d.rewiped&&q.dewRegion.includes(p.id)?observationTime(7):d.time,x=cx+p.x-120,y=p.y-5,r=Math.min(24,8+Math.max(0,time-p.id*5)/2);wetMask.moveTo(x+r,y);wetMask.arc(x,y,r,0,Math.PI*2);}
     else drawRealDrop(g,cx+p.x-120,p.y-5,2.5+p.id%2,.58);
    }
   }
+  wetMask.fillPath();
   texture.refresh();
  };
  scene.text(360,310,d.sealed?'랩과 고무줄로 두 컵 입구를 막았어. 겉면을 닦고 비교해 봐.':'두 컵의 겉면을 문질러 닦고, 입구를 막아 봐.',16);

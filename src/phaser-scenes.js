@@ -230,10 +230,11 @@ function makeScene(P,route,ctx,host,hidden,regions){
    });
    ['solid','liquid','gas'].forEach((key,i)=>{const y=65+i*84;this.panel(490,y-30,215,72);this.text(600,y-8,['고체','액체','기체'][i],23);this.text(600,y+19,`${sortCards.filter(c=>a().sort.placed[c.id]===key).length+hiddenScenes.filter(c=>hidden.placed[c.id]===key).length}개 확인`,16);const bin=this.add.rectangle(600,y+5,210,68,0xffffff,0).setInteractive({useHandCursor:true});bin.on('pointerdown',()=>this.action((hiddenActive?'ix-hidden-place-':'ix-sort-answer-')+key));});
    if(!card){const left=hiddenScenes.filter(c=>!hidden.placed[c.id]).length;this.text(243,317,!bonus?'여섯 장면의 물을 모두 찾았어!':hiddenActive?`${hiddenActive.name} · 오른쪽 상태를 눌러 봐`:left?`숨은 물 ${left}곳 · ? 표시를 눌러 찾아봐`:'숨은 물까지 모두 찾았어!',hiddenActive?18:20);return;}
-   const idx=['beaker','jug','ice','cloth','can','icepack','thermometer','magnifier','seedling'].indexOf(card.art);
-   const obj=this.prop(530,298,idx,56,'equipment',true);this.text(628,298,'칸으로 끌기',16);
+   // The token is the card number, not the object picture: the cloth or flowerpot itself is not the gas or liquid.
+   const obj=this.add.circle(530,298,26,0xfff9e9).setStrokeStyle(3,0x9a6a21).setDepth(2).setInteractive({useHandCursor:true});this.input.setDraggable(obj);
+   const badge=this.text(530,298,String(sortCards.indexOf(card)+1),24).setDepth(21);obj.onMove=()=>badge.setPosition(obj.x,obj.y);this.text(628,298,'번 물을 칸으로',16);
    this.text(243,317,card.name+' · 어떤 상태인지 눌러 봐',17);
-   obj.onRelease=()=>{if(obj.x<490||obj.y<29||obj.y>269){obj.setPosition(530,298);return;}const key=['solid','liquid','gas'][clamp(Math.round((obj.y-65)/84),0,2)];q().sortProof=card.id;this.action('ix-sort-answer-'+key);};
+   obj.onRelease=()=>{if(obj.x<490||obj.y<29||obj.y>269){obj.setPosition(530,298);badge.setPosition(530,298);return;}const key=['solid','liquid','gas'][clamp(Math.round((obj.y-65)/84),0,2)];q().sortProof=card.id;this.action('ix-sort-answer-'+key);};
   }
 
   freezeScene(){createFreezeScene(this,reduced);}
@@ -290,14 +291,14 @@ function makeScene(P,route,ctx,host,hidden,regions){
    }
    const proofs=[['sealed','입구를 막았어',4],['contrast','차가운 컵에 생겼어',5],['again','닦아도 다시 생겼어',3]];
    this.panel(180,195,360,110);this.text(360,248,'내 설명에 쓸 증거 놓는 곳',20);
-   proofs.forEach(([key,label,index],i)=>{const x=130+i*230,obj=this.add.image(x,85,'real-dew',key==='contrast'?'3':'2').setDisplaySize(115,115).setInteractive({useHandCursor:true});this.input.setDraggable(obj);this.text(x,153,label,17);if(s.evidence.includes(key)){obj.setTint(0xa9e9cf);this.text(x,27,'✓ 연결한 증거',17,'#21785d');}let tapStart;obj.on('pointerdown',p=>{tapStart={x:p.worldX,y:p.worldY};});obj.on('pointerup',p=>{if(tapStart&&Math.hypot(p.worldX-tapStart.x,p.worldY-tapStart.y)<12)this.action('ix-evidence-'+key);tapStart=null;});obj.onRelease=()=>{if(obj.y>190&&!s.evidence.includes(key))this.action('ix-evidence-'+key);else obj.setPosition(x,85);};});
+   proofs.forEach(([key,label,index],i)=>{const x=130+i*230,obj=this.add.image(x,85,'real-dew',key==='sealed'?'2':'3').setDisplaySize(115,115).setInteractive({useHandCursor:true});this.input.setDraggable(obj);this.text(x,153,label,17);if(s.evidence.includes(key)){obj.setTint(0xa9e9cf);this.text(x,27,'✓ 연결한 증거',17,'#21785d');}let tapStart;obj.on('pointerdown',p=>{tapStart={x:p.worldX,y:p.worldY};});obj.on('pointerup',p=>{if(tapStart&&Math.hypot(p.worldX-tapStart.x,p.worldY-tapStart.y)<12)this.action('ix-evidence-'+key);tapStart=null;});obj.onRelease=()=>{if(obj.y>190&&!s.evidence.includes(key))this.action('ix-evidence-'+key);else obj.setPosition(x,85);};});
   }
   workshopScene(){
    const final=route===10,context=final?finalContext():null,s=final?context.progress.diagnosis.working:state.lab.workshop;
    const names=['plate','ramp','funnel','tube','bucket'];const scale=.64,offset=10;
    const result=final?context.progress.diagnosis.tests.at(-1):s.trials.at(-1);
    const valid=()=>!this.dragging&&result?.signature===testCollector(s.parts,s.cold,s.angle).signature;
-   const firstBreak=result?.steps?.find(step=>!step.ok);const breakLabel=firstBreak?this.text(555,27,'붉은 표시: 처음 멈춘 곳',17,'#9a3629').setBackgroundColor('#fff1e6').setPadding(8,4).setDepth(12):null;
+   const firstBreak=result?.steps?.find(step=>!step.ok);const breakLabel=firstBreak?this.text(430,27,'붉은 표시: 처음 멈춘 곳',17,'#9a3629').setBackgroundColor('#fff1e6').setPadding(8,4).setDepth(12):null;
    const labelPosition=(obj,key)=>key==='plate'?[obj.x,Math.max(19,obj.y-44)]:key==='ramp'?[obj.x+65,Math.max(19,obj.y-44)]:[obj.x+(obj.x>570?-68:68),obj.y];
    this.parts={};names.forEach((key,i)=>{
     const p=s.parts[key],obj=this.prop(p.x,p.y*scale+offset,i,key==='plate'?120:key==='ramp'?150:85,'workshop',key==='funnel'&&(!final||context.progress.diagnosis.processVersion!==3||context.progress.diagnosis.tests.length>0));this.parts[key]=obj;

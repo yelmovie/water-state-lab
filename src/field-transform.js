@@ -4,7 +4,7 @@ import {freezeTrayView,bindFreezeTray} from './freeze-tray.js';
 import {processView,bindProcess} from './transform-process.js';
 
 const kinds=['freeze','melt','evaporate','condense'];
-const labels={freeze:'얼리기',melt:'녹이기',evaporate:'끓이기',condense:'응결'};
+const labels={freeze:'얼리기',melt:'녹이기',evaporate:'증발·끓음',condense:'응결'};
 const modelNote='실제 변화에 걸리는 시간을 줄인 모형이야. 물의 양과 주변 조건에 따라 시간은 달라져. 응결은 수증기가 충분한 공기에서 판을 충분히 차갑게 한 조건이야. 수증기는 눈에 보이지 않아. 실제 가열은 선생님과 함께 해.';
 const nextKey=c=>kinds.find(key=>!transformationObserved(c,key));
 function view(c,key=nextKey(c)){

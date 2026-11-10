@@ -1418,3 +1418,8 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
  .scene-9 .water-chain li{padding:5px 4px}
  .scene-9 .trial-result{font-size:17px;line-height:1.4}
 }
+/* 2026-11-10: '.dialog-body p/li' (22~26px) beat the certificate's own sizes, so 나의 강점 ran into the date line. */
+.dialog-body .cert-strength{font-size:calc(var(--u)*1.9)}
+.dialog-body .cert-sheet :is(.cert-lead,.cert-skills li){font-size:min(22px,calc(var(--u)*2.8))}
+.cert-foot{justify-content:flex-start;gap:calc(var(--u)*1)}
+.cert-foot .cert-authority{margin-left:auto}

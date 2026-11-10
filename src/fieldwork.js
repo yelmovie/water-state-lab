@@ -85,7 +85,7 @@ export function handleFieldwork(action,ctx){
  if(action==='field-back'){state.fieldwork.active=0;save();ctx.render();return true;}
  if(action==='field-finish'||action==='field-continue'){
   if(!hasFieldSeal(n)){toast('조건을 바꿔 보고, 관찰한 근거로 문제를 해결해 줘.');return true;}
-  if(action==='field-finish'){openConcept(n/2,{reduced:state.settings.reduced,continueLabel:'주민 만나기',onContinue:()=>{if(state.route===n&&state.fieldwork.active===n)handleFieldwork('field-continue',ctx);}});return true;}
+  if(action==='field-finish'){openConcept(n/2,{reduced:state.settings.reduced,continueLabel:state.settings.autoplay!==false?'지도로 돌아가기':'주민 만나기',onContinue:()=>{if(state.route===n&&state.fieldwork.active===n)handleFieldwork('field-continue',ctx);}});return true;}
   document.querySelector('#dialog')?.close();
   const pending=state.fieldwork.pending;state.fieldwork.active=0;state.fieldwork.pending='';save();playCue('success');
   if(pending==='teacher-return'&&state.settings.adminUnlock)ctx.go(n);

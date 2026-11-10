@@ -3,7 +3,7 @@
 export const startLevel=60,iceLevel=65.4;
 export const pipeChoices=[
  {id:'burst',label:'얼음이 밀어서 배관이 깨져',ok:true,hint:''},
- {id:'shrink',label:'물이 줄어서 배관이 헐거워져',ok:false,hint:'비커를 떠올려 봐. 얼면서 물 윗면이 빨간 선보다 내려갔어, 올라갔어?'},
+ {id:'shrink',label:'물이 줄어서 배관이 헐거워져',ok:false,hint:'비커를 떠올려 봐. 얼면서 윗면이 빨간 선보다 내려갔어, 올라갔어?'},
  {id:'same',label:'아무 일도 안 생겨',ok:false,hint:'쭈쭈바 봉지는 그대로였어? 얼고 나서 어떻게 달라졌는지 떠올려 봐.'}
 ];
 export const talkDone=f=>f.talk>=3;

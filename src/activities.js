@@ -32,7 +32,7 @@ function freezeTalkPanel(s){
 function freezeChallenge(s){const c=s.challenge,best=bestFreezeChallenge(c.trials),last=c.trials.at(-1);return `<section class="replay-challenge" aria-label="다른 양 예측 도전"><h3>도전 · 다른 양도 맞혀 볼까?</h3><p>내 기록은 물 60 → 얼음 65.4야. 처음 양을 고르고 얼음 높이를 예상해 봐.</p><div class="replay-options">${freezeAmounts.map(v=>`<button class="activity-button ${c.amount===v?'selected':''}" data-action="act-freeze-amount-${v}" aria-pressed="${c.amount===v}">물 ${v}</button>`).join('')}</div>${c.amount?`${slider('activity-challenge-prediction',`물 ${c.amount}이 얼면 높이는?`,c.prediction,c.amount,c.amount+15,.5)}${button('예측 모형으로 확인','freeze-challenge')}`:''}${last?`<div class="replay-result">${beaker(last.actual,true,false,[{level:last.amount,color:'#207baf',label:'처음'},{level:last.prediction,color:'#b26d19',label:'예상'}])}</div>`:''}${status(last?`물 ${last.amount} · 예상 ${last.prediction} · 실제 ${last.actual} · 차이 ${last.error}${last.close?' · 거의 정확해!':' · 60일 때 5.4 늘었어. 처음 물의 약 10분의 1만큼 늘어난다고 생각해 봐.'}`:'얼면 높이가 늘어나. 늘어나는 양은 처음 물의 양에 따라 달라져.')}${best?`<p class="replay-best">가장 가까운 예상 차이 ${best.error}${best.close?' · 정밀 예측 성공':''} · 도전 ${c.trials.length}회</p>`:''}</section>`;}
 let picked='',lastMessage='',liveCleanup=[];
 function announce(text,popup=true){lastMessage=text;if(typeof document!=='undefined'){const el=document.querySelector('.activity-status');if(el)el.textContent=text;if(popup&&document.querySelector('#toast'))ui.toast(text);}}
-function change(ctx,message=''){save();ctx.render();if(message){playCue('drop');announce(message);}}
+function change(ctx,message='',cue='drop'){save();ctx.render();if(message){playCue(cue);announce(message);}}
 function capture(list,record,key='kind'){const i=list.findIndex(x=>x[key]===record[key]);if(i>=0)list[i]=record;else list.push(record);}
 function next(n,ctx){if(!activityReady(n,data())){announce('아직 남은 관찰이 있어. 위의 다음 할 일을 확인해 줘.');return;}ctx.pageDone(n);ctx.go(n+1);}
 
@@ -68,7 +68,7 @@ function drop(token,to,ctx){const a=data();let message='';
  picked='';change(ctx,message);
 }
 
-export function handleActivity(action,ctx){if(handleInquiry(action,ctx))return true;if(!action.startsWith('act-'))return false;const a=data(),cmd=action.slice(4);let s,message='';
+export function handleActivity(action,ctx){if(handleInquiry(action,ctx))return true;if(!action.startsWith('act-'))return false;const a=data(),cmd=action.slice(4);let s,message='',cue='drop';
  if(cmd.startsWith('pick-')){picked=cmd.slice(5);announce('선택했어. 놓을 곳을 누르거나 직접 끌어 줘.');return true;}
  if(cmd.startsWith('place-')){if(picked)drop(picked,cmd.slice(6),ctx);return true;}
  if(cmd.startsWith('drop-')){const map={'jug-tall':['jug','tall'],'jug-wide':['jug','wide'],'ice-dish':['ice','dish'],'measure-cup-scale':['measure-cup','scale'],'icepack-freeze-cup':['icepack','freeze-cup'],'warm-freeze-cup':['warm','freeze-cup'],'drawing-water-drawing-air':['drawing-water','drawing-air'],'lens-surface':['lens','surface'],'lens-inside':['lens','inside'],'lens-level':['lens','level'],'heated-water-heat-air':['heated-water','heat-air']};const args=map[cmd.slice(5)];if(args)drop(...args,ctx);return true;}
@@ -79,7 +79,7 @@ export function handleActivity(action,ctx){if(handleInquiry(action,ctx))return t
  else if(cmd==='wet-cloth'){a.observe.clothWet=true;a.observe.time=0;}
  else if(cmd==='observe-record'){if(!a.observe.clothWet||a.observe.time<80)return true;capture(a.observe.records,{kind:'cloth',time:a.observe.time,before:'젖은 자국',after:'마른 자국'});}
  else if(cmd.startsWith('freeze-guess-')){const v=Number(cmd.slice(13));if(!a.freeze.onScale||a.freeze.predicted||![56,60,66].includes(v))return true;a.freeze.prediction=v;a.freeze.predicted=true;message='좋아! 이제 냉동고에 넣고 충분히 얼린 뒤 꺼내서 재 보자.';}
- else if(cmd.startsWith('talk-')){if(!activityReady(3,a))return true;message=freezeTalk(a.freeze,cmd);if(!message)return true;}
+ else if(cmd.startsWith('talk-')){if(!activityReady(3,a))return true;message=freezeTalk(a.freeze,cmd);if(!message)return true;const pipe=pipeChoices.find(c=>'talk-pipe-'+c.id===cmd);if(pipe)cue=pipe.ok?'success':'error';}
  else if(cmd==='freeze-replay'){const f=a.freeze;f.phase='water';f.compared=false;f.onScale=true;f.processStage='measured';f.processTime=0;f.records=f.records.filter(r=>r.kind==='water');}
  else if(cmd==='freeze-predict'){if(!a.freeze.onScale)return true;a.freeze.predicted=true;message='네 예상선을 남겼어. 냉동고에 넣고 충분히 기다려 보자.';}
  else if(cmd==='freeze-record'){const stage=measureStatus(a.freeze).stage;message=measureAction(a.freeze,stage==='taken'?'measure-ice':stage==='melted'?'measure-melt':'measure');}
@@ -87,7 +87,7 @@ export function handleActivity(action,ctx){if(handleInquiry(action,ctx))return t
  else if(cmd.startsWith('freeze-amount-')){const v=Number(cmd.slice(14));if(!activityReady(3,a)||!freezeAmounts.includes(v))return true;Object.assign(a.freeze.challenge,{amount:v,prediction:v});}
  else if(cmd==='freeze-challenge'){const c=a.freeze.challenge;if(!activityReady(3,a)||!c.amount)return true;const t=freezeChallengeTrial(c.amount,c.prediction);c.trials.push(t);if(c.trials.length>20)c.trials.shift();message=t.close?'거의 정확해! 내 기록으로 새로운 양을 예측했어.':'얼려서 확인했어. 차이를 보고 다시 예상해 봐.';}
  else if(cmd==='pipe-test'){const t=recordPipeTrial(a.pipe);void playCue(t.safe?'discover':'drop');}
- else if(cmd.startsWith('pipe-mark-')){s=a.pipe;const i=Number(cmd.slice(10)),t=s.trials[i];if(!t)return true;if(!t.safe){announce(t.expanded>100?'이 시험관은 마개가 튀어 나갔어. 얼음 위에 남은 공간이 없었지?':'얼음이 입구에 거의 닿았어. 얼음 위에 남은 공간이 더 넉넉한 시험관을 찾아봐.',false);return true;}s.chosen=i;s.marked=true;void playCue('success');}
+ else if(cmd.startsWith('pipe-mark-')){s=a.pipe;const i=Number(cmd.slice(10)),t=s.trials[i];if(!t)return true;if(!t.safe){announce(t.expanded>100?'이 시험관은 마개가 튀어 나갔어. 얼음 위에 남은 공간이 없었지?':'얼음이 입구에 거의 닿았어. 얼음 위에 남은 공간이 더 넉넉한 시험관을 찾아봐.',false);void playCue('error');return true;}s.chosen=i;s.marked=true;void playCue('success');}
  else if(cmd==='draw-reset'){a.draw={...initialActivities().draw};}
  else if(cmd==='draw-example'){if(a.draw.strokes.length>=40)return true;a.draw.strokes.push(...exampleWaterDrawing());a.draw.time=0;}
  else if(cmd==='draw-record'){s=a.draw;if(!s.strokes.some(x=>x.length>=3))return true;const band=s.time<=10?0:s.time>=30&&s.time<=60?1:s.time>=80?2:-1;if(band<0){announce('처음 0, 중간 30~60, 나중 80 이상의 모습을 비교해 줘.');return true;}capture(s.records,{band,time:s.time,thin:dryTrace('thin',s.time),thick:dryTrace('thick',s.time)},'band');}
@@ -106,7 +106,7 @@ export function handleActivity(action,ctx){if(handleInquiry(action,ctx))return t
   if(m===4){const before=a.dew.records[0].cold.mass.toFixed(1),after=a.dew.records[1].cold.mass.toFixed(1);record={chain:['공기 중 수증기','차가운 표면','액체 물방울'],mass:`${before} g → ${after} g`,sealed:true,evidence:[...a.explain.evidence],transfer:'차가운 음료병 겉면의 물방울',snapshots:structuredClone(a.dew.records),reobserved:a.dew.again};}
   if(record){save();ctx.complete(m,record);}return true;
  }else return false;
- change(ctx,message);return true;
+ change(ctx,message,cue);return true;
 }
 
 export function cleanupActivity(){cleanupInquiry();for(const fn of liveCleanup)fn();liveCleanup=[];picked='';lastMessage='';}

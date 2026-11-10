@@ -402,3 +402,20 @@
 .prediction-chosen .btn{min-height:44px;padding:4px 12px;font-size:16px}
 /* 1920 전자칠판 뒷자리: 실험 화면의 작은 안내 글자도 18px 하한(C20) */
 @media(min-width:1600px){.workspace-stage .jug-remaining,.measure-scale span{font-size:18px}}
+
+/* 2026-11-10 play review: the toast sat on top of the bottom answer and next buttons. */
+#toast{top:84px;bottom:auto;transform:translate(-50%,-12px)}#toast.show{transform:translate(-50%,0)}
+/* The summary step titled '오늘 알게 된 것' shows what was learned instead of hiding it behind the hint button. */
+.guided-shell .building-guide.lesson-shown .building-guide-copy p{display:block!important;position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:6;margin:0;padding:10px 16px;border:3px solid #e0a52a;border-radius:14px;background:#fffdf3;color:#24433f;font:clamp(17px,1.5vw,22px)/1.35 var(--font-display);box-shadow:0 6px 18px #00000022;pointer-events:none}
+/* The highlighted fill handle must stay on the tube; the guide outline used to make it position:relative and drop it under the status bar. */
+.bench-handle.guided-control:not(#field-canvas){position:absolute}
+/* The core inlet height slider used the browser's tiny default thumb; give it the same finger-sized thumb as the time slider. */
+#core-inlet-height{appearance:none;-webkit-appearance:none;height:48px;min-height:48px;background:transparent;touch-action:pan-y}
+#core-inlet-height::-webkit-slider-runnable-track{height:12px;border:1px solid #77a28c;border-radius:999px;background:#bed9c4}
+#core-inlet-height::-moz-range-track{height:10px;border:1px solid #77a28c;border-radius:999px;background:#bed9c4}
+#core-inlet-height::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:36px;height:36px;margin-top:-13px;border:3px solid #285b4b;border-radius:50%;background:#f5d17b}
+#core-inlet-height::-moz-range-thumb{width:30px;height:30px;border:3px solid #285b4b;border-radius:50%;background:#f5d17b}
+/* Chapter 10 core controls: full-width sliders and valve pushed the required '물 보내기' button below the screen. Share rows instead. */
+.workspace-controls #core-inlet-height,.workspace-controls #final-valve{flex:1 1 260px;width:auto;min-width:200px}
+.workspace-controls .core-valve-control{flex:0 1 auto;width:auto;min-height:56px;padding:4px 12px}
+.workspace-controls .core-valve-control img{width:44px;height:44px}

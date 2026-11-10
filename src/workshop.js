@@ -66,7 +66,7 @@ export function handleWorkshop(action,ctx){const s=state.lab.workshop;const {pro
  if(action==='toggle-cold'){s.cold=!s.cold;redraw();return true;}
  if(action==='ramp-tilt'){s.angle=s.angle>0?0:rampTilt;redraw();return true;}
  if(action==='funnel-fix'){Object.assign(s.parts.funnel,funnelSeat(s.parts.ramp));redraw();return true;}
- if(action==='test-workshop'){s.trials.push(testCollector(s.parts,s.cold,s.angle));if(s.trials.length>12)s.trials.shift();redraw();return true;}
+ if(action==='test-workshop'){const trial=testCollector(s.parts,s.cold,s.angle);s.trials.push(trial);if(s.trials.length>12)s.trials.shift();void playCue(trial.ok?'success':'error');redraw();return true;}
  if(action==='complete-5'){if(!currentTrialValid(s))return true;ctx.pageDone(9);state.evidence[5]={trials:s.trials.length,first:s.trials[0].collected,last:s.trials.at(-1).collected,parts:structuredClone(s.parts),angle:s.angle,cold:s.cold,result:structuredClone(s.trials.at(-1)),comparison:structuredClone([previousTrial(s.trials),s.trials.at(-1)])};state.lab.final={submitted:[],connected:false,valve:0,tested:false,lever:0,cooling:false,coreHeight:90};if(!state.completed.includes(5))state.completed.push(5);save();ctx.go(10);return true;}
  if(action.startsWith('submit-')){const n=+action.slice(7);if(n>=1&&n<=5&&(preview||state.evidence[n])&&!f.submitted.includes(n))f.submitted.push(n);return true;}
  if(!design)return false;
@@ -80,8 +80,8 @@ export function handleWorkshop(action,ctx){const s=state.lab.workshop;const {pro
  else if(action==='core-cooling'){d.working.cold=!d.working.cold;f.cooling=d.working.cold;d.resolved=false;f.tested=false;f.lever=0;}
  else if(action==='core-funnel'){d.working.parts.funnel={...design.parts.funnel};d.resolved=false;f.tested=false;f.lever=0;}
  else if(action==='diagnosis-undo'){f.diagnosis=newDiagnosis(design,d.fault);f.tested=false;f.connected=false;f.valve=0;f.lever=0;}
- else if(action==='diagnosis-test'){const result=testCollector(d.working.parts,d.working.cold,d.working.angle);d.tests.push(result);if(d.tests.length>8)d.tests.shift();d.resolved=diagnosisResolved(d,result);f.tested=false;f.lever=0;}
- else if(action==='test-core'){const result=testCollector(d.working.parts,d.working.cold,d.working.angle);if(d.resolved&&diagnosisResolved(d,result)&&coreTransfer(f,d.working).canFlow){f.tested=true;}else toast(coreTransfer(f,d.working).downhill?'관을 연결하고 밸브를 열어 줘.':'코어 입구가 너무 높아. 물통의 물높이보다 낮춰 줘.');}
+ else if(action==='diagnosis-test'){const result=testCollector(d.working.parts,d.working.cold,d.working.angle);d.tests.push(result);if(d.tests.length>8)d.tests.shift();d.resolved=diagnosisResolved(d,result);f.tested=false;f.lever=0;void playCue(result.ok?'success':'error');}
+ else if(action==='test-core'){const result=testCollector(d.working.parts,d.working.cold,d.working.angle);if(d.resolved&&diagnosisResolved(d,result)&&coreTransfer(f,d.working).canFlow){f.tested=true;void playCue('success');}else{void playCue('error');toast(coreTransfer(f,d.working).downhill?'관을 연결하고 밸브를 열어 줘.':'코어 입구가 너무 높아. 물통의 물높이보다 낮춰 줘.');}}
  else return false;redraw();return true;
 }
 function flow(svg,result){if(!svg||!result?.links)return;let start=null,frame;const reduced=state.settings.reduced||globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;const layer=svg.querySelector('.moving-water');if(!layer)return;function tick(now){start??=now;const t=(now-start)/1000;layer.innerHTML=result.links.filter(l=>l.outgoing>0).map((l,i)=>{const p=Math.min(1,Math.max(0,(t-i*.38)/.7));return `<circle cx="${l.from.x+(l.to.x-l.from.x)*p}" cy="${l.from.y+15+(l.to.y-l.from.y)*p}" r="${4+l.outgoing/30}" fill="#279dbd"/>`;}).join('');if(t<4&&!reduced)frame=requestAnimationFrame(tick);}frame=requestAnimationFrame(tick);cleanup.push(()=>cancelAnimationFrame(frame));}
