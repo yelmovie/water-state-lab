@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {funnelSeat,rampTilt} from '../src/workshop-controls.js';
-import {workshopView,handleWorkshop} from '../src/workshop.js';
+import {workshopView,handleWorkshop,finalView} from '../src/workshop.js';
 import {state,initialState} from '../src/state.js';
 import {targetParts,testCollector,defaultParts,currentTrialValid} from '../src/domain.js';
 import {workshopProgress} from '../src/journey.js';
+import {newDiagnosis} from '../src/collector-model.js';
 
 globalThis.document??={addEventListener(){},querySelector(){return null;},getElementById(){return null;}};
 const ctx={render(){},go(route){this.route=route;},pageDone(){}};
@@ -60,4 +61,45 @@ test('fast edits retain the initial condition and can finish after the first suc
  assert.equal(s.trials[0].design.cold,false);
  assert.equal(currentTrialValid(s),true);
  assert.equal(s.trials.length,2);
+});
+
+test('core height buttons and valve controls invalidate a previous flow and respect bounds',()=>{
+ fresh();
+ for(const action of ['toggle-cold','ramp-tilt','funnel-fix','test-workshop','complete-5'])handleWorkshop(action,ctx);
+ finalView();
+ const f=state.lab.final;
+ handleWorkshop('core-lower',ctx);
+ assert.equal(f.coreHeight,90,'connect and repair before adjusting the core');
+ f.connected=true;f.diagnosis.resolved=true;f.tested=true;f.lever=100;
+ handleWorkshop('core-lower',ctx);
+ assert.equal(f.coreHeight,80);assert.equal(f.tested,false);assert.equal(f.lever,0);
+ for(let i=0;i<12;i++)handleWorkshop('core-lower',ctx);
+ assert.equal(f.coreHeight,25);
+ for(let i=0;i<12;i++)handleWorkshop('core-raise',ctx);
+ assert.equal(f.coreHeight,95);
+ f.tested=true;f.lever=100;handleWorkshop('core-open-valve',ctx);
+ assert.equal(f.valve,100);assert.equal(f.tested,false);assert.equal(f.lever,0);
+ handleWorkshop('core-close-valve',ctx);assert.equal(f.valve,0);
+});
+
+test('choosing the cause after a successful repair unlocks the visible core connection',()=>{
+ for(const fault of ['cooling','connection']){
+  fresh();state.settings.sound=false;
+  const design={parts:structuredClone(targetParts),cold:true,angle:20,result:testCollector(targetParts,true,20)};
+  state.evidence[5]=design;
+  const d=newDiagnosis(design,fault);state.lab.final.diagnosis=d;
+  handleWorkshop('diagnosis-test',ctx);
+  handleWorkshop('diagnose-'+(fault==='cooling'?'connection':'cooling'),ctx);
+  handleWorkshop(fault==='cooling'?'core-cooling':'core-funnel',ctx);
+  handleWorkshop('diagnosis-test',ctx);
+  assert.equal(d.resolved,false);
+  assert.match(finalView(),/class="core-connect-step"/);
+  handleWorkshop('diagnose-'+fault,ctx);
+  assert.equal(d.resolved,true,'the existing successful trial confirms the corrected cause');
+  handleWorkshop('connect-core',ctx);
+  assert.equal(state.lab.final.connected,true);
+  d.working.angle=0;
+  handleWorkshop('diagnose-'+fault,ctx);
+  assert.equal(d.resolved,false,'a stale successful trial cannot approve a changed device');
+ }
 });

@@ -1,5 +1,5 @@
 // The lesson demonstrates routine operations; predictions and conclusions stay with the learner.
-import {activityReady,experimentActivities,sortCards} from './activity-model.js';
+import {cupSummarySeen,activityReady,experimentActivities,sortCards} from './activity-model.js';
 import {measureStatus} from './freeze-measure.js';
 import {pipeChoices,talkDone} from './freeze-talk.js';
 import {currentNight,nightFills,reasons} from './cold-night-model.js';
@@ -43,7 +43,7 @@ export function guidedQuestion(n,state,final=null){
  }
  if(n===6&&a.compare.baseline&&a.compare.records.some(r=>r.boiling)&&['surface','inside','level'].every(k=>a.compare.pins.includes(k))&&a.compare.destination!=='air')return question('heat-destination','두 컵에서 줄어든 물은 어디로 갔을까?',choices('ix-heat-where-',where),'A는 표면에서, 끓는 B는 물속에서도 변화가 일어났어.');
  if(n===7&&!q.dewHypothesis)return question('dew-source','차가운 컵 바깥의 물방울은 어디서 왔을까?',choices('ix-dew-predict-',[['inside','컵 안의 물이 밖으로 나왔어'],['air','공기 중 수증기에서 왔어'],['unknown','아직 잘 모르겠어']]),'먼저 예상한 뒤 두 컵을 같은 시간 동안 관찰할 거야.');
- if(n===8&&activityReady(7,a)&&a.explain.chain.length===3&&!q.transferPrediction)return question('bottle-prediction','새 음료병에서도 물방울이 생길까?',choices('ix-transfer-predict-',[['cold','차가운 병 바깥에 생길 거야'],['both','두 병 모두 생길 거야'],['neither','두 병 모두 안 생길 거야']]),'컵에서 본 증거를 새 병에도 적용해 봐.');
+ if(n===8&&activityReady(7,a)&&cupSummarySeen(a.explain)&&!q.transferPrediction)return question('bottle-prediction','새 음료병에서도 물방울이 생길까?',choices('ix-transfer-predict-',[['cold','차가운 병 바깥에 생길 거야'],['both','두 병 모두 생길 거야'],['neither','두 병 모두 안 생길 거야']]),'컵에서 본 증거를 새 병에도 적용해 봐.');
  if(n===10){
   const d=final?.progress?.diagnosis;
   if(d?.tests.length&&!d.resolved&&(!d.hypothesis||d.hypothesis!==d.fault))return question('core-diagnosis','어디를 고쳐야 물이 끝까지 도착할까?',choices('diagnose-',[['cooling','냉각 문제를 고칠래'],['connection','물길 연결을 고칠래']]),d.hypothesis?'물이 멈춘 곳을 다시 살펴보고 원인을 골라 봐.':'먼저 시험한 물방울의 이동을 근거로 골라 봐.');
@@ -63,9 +63,8 @@ export function guidedRoutineAction(n,state,final=null){
  }
  if(guidedQuestion(n,state,final))return null;
  if(n===2){const card=sortCards.find(c=>!a.sort.placed[c.id]);return card?'ix-sort-card-'+card.id:'act-complete-1';}
- if(n===3&&activityReady(3,a))return a.freeze.talk===0?'guide-freeze-show-pop':a.freeze.talk===1?'act-talk-chill':talkDone(a.freeze)?'act-next-3':null;
+ if(n===3&&activityReady(3,a))return a.freeze.talk<2?'act-talk-chill':talkDone(a.freeze)?'act-next-3':null;
  if(n===6&&a.compare.records.some(r=>r.boiling)){const pin=['surface','inside','level'].find(k=>!a.compare.pins.includes(k));if(pin)return 'ix-lens-'+pin;}
- if(n===8&&activityReady(7,a)&&a.explain.evidence.length>=2&&a.explain.chain.length<3)return 'ix-chain-'+['air','cold','drops'][a.explain.chain.length];
  if(n===9&&currentTrialValid(state.lab.workshop))return 'complete-5';
  if(n===10&&final?.progress?.tested&&final.progress.diagnosis?.resolved&&coreTransfer(final.progress,final.progress.diagnosis.working).canFlow)return 'core-activate';
  const next={1:'act-next-1',4:'act-complete-2',5:'act-next-5',6:'act-complete-3',7:'act-next-7',8:'act-complete-4'};
@@ -74,10 +73,6 @@ export function guidedRoutineAction(n,state,final=null){
 
 /** Only the small operations absent from the old manual control set live here. */
 export function handleGuidedAction(action,state){
- if(action==='guide-freeze-show-pop'){
-  if(state.route===3&&state.fieldwork.active!==3&&activityReady(3,state.activities)&&state.activities.freeze.talk===0)state.activities.freeze.talk=1;
-  return true;
- }
  const fill=/^guide-night-fill-([123])-([012])$/.exec(action),reason=/^guide-night-reason-(dry|grow|heavy)$/.exec(action);
  if(!fill&&!reason)return false;
  if(state.route!==4||state.fieldwork.active!==4)return true;

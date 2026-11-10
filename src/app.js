@@ -1,3 +1,5 @@
+import {prepareDrawingComparison} from './drawing-records.js';
+import {mountTimeTools} from './time-dial.js';
 import {observationSpeed,OBSERVATION_SPEEDS} from './observation-speed.js';
 import {openStageLetter} from './field-briefing.js';
 import {experimentMove,stageGuide,markStageControls,pinQuestion} from './stage-guide.js';
@@ -7,7 +9,7 @@ import {residentReward,openResidentList,talkToResident,stageEndTalk,residentForS
 import {bindObservation,observationPlaying,stopObservation} from './observation-play.js';
 import {guidedQuestion,handleGuidedAction} from './guided-flow.js';
 import {assistStep} from './stage-assist.js';
-import {inquiryNotebook,wipe} from './inquiry.js';
+import {inquiryNotebook,wipe,observationClockBusy} from './inquiry.js';
 import {mountPhaser,cleanupPhaser,focusExperiment} from './phaser-scenes.js';
 import {discoveryStars,discoveryGoals} from './scene-model.js';
 import {state,save,reset,setPreviewMode,getStorageStatus,captureResetToken} from './state.js';
@@ -28,7 +30,7 @@ import {fieldworkView,bindFieldwork,cleanupFieldwork,handleFieldwork,startFieldw
 import {passportView,certificateView} from './achievement.js';
 const app=document.querySelector('#app');
 const ctx={render,go,pageDone,complete,action:routeAction,baseAction,wipe:(kind,ids)=>wipe(kind,ids,ctx),finishEnding,say:updateCoachMessage,enterMission:m=>{if(canEnter((m-1)*2+1,state))document.querySelector(`[data-action="mission-${m}"]`)?.click();}};
-let endingTimer,travelTimer,lastRenderedRoute,resetToken,manualToolsRoute=null,clockObserver=null;
+let endingTimer,travelTimer,lastRenderedRoute,resetToken,manualToolsRoute=null,clockObserver=null,workspaceObserver=null;
 function syncStorageNotice(){
  const status=getStorageStatus();let notice=document.querySelector('#learning-save-notice');
  if(!notice){notice=document.createElement('div');notice.id='learning-save-notice';notice.className='learning-save-notice';notice.setAttribute('role','status');document.body.append(notice);}
@@ -90,7 +92,7 @@ function experimentShell(n){
  const panel=question?`<aside class="guided-question-panel" aria-labelledby="guided-question-title"><span class="guided-question-label">❓ 문제</span><h2 id="guided-question-title">${esc(question.prompt)}</h2><div class="guided-question-choices">${question.choices.map(choice=>`<button type="button" class="btn" data-guided-answer data-action="${choice.action}">${esc(choice.label)}</button>`).join('')}</div>${question.note?`<p class="guided-question-note">${esc(question.note)}</p>`:''}<span class="guided-answer-after">👇 답을 하나 골라 줘</span></aside>`:'';
  return `<div class="experiment-shell guided-shell scene-${n}">${header()}<main class="experiment-main${manual?' manual-tools':''}" data-guided-phase="${question?'question':'observe'}" data-question-id="${question?.id||''}" data-has-question="${!!question}"><div class="scene-workspace">${guide}<section class="activity-area" aria-label="큰 화면으로 관찰하는 실험">${field?fieldworkView(n):n<=8?activityView(n):n===9?workshopView():finalView()}</section>${panel}</div></main></div>`;
 }
-function endingView(){const preview=!state.restored,seals=areaStages.filter(hasFieldSeal).length;return `<div class="ending-shell">${header()}<main class="ending-main"><div class="ending-illustration"><figure class="ending-art-card reward-reveal"><img src="/assets/v2/rescue-reward.webp" alt="방울이와 함께 복구한 연구섬의 물레"><figcaption id="ending-caption">네가 모은 물로 온실과 물레가 다시 움직여!</figcaption></figure>${btn('엔딩 영상 다시 보기','final-replay','secondary wide')}<button type="button" class="btn secondary wide three-open" data-action="three-island">연구섬 3D로 둘러보기</button><div class="ending-stats"><div><strong>${state.completed.length}<span>/ 5</span></strong><small>연구 기록</small></div><div><strong>${seals}<span>/ ${areaStages.length}</span></strong><small>발견 도장</small></div><div><strong>${state.lab.workshop.trials.length}<span>회</span></strong><small>내 설계 시험</small></div></div></div><div class="ending-copy"><span class="unit-label">${preview?'교사 시연 · 학생 기록과 별개예요':'MISSION COMPLETE · 복구 100%'}</span><h1>우리가 찾은 물의 비밀로,<br>연구섬을 깨웠어!</h1><p>관찰하고 다시 고친 네 기록이 물길을 되살렸어.</p><div class="ending-statement"><h3>나는 이제 이런 일을 할 수 있어!</h3>${[['observe','물의 변화를 관찰할 수 있어'],['compare','내 증거로 두 조건을 비교할 수 있어'],['design','화면 속 물길 설계를 고칠 수 있어']].map(([k,v])=>btn(v,'ability-'+k,state.fieldwork.ability===k?'selected':'secondary')).join('')}</div><div class="home-actions">${btn(icon('print')+' 나의 연구 인증서','certificate','primary',preview)}${btn('탐구 여권 보기','notebook','secondary')}${btn(state.restored&&!state.residentsMet.includes(10)?'느티 만나러 연구섬으로':'연구섬 다시 탐험','map','quiet')}${btn('처음부터 다시하기','request-reset','ending-restart',preview)}</div><button type="button" class="btn quiet classroom-making" data-action="classroom-making">교실에서 진짜 장치도 만들어 볼까?</button></div></main></div>`;}
+function endingView(){const preview=!state.restored;return `<div class="ending-shell">${header()}<main class="ending-main"><div class="ending-illustration"><figure class="ending-art-card reward-reveal"><img src="/assets/v2/rescue-reward.webp" alt="방울이와 함께 복구한 연구섬의 물레"><figcaption id="ending-caption">네가 모은 물로 온실과 물레가 다시 움직여!</figcaption></figure>${btn('엔딩 영상 다시 보기','final-replay','secondary wide')}<button type="button" class="btn secondary wide three-open" data-action="three-island">연구섬 3D로 둘러보기</button></div><div class="ending-copy"><span class="unit-label">${preview?'교사 시연 · 학생 기록과 별개예요':'MISSION COMPLETE · 복구 100%'}</span><h1>우리가 찾은 물의 비밀로,<br>연구섬을 깨웠어!</h1><p>관찰하고 다시 고친 네 기록이 물길을 되살렸어.</p><div class="ending-statement"><h3>나는 이제 이런 일을 할 수 있어!</h3>${[['observe','물의 변화를 관찰할 수 있어'],['compare','내 증거로 두 조건을 비교할 수 있어'],['design','화면 속 물길 설계를 고칠 수 있어']].map(([k,v])=>btn(v,'ability-'+k,state.fieldwork.ability===k?'selected':'secondary')).join('')}</div><div class="home-actions">${btn(icon('print')+' 나의 연구 인증서','certificate','primary',preview)}${btn('탐구 여권 보기','notebook','secondary')}${btn(state.restored&&!state.residentsMet.includes(10)?'느티 만나러 연구섬으로':'연구섬 다시 탐험','map','quiet')}${btn('처음부터 다시하기','request-reset','ending-restart',preview)}</div><button type="button" class="btn quiet classroom-making" data-action="classroom-making">교실에서 진짜 장치도 만들어 볼까?</button></div></main></div>`;}
 function notebook(){void playCue('page');const records=missions.map(m=>{const e=state.evidence[m.id];return `<article class="notebook-record"><span class="eyebrow">RESEARCH ${String(m.id).padStart(2,'0')} ${e?'· 기록 완료':'· 조사 중'}</span><h3>${m.reward}</h3>${e?`<p>${m.id===1?e.records.join('<br>'):m.id===2?`예상 ${e.prediction} → 관찰 ${e.result}<br>무게 ${e.mass} · 다시 녹이기 완료<br>${e.trials.length}개 조건의 배관 시험`:m.id===3?e.observations.join('<br>'):m.id===4?`${e.chain.join(' → ')}<br>무게 ${e.mass}<br>생활 적용: ${e.transfer}`:`${e.trials}회 설계 시험 · 수집 지수 ${e.first} → ${e.last}<br>내 장치를 코어 복구에 사용`}</p>`:'<p class="muted">아직 수집 전</p>'}</article>`;}).join('');modal('나의 연구노트',`${passportView()}${inquiryNotebook()}<div class="notebook-list">${records}</div>`);if(areaStages.every(hasFieldSeal))celebrate(document.querySelector('#dialog'),900);}
 function previewStage(n,field){
  if(!state.settings.adminUnlock||!canEnter(n,state))return;
@@ -115,14 +117,8 @@ function simplifyControls(route){
  if(tools){
   const extra=document.createElement('details');extra.className='canvas-alternatives essential-controls';extra.open=false;extra.innerHTML='<summary>다른 조작</summary>';
   if(route===1&&state.activities.observe.step===0)extra.innerHTML+=btn('길쭉한 그릇 선택','ix-pour-target-tall')+btn('넓은 그릇 선택','ix-pour-target-wide');
-  if(route===2){
-   const sort=state.activities.sort,active=state.inquiry.sortProof||nextSortCard(sort).id;
-   extra.open=false;
-   extra.innerHTML+=sortCards.map(c=>btn(c.name,'ix-sort-card-'+c.id,active===c.id?'selected':'')).join('')+
-    ['solid','liquid','gas'].map((k,i)=>btn(['고체에 놓기','액체에 놓기','기체에 놓기'][i],'ix-sort-answer-'+k)).join('');
-  }
 
-  if(route===8&&activityReady(7,experimentActivities(8,state))&&state.activities.explain.evidence.length<2)extra.innerHTML+=btn('입구를 막은 증거','ix-evidence-sealed')+btn('두 컵을 비교한 증거','ix-evidence-contrast')+btn('다시 닦은 증거','ix-evidence-again');
+
   if(route===1&&state.activities.observe.step===0){const hold=tools.querySelector('#hold-pour');if(hold)extra.append(hold);}
   if(extra.children.length>1)tools.append(extra);
 
@@ -150,24 +146,44 @@ function integrateWorkspaceControls(){
  const area=app.querySelector('.activity-area'),stage=area?.firstElementChild;if(!stage)return;
  stage.classList.add('workspace-stage');
  let dock=stage.querySelector(':scope > .workspace-controls');
- if(!dock){dock=document.createElement('div');dock.className='workspace-controls';dock.setAttribute('aria-label','이 화면의 조작 도구');stage.append(dock);}
+ if(!dock){
+  dock=document.createElement('div');dock.className='workspace-controls';dock.setAttribute('aria-label','이 화면의 조작 도구');stage.append(dock);
+  workspaceObserver?.observe(dock);
+ }
  // Keep every control inside its original experiment so delegated events still reach it.
  for(const control of stage.querySelectorAll('.activity-tools,.control-panel,[data-time-controls],.tray-action-row,.process-controls,.cycle-controls,.cold-side,.cold-bubble,.bench-foot,.measure-records,.diagnosis-choices'))if(!dock.contains(control))dock.append(control);
+ // Optional instructions open above the controls, so they cannot push an action below the viewport.
+ for(const details of dock.querySelectorAll(':is(.tool-drawer,.science-detail,.canvas-alternatives,.activity-alternative):not(.workspace-disclosure)')){
+  if(details.parentElement.closest('details'))continue;
+  const content=document.createElement('div');content.className='workspace-detail-content';
+  content.append(...[...details.children].filter(child=>child.tagName!=='SUMMARY'));
+  details.classList.add('workspace-disclosure');details.name='workspace-help';details.append(content);
+ }
+ mountTimeTools(stage,()=>{if(!observationClockBusy())stopObservation();baseAction('ix-play');},observationClockBusy);
  const phase=stage.querySelector('.cold-yard')?.dataset.sky;
  if(phase&&stage.dataset.workspacePhase!==phase)stage.dataset.workspacePhase=phase;
  const header=app.querySelector('.building-guide'),question=app.querySelector('.guided-question-panel');
- const top=Math.max(58,header?.getBoundingClientRect().height||0)+16;
- const bottom=Math.max(dock.getBoundingClientRect().height,question?.getBoundingClientRect().height||0)+16;
+ const top=Math.max(58,header?.getBoundingClientRect().bottom-stage.getBoundingClientRect().top||0)+8;
+ const dockHeight=Math.ceil(dock.getBoundingClientRect().height),questionHeight=Math.ceil(question?.getBoundingClientRect().height||0);
+ const bottom=dockHeight+questionHeight+(dockHeight&&questionHeight?8:0)+16;
  for(const [name,value] of [['--workspace-header-height',top],['--workspace-controls-height',bottom]])if(stage.style.getPropertyValue(name)!==value+'px')stage.style.setProperty(name,value+'px');
+ const workspace=area.parentElement;
+ const lift=dockHeight?dockHeight+8:0;
+ if(workspace.style.getPropertyValue('--workspace-question-lift')!==lift+'px')workspace.style.setProperty('--workspace-question-lift',lift+'px');
 }
 function bindCompactGuide(){
- clockObserver?.disconnect();clockObserver=null;syncCompactGuide();integrateWorkspaceControls();const area=app.querySelector('.activity-area');if(!area)return;
+ const area=app.querySelector('.activity-area');if(!area)return;
+ workspaceObserver=new ResizeObserver(integrateWorkspaceControls);
+ for(const el of app.querySelectorAll('.building-guide,.guided-question-panel'))workspaceObserver.observe(el);
+ syncCompactGuide();integrateWorkspaceControls();
  clockObserver=new MutationObserver(()=>{syncCompactGuide();integrateWorkspaceControls();});clockObserver.observe(area,{subtree:true,childList:true,attributes:true,attributeFilter:['value','height','aria-busy','hidden','open']});
 }
 window.addEventListener('resize',()=>{if(typeof state.route==='number')integrateWorkspaceControls();});
 document.addEventListener('guided-question-change',()=>{if(typeof state.route==='number')render();});
 export function render(){
+ if(state.route===5&&state.fieldwork.active!==5&&prepareDrawingComparison(state.activities.draw))save();
  clockObserver?.disconnect();clockObserver=null;
+ workspaceObserver?.disconnect();workspaceObserver=null;
  cleanupCoach();closeConcept();cleanupMapCamera();
  clearInterval(endingTimer);cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);currentTask=null;app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():experimentShell(route);lastRenderedRoute=route;setMusicTheme(route==='ending'?'ending':'main');document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
  if(typeof route==='number'){const resident=residentForStage(route);if(!state.settings.adminUnlock&&!state.residentsMet.includes(resident.stage)){state.residentsMet.push(resident.stage);save();}if(state.fieldwork.active===route)bindFieldwork(route,ctx);else{if(route<=8)bindActivity(route,ctx);bindWorkshop(route,ctx);}}
@@ -176,8 +192,7 @@ export function render(){
   mountPhaser(route,ctx,currentTask?.regions);simplifyControls(route);
  }
  bindObservation(state,routeAction,state.route===10?finalContext():null,persist,manual=>{manualToolsRoute=manual?state.route:null;render();});
- if(typeof route==='number')bindCompactGuide();
- if(typeof route==='number'){syncCoach(route,route<=8?getActivityProgress(route):workshopProgress(route),state.fieldwork.active===route,hasFieldSeal(route),currentTask);markStageControls(app,currentTask);pinQuestion(app);integrateWorkspaceControls();}
+ if(typeof route==='number'){syncCoach(route,route<=8?getActivityProgress(route):workshopProgress(route),state.fieldwork.active===route,hasFieldSeal(route),currentTask);bindCompactGuide();markStageControls(app,currentTask);pinQuestion(app);integrateWorkspaceControls();}
  app.querySelectorAll('details').forEach(d=>{if(d.closest('.workspace-controls')&&!d.matches('.essential-controls'))d.open=false;else if(openPanels.has(panelKey(d)))d.open=openPanels.get(panelKey(d));else if(d.matches(".workshop-keyboard")&&matchMedia("(max-width:800px)").matches)d.open=false;});
  for(const [id,value] of fieldSelections){const select=document.getElementById(id);if(select&&[...select.options].some(o=>o.value===value))select.value=value;}
  syncStorageNotice();

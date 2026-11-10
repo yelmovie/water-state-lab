@@ -45,3 +45,10 @@ export function exampleWaterDrawing(){
  });
  return [flower,[[250,173],[250,215],[247,265]],[[250,221],[216,195],[203,207],[223,223],[250,230]],[[249,239],[280,210],[292,221],[274,238],[249,245]]];
 }
+
+// This stage compares water amounts using one prepared drawing.
+export function prepareDrawingComparison(draw){
+ if(draw.strokes.some(stroke=>stroke.length>=3))return false;
+ draw.strokes=exampleWaterDrawing();
+ return true;
+}

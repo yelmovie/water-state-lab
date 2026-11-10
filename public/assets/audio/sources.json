@@ -11,5 +11,34 @@
     "error": "error_001.ogg",
     "hint": "question_002.ogg",
     "connect": "switch_002.ogg"
-  }
+  },
+  "waterSounds": [
+    {
+      "file": "water-pour.mp3",
+      "title": "Water Pouring",
+      "creator": "qubodup",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/qubodup/sounds/210429/",
+      "download": "https://cdn.freesound.org/previews/210/210429_71257-hq.mp3",
+      "edit": "3.00–5.40 s excerpt, high-pass, limiter, fades, mono 44.1 kHz MP3 96 kbps"
+    },
+    {
+      "file": "water-drop.mp3",
+      "title": "Object Dropping Into Water",
+      "creator": "AngeloYazar",
+      "license": "CC0-1.0",
+      "source": "https://opengameart.org/content/object-dropping-into-water-0",
+      "download": "https://opengameart.org/sites/default/files/water_drops_1.ogg",
+      "edit": "0.35–1.00 s excerpt, gain +14 dB, limiter, fade, mono 44.1 kHz MP3 96 kbps"
+    },
+    {
+      "file": "water-bubble.mp3",
+      "title": "Bubble Sound Effects",
+      "creator": "BMacZero",
+      "license": "CC0-1.0",
+      "source": "https://opengameart.org/content/bubble-sound-effects",
+      "download": "https://opengameart.org/sites/default/files/bubbles-single2.wav",
+      "edit": "single2 sample, fade, mono 44.1 kHz MP3 96 kbps"
+    }
+  ]
 }

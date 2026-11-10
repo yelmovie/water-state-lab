@@ -6,20 +6,15 @@ import {chapterState,fieldAction,fieldReady,fieldProgress,cleanFieldwork} from '
 
 const frozen=()=>{const a=initialActivities(),f=a.freeze;f.onScale=true;f.predicted=true;f.compared=true;f.records=[{kind:'water',level:60,mass:100},{kind:'ice',level:65.4,mass:100},{kind:'melt',level:60,mass:100}];return a;};
 
-test('the talk runs in order: ice pop memory, freezing the pop, then the pipe question',()=>{
- const f=frozen().freeze;
- assert.equal(f.talk,0);
- assert.equal(freezeTalk(f,'talk-chill'),'','the pop cannot freeze before it is on the table');
- assert.equal(f.talk,0);
- assert.ok(freezeTalk(f,'talk-pop-no'));assert.equal(f.talk,1);
- assert.equal(freezeTalk(f,'talk-pipe-burst'),'','the pipe question waits for the frozen pop');
- assert.ok(freezeTalk(f,'talk-chill'));assert.equal(f.talk,2);
- assert.equal(talkDone(f),false);
- assert.ok(freezeTalk(f,'talk-pipe-burst'));assert.equal(f.talk,3);
- assert.equal(talkDone(f),true);
-});
-test('either memory answer moves on, because having seen one is not a right or wrong answer',()=>{
- for(const answer of ['yes','no']){const f=frozen().freeze;freezeTalk(f,'talk-pop-'+answer);assert.equal(f.talk,1);assert.equal(f.popSeen,answer);}
+test('the learner freezes the pop before connecting the result to a broken pipe',()=>{
+ for(const start of [0,1]){
+  const f=frozen().freeze;f.talk=start; // older saves can still be on the former introduction step
+  assert.equal(freezeTalk(f,'talk-pipe-burst'),'','the pipe question waits for the frozen pop');
+  assert.match(freezeTalk(f,'talk-chill'),/얼리기 전과 얼린 뒤/);assert.equal(f.talk,2);
+  assert.equal(talkDone(f),false);
+  assert.ok(freezeTalk(f,'talk-pipe-burst'));assert.equal(f.talk,3);
+  assert.equal(talkDone(f),true);
+ }
 });
 test('a wrong pipe idea stays on the question and points back at what the learner saw',()=>{
  const f=frozen().freeze;f.talk=2;

@@ -1,6 +1,6 @@
 import {observationSpeed,observationDelay} from './observation-speed.js';
 import {resumeObservationTime,stop as stopClock,observationClockBusy} from './inquiry.js';
-import {activityReady,pipeTrial,sortCards} from './activity-model.js';
+import {cupSummarySeen,activityReady,pipeTrial,sortCards} from './activity-model.js';
 import {assistStep,observationDwell} from './stage-assist.js';
 import {funnelSeat} from './workshop-controls.js';
 import {measureStatus} from './freeze-measure.js';
@@ -67,7 +67,7 @@ export function observationStep(n, state, final=null, visited=[]) {
   }
   case 8: {
    const e = a.explain;
-   if (e.chain.length !== 3 || !q.transferPrediction || e.transfer) return null;
+   if (!cupSummarySeen(e) || !q.transferPrediction || e.transfer) return null;
    if (!e.bottleWiped) return 'ix-bottle-start';
    return e.time < 100 ? 'ix-forward' : 'ix-record';
   }
@@ -85,7 +85,7 @@ export function observationStep(n, state, final=null, visited=[]) {
     if(d.hypothesis==='connection'&&d.working.parts.funnel.x!==final.design.parts.funnel.x)return 'core-funnel';
     return null;
    }
-   if(f.connected&&!coreTransfer(f,d.working).downhill)return {selector:'#core-inlet-height',value:25};
+   if(f.connected&&!coreTransfer(f,d.working).downhill)return 'core-lower';
    return f.connected&&f.valve<100?'core-open-valve':null;
   }
   default: return null;

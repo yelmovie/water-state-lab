@@ -29,16 +29,16 @@
 .bench-freezer{width:100%;border-radius:16px}
 .bench-freezer.is-target{background:#d9f0f2;outline:3px solid #66a9b1;outline-offset:-3px}
 .bench-freezer-inside{position:relative;display:grid;place-items:center;container-type:size;width:100%;height:100%;max-height:350px;align-self:center;min-height:0}
-.bench-freezer-frame{position:relative;width:min(100%,calc(100cqh * 600 / 545));aspect-ratio:600/545}
+.bench-freezer-frame{position:relative;width:min(100%,calc(100cqh * 600 / 545));aspect-ratio:600/545;container-type:inline-size}
 .bench-cabinet{display:block;width:100%;height:100%;object-fit:contain;transition:opacity .25s ease-out}
 .bench-cabinet-closed{position:absolute;inset:0;opacity:0;z-index:3}
 .bench-freezer.is-closed .bench-cabinet-open{opacity:0}
 .bench-freezer.is-closed .bench-cabinet-closed{opacity:1}
-.bench-freezer-display{position:absolute;left:59%;top:3%;padding:1px 4px;border-radius:4px;background:#284d5d;color:#b3f3e9;font:clamp(8px,.8vw,11px)/1.3 var(--font-display);z-index:4}
+.bench-freezer-display{position:absolute;left:68%;top:6.4%;transform:translate(-50%,-50%);display:grid;place-items:center;min-width:18%;min-height:6%;padding:2px 5px;border-radius:5px;background:#182b37;color:#e4fffb;font:clamp(16px,5.3cqw,30px)/1.1 var(--font-display);white-space:nowrap;z-index:4}
 /* Percentages use the 600×545 art frame. The specimen base rests on its middle shelf. */
 .bench-chamber-tube{display:block;visibility:hidden;position:absolute;left:66.8%;bottom:36.2%;height:18%;aspect-ratio:110/264;transform:translateX(-50%);z-index:2}
 .bench-freeze-progress{position:absolute;left:43%;right:9%;height:4px;bottom:17%;background:#b7f3fa;transform:scaleX(0);transform-origin:left;z-index:4}
-.bench-freezer.is-closed .bench-freeze-progress{transform:scaleX(1);transition:transform var(--bench-freeze-duration,1800ms) linear}
+.bench-freezer.is-closed .bench-freeze-progress{transform:scaleX(1);transition:transform var(--bench-freeze-duration,900ms) linear}
 .bench-shelf{grid-template-rows:auto minmax(0,1fr) auto;position:relative}
 .bench-rack{align-self:stretch;display:grid;grid-template-columns:repeat(var(--count),minmax(0,1fr));justify-content:center;align-items:stretch;gap:8px;width:100%;height:100%;min-height:0;padding-bottom:7px;border-bottom:7px solid #b69469;box-shadow:0 3px 0 #8d7354}
 .bench-sample{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:4px;justify-items:center;min-height:0;min-width:0;margin:0}

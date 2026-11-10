@@ -28,10 +28,9 @@ test('predictions and observed conclusions remain explicit choices',()=>{
  s.activities.draw.faster='thin';assert.equal(guidedQuestion(5,s).id,'draw-destination');
  assert.equal(guidedQuestion(7,s).id,'dew-source');
 });
-test('the observed pop demonstration does not invent an answer about the learner experience',()=>{
+test('automatic observation freezes the pop and leaves the pipe question to the learner',()=>{
  const s=initialState(),f=s.activities.freeze;s.route=3;f.compared=true;f.records=['water','ice','melt'].map(kind=>({kind,level:60,mass:100}));
- assert.equal(guidedRoutineAction(3,s),'guide-freeze-show-pop');
- assert.equal(handleGuidedAction('guide-freeze-show-pop',s),true);assert.equal(f.talk,1);assert.equal(f.popSeen,'');
+ assert.equal(guidedQuestion(3,s),null);
  assert.equal(guidedRoutineAction(3,s),'act-talk-chill');f.talk=2;assert.equal(guidedQuestion(3,s).id,'freeze-pipe');
 });
 test('night observation prepares conditions but stops for the explanation and never awards it',()=>{

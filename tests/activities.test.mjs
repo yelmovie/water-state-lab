@@ -80,7 +80,7 @@ test('malformed saved observation measurements are rejected before rendering',()
  a.freeze.records=[];a.compare.records=[{}];assert.equal(validateActivities(a),false);
 });
 test('first eight activities render without completion or fabricated observation evidence',()=>{
- state.activities=initialActivities();for(let n=1;n<=8;n++){const html=activityView(n);assert.ok(html.includes(`activity-${n}`));assert.equal(getActivityProgress(n).steps.length,3);assert.ok(getActivityProgress(n).instruction);}
+ state.activities=initialActivities();for(let n=1;n<=8;n++){const html=activityView(n);assert.ok(html.includes(`activity-${n}`));assert.equal(getActivityProgress(n).steps.length,n===8?2:3);assert.ok(getActivityProgress(n).instruction);}
  assert.ok(activityView(8).includes('act-go-7'));assert.ok(!activityView(8).includes('ix-evidence-'));
 });
 test('complete interaction sequence requires observations, comparisons, and transfer',()=>{
@@ -101,7 +101,7 @@ test('complete interaction sequence requires observations, comparisons, and tran
  for(const step of ['load','wait','take','measure-ice','rest','wait','measure-melt'])measureAction(a.freeze,step,100);
  assert.equal(activityReady(3,a),false,'compare after all measurements');measureAction(a.freeze,'compare');assert.equal(activityReady(3,a),true);
  const leaving=routes.length;act('next-3');assert.equal(routes.length,leaving,'the pipe talk comes before leaving the experiment');
- act('talk-pop-yes');act('talk-chill');act('talk-pipe-burst');act('next-3');
+ act('talk-chill');act('talk-pipe-burst');act('next-3');
  a.pipe.fill=95;act('pipe-test');assert.equal(activityReady(4,a),false);a.pipe.fill=70;act('pipe-test');assert.equal(activityReady(4,a),false,'the empty space still has to be found');
  act('pipe-mark-0');assert.equal(a.pipe.marked,false,'a popped tube has no room to point at');assert.equal(activityReady(4,a),false);
  act('pipe-mark-1');assert.equal(a.pipe.marked,true);assert.equal(a.pipe.chosen,1);assert.equal(activityReady(4,a),true);
@@ -115,8 +115,9 @@ test('complete interaction sequence requires observations, comparisons, and tran
  assert.equal(completed[3].trials[0].room,completed[3].trials[0].heated);assert.equal(completed[3].trials[1].boiling,true);
  act('dew-wipe-cold');act('dew-wipe-room');act('dew-seal');act('dew-record');a.dew.time=80;act('dew-record');
  assert.equal(activityReady(7,a),false);act('dew-wipe-cold');a.dew.againTime=80;act('dew-again');act('next-7');
- put('proof:contrast','proof-board');put('proof:again','proof-board');put('cause:cold','chain:0');assert.equal(a.explain.chain.length,0);
- for(const [i,k] of ['air','cold','drops'].entries())put(`cause:${k}`,`chain:${i}`);
+ act('bottle-wipe');assert.equal(a.explain.bottleWiped,false,'review the cup observations before applying them');
+ act('cup-summary');assert.equal(a.explain.summarySeen,true);
+ assert.deepEqual(getActivityProgress(8).steps.map(s=>s.done),[true,false]);
  act('complete-4');assert.equal(completed[4],undefined);act('bottle-wipe');a.explain.time=80;act('transfer-record');act('complete-4');
  assert.equal(completed[4].reobserved,true);assert.equal(completed[4].snapshots[1].cold.drops,16);
  assert.equal(completed[4].mass,'250.0 g → 251.6 g');assert.deepEqual(pages,[1,3,5,7]);assert.deepEqual(routes,[2,4,6,8]);

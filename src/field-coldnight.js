@@ -1,11 +1,12 @@
 import {createObservationClock} from './observation-speed.js';
 import {btn,icon,esc} from './ui.js';
-import {nights,reasons,vessels,currentNight,nightFills,nightTrial,levelHeight,retryHint} from './cold-night-model.js';
+import {nights,reasons,vessels,currentNight,nightFills,nightTrial,vesselTrial,levelHeight,retryHint} from './cold-night-model.js';
+import {materialPattern} from './study-materials.js';
 import {fieldAction,fieldReady} from './fieldwork-model.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
 
-const POUR_PER_SECOND=28,TAP_STEP=5,TAP_MS=180,FREEZE_MS=1400; // one night ≈5.6 s at 1×, 2.8 s at 2× (2026-11-09: three nights felt too long)
+const POUR_PER_SECOND=28,TAP_STEP=5,TAP_MS=180,FREEZE_MS=700;
 const BOTTOM=250,HEIGHT=150,RIM=BOTTOM-HEIGHT;
 const briefs=['첫째 날이야. 내일 마을에서 물이 70만큼 필요해. 수도꼭지를 꾹 눌러 채우고, 추운 밤을 지켜보자.','둘째 날은 뚜껑 있는 모형 통도 써. 두 통에 물을 150만큼 모으되, 위쪽에 물을 채우지 않은 공간도 남겨 줘.','마지막 날이야! 세 통에 물을 240만큼 준비해. 통마다 위쪽에 물을 채우지 않은 공간이 있는지 확인해 줘.'];
 const outcomeLabels={ok:'멀쩡해',overflow:'넘쳤어',crack:'얼음이 커질 공간 부족',raised:'얼음이 위로 올라왔어'};
@@ -22,38 +23,42 @@ const surfaceY=(kind,volume)=>kind==='tub'?224-105*levelHeight(kind,volume):BOTT
 /** Ice in an open tub can rise past the rim; everywhere else the vessel stops it. */
 const iceTopY=(kind,ice)=>kind==='tub'&&ice>100?RIM-(ice-100)*2:surfaceY(kind,ice);
 
-function vesselArt(kind,index,volume,{frozen=false,ghost=null,outcome=''}={}){
+function vesselArt(kind,index,volume,{frozen=false,ghost=null,outcome='',target=null}={}){
  const id=`cold-clip-${index}`,top=frozen?iceTopY(kind,volume):surfaceY(kind,volume),closed=vessels[kind].closed;
  const path=kind==='bottle'?BOTTLE_INSIDE:kind==='jar'?JAR_INSIDE:'M26 100H174L168 232Q168 250 151 250H49Q32 250 32 232Z';
  // A full closed vessel that froze shows the generated cracked picture (ice inside, cracked glass, shards).
  const cracked=outcome==='crack'&&kind!=='tub',crackH=kind==='jar'?163:164;
  const body=kind==='tub'?'tub':kind+'-body',x=kind==='tub'?17:kind==='jar'?39:46,w=kind==='tub'?166:kind==='jar'?122:108;
- return `<svg class="cold-art" viewBox="0 0 200 280" aria-hidden="true"><defs><clipPath id="${id}"><path d="${path}"/></clipPath><linearGradient id="${id}-water"><stop stop-color="#0d8bb4"/><stop offset=".3" stop-color="#6ddbed"/><stop offset=".7" stop-color="#2da8cf"/><stop offset="1" stop-color="#15739f"/></linearGradient><linearGradient id="${id}-ice" x2=".5" y2="1"><stop stop-color="#f0feff"/><stop offset=".4" stop-color="#b8e6f3"/><stop offset=".65" stop-color="#84c4de"/><stop offset="1" stop-color="#d7f5fc"/></linearGradient></defs>
+ return `<svg class="cold-art" viewBox="0 0 200 280" aria-hidden="true"><defs><clipPath id="${id}"><path d="${path}"/></clipPath></defs>
+ <defs>${materialPattern(id+'-material',frozen?'ice':'water',{x:22,y:60,width:156,height:210,base:frozen?'#c9e7f3':'#a2d8e5'})}<linearGradient id="${id}-surface"><stop stop-color="#8cd5e4"/><stop offset=".4" stop-color="#eafcff"/><stop offset=".8" stop-color="#c1edf4"/><stop offset="1" stop-color="#73bacd"/></linearGradient><linearGradient id="${id}-stream"><stop stop-color="#478fab"/><stop offset=".45" stop-color="#e9fcff"/><stop offset=".7" stop-color="#b5e9f3"/><stop offset="1" stop-color="#4ba8c0"/></linearGradient></defs>
  <ellipse cx="100" cy="259" rx="78" ry="7" fill="#31505d" opacity=".18"/>
  ${cracked?`<image class="cold-cracked" href="/assets/learning/coldnight-20261109/${kind}-cracked.webp" x="${x}" y="${254-crackH}" width="${w}" height="${crackH}" preserveAspectRatio="none"/>`:`
  <image href="/assets/learning/experiment-props-20261107/${body}.webp" x="${x}" y="94" width="${w}" height="160" preserveAspectRatio="none"/>
- <g clip-path="url(#${id})"><rect class="cold-water ${frozen?'is-ice':''}" data-level="${index}" x="22" y="${top}" width="156" height="${Math.max(0,260-top)}" style="fill:url(#${id}-${frozen?'ice':'water'})"/>
- <ellipse data-surface="${index}" cx="100" cy="${top}" rx="${kind==='bottle'&&volume>88?15:kind==='jar'&&top<121?36:55}" ry="5" opacity="${volume?1:0}" fill="${frozen?'#e3faff':'#90e6f3'}" stroke="#ecfeff" stroke-width="1.3"/>
- ${frozen?`<path d="M42 ${top+12}l35 24 47-17 26 25M77 ${top+36}l-15 47 35 33 40-22M97 ${top+116}l-28 29" fill="none" stroke="#f4feff" stroke-width="1.8" opacity=".7"/>`:''}</g>
+ <g clip-path="url(#${id})"><rect class="cold-water ${frozen?'is-ice':''}" data-level="${index}" x="22" y="${top}" width="156" height="${Math.max(0,260-top)}" opacity="${volume?1:0}" fill="url(#${id}-material)"/>
+ <ellipse data-surface="${index}" cx="100" cy="${top}" rx="${surfaceWidth(kind,volume,top)}" ry="${frozen?3:5}" opacity="${volume?1:0}" fill="url(#${id}-surface)" stroke="#ecfeff" stroke-width="1.1"/></g>
  <image href="/assets/learning/experiment-props-20261107/${body}.webp" x="${x}" y="94" width="${w}" height="160" preserveAspectRatio="none" opacity="${kind==='tub'?1:.48}"/>`}
  ${closed?`<image class="cold-lid ${cracked?'is-popped':frozen?'':'is-open'}" href="/assets/learning/experiment-props-20261107/${kind}-lid.webp" x="${kind==='jar'?53:83}" y="${kind==='jar'?83:85}" width="${kind==='jar'?94:35}" height="18" preserveAspectRatio="none"/>`:''}
  ${ghost===null?'':`<line class="cold-ghost" x1="22" x2="178" y1="${iceTopY(kind,ghost)}" y2="${iceTopY(kind,ghost)}"/>`}
- ${!frozen?`<image class="cold-faucet" href="/assets/learning/experiment-props-20261107/faucet.webp" x="-12" y="-5" width="146" height="104"/><path class="cold-stream" data-stream="${index}" d="M116 69 Q112 100 116 ${top}" fill="none" stroke="#7ddbec" stroke-width="5" stroke-linecap="round"/><g class="cold-splash" data-splash="${index}" transform="translate(116 ${top})"><path d="M-15 -4q8-8 15 0 8-8 15 0" fill="none" stroke="#dcfbff" stroke-width="2"/><ellipse rx="18" ry="4" fill="none" stroke="#b8f3fc" stroke-width="1.5"/></g>`:''}
+ ${target===null?'':`<line class="cold-fill-line" x1="21" x2="179" y1="${surfaceY(kind,target)}" y2="${surfaceY(kind,target)}"/>`}
+ ${!frozen?`<image class="cold-faucet" href="/assets/learning/experiment-props-20261107/faucet.webp" x="-12" y="-5" width="146" height="104"/><path class="cold-stream" data-stream="${index}" d="M116 69 Q112 100 116 ${top}" fill="none" stroke="url(#${id}-stream)" stroke-width="5" stroke-linecap="round"/><g class="cold-splash" data-splash="${index}" transform="translate(116 ${top})"><path d="M-15 -4q8-8 15 0 8-8 15 0" fill="none" stroke="#dcfbff" stroke-width="2"/><ellipse rx="18" ry="4" fill="none" stroke="#b8f3fc" stroke-width="1.5"/></g>`:''}
  ${outcome==='crack'?'<g class="cold-burst"><text x="100" y="60">쩍!</text></g>':''}
- ${['overflow','raised'].includes(outcome)?`<path class="cold-dome" d="M30 103q70 -28 140 0"/><g class="cold-burst"><text x="100" y="170">위로 올라왔어</text></g>`:''}
+ ${['overflow','raised'].includes(outcome)?`<path class="cold-dome" d="M30 103q70 -28 140 0" style="fill:url(#${id}-material)"/><g class="cold-burst"><text x="100" y="170">위로 올라왔어</text></g>`:''}
  </svg>`;
 }
-function vesselCard(kind,index,fill,ui){
+const surfaceWidth=(kind,volume,y)=>kind==='bottle'&&volume>88?15:kind==='jar'&&y<121?36:55;
+const fillRisk=(kind,fill)=>vesselTrial(kind,fill).outcome==='crack';
+function vesselCard(kind,index,fill,ui,target=null){
  const trial=ui.phase!=='fill'?ui.trial?.vessels[index]:null,outcome=ui.phase==='result'?trial?.outcome:'';
  const volume=trial?trial.ice:fill,name=vessels[kind].name;
- return `<div class="cold-vessel" data-index="${index}" ${outcome?`data-outcome="${outcome}"`:''}>
+ return `<div class="cold-vessel" data-index="${index}" ${target!==null&&fillRisk(kind,fill)?'data-fill-risk':''} ${outcome?`data-outcome="${outcome}"`:''}>
   <div class="cold-taps">${ui.phase==='fill'?`<button type="button" class="cold-tap" data-pour="${index}" data-dir="1" aria-label="${esc(name)}에 물 담기">${icon('drop',20)}<span>수도꼭지 열기</span></button><button type="button" class="cold-drain" data-pour="${index}" data-dir="-1" aria-label="${esc(name)}에서 물 빼기">빼기</button>`:''}</div>
-  ${vesselArt(kind,index,volume,{frozen:!!trial,ghost:ui.phase==='fill'?ui.ghost?.[index]??null:null,outcome})}
-  <p class="cold-name"><strong>${esc(name)}</strong><span>${outcome?(outcome==='ok'?icon('check',16):'')+outcomeLabels[outcome]:`담은 물 <b data-amount="${index}">${fill}</b>`}</span></p>
+  ${vesselArt(kind,index,volume,{frozen:!!trial,ghost:ui.phase==='fill'?ui.ghost?.[index]??null:null,outcome,target})}
+  <p class="cold-name"><strong>${esc(name)}</strong><span>${outcome?(outcome==='ok'?icon('check',16):'')+outcomeLabels[outcome]:`담은 물 <b data-amount="${index}">${fill}</b>${target===null?'':` <span class="cold-target">· 권장 ${target}</span>`}`}</span>${target!==null?'<b class="cold-risk">위에 빈자리가 더 필요해</b>':''}</p>
  </div>`;
 }
-function meter(total,need,capacity){
- return `<div class="cold-meter"><p>녹여 쓸 물 <b data-total>${total}</b> / ${need}</p><div class="cold-gauge" aria-hidden="true"><i data-gauge style="width:${total/capacity*100}%"></i><u style="left:${need/capacity*100}%"></u></div></div>`;
+const amountMessage=(total,need)=>total<need?`목표까지 ${need-total} 남았어`:'목표량을 채웠어';
+function meter(total,need,capacity,filling){
+ return `<section class="cold-goal" aria-label="오늘의 물 채우기 목표"><div class="cold-goal-copy"><strong>내일 쓸 물 <b>${need} 이상</b></strong>${filling?'<span>점선까지 나눠 담아 봐. 닫는 통 위에는 빈자리를 남겨.</span>':''}</div><div class="cold-meter" data-enough="${total>=need}"><p>${filling?'지금 담은 물':'녹여 쓸 물'} <b data-total>${total}</b> <span data-amount-message>${amountMessage(total,need)}</span></p><div class="cold-gauge" aria-hidden="true"><i data-gauge style="width:${total/capacity*100}%"></i><u style="left:${need/capacity*100}%"></u></div></div></section>`;
 }
 function say(text,extra=''){
  return `<div class="cold-bubble"><img src="/assets/v2/resident-4.webp" width="96" height="96" alt="뚝딱"><div role="status"><p>${esc(text)}</p>${extra}</div></div>`;
@@ -79,7 +84,8 @@ export function coldNightMarkup(c,ui){
  // A night counts as cleared the moment it is frozen, but its morning still belongs on screen.
  const night=ui.phase==='fill'?currentNight(c):nights[ui.trial.night-1];
  if(!night)return reasonView(c);
- const fills=nightFills(c,night),total=fills.reduce((a,b)=>a+b,0),result=ui.phase==='result'?ui.trial:null;
+ const fills=nightFills(c,night),total=fills.reduce((a,b)=>a+b,0),result=ui.phase==='result'?ui.trial:null,filling=ui.phase==='fill';
+ const target=filling?Math.ceil(night.need/night.vessels.length):null;
  const failures=c.tested.filter(t=>t.value===night.id&&!t.ok).length,hint=ui.trial?retryHint(ui.trial,failures):'';
  const carried=ui.phase==='fill'&&night.id===1&&c.moves['bench-fill']&&!c.tested.length?`앞 실험에서 찾은 물 ${c.moves['bench-fill']}만큼을 담아 왔어. 내일 쓸 물은 70만큼이야. 양을 확인하고 밤 동안 어떻게 되는지 보자.`:'';
  const line=ui.phase==='freezing'?'해가 졌어. 추운 밤 동안 물이 얼고 있어. 얼음이 커지는 모습을 지켜봐!':result?c.message:ui.trial?(hint||'물의 양을 바꿔서 다시 해 봐.'):carried||briefs[night.id-1];
@@ -87,9 +93,9 @@ export function coldNightMarkup(c,ui){
  return `<div class="cold-yard" data-sky="${ui.phase==='freezing'?'night':result?'morning':'dusk'}">
   <div class="cold-snow" aria-hidden="true"></div>
   <div class="cold-intro">${top(c,night)}${say(line,next?`<button type="button" class="btn primary" data-night-next>${next}</button>`:'')}</div>
-  <div class="cold-row" style="--count:${night.vessels.length}">${night.vessels.map((kind,i)=>vesselCard(kind,i,fills[i],ui)).join('')}</div>
+  ${meter(result?result.kept:total,night.need,night.vessels.length*100,filling)}
+  <div class="cold-row" style="--count:${night.vessels.length}">${night.vessels.map((kind,i)=>vesselCard(kind,i,fills[i],ui,target)).join('')}</div>
   <div class="cold-side">
-   ${meter(result?result.kept:total,night.need,night.vessels.length*100)}
    <div class="cold-night-watch"><div class="night-sky-symbol" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${ui.phase==='freezing'?'<path d="M28 7A14 14 0 1 0 33 29 15 15 0 0 1 28 7Z" fill="currentColor"/>':'<circle cx="20" cy="20" r="8" fill="currentColor"/><path d="M20 2v5m0 26v5M2 20h5m26 0h5M7 7l4 4m18 18 4 4M7 33l4-4m18-18 4-4"/>'}</svg></div><b>${ui.phase==='fill'?'해가 지기 전':ui.phase==='freezing'?'추운 밤 · 물이 얼어요':'다음 날 아침'}</b><p>${ui.phase==='fill'?'물의 양과 물을 채우지 않은 공간을 확인해.':ui.phase==='freezing'?'물을 더 넣지 않아도 얼음이 커져.':'밤사이 통이 어떻게 달라졌을까?'}</p>${ui.phase==='fill'?'<button type="button" class="btn primary" data-night-start>물을 담았어 · 밤 지켜보기</button>':''}</div>
    ${ui.phase==='fill'&&ui.ghost?'<p class="cold-legend"><i aria-hidden="true"></i>지난번 얼음이 닿은 곳</p>':''}
   </div>
@@ -106,11 +112,16 @@ export function bindColdNight(host,get,set){
  const night=()=>currentNight(get());
  function showLevels(fills,index){
   const current=night(),kind=current.vessels[index],y=surfaceY(kind,fills[index]);
-  const water=host.querySelector(`[data-level="${index}"]`);water?.setAttribute('y',y);water?.setAttribute('height',Math.max(0,260-y));host.querySelector(`[data-surface="${index}"]`)?.setAttribute('cy',y);host.querySelector(`[data-surface="${index}"]`)?.setAttribute('opacity',fills[index]?1:0);
+  const water=host.querySelector(`[data-level="${index}"]`),surface=host.querySelector(`[data-surface="${index}"]`);
+  water?.setAttribute('y',y);water?.setAttribute('height',Math.max(0,260-y));water?.setAttribute('opacity',fills[index]?1:0);
+  surface?.setAttribute('cy',y);surface?.setAttribute('rx',surfaceWidth(kind,fills[index],y));surface?.setAttribute('opacity',fills[index]?1:0);
+  host.querySelector(`.cold-vessel[data-index="${index}"]`)?.toggleAttribute('data-fill-risk',fillRisk(kind,fills[index]));
   host.querySelector(`[data-stream="${index}"]`)?.setAttribute('d',`M116 69Q112 100 116 ${y}`);host.querySelector(`[data-splash="${index}"]`)?.setAttribute('transform',`translate(116 ${y})`);
   const amount=host.querySelector(`[data-amount="${index}"]`);if(amount)amount.textContent=fills[index];
   const total=fills.reduce((a,b)=>a+b,0);
   host.querySelector('[data-total]').textContent=total;
+  host.querySelector('.cold-meter').dataset.enough=String(total>=current.need);
+  host.querySelector('[data-amount-message]').textContent=amountMessage(total,current.need);
   host.querySelector('[data-gauge]').style.width=total/(current.vessels.length*100)*100+'%';
  }
  function stepPour(now){

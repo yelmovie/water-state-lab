@@ -25,13 +25,13 @@ async function setup(n,field=false,reduced=true,reset=true){
  },{n,field,reduced,reset});
  await page.waitForTimeout(180);
 }
-const click=async action=>{const el=page.locator(`[data-action="${action}"]`).first();await el.evaluate(e=>{for(let p=e;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}).catch(()=>{});await el.click();await page.waitForTimeout(120);};
-const measure=async step=>{await page.locator(`[data-measure-action="${step}"]`).click();await page.waitForTimeout(60);};
-const cycle=async step=>{await page.locator(`[data-cycle-action="${step}"]`).click();await page.waitForTimeout(60);};
-const ready=async n=>{await page.locator(n===3?'#freeze-measure':n===4?'#freeze-bench':n===8?'.phaser-stage[data-ready=true],.stage-guard':'.phaser-stage[data-ready=true]').waitFor();};
+const click=async action=>{const el=page.locator(`[data-action="${action}"]`).first();await el.evaluate(e=>{for(let p=e;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}).catch(()=>{});await el.click();await page.waitForTimeout(action.startsWith('ix-wipe-')?600:120);};
+const measure=async step=>{await page.locator(step==='wait'?'[data-time-magic]':`[data-measure-action="${step}"]`).click();await page.waitForTimeout(60);};
+const cycle=async step=>{await page.locator(step==='wait'?'[data-time-magic]':`[data-cycle-action="${step}"]`).click();await page.waitForTimeout(60);};
+const ready=async n=>{await page.locator(n===3?'#freeze-measure':n===4?'#freeze-bench':n===8?'.phaser-stage[data-ready=true],.stage-guard,.cup-summary':'.phaser-stage[data-ready=true]').waitFor();};
 const shot=async name=>page.screenshot({path:`${out}/${name}.png`,fullPage:true});
 const audit=()=>{
- const issues=[],visible=e=>{if(e.closest('[hidden],.sr-only,dialog:not([open])'))return false;for(let p=e;p;p=p.parentElement){const s=getComputedStyle(p);if(s.display==='none'||s.visibility==='hidden')return false;}const d=e.closest('details:not([open])');return (!d||!!e.closest('summary'))&&e.getBoundingClientRect().width>1;};
+ const issues=[],visible=e=>{if(e.closest('[hidden],.sr-only,dialog:not([open])'))return false;for(let p=e;p;p=p.parentElement){const s=getComputedStyle(p);if(s.display==='none'||s.visibility==='hidden'||s.clipPath==='inset(50%)')return false;}const d=e.closest('details:not([open])');return (!d||!!e.closest('summary'))&&e.getBoundingClientRect().width>1;};
  if(document.documentElement.scrollWidth>innerWidth+2)issues.push('horizontal overflow');
  if(document.querySelectorAll('#field-greenhouse').length>1)issues.push('duplicate greenhouse root');
  for(const e of document.querySelectorAll('button,summary,input,select')){if(!visible(e))continue;const r=e.getBoundingClientRect(),name=(e.textContent||e.getAttribute('aria-label')||e.id).trim().slice(0,35);
@@ -43,7 +43,7 @@ const audit=()=>{
  for(const img of document.querySelectorAll('img'))if(visible(img)&&img.complete&&!img.naturalWidth)issues.push('broken image '+img.src);
  return [...new Set(issues)];
 };
-async function layout(name){const issues=await page.evaluate(audit);layouts.push({name,viewport:page.viewportSize(),issues});await shot(name);}
+async function layout(name){await page.waitForTimeout(100);const issues=await page.evaluate(audit);layouts.push({name,viewport:page.viewportSize(),issues});await shot(name);}
 async function world(x,y){return page.evaluate(({x,y})=>{const game=window.__qaGame,cam=game.scene.getScenes(true)[0].cameras.main,r=game.canvas.getBoundingClientRect(),o=cam.getWorldPoint(0,0),p=cam.getWorldPoint(1,1);return {x:r.x+(x-o.x)/(p.x-o.x)*r.width/game.canvas.width,y:r.y+(y-o.y)/(p.y-o.y)*r.height/game.canvas.height};},{x,y});}
 async function tap(x,y){await ready((await get()).route);const p=await world(x,y);await page.mouse.click(p.x,p.y);await page.waitForTimeout(160);}
 async function drag(x,y,tx,ty){const a=await world(x,y),b=await world(tx,ty);await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:20});await page.mouse.up();await page.waitForTimeout(200);}
@@ -57,26 +57,26 @@ try{
   // Target selection is on the canvas; the second pour still uses the actual accessible button.
   await tap(570,158);
   await click('ix-pour-auto');await click('act-observe-step-1');await ready(1);await drag(440,203,590,203);
-  assert.equal((await get()).activities.observe.iceMoved,true);await click('act-observe-step-2');await ready(1);await tap(360,160);await scrub(1);await click('ix-record');await complete(1);
+  assert.equal((await get()).activities.observe.iceMoved,true);await click('act-observe-step-2');await ready(1);await tap(360,160);await scrub(1);await complete(1);
   await setup(2);await ready(2);
   for(const [i,type] of ['solid','liquid','gas','solid','liquid','gas'].entries()){await tap(86+(i%3)*155,77+Math.floor(i/3)*151);await tap(600,70+['solid','liquid','gas'].indexOf(type)*84);}
   await complete(2);
   await setup(3);await measure('measure');await click('act-freeze-guess-66');await measure('load');await layout('flow-freeze-cooling');
   await measure('wait');await measure('take');await measure('measure-ice');assert.equal((await get()).activities.freeze.records.length,2);
   await measure('rest');await measure('wait');await measure('measure-melt');assert.equal(await isReady(3),false);await measure('compare');await complete(3);
-  await click('act-talk-pop-no');await click('act-talk-chill');await click('act-talk-pipe-burst');
+  await click('act-talk-chill');await click('act-talk-pipe-burst');
   await setup(4);await page.locator('[data-bench-run]').click();await page.waitForTimeout(250);
   for(let i=0;i<5;i++)await page.locator('[data-bench-less]').press('Enter');
   await page.locator('[data-bench-run]').click();await page.waitForTimeout(250);await click('act-pipe-mark-1');await complete(4);
   await setup(5);await ready(5);const a=await world(60,110),b=await world(290,200);await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:35});await page.mouse.up();await page.waitForTimeout(180);
   assert.ok((await get()).activities.draw.strokes[0].length>=3);await click('ix-draw-predict-thin');await scrub(5);await click('ix-draw-answer-thin');await click('ix-draw-where-air');await complete(5);
   const strokes=(await get()).activities.draw.strokes;await page.reload({waitUntil:'networkidle'});await hook();await ready(5);assert.deepEqual((await get()).activities.draw.strokes,strokes);checks.push('drawing-reload');
-  await setup(6);await ready(6);await scrub(6);await click('ix-record');let h=(await get()).activities.compare;assert.equal(h.records[0].room,h.records[0].heated);await click('ix-heat-prepare');await click('ix-heat-on');await scrub(6);await click('ix-record');await click('ix-heat-where-air');await complete(6);
-  await setup(7);await click('ix-dew-predict-air');await click('ix-wipe-cold');if(!(await get()).activities.dew.wiped.includes('room'))await click('ix-wipe-room');if(!(await get()).activities.dew.sealed)await click('act-dew-seal');await scrub(7);await click('ix-record');await click('ix-wipe-middle');await scrub(7);await click('ix-record');await complete(7);
+  await setup(6);await ready(6);await scrub(6);let h=(await get()).activities.compare;assert.equal(h.records[0].room,h.records[0].heated);await click('ix-heat-prepare');await click('ix-heat-on');await scrub(6);await click('ix-heat-where-air');await complete(6);
+  await setup(7);await click('ix-dew-predict-air');await click('ix-wipe-cold');if(!(await get()).activities.dew.wiped.includes('room'))await click('ix-wipe-room');if(!(await get()).activities.dew.sealed)await click('act-dew-seal');await scrub(7);await click('ix-wipe-middle');await scrub(7);await complete(7);
   await click('act-next-7');if(await page.locator('dialog[open] #close-dialog').count())await page.locator('#close-dialog').click();await ready(8);
-  for(const [key,x] of [['sealed',130],['contrast',360]])if(!(await get()).activities.explain.evidence.includes(key))await tap(x,85);
-  for(const k of ['air','cold','drops'])await click('ix-chain-'+k);
-  await click('ix-transfer-predict-cold');await click('ix-bottle-start');await scrub(8);await click('ix-record');await complete(8);
+  await click('act-cup-summary');await ready(8);
+  assert.equal(await page.evaluate(()=>window.__qaGame.scene.getScenes(true)[0].children.list.filter(o=>o.texture?.key==='drink-bottle').length),2,'cup summary opens both bottle illustrations');
+  await click('ix-transfer-predict-cold');await click('ix-bottle-start');await scrub(8);await complete(8);
   await setup(9);await ready(9);await click('toggle-cold');await click('ramp-tilt');await click('funnel-fix');
   await page.locator('[data-action="test-workshop"]').evaluate(e=>e.closest('details').open=true);await click('test-workshop');
   assert.equal((await get()).lab.workshop.trials.at(-1).ok,true);await layout('flow-lab-9-done');checks.push('lab-9');
@@ -85,16 +85,17 @@ try{
   if(!(await get()).lab.final.diagnosis.tests.length)await click('diagnosis-test');
   await click('diagnose-'+fault);await click(fault==='cooling'?'core-cooling':'core-funnel');await click('diagnosis-test');
   assert.equal((await get()).lab.final.diagnosis.resolved,true);if(!(await get()).lab.final.connected)await click('connect-core');
-  await page.locator('#core-inlet-height').focus();await page.keyboard.press('Home');
-  await click('core-toggle-valve');if(!(await get()).lab.final.tested)await click('test-core');
+  for(let i=0;i<4;i++)await click('core-lower');
+  await click('core-open-valve');if(!(await get()).lab.final.tested)await click('test-core');
   assert.equal((await get()).lab.final.tested,true);await layout('flow-lab-10-done');checks.push('lab-10-'+fault);
-  await click('core-activate');assert.equal((await get()).fieldwork.pending,'field-ending');
+  await click('core-activate');await page.locator('dialog.three-dialog[open]').waitFor();
+  await click('three-continue');assert.equal((await get()).fieldwork.pending,'field-ending');
   for(const step of ['prepare','wait','observe','receiver','cool','wait','collect','compare'])await cycle(step);
   await click('field-finish');await page.locator('dialog.concept-dialog[open]').waitFor();assert.equal((await get()).restored,false);
   await page.locator('[data-concept="continue"]').click();await page.locator('.ending-main').waitFor();assert.equal((await get()).restored,true);checks.push('core-to-field10-concept-ending');
   await page.reload({waitUntil:'networkidle'});await hook();assert.equal((await get()).route,'ending');assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push('ending-reload');
-  await setup(2,true);for(const step of ['fill','load','wait','take','compare'])await page.locator(`[data-tray-action="${step}"]`).click();await page.locator('[data-transform-next]').click();
-  for(const [kind,steps] of Object.entries({melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']})){for(const step of steps)await page.locator(`[data-process-action="${step}"]`).click();await page.locator('[data-transform-next]').click();}
+  await setup(2,true);for(const step of ['fill','load','wait','take','compare'])await page.locator(step==='wait'?'[data-time-magic]':`[data-tray-action="${step}"]`).click();await page.locator('[data-transform-next]').click();
+  for(const [kind,steps] of Object.entries({melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']})){for(const step of steps)await page.locator(step==='wait'?'[data-time-magic]':`[data-process-action="${step}"]`).click();await page.locator('[data-transform-next]').click();}
   assert.equal((await get()).fieldwork.chapters[2].done,true);checks.push('field-2');await layout('flow-field-2-done');
   await setup(4,true);for(let n=1;n<=3;n++){
    for(let i=0;i<n;i++)for(let j=0;j<17;j++)await page.locator(`[data-pour="${i}"][data-dir="1"]`).press('Enter');
@@ -106,7 +107,7 @@ try{
  }else if(process.argv[2]==='states'){
   const stages=['start','measured','cooling','frozen','taken','ice-measured','resting','melted','melt-measured','compared'];
   const cycles=['start','evaporating','evaporated','observed','receiving','condensing','droplets','collected','compared'];
-  for(const [w,h] of [[1280,800],[1024,600],[915,412],[390,844]]){
+  for(const [w,h] of (process.env.QA_VIEWPORTS?JSON.parse(process.env.QA_VIEWPORTS):[[1280,800],[1920,1080],[1024,768],[1024,600],[915,412],[390,844]])){
    await page.setViewportSize({width:w,height:h});
    for(const stage of stages){
     await setup(3);await page.evaluate(async stage=>{const {state,save}=await import('/src/state.js'),{measureAction,measureStatus}=await import('/src/freeze-measure.js');const f=state.activities.freeze;for(const step of ['measure','load','wait','take','measure-ice','rest','wait','measure-melt','compare']){if(measureStatus(f).stage===stage)break;if(step==='load')f.predicted=true;measureAction(f,step,100);}save();(await import('/src/app.js')).render();},stage);await layout(`state-measure-${stage}-${w}x${h}`);
@@ -117,11 +118,11 @@ try{
   }
  }else if(process.argv[2]==='touch'){
   await page.setViewportSize({width:1024,height:600});
-  await setup(3);const t=selector=>page.locator(selector).tap();
+  await setup(3);const t=selector=>page.locator(selector+':visible').first().tap();
   await t('[data-measure-action="measure"]');await t('[data-action="act-freeze-guess-66"]');
-  for(const step of ['load','wait','take','measure-ice','rest','wait','measure-melt','compare'])await t(`[data-measure-action="${step}"]`);
+  for(const step of ['load','wait','take','measure-ice','rest','wait','measure-melt','compare'])await t(step==='wait'?'[data-time-magic]':`[data-measure-action="${step}"]`);
   assert.equal(await isReady(3),true);await layout('touch-measure-done');checks.push('measure-touch');
-  await setup(10,true);for(const step of ['prepare','wait','observe','receiver','cool','wait','collect','compare'])await t(`[data-cycle-action="${step}"]`);
+  await setup(10,true);for(const step of ['prepare','wait','observe','receiver','cool','wait','collect','compare'])await t(step==='wait'?'[data-time-magic]':`[data-cycle-action="${step}"]`);
   assert.equal((await get()).fieldwork.chapters[10].done,true);assert.equal(await page.locator('#field-greenhouse').count(),1);await layout('touch-greenhouse-done');checks.push('greenhouse-touch');
  }else if(process.argv[2]==='motion'){
   await setup(3,false,false);await measure('measure');await click('act-freeze-guess-66');await measure('load');await measure('wait');await page.waitForTimeout(850);
@@ -135,7 +136,7 @@ try{
   await setup(3);await ready(3);await layout('measure-initial');
   await setup(10,true);await layout('greenhouse-initial');
  }else{
-  for(const [w,h] of [[1280,800],[1024,600],[915,412],[390,844]]){
+  for(const [w,h] of (process.env.QA_VIEWPORTS?JSON.parse(process.env.QA_VIEWPORTS):[[1280,800],[1920,1080],[1024,768],[1024,600],[915,412],[390,844]])){
    await page.setViewportSize({width:w,height:h});
    for(let n=1;n<=10;n++){
     await setup(n);if(n===8){await page.evaluate(async()=>{const {state}=await import('/src/state.js');state.settings.adminUnlock=true;(await import('/src/app.js')).render();});}

@@ -50,7 +50,7 @@ export function journeyView(){
  ${villageLights(returned,fresh,villageFriend(state),!state.settings.reduced&&!matchMedia('(prefers-reduced-motion: reduce)').matches)}
  ${missions.map((m,i)=>{const finished=state.completed.includes(m.id),locked=!canEnter(m.screens[0],state),[x,y]=islandStops[i];return `<button class="journey-node ${finished?'finished':''} ${next.id===m.id&&!finished?'current':''}" style="left:${x/10}%;top:${Math.max(9,y/5.63-10)}%" data-action="mission-${m.id}" ${locked?'disabled':''} aria-label="${m.id}. ${names[i]}, 담당 ${residentForStage(m.screens[0]).name}. ${finished?'다시 탐험':locked?'잠김':'길 따라 출발'}"><b>${locked?icon('lock',18):finished?icon('check',18):`<em>${m.id}</em>`}${names[i]}</b>${!locked&&finished?'<span class="node-state">연결 완료</span>':''}</button>`;}).join('')}
  <div class="journey-traveler" role="img" aria-label="탐험 중인 방울이"><span class="map-walk-sprite"></span></div></div><div class="map-nearby" role="group" aria-label="가까이에서 할 수 있는 행동" hidden></div><span class="sr-only map-nearby-status" role="status"></span><div class="map-hand-hint" aria-hidden="true">${icon('hand',40)}<span>화살표를 눌러 걷고, 가까운 장소를 눌러 봐!</span></div></div>
- <div class="journey-bottom"><div class="journey-companion"><button class="map-coach" data-action="map-hint" aria-label="방울이의 다음 탐험 안내" aria-expanded="false" aria-controls="map-coach-help">${buddy(state.restored?'celebrate':'wave')}<span class="coach-trigger-badge">…</span><span class="coach-trigger-label">방울이 힌트</span></button><div id="map-coach-help" class="map-coach-help" hidden><b>방울이의 부탁</b><p>${state.restored?'네가 만든 물길이 섬을 살렸어! 우리의 발견을 보러 갈까?':done?journey[next.id-1].story:'물길이 끊겨 연구실이 멈췄어. 나랑 첫 샘터부터 살펴보자!'}</p></div></div><div class="map-pad" role="group" aria-label="지도 조작"><div class="map-arrows" role="group" aria-label="방울이 이동"><span class="map-arrow-label" aria-hidden="true">방울이<br>이동</span>${[['up','위'],['left','왼쪽'],['down','아래'],['right','오른쪽']].map(([d,label])=>`<button type="button" class="map-arrow map-arrow-${d}" data-map-move="${d}" aria-label="방울이 ${label}${d==='left'||d==='right'?'으':''}로 이동">${icon('arrow',24)}</button>`).join('')}</div><div class="map-modes"><button type="button" class="map-mode" data-map-mode="hand" aria-label="손으로 밀기" aria-pressed="false">${icon('hand',28)}</button><button type="button" class="map-mode" data-map-mode="overview" aria-label="한눈에 보기" aria-pressed="false">${icon('expand',28)}</button></div></div><div class="journey-next"><small>${state.restored?'물길 복구 완료':`이번 발견으로 얻을 것 · ${journey[next.id-1].tool}`}</small>${btn(state.restored?'우리의 발견 보기':done===5?'마지막 코어 연결':`${names[next.id-1]}${[0,1].includes(next.id-1)?'로':'으로'}${entry%2===0?'':' 출발'} ${icon('arrow')}`,state.restored?'ending':done===5?'screen-10':`mission-${next.id}`,'primary')}</div></div></main>`;
+ <div class="journey-bottom"><div class="map-pad" role="group" aria-label="지도 조작"><div class="map-arrows" role="group" aria-label="방울이 이동"><span class="map-arrow-label" aria-hidden="true">방울이<br>이동</span>${[['up','위'],['left','왼쪽'],['down','아래'],['right','오른쪽']].map(([d,label])=>`<button type="button" class="map-arrow map-arrow-${d}" data-map-move="${d}" aria-label="방울이 ${label}${d==='left'||d==='right'?'으':''}로 이동">${icon('arrow',24)}</button>`).join('')}</div><div class="map-modes"><button type="button" class="map-mode" data-map-mode="hand" aria-label="손으로 밀기" aria-pressed="false">${icon('hand',28)}</button><button type="button" class="map-mode" data-map-mode="overview" aria-label="한눈에 보기" aria-pressed="false">${icon('expand',28)}</button></div></div><div class="journey-companion"><button class="map-coach" data-action="map-hint" aria-label="방울이의 다음 탐험 안내" aria-expanded="false" aria-controls="map-coach-help">${buddy(state.restored?'celebrate':'wave')}<span class="coach-trigger-badge">…</span><span class="coach-trigger-label">방울이 힌트</span></button><div id="map-coach-help" class="map-coach-help" hidden><b>방울이의 부탁</b><p>${state.restored?'네가 만든 물길이 섬을 살렸어! 우리의 발견을 보러 갈까?':done?journey[next.id-1].story:'물길이 끊겨 연구실이 멈췄어. 나랑 첫 샘터부터 살펴보자!'}</p></div></div><div class="journey-next"><small>${state.restored?'물길 복구 완료':`이번 발견으로 얻을 것 · ${journey[next.id-1].tool}`}</small>${btn(state.restored?'우리의 발견 보기':done===5?'마지막 코어 연결':`${names[next.id-1]}${[0,1].includes(next.id-1)?'로':'으로'}${entry%2===0?'':' 출발'} ${icon('arrow')}`,state.restored?'ending':done===5?'screen-10':`mission-${next.id}`,'primary')}</div></div></main>`;
 }
 
 // Normal camera covers the screen and follows Bangul; overview fits the entire island between the controls.
@@ -71,6 +71,7 @@ export function mountMapCamera(){
   shake:()=>{if(!reduceMotion())sprite.animate([{translate:'0 0'},{translate:'-5px 0'},{translate:'4px 0'},{translate:'0 0'}],{duration:260});}
  }});
  const done=state.completed.length,actor=world.querySelector('.journey-traveler'),sprite=actor.querySelector('.map-walk-sprite');
+ const labels=[...world.querySelectorAll('.journey-node')];
  const nearby=view.querySelector('.map-nearby'),announcement=view.querySelector('.map-nearby-status');
  const targets=missions.filter(m=>canEnter(m.screens[0],state)).map(m=>({feet:islandStops[m.id-1],name:islandNames[m.id-1],verb:'들어가기',action:'mission-'+m.id}));
  const arrival=returnedResidents(state).find(r=>r.stage===residentForStage(state.villageArrivals.at(-1))?.stage);
@@ -132,6 +133,15 @@ export function mountMapCamera(){
   }
   world.classList.toggle('glide',glide&&!state.settings.reduced);
   world.style.width=ww+'px';world.style.height=wh+'px';world.style.transform=`translate3d(${ox}px,${oy}px,0)`;
+  // Keep visible names inside the viewport when their building is near an edge.
+  const labelSizes=labels.map(node=>[node.offsetWidth,node.offsetHeight]);
+  for(const [i,node] of labels.entries()){
+   const [x,y]=islandStops[i],px=x*scale+ox,py=Math.max(.09,y/MAP_H-.1)*wh+oy;
+   const [width,height]=labelSizes[i],halfW=width/2+5,halfH=height/2+5;
+   node.toggleAttribute('data-offscreen',px<0||px>w||py<0||py>h);
+   node.style.setProperty('--map-label-x',clamp(px,halfW,w-halfW)-px+'px');
+   node.style.setProperty('--map-label-y',clamp(py,halfH,h-halfH)-py+'px');
+  }
   // A villain's caption steps aside while the action bubble sits on it.
   const bubble=nearby.hidden?null:nearby.getBoundingClientRect();
   for(const tag of world.querySelectorAll('.mv-say.show'))tag.style.visibility=bubble&&(r=>r.left<bubble.right&&r.right>bubble.left&&r.top<bubble.bottom&&r.bottom>bubble.top)(tag.getBoundingClientRect())?'hidden':'';

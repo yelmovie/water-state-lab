@@ -13,15 +13,10 @@ export function freezeLevelText(level){
 }
 /** Applies one talk step and returns what 방울이 says. An out-of-order step changes nothing. */
 export function freezeTalk(f,cmd){
- if(cmd==='talk-pop-yes'||cmd==='talk-pop-no'){
-  if(f.talk!==0)return '';
-  f.popSeen=cmd.slice(9);f.talk=1;
-  return f.popSeen==='yes'?'봤구나! 왜 빵빵해졌는지 직접 얼려서 확인해 보자.':'괜찮아! 지금 같이 얼려 보면 돼.';
- }
  if(cmd==='talk-chill'){
-  if(f.talk!==1)return '';
+  if(f.talk!==0&&f.talk!==1)return '';
   f.talk=2;
-  return '봉지에 아무것도 더 넣지 않았는데 빵빵해졌어!';
+  return '얼리기 전과 얼린 뒤의 봉지를 나란히 살펴봐.';
  }
  if(cmd.startsWith('talk-pipe-')){
   const choice=pipeChoices.find(c=>c.id===cmd.slice(10));

@@ -1,3 +1,4 @@
+import {paintTimeDial} from './time-dial.js';
 import {createObservationClock} from './observation-speed.js';
 import {heatingRig,icon,esc} from './ui.js';
 import {trayArt} from './freeze-tray.js';
@@ -45,7 +46,7 @@ function meltScene(c){
 }
 function boilScene(c){
  const {stage,time}=phaseStatus('evaporate',c),filled=stage!=='start',active=['heating','boiling'].includes(stage),record=['observed','compared'].includes(stage),t=heatingTrial(100,time);
- return `<div class="boil-observation ${record?'is-record':''}">${record?'<span class="process-record-tag">가열을 멈추기 직전 · 같은 시간 뒤 관찰 기록</span>':'<span class="process-science-tag">수증기는 눈에 보이지 않아</span>'}<div class="process-pair boil-pair">${['A','B'].map((key,i)=>`<figure class="process-cup ${i&&active?'is-heating':''} ${i&&t.boiling?'is-boiling':''}"><figcaption>${key} <b>${i?record?'가열한 물':active?'가열하는 물':'가열할 물':'실온에 둔 물'}</b></figcaption><div class="boil-rig">${heatingRig(filled?(i?t.heated:t.room):0,!!(i&&t.boiling),!!i,!!(i&&active))}${i?`<span class="heater-state ${active?'is-on':''}">${active?'가열 중':'가열 꺼짐'}</span>`:''}</div><p>${!filled?'아직 빈 컵이야':!time?'같은 양의 물로 시작해':i?t.boiling?'물속에서도 기포가 계속 올라와':'아직 끓기 전이야':'표면에서 증발해 물높이가 조금 낮아져'}</p></figure>`).join('')}</div><p class="process-condition">같은 컵 · 같은 처음 물의 양 · 같은 관찰 시간</p></div>`;
+ return `<div class="boil-observation ${record?'is-record':''}">${record?'<span class="process-record-tag">가열을 멈추기 직전 · 같은 시간 뒤 관찰 기록</span>':'<span class="process-science-tag">수증기는 눈에 보이지 않아</span>'}<div class="process-pair boil-pair">${['A','B'].map((key,i)=>`<figure class="process-cup ${i&&active?'is-heating':''} ${i&&t.boiling?'is-boiling':''}"><figcaption>${key} <b>${i?record?'가열한 물':active?'가열하는 물':'가열할 물':'실온에 둔 물'}</b></figcaption><div class="boil-rig">${heatingRig(filled?(i?t.heated:t.room):0,!!(i&&t.boiling),!!i,!!(i&&active))}${i?`<span class="heater-state ${active?'is-on':''}">${active?'가열 중':'가열 꺼짐'}</span>`:''}${stage==='compared'?`<strong class="process-result-stamp ${i?'is-boiling':'is-evaporation'}">${i?'끓음':'증발'}</strong>`:''}</div><p>${!filled?'아직 빈 컵이야':!time?'같은 양의 물로 시작해':i?t.boiling?'물속에서도 기포가 계속 올라와':'아직 끓기 전이야':'표면에서 증발해 물높이가 조금 낮아져'}</p></figure>`).join('')}</div><p class="process-condition">같은 컵 · 같은 처음 물의 양 · 같은 관찰 시간</p></div>`;
 }
 let plateDrawing=0;
 function plateArt(cold,count,label){
@@ -71,16 +72,16 @@ export function bindProcess(host,get,currentKind,paint){
  function lock(value){busy=value;host.querySelector('.process-lab')?.setAttribute('aria-busy',String(value));host.querySelectorAll('[data-process-action],#process-time').forEach(e=>e.disabled=value);}
  function showTime(){
   const t=processTask(get(),kind()),input=host.querySelector('#process-time'),output=host.querySelector('[data-process-time-label]'),progress=host.querySelector('[data-process-progress]');
-  if(input){input.value=t.time;input.setAttribute('aria-valuetext',`관찰 시간이 ${t.time}%만큼 지났어`);}if(output)output.textContent=t.time===100?'충분히 지난 뒤':`시간이 지난 정도 ${t.time}%`;if(progress)progress.value=t.time;
+  if(input){input.value=t.time;paintTimeDial(input);input.setAttribute('aria-valuetext',`관찰 시간이 ${t.time}%만큼 지났어`);}if(output)output.textContent=t.time===100?'충분히 지난 뒤':`시간이 지난 정도 ${t.time}%`;if(progress)progress.value=t.time;
   host.querySelector('.process-board').innerHTML=scene(get(),kind());
   const status=host.querySelector('.process-status');if(status.textContent!==get().message)status.textContent=get().message;
  }
  function clock(){
   if(still()){commit('wait',100);void playCue('drop');paint();return;}
-  lock(true);const from=processTask(get(),kind()).time,clock=createObservationClock(state.settings);
+  lock(true);const from=processTask(get(),kind()).time,clock=createObservationClock(state.settings),duration=kind()==='melt'?1200:2400;
   const tick=now=>{
    if(signal.aborted||!kind())return;
-   const p=Math.min(1,clock(now)/2400),value=Math.round((from+(100-from)*p)/5)*5;
+   const p=Math.min(1,clock(now)/duration),value=Math.round((from+(100-from)*p)/5)*5;
    if(value!==processTask(get(),kind()).time){commit('wait',value);showTime();}
    if(p<1)frame=requestAnimationFrame(tick);else{lock(false);void playCue('drop');paint();}
   };frame=requestAnimationFrame(tick);

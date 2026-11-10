@@ -33,7 +33,8 @@ dialog::backdrop{background:#153c3ab3;backdrop-filter:none}
 .story-dialog{width:min(1080px,calc(100vw - 48px))}.story-dialog>.dialog-head{display:none}.story-dialog>.dialog-body{padding:0}.story-overlay{position:static;display:block;padding:0;background:none;backdrop-filter:none}.story-overlay>.story-card{width:100%;max-height:none;border:0;border-radius:0;grid-template-columns:1fr 1fr;box-shadow:none;overflow:visible}.story-illustration{min-height:360px;border-radius:0}.story-copy{padding:28px;gap:16px}.story-copy h2{font-size:clamp(30px,2.5vw,40px)}.story-copy p{font-size:22px}.story-copy ol{display:none}.story-copy small{display:none}.story-actions{flex-direction:column;gap:12px;margin-top:8px}.story-actions .btn{flex:auto;min-height:56px}
 .settings-dialog{width:min(960px,calc(100vw - 48px))}.settings-scroll{padding:20px 24px;gap:16px}.settings-scroll p,.settings-scroll li,.settings-scroll label{font-size:20px}.settings-body summary,.settings-section summary{font-size:22px}.settings-head h2{font-size:32px}
 .ending-copy>p,.ending-statement .btn,.ending-copy .home-actions .btn{font-size:22px}.ending-copy h1{font-size:clamp(32px,2.8vw,46px)}.ending-main{padding:24px;gap:28px}.ending-statement{margin-top:12px}.ending-statement h3{margin:0;font-size:25px}.ending-stats small{font-size:18px}.notebook-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.notebook-record{min-width:0}.notebook-record p{margin:8px 0}.notebook-record:last-child{grid-column:1/-1}
-#toast{font-size:22px;line-height:1.4}
+#toast{top:50%;bottom:auto;width:max-content;max-width:min(760px,calc(100vw - 32px));transform:translate(-50%,-50%);font-size:22px;line-height:1.4;text-align:center;transition:opacity .2s}
+#toast.show{transform:translate(-50%,-50%)}
 /* Media is fetched only when opened. The native dialog traps focus and blocks play below. */
 .concept-dialog{width:min(1040px,calc(100vw - 48px));padding:0;overflow:hidden}.concept-dialog[open]{display:flex;flex-direction:column}.concept-dialog .eyebrow{font-size:17px}.concept-body{min-height:0;overflow:auto;padding:16px 24px 8px}.concept-screen{position:relative;width:min(100%,calc((100dvh - 330px)*1.7778));aspect-ratio:16/9;margin:auto;overflow:hidden;border:2px solid #c8b47e;border-radius:20px;background:#e1eddf}.concept-screen video,.concept-end{display:block;width:100%;height:100%;object-fit:contain}.concept-end{position:absolute;inset:0}.concept-end[hidden],.concept-play[hidden]{display:none}.concept-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);min-width:160px;font-size:22px}.concept-caption{display:flex;align-items:center;gap:16px;max-width:880px;margin:8px auto 0;min-height:90px}.concept-caption .buddy-pose{width:90px;height:90px;flex:none}.concept-caption p{font-size:clamp(22px,1.8vw,32px);line-height:1.4;margin:0}.concept-beats{display:flex;gap:10px;justify-content:center}.concept-beats button{width:48px;height:48px;border-radius:50%;border:2px solid #bea563;background:#fff9e9;color:#27594f;font-size:20px;cursor:pointer}.concept-beats button[aria-pressed=true]{background:#27594f;color:#fff9e9}.concept-footer{padding:16px 24px 20px;display:flex;justify-content:space-between;gap:16px;flex:none;border-top:1px solid #caba8b}.concept-footer .btn{font-size:22px;min-height:56px}.concept-transcript{font-size:22px;line-height:1.5;padding-left:30px}.concept-transcript li{margin:10px 0}
 .concept-play:hover:not(:disabled){transform:translate(-50%,-50%)}.concept-play:active:not(:disabled){transform:translate(-50%,calc(-50% + 3px))}
@@ -534,6 +535,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .journey-shell .journey-world.glide{transition:transform .6s cubic-bezier(.25,.8,.3,1)}
 .journey-shell .journey-art{width:100%;height:100%;object-fit:fill;pointer-events:none;-webkit-user-drag:none}
 .journey-shell .journey-node{cursor:pointer}
+.journey-shell .map-viewport .journey-node>b{min-height:44px;padding:6px 10px;border-bottom-width:2px;border-bottom-style:solid;border-radius:14px;box-shadow:0 2px 5px #243b3238;white-space:nowrap}
+.journey-shell .map-viewport .journey-node{translate:var(--map-label-x,0px) var(--map-label-y,0px)}
+.journey-node[data-offscreen]{visibility:hidden}
 .journey-shell .journey-traveler{position:absolute;display:block;z-index:4;width:5.2%;aspect-ratio:1;transform:translate(-50%,-95%);pointer-events:none}
 .journey-traveler::before{content:"";position:absolute;left:32%;right:32%;bottom:2%;height:10%;border-radius:50%;background:#3d483854;filter:blur(1px)}
 .map-walk-sprite{position:absolute;inset:0;background:url('/assets/v2/bangul-walk.webp') 50% 0 / 300% 400% no-repeat}
@@ -552,12 +556,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 @keyframes map-hand-swipe{from{transform:translateX(-24px) rotate(-8deg)}to{transform:translateX(24px) rotate(8deg)}}
 .reduce-motion .map-hand-hint svg{animation:none}
 @media(prefers-reduced-motion:reduce){.map-hand-hint svg{animation:none}.journey-shell .journey-world.glide{transition:none}}
-/* Bottom row: hint at left, map pad in the middle, next place at right. */
-.journey-shell .journey-bottom{position:absolute;z-index:5;left:16px;right:16px;bottom:16px;width:auto;margin:0;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:end;gap:16px;pointer-events:none}
+/* Bottom row: map pad and hint together at left, next place at right. */
+.journey-shell .journey-bottom{position:absolute;z-index:5;left:16px;right:16px;bottom:16px;width:auto;margin:0;display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:end;gap:16px;pointer-events:none}
 .journey-shell .journey-next{justify-self:end}
 /* The open hint bubble sits above the map pad. */
 .journey-shell .journey-companion{z-index:2}.map-pad{position:relative;z-index:1}
-.map-pad{justify-self:center;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:20px;background:#fff9e9f2;border:2px solid #c9b57c;box-shadow:var(--shadow-card);pointer-events:auto}
+.map-pad{justify-self:start;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:20px;background:#fff9e9f2;border:2px solid #c9b57c;box-shadow:var(--shadow-card);pointer-events:auto}
 .map-arrows{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:4px}
 .map-arrow{display:grid;place-items:center;width:48px;height:48px;padding:0;border:2px solid #b9a36a;border-radius:12px;background:#fffdf5;color:#355647;box-shadow:0 3px 0 #c9b57c;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
 .map-arrow-label{grid-area:1/1;align-self:center;text-align:center;font:16px/1.1 var(--font-display);color:#355647}
@@ -574,8 +578,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 /* Portrait and narrow: title under the top buttons, pad and hint on one row, next place full width below. */
 @media(max-width:800px) and (orientation:portrait){
  .journey-shell .journey-heading{position:absolute;top:76px;left:16px;right:16px;width:auto;margin:0}
- .journey-shell .journey-bottom{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"coach pad" "next next"}
- .journey-shell .journey-companion{grid-area:coach}.map-pad{grid-area:pad;justify-self:end}.journey-shell .journey-next{grid-area:next;justify-self:stretch;max-width:none}
+ .journey-shell .journey-bottom{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"pad coach" "next next"}
+ .journey-shell .journey-companion{grid-area:coach}.journey-shell .journey-companion>.map-coach-help{left:auto;right:0}.map-pad{grid-area:pad;justify-self:start}.journey-shell .journey-next{grid-area:next;justify-self:stretch;max-width:none}
 }
 /* Ending on short landscape screens: the left column scrolls like the right one, so the 3D tour and stats stay reachable. */
 @media(max-height:620px) and (min-width:701px){.ending-illustration{align-self:stretch;max-height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:4px}}
@@ -1180,8 +1184,7 @@ html.reduce-motion .beaker .bubble{animation:none}
 .cold-drain.is-held{background:#f2e7c8}
 .cold-art{display:block;width:100%;height:100%;min-height:0;overflow:visible}
 .cold-inside{fill:#ffffff8c}
-.cold-water{fill:#4fb6d3;opacity:.92}
-.cold-water.is-ice{fill:#c3ecf7;opacity:1;stroke:#7fc4d9;stroke-width:2}
+.cold-water.is-ice{stroke:#a0c8d6;stroke-width:.8}
 .cold-stream{fill:#6cc9de;opacity:0}
 .is-pouring .cold-stream{opacity:.9}
 .cold-wall{fill:none;stroke:#fffdf4;stroke-width:5;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 1px 1px #1d414a80)}
@@ -1216,7 +1219,8 @@ html.reduce-motion .beaker .bubble{animation:none}
 .cold-night .transform-progress{font-size:clamp(16px,1.6vw,18px)}
 .cold-night .transform-footer details p{font-size:16px}
 .cold-night .btn{min-height:48px}
-.cold-explain{display:flex;gap:clamp(10px,2vw,24px);align-items:center;min-height:0;overflow:auto}
+.cold-explain{display:flex;gap:clamp(10px,2vw,24px);align-items:center;justify-content:center;min-height:0;padding:16px;overflow:auto}
+.cold-explain>div{min-width:0;max-width:640px}
 .cold-explain img{flex:none;width:clamp(72px,12vw,130px);height:auto}
 .cold-explain h2{margin:0 0 4px;font:clamp(25px,3vw,40px)/1.2 var(--font-display);color:#173f45;word-break:keep-all}
 .cold-explain p{margin:0;font-size:clamp(16px,1.9vw,22px);line-height:1.4;word-break:keep-all}

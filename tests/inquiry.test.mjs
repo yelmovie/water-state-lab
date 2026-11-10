@@ -8,7 +8,7 @@ import {handleInquiry,inquiryNotebook} from '../src/inquiry.js';
 import {activityReady,pipeTrial,sortCards,nextSortCard} from '../src/activity-model.js';
 const ctx={render(){},go(){},pageDone(){}};
 globalThis.localStorage={setItem(){}};
-globalThis.document={querySelector(){return {textContent:'',classList:{add(){},remove(){}}}},getElementById(){return null}};
+globalThis.document={querySelector(selector){return selector==='#toast'?{textContent:'',classList:{add(){},remove(){}}}:null},getElementById(){return null}};
 test('collector accounts for partial leakage and conserves the generated comparison amount',()=>{
  const p=structuredClone(targetParts);p.funnel.x=455;
  const partial=collectorTrial(p,true,20);assert.ok(partial.collected>0&&partial.collected<100);

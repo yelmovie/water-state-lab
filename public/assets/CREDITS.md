@@ -313,3 +313,12 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 ## 추운 밤 깨진 병·통 · 2026-11-09
 
 `learning/coldnight-20261109/jar-cracked.webp`, `bottle-cracked.webp`: Higgsfield GPT Image 2.6으로 게임의 병 그림을 참고해 생성. 원본·프롬프트는 외장 SSD `assets/source-media/coldnight-cracked-20261109/`.
+
+## 실험용 물소리 · 2026-11-10
+
+물 따르기는 qubodup의 Water Pouring, 물방울은 AngeloYazar의 Object Dropping Into Water, 기포는 BMacZero의 Bubble Sound Effects를 짧게 편집했다. 세 원본 모두 게시 페이지에 CC0로 표시되어 있으며 2026-11-10에 확인했다. 원본 URL과 편집 내용은 `audio/sources.json`에 기록했다. 외부 요청 없이 로컬 MP3로 재생하며 기본 음소거 설정을 따른다.
+
+- https://freesound.org/people/qubodup/sounds/210429/
+- https://opengameart.org/content/object-dropping-into-water-0
+- https://opengameart.org/content/bubble-sound-effects
+- CC0 전문 https://creativecommons.org/publicdomain/zero/1.0/legalcode

@@ -1,10 +1,10 @@
-// Project themes (the main theme loops, the ending theme plays once) + locally hosted Kenney CC0 interface sounds.
+// Project themes (the main theme loops, the ending theme plays once) + locally hosted CC0 interface and water sounds.
 let context,unlocked=false,music=null,musicGain=null,loadedTheme=null,endedTheme=null,theme='main',activeCue=null,cueSequence=0,quiet=false;
 let settings={sound:true,bgm:true,sfx:true,bgmVolume:35};
 const SFX_VOLUME=.035;
 const themes={main:'/assets/audio/music/main-theme.mp3',ending:'/assets/audio/music/ending-theme.mp3'};
-const files={click:'click_003.ogg',drop:'drop_003.ogg',success:'confirmation_002.ogg',discover:'confirmation_001.ogg',error:'error_001.ogg',hint:'question_002.ogg',connect:'switch_002.ogg',pour:'splash_09.ogg',bubble:'bubble_02.ogg',page:'bookFlip1.ogg',wipe:'cloth1.ogg',latch:'metalLatch.ogg',shoot:'splash_09.ogg',hit:'impactMetal_medium_000.ogg',finish:'impactPunch_heavy_000.ogg',thud:'impactSoft_heavy_000.ogg'};
-const players=new Map();let fileCue=null;
+const files={click:'click_003.ogg',drop:'water-drop.mp3',success:'confirmation_002.ogg',discover:'confirmation_001.ogg',error:'error_001.ogg',hint:'question_002.ogg',connect:'switch_002.ogg',pour:'water-pour.mp3',bubble:'water-bubble.mp3',page:'bookFlip1.ogg',wipe:'cloth1.ogg',latch:'metalLatch.ogg',shoot:'splash_09.ogg',hit:'impactMetal_medium_000.ogg',finish:'impactPunch_heavy_000.ogg',thud:'impactSoft_heavy_000.ogg'};
+const players=new Map(),cueGains=new Map();let fileCue=null;
 const hidden=()=>typeof document!=='undefined'&&document.hidden;
 const desiredMusic=()=>settings.sound&&settings.bgm&&!quiet&&!hidden()&&unlocked;
 
@@ -78,7 +78,17 @@ export async function playCue(kind='click'){
  if(typeof Audio!=='undefined'){
   let player=players.get(kind);
   if(!player){player=new Audio('/assets/audio/'+(files[kind]||files.click));player.preload='auto';players.set(kind,player);}
-  player.volume=({click:.22,pour:.24,bubble:.20,page:.24,wipe:.18,latch:.24,shoot:.3,hit:.42,finish:.5,thud:.34})[kind]??.32;fileCue=player;
+  const volume=({click:.22,pour:.38,bubble:.28,drop:.38,page:.24,wipe:.18,latch:.24,shoot:.3,hit:.42,finish:.5,thud:.34})[kind]??.32;
+  // Safari media volume is fixed. A gain node keeps experiment sounds soft on iPad too.
+  try{
+   const ctx=audioContext();
+   if(ctx?.state==='suspended')await ctx.resume();
+   if(request!==cueSequence||!settings.sound||!settings.sfx||hidden())return;
+   if(ctx&&!cueGains.has(player)){const gain=ctx.createGain();ctx.createMediaElementSource(player).connect(gain);gain.connect(ctx.destination);cueGains.set(player,gain);}
+   const gain=cueGains.get(player);if(gain)gain.gain.value=volume;else player.volume=volume;
+  }catch{player.volume=volume;}
+  if(request!==cueSequence)return;
+  fileCue=player;
   try{await player.play();return;}catch{if(request!==cueSequence)return;fileCue=null;}
  }
  try{

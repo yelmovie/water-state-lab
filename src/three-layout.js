@@ -19,15 +19,17 @@ const SCALE=.64,OFFSET=10,W=720,H=330;
 export const RAMP={model:.14,length:.194,pivotToCentre:84.4,run:170};
 const toWorld=(x,screenY)=>({x:(x-W/2)/1000,y:(H-screenY)/1000});
 
-export function deviceLayout(design,withCore=false,coreInletY=272){
+export function deviceLayout(design,withCore=false,coreInletY=272,connected=true){
  const parts={},screen=key=>({x:design.parts[key].x,y:design.parts[key].y*SCALE+OFFSET});
  for(const key of ['plate','funnel','tube','bucket']){const c=toWorld(screen(key).x,screen(key).y);parts[key]={x:c.x,y:c.y-heights[key]/2,rotation:0,scale:1};}
  const theta=Math.atan((design.angle||0)*2/180),pivot=screen('ramp'),along=d=>toWorld(pivot.x+d*Math.cos(theta),pivot.y+d*Math.sin(theta));
  const mid=along(RAMP.pivotToCentre);parts.ramp={x:mid.x,y:mid.y,rotation:-theta,scale:RAMP.length/RAMP.model};
  const centre=key=>({x:parts[key].x,y:parts[key].y+heights[key]/2});
  const path=[centre('plate'),along(0),along(RAMP.run),centre('funnel'),centre('tube'),centre('bucket')];
- if(withCore){const bottom=toWorld(638,coreInletY+27);parts.core={x:bottom.x,y:bottom.y,rotation:0,scale:1};path.push(toWorld(598,coreInletY));}
- return {parts,path,cold:!!design.cold};
+ if(withCore){const bottom=toWorld(638,coreInletY+27);parts.core={x:bottom.x,y:bottom.y,rotation:0,scale:1};if(connected)path.push(toWorld(598,coreInletY));}
+ // The connector and travelling drops share the same centreline, including inlet height.
+ const corePipe=withCore&&connected?path.slice(-2):[];
+ return {parts,path,corePipe,cold:!!design.cold};
 }
 
 // Point at fraction t (0..1) along a polyline, used for the travelling water drops.
@@ -36,4 +38,12 @@ export function pointAlong(path,t){
  let d=Math.max(0,Math.min(1,t))*total;
  for(let i=0;i<lengths.length;i++){if(d<=lengths[i]||i===lengths.length-1){const k=lengths[i]?Math.min(1,d/lengths[i]):0;return {x:path[i].x+(path[i+1].x-path[i].x)*k,y:path[i].y+(path[i+1].y-path[i].y)*k};}d-=lengths[i];}
  return path.at(-1);
+}
+
+// A bounding sphere fits through the narrower field of view at every orbit angle.
+export function orbitDistance(size,aspect,fov=30){
+ const radius=Math.hypot(size.x,size.y,size.z)/2;
+ const vertical=fov*Math.PI/360;
+ const halfAngle=Math.atan(Math.tan(vertical)*Math.min(1,aspect));
+ return radius/Math.sin(halfAngle)*1.08;
 }

@@ -1,4 +1,8 @@
 import {waterDrawingStyle} from './inquiry-model.js';
+/** The same optical textures fill the dynamically clipped water and ice shapes. */
+export function materialPattern(id,kind,{x=0,y=0,width,height,base,opacity=.86}){
+ return `<pattern id="${id}" patternUnits="userSpaceOnUse" x="${x}" y="${y}" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="${base}"/><image href="/assets/learning/${kind}-texture.webp" width="${width}" height="${height}" opacity="${opacity}" preserveAspectRatio="none"/></pattern>`;
+}
 export const studySheets={
  cloth:{file:'real-cloth.webp',cols:2,rows:1},
  ice:{file:'real-ice.webp',cols:2,rows:2},

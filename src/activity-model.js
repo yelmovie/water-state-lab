@@ -9,7 +9,7 @@ export function initialActivities(){return {
  draw:{strokes:[],time:0,records:[],faster:'',destination:''},
  compare:{heat:0,time:0,baseline:false,batchPrepared:false,records:[],pins:[],destination:''},
  dew:{wiped:[],sealed:false,time:0,records:[],rewiped:false,againTime:0,again:false},
- explain:{evidence:[],chain:[],bottleWiped:false,time:0,transfer:false}
+ explain:{summarySeen:false,evidence:[],chain:[],bottleWiped:false,time:0,transfer:false}
 };}
 export function prepareHeatingComparison(s){
  if(!s.baseline||s.heat!==0||s.batchPrepared)return false;
@@ -72,6 +72,8 @@ export const sortedTypes=sort=>new Set(dailyCards.filter(c=>sort.placed[c.id]===
 export const nextSortCard=sort=>dailyCards.find(c=>!sort.placed[c.id])||sortCards.find(c=>!sort.placed[c.id])||sortCards[0];
 /** Stage 3 starts with the cup already measured, so the first choice is the prediction. */
 export function freezeStart(a){const f=a.freeze;if(f.onScale)return;f.onScale=true;if(!f.records.some(r=>r.kind==='water'))f.records.push({kind:'water',level:60,mass:100});}
+// Older saves that finished the former explanation open directly at the bottle.
+export const cupSummarySeen=e=>e.summarySeen===true||e.chain?.join(',')==='air,cold,drops';
 export function activityReady(n,a){switch(n){
  case 1:return a.observe.pours.length===2&&a.observe.iceMoved&&a.observe.records.some(r=>r.kind==='cloth'&&r.time>=80);
  case 2:return sortedTypes(a.sort).size===3;
@@ -80,7 +82,7 @@ export function activityReady(n,a){switch(n){
  case 5:return a.draw.strokes.some(s=>s.length>=3)&&[0,1,2].every(b=>a.draw.records.some(r=>r.band===b))&&a.draw.faster==='thin'&&a.draw.destination==='air';
  case 6:return a.compare.baseline&&a.compare.records.some(r=>r.boiling)&&a.compare.destination==='air';
  case 7:return a.dew.records.length>=2&&a.dew.rewiped&&a.dew.again;
- case 8:return a.explain.evidence.length>=2&&a.explain.chain.join(',')==='air,cold,drops'&&a.explain.transfer&&activityReady(7,a);
+ case 8:return cupSummarySeen(a.explain)&&a.explain.transfer&&activityReady(7,a);
  default:return false;
 }}
 export function validateActivities(value){

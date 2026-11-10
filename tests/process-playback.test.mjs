@@ -29,7 +29,7 @@ function playbackHarness(t,prefix){
   if(selector==='[data-cycle-source]')return source;
   if(selector==='[data-cycle-droplets]')return drops;
   return null;
- },set innerHTML(value){paints++;action.disabled=false;pause.hidden=true;}};
+ },setAttribute(){},removeAttribute(){},set innerHTML(value){paints++;action.disabled=false;pause.hidden=true;}};
  const doc={...events(),hidden:false,dialog:false,querySelector(selector){return selector==='dialog[open]'&&this.dialog?{}:null;},getElementById(){return null;}};
  globalThis.document=doc;globalThis.performance={now:()=>now};
  globalThis.requestAnimationFrame=callback=>{frames.set(++id,callback);return id;};
@@ -49,10 +49,10 @@ for(const pace of [.5,1,1.5,2]){const speed=pace*PACE; // engine rate
   let renders=0;
   const cleanup=bindMeasure(h.host,()=>f,{save(){},render(){renders++;h.action.disabled=false;h.pause.hidden=true;},reduced:()=>false,settings});h.onCleanup(cleanup);
   h.click();assert.equal(h.frames.size,1,'waiting schedules an animation');
-  h.advance(2000/speed);assert.equal(measureStatus(f).time,50);assert.equal(measureStatus(f).stage,'cooling');
-  h.advance(2000/speed);assert.equal(measureStatus(f).stage,'frozen');assert.equal(h.frames.size,0);assert.equal(renders,1);
+  h.advance(1000/speed);assert.equal(measureStatus(f).time,50);assert.equal(measureStatus(f).stage,'cooling');
+  h.advance(1000/speed);assert.equal(measureStatus(f).stage,'frozen');assert.equal(h.frames.size,0);assert.equal(renders,1);
   measureAction(f,'take');measureAction(f,'measure-ice');measureAction(f,'rest');
-  h.click();h.advance(4000/speed);
+  h.click();h.advance(2000/speed);
   assert.equal(measureStatus(f).stage,'melted');assert.equal(renders,2);assert.equal(h.frames.size,0);
  });
 
@@ -73,12 +73,12 @@ test('freezing resumes its saved progress, honors live speed changes, and cancel
  const h=playbackHarness(t,'measure'),f=initialActivities().freeze,settings={observationPace:2};
  measureAction(f,'measure');f.predicted=true;measureAction(f,'load');
  const cleanup=bindMeasure(h.host,()=>f,{save(){},render(){h.action.disabled=false;h.pause.hidden=true;},reduced:()=>false,settings});h.onCleanup(cleanup);
- h.click();h.advance(1000);assert.equal(f.processTime,12);
+ h.click();h.advance(125/PACE);assert.equal(f.processTime,12);
  h.doc.dispatchEvent(new Event('observation-stop'));
  assert.equal(h.frames.size,0);assert.equal(h.action.disabled,false);assert.equal(h.pause.hidden,true);
  h.advance(10000);assert.equal(f.processTime,12,'paused time is not counted');
- h.click();h.advance(1000);assert.equal(f.processTime,24);
- settings.observationPace=1;h.advance(8000);assert.equal(f.processTime,74,'the new speed continues without resetting');
+ h.click();h.advance(125/PACE);assert.equal(f.processTime,24);
+ settings.observationPace=1;h.advance(1000/PACE);assert.equal(f.processTime,74,'the new speed continues without resetting');
  cleanup();h.advance(10000);assert.equal(f.processTime,74);assert.equal(h.frames.size,0);
  h.click();assert.equal(h.frames.size,0,'old controls do nothing after navigation');
 });
@@ -87,10 +87,31 @@ test('greenhouse pauses when hidden and does not retain callbacks after leaving'
  const h=playbackHarness(t,'cycle'),c=chapterState(10),settings={observationPace:2};
  const commit=(step,time)=>cycleAction(c,{step,time});commit('prepare');
  const cleanup=bindCycle(h.host,()=>c,commit,()=>false,settings);h.onCleanup(cleanup);
- h.click();h.advance(1800);assert.equal(cycleStatus(c).time,20);
+ h.click();h.advance(450/PACE);assert.equal(cycleStatus(c).time,20);
  h.doc.hidden=true;h.doc.dispatchEvent(new Event('visibilitychange'));
  assert.equal(h.frames.size,0);h.advance(10000);assert.equal(cycleStatus(c).time,20);
- h.doc.hidden=false;h.click();h.advance(1800);assert.equal(cycleStatus(c).time,40);
+ h.doc.hidden=false;h.click();h.advance(450/PACE);assert.equal(cycleStatus(c).time,40);
  cleanup();h.advance(10000);assert.equal(cycleStatus(c).time,40);assert.equal(h.frames.size,0);
  h.click();assert.equal(h.frames.size,0);
+});
+
+test('greenhouse finishes wiping before preparation and filling before collection',t=>{
+ const h=playbackHarness(t,'cycle'),c=chapterState(10);
+ const commit=(step,time)=>cycleAction(c,{step,time});
+ const cleanup=bindCycle(h.host,()=>c,commit,()=>false,{observationPace:1});h.onCleanup(cleanup);
+ h.action.dataset.cycleAction='prepare';h.click();
+ assert.equal(cycleStatus(c).stage,'start','preparation waits for the towel');
+ h.advance(2000);assert.equal(cycleStatus(c).stage,'evaporating');
+ for(const step of ['wait','observe','receiver','cool','wait'])commit(step,100);
+ h.action.dataset.cycleAction='collect';h.click();
+ assert.equal(cycleStatus(c).stage,'droplets','the receiver fills before collection is committed');
+ h.advance(3000);assert.equal(cycleStatus(c).stage,'collected');
+ assert.equal(h.frames.size,0);
+});
+
+test('leaving during greenhouse wiping cancels preparation',t=>{
+ const h=playbackHarness(t,'cycle'),c=chapterState(10);
+ const cleanup=bindCycle(h.host,()=>c,(step,time)=>cycleAction(c,{step,time}),()=>false,{});
+ h.action.dataset.cycleAction='prepare';h.click();cleanup();h.advance(3000);
+ assert.equal(cycleStatus(c).stage,'start');assert.equal(h.frames.size,0);
 });

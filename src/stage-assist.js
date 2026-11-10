@@ -1,5 +1,5 @@
 import {coreTransfer} from './core-transfer.js';
-import {activityReady,experimentActivities,pipeStep} from './activity-model.js';
+import {cupSummarySeen,activityReady,experimentActivities,pipeStep} from './activity-model.js';
 import {testCollector} from './domain.js';
 import {observationClockBusy} from './inquiry.js';
 
@@ -37,8 +37,7 @@ function dewStep(d,q){
 function explainStep(a,q){
  if(!activityReady(7,a))return null;
  const e=a.explain;
- if(e.evidence.length<2){const key=['sealed','contrast'].find(id=>!e.evidence.includes(id));return step('ix-evidence-'+key,1500,'컵 실험의 증거를 모을게','네가 본 증거를 그대로 가져왔어.');}
- if(e.chain.length<3||!q.transferPrediction)return null;
+ if(!cupSummarySeen(e)||!q.transferPrediction)return null;
  if(!e.bottleWiped)return step('ix-bottle-start',1000,'두 음료병의 겉면을 닦을게','닦은 뒤 어떻게 되는지 지켜봐.');
  if(e.time<100)return watch('음료병을 지켜봐','어느 병 바깥에 물방울이 생기는지 봐.');
  return e.transfer?null:step('ix-record',1600,'차가운 병에도 물방울이 생겼어','공기 중 수증기가 충분하고 표면이 충분히 차가우면 물방울이 생겨.');

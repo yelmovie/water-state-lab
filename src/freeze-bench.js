@@ -1,10 +1,11 @@
+import {materialPattern} from './study-materials.js';
 import {observationDelay} from './observation-speed.js';
 import {pipeTrial,pipeStep,limit} from './activity-model.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
 import {experimentMove,markStageControls} from './stage-guide.js';
 
-const TOP=36,BOTTOM=236,VIEW_TOP=-14,VIEW_HEIGHT=264,SHELF=3,FLY_MS=650,DOOR_MS=250,FREEZE_MS=1800,EXIT_MS=650;
+const TOP=36,BOTTOM=236,VIEW_TOP=-14,VIEW_HEIGHT=264,SHELF=3,FLY_MS=650,DOOR_MS=250,FREEZE_MS=900,EXIT_MS=650;
 const results={높음:{label:'마개가 튀어 나갔어',line:'퐁! 얼음이 커지면서 마개를 밀어냈어. 이번엔 물을 덜 담아 보자.'},보통:{label:'남은 공간이 빠듯해',line:'얼음이 입구에 거의 닿았어. 물을 더 덜 담아, 위쪽에 물을 채우지 않은 공간을 넉넉히 남겨 보자.'},낮음:{label:'남은 공간이 넉넉해',line:'물을 덜 담았더니 얼음 위에도 공간이 남았어! 앞 시험관과 비교해 봐.'}};
 const motionOff=()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
 const levelY=amount=>BOTTOM-(BOTTOM-TOP)*amount/100;
@@ -27,7 +28,7 @@ export function shelfTrials(trials){
 }
 const tubeWall='M26 30V212a24 24 0 0 0 48 0V30';
 const ticks=[20,40,60,80,100].map(v=>`<path class="bench-tick" d="M27 ${levelY(v)}h${v%40===0?10:6}"/>`).join('');
-function tubeArt(id,fill,{ice=null,popped=false,space=false}={}){
+function tubeArt(id,fill,{ice=null,popped=false,space=false,target=null}={}){
  const top=ice===null?levelY(fill):levelY(ice),from=ice===null?1:fill/ice;
  return `<svg class="bench-art" viewBox="0 ${VIEW_TOP} 110 ${VIEW_HEIGHT}" aria-hidden="true"><defs>
  <clipPath id="${id}"><path d="M27 22V212a23 23 0 0 0 46 0V22Z"/></clipPath>
@@ -35,12 +36,14 @@ function tubeArt(id,fill,{ice=null,popped=false,space=false}={}){
  <linearGradient id="${id}-water"><stop stop-color="#147fa9"/><stop offset=".24" stop-color="#6bdded"/><stop offset=".65" stop-color="#3ab5d5"/><stop offset="1" stop-color="#1781ad"/></linearGradient>
  <linearGradient id="${id}-ice" x2=".65" y2="1"><stop stop-color="#effeff"/><stop offset=".4" stop-color="#b6e5f4"/><stop offset=".7" stop-color="#7fc5e0"/><stop offset="1" stop-color="#dbf7fd"/></linearGradient>
  <linearGradient id="${id}-cork" x2=".4" y2="1"><stop stop-color="#e0b67c"/><stop offset=".5" stop-color="#b68149"/><stop offset="1" stop-color="#81532e"/></linearGradient>
+ ${materialPattern(id+'-material',ice===null?'water':'ice',{x:24,y:12,width:52,height:228,base:ice===null?'#a1e0ed':'#c2e6f4'})}
  </defs><ellipse cx="50" cy="242" rx="29" ry="4" fill="#385e65" opacity=".15"/>
  <path fill="url(#${id}-glass)" stroke="#6f9cab" stroke-width="1.4" d="${tubeWall}Z"/>
- <g clip-path="url(#${id})"><rect class="${ice===null?'bench-water':'bench-ice'}" data-bench-water x="24" y="${top}" width="52" height="${BOTTOM+4-top}" fill="url(#${id}-${ice===null?'water':'ice'})" style="--from:${from}"/>
- ${ice===null?`<ellipse data-bench-surface cx="50" cy="${top}" rx="23" ry="3.2" fill="#9be5f3" stroke="#e4fcff" stroke-width="1.2"/>`:`<g class="bench-ice-facets" fill="none" stroke="#f4feff" stroke-width="1.4" opacity=".8"><path d="M28 ${top+10}l22 22 23-13M50 ${top+32}l-10 39 26 33-28 38M40 ${top+71}l-12 18M66 ${top+104}l7 21M38 ${top+142}l17 24-9 32"/><path d="M37 ${top+40}l4-5 4 5-4 5Z" fill="#fff"/></g>`}
+ <g clip-path="url(#${id})"><rect class="${ice===null?'bench-water':'bench-ice'}" data-bench-water x="24" y="${top}" width="52" height="${BOTTOM+4-top}" fill="url(#${id}-material)" style="--from:${from}"/>
+ ${ice===null?`<ellipse data-bench-surface cx="50" cy="${top}" rx="23" ry="3.2" fill="#9be5f3" stroke="#e4fcff" stroke-width="1.2"/>`:''}
  </g>
  ${space?`<rect class="bench-space" x="31" y="${TOP+2}" width="38" height="${Math.max(6,top-TOP-5)}" rx="5"/>`:''}
+ ${target===null?'':`<path class="bench-fill-line" d="M16 ${levelY(target)}h68"/>`}
  ${ice===null?'':`<path class="bench-start" d="M18 ${levelY(fill)}h64"/>`}
  <image href="/assets/learning/experiment-props-20261107/tube-body.webp" x="25" y="26" width="50" height="211" preserveAspectRatio="none" opacity=".78"/>${ticks}<path class="bench-wall" d="${tubeWall}"/>
  <path d="M31 43v164q0 19 14 22" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>
@@ -62,10 +65,10 @@ function benchLine(s,done){
  return t?results[pipeTrial(t.fill).risk].line:'같은 시험관에서 물의 양만 바꿔 볼 거야. 물을 채우지 않은 공간은 얼린 뒤에 어떻게 달라질까?';
 }
 export function benchMarkup(s,done){
- const fill=benchFill(s.fill),open=canMark(s.trials),shelf=shelfTrials(s.trials);
+ const fill=benchFill(s.fill),open=canMark(s.trials),shelf=shelfTrials(s.trials),target=open?null:s.trials.length&&!s.trials.some(t=>t.safe)?80:95;
  return `<section class="activity activity-4 bench" id="freeze-bench" data-step="${pipeStep(s)}" aria-label="시험관 얼리기 실험">
- <div class="bench-zone bench-prep"><h2 class="bench-zone-title"><span>1</span>물의 양 정하기</h2>
- <div class="bench-tube-space"><div class="bench-tube" data-bench-tube>${tubeArt('bench-clip-live',fill)}
+ <div class="bench-zone bench-prep"><h2 class="bench-zone-title"><span>1</span>물의 양 정하기 ${target===null?'':`<b class="bench-fill-goal">비교 기준 ${target}</b>`}</h2>
+ <div class="bench-tube-space"><div class="bench-tube" data-bench-tube>${tubeArt('bench-clip-live',fill,{target})}
  <div class="bench-handle" data-bench-handle role="slider" tabindex="0" aria-label="시험관에 담을 물의 양" aria-valuemin="40" aria-valuemax="100" aria-valuenow="${fill}" aria-valuetext="물 ${fill}" style="top:${(levelY(fill)-VIEW_TOP)/VIEW_HEIGHT*100}%"><span aria-hidden="true">↕</span></div></div></div>
  <div class="bench-fill-controls"><button type="button" data-bench-less aria-label="물을 5만큼 덜 담기">−<small>덜 담기</small></button><p class="bench-readout">담은 물<b data-bench-amount>${fill}</b><small>/ 100 눈금</small></p><button type="button" data-bench-more aria-label="물을 5만큼 더 담기">＋<small>더 담기</small></button></div>
  <p class="bench-tip">노란 손잡이를 위아래로 움직여도 돼</p></div>

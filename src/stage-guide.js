@@ -1,6 +1,6 @@
 import {measureStatus,measureTask} from './freeze-measure.js';
 import {coreTransfer} from './core-transfer.js';
-import {activityReady,experimentActivities,heatingTrial,nextSortCard,sortCards,pipeStep} from './activity-model.js';
+import {cupSummarySeen,activityReady,experimentActivities,heatingTrial,nextSortCard,sortCards,pipeStep} from './activity-model.js';
 import {currentTrialValid,testCollector,stageLessons} from './domain.js';
 import {funnelSeat} from './workshop-controls.js';
 import {icon,esc} from './ui.js';
@@ -28,17 +28,19 @@ function predictionNote(n,a,q){
 }
 export function experimentMove(n,state,final){
  const a=experimentActivities(n,state),q=state.inquiry;
- if(n===3&&activityReady(3,a)&&a.freeze.talk<3)return [move('tap','쭈쭈바 본 적 있어?','오른쪽에서 네 경험을 골라 봐. 정답은 없어.','.freeze-guess'),move('tap','쭈쭈바를 얼려 봐','‘냉동실에 넣기’를 누르고 봉지가 어떻게 달라지는지 봐.',actions('act-talk-chill')),move('tap','배관은 왜 고장 났을까?','쭈쭈바 봉지를 떠올리며 네 생각을 골라 봐.','.freeze-guess')][a.freeze.talk];
+ if(n===3&&activityReady(3,a)&&a.freeze.talk<3)return a.freeze.talk<2
+  ?move('tap','냉동실에 넣으면 어떻게 되는지 살펴보자','‘냉동실에 넣기’를 누르고 쭈쭈바 봉지의 모양을 비교해 봐.',actions('act-talk-chill'))
+  :move('tap','배관은 왜 고장 났을까?','얼리기 전과 얼린 뒤 봉지의 모양을 살펴보고, 물이 꽉 찬 배관에는 어떤 일이 생길지 골라 봐.','.freeze-guess');
  if(n<=8&&activityReady(n,a))return move('next','오늘 알게 된 것',predictionNote(n,a,q)+stageLessons[n],actions(next[n]));
  if(n===1){
   const s=a.observe;
   if(s.step===0){
    if(s.pours.length===2)return move('compare','두 그릇의 물높이를 비교해 봐','둘 다 100mL인데 어느 쪽이 더 높이 찼어? 다 봤으면 얼음도 옮겨 봐.',actions('act-observe-step-1'));
    const tall=!s.pours.includes('tall');
-   return move('pour',`${tall?'길쭉한':'넓은'} 그릇에 물을 부어 봐`,s.pours.length?'주전자에 남은 반을 다른 그릇에 부어 봐.':'왼쪽 주전자를 그릇 위로 끌어 봐. 주전자의 물이 줄어드는 모습도 살펴봐.',board,s.pours.length?[]:[[117,162,190,230]]);
+   return move('pour',`${tall?'길쭉한':'넓은'} 그릇에 물 100mL를 담아 봐`,'주전자를 그릇 위로 옮기면 100mL 점선까지만 물이 담겨.',board,s.pours.length?[]:[[117,162,190,230]]);
   }
   if(s.step===1)return s.iceMoved?move('compare','물과 얼음을 나란히 비교해 봐','물은 그릇마다 모양이 달랐는데 얼음은 어때? 다 봤으면 물자국을 보러 가자.',actions('act-observe-step-2')):move('drag','얼음을 넓은 그릇으로 옮겨 봐','물을 담았던 것과 같은 두 그릇이야. 얼음도 모양이 바뀔까?',board,[[iceSeat('wide').x,158,166,176],[iceSeat('tall').x,158,106,176]]);
-  if(!s.clothWet)return move('brush','천에 물자국을 만들어 봐','천 위를 손가락으로 문질러 봐.',board,[[280,157,276,185]]);
+  if(!s.clothWet)return move('pour','천에 물을 부어 봐','주전자를 천 위로 끌거나 ‘천에 물 붓기’를 눌러 봐.',board+','+actions('act-wet-cloth'));
   return s.time<80?move('slide','물자국이 마르는 모습을 봐','시간 손잡이를 오른쪽으로 밀어 봐.',time(n)):move('slide','마른 모습을 끝까지 봐','시간 손잡이를 끝까지 밀면 관찰이 저절로 기록돼.',time(n));
  }
  if(n===2){
@@ -60,10 +62,9 @@ export function experimentMove(n,state,final){
  }
  if(n===5){
   const s=a.draw;
-  if(!s.strokes.some(line=>line.length>=3))return move('draw','왼쪽 판에 물로 그림을 그려 봐','손가락으로 선을 그리면 오른쪽에도 같은 모양이 생겨.',board,[[184,158,283,210]]);
   if(!q.drawPrediction)return move('tap','어느 물그림이 먼저 마를까?','그림을 비교하고 네 예상을 골라 봐. 예상은 틀려도 괜찮아.','[data-action^="ix-draw-predict-"]');
   if(q.drawMode==='record')return move('compare','처음·중간·나중 그림을 비교해 봐','기록 손잡이를 밀어 두 판의 물자국이 사라지는 순서를 확인해 봐.','#record-scrub');
-  if(s.records.length<3)return move('slide','두 물그림이 마르는 순서를 봐','시간 손잡이를 ‘나중’까지 밀어 처음 모습과 비교해 봐.',time(n));
+  if(s.records.length<3)return move('slide','두 물그림이 마르는 순서를 봐','두 그림 사이 시간 마법봉을 눌러 처음 모습과 비교해 봐.',time(n));
   if(s.faster!=='thin')return move('compare','먼저 마른 물그림을 골라 봐','두 판의 가운데 시간 기록을 보고 어느 쪽 물자국이 먼저 옅어졌는지 눌러 봐.','[data-action^="ix-draw-answer-"]');
   return move('tap','그림에서 줄어든 물은 어디로 갔을까?','바닥은 다시 말랐어. 물이 어디로 갔을지 골라 봐.','[data-action^="ix-draw-where-"]');
  }
@@ -93,10 +94,9 @@ export function experimentMove(n,state,final){
  if(n===8){
   const s=a.explain;
   if(!activityReady(7,a))return move('next','컵 실험에서 증거를 가져와 봐','두 컵의 겉면을 관찰한 뒤 이 설명을 만들 수 있어.',actions('act-go-7'));
-  if(s.evidence.length<2)return move('tap','네가 본 증거 그림 두 장을 골라 봐','그림을 눌러 설명에 쓸 관찰을 모아 봐.',board);
-  if(s.chain.length<3)return move('connect',['물방울의 출발을 골라 봐','무엇을 만났는지 이어 봐','어떤 모습으로 바뀌었는지 이어 봐'][s.chain.length],'위쪽 그림을 누르거나 빈 칸으로 끌어 네 설명을 이어 봐.',board,[[125+s.chain.length*235,258,184,96]]);
+  if(!cupSummarySeen(s))return move('compare','컵에서 관찰한 것을 정리해 보자','두 컵에서 본 차이를 읽고, 음료병에서도 확인해 봐.',actions('act-cup-summary'));
   if(!q.transferPrediction)return move('tap','어느 음료병에 물방울이 생길까?','차가운 병과 실온 병을 보고 네 예상을 골라 봐.','[data-action^="ix-transfer-predict-"]');
-  if(!s.bottleWiped)return move('brush','두 음료병의 겉면을 닦아 봐','두 병을 손가락으로 문질러. 아래 버튼으로 한 번에 닦아도 돼.',board);
+  if(!s.bottleWiped)return move('brush','두 음료병의 겉면을 닦아 봐','수건을 끌어 두 병의 겉면을 문질러 봐.',board);
   return s.time<70?move('slide','음료병에도 같은 일이 생길까?','시간 손잡이를 밀어 두 병 바깥을 비교해 봐.',time(n)):move('slide','음료병 바깥을 끝까지 봐','시간 손잡이를 끝까지 밀면 두 병의 모습이 기록돼.',time(n));
  }
  if(n===9){
@@ -111,13 +111,14 @@ export function experimentMove(n,state,final){
  const f=final?.progress,d=f?.diagnosis;
  if(!final?.design)return move('next','먼저 물 모으는 장치를 만들어 봐','공방에서 완성한 장치로 코어를 다시 움직일 수 있어.',actions('screen-9'));
  if(f.tested)return move('tap','도착한 물로 코어를 깨워 봐','밸브를 지나 코어까지 물이 왔어. ‘코어 깨우기’를 눌러 봐.',actions('core-activate'));
- if(f.connected&&d?.resolved&&!coreTransfer(f,d.working).downhill)return move('slide','코어 입구를 물통의 물높이보다 낮춰 봐','높이 손잡이를 왼쪽으로 밀어 봐. 물은 높은 곳에서 낮은 곳으로 흘러.','#core-inlet-height');
- if(f.connected&&d?.resolved)return f.valve>0?move('test','코어에 물을 보내 봐','‘물 보내기’를 눌러 물이 코어까지 닿는지 확인해 봐.',actions('test-core')):move('slide','밸브를 열어 물길을 열어 봐','그림 속 밸브를 눌러 돌리거나, 밸브 열림 손잡이를 밀어 봐.','#final-valve');
+ if(f.connected&&d?.resolved&&!coreTransfer(f,d.working).downhill)return move('drag','코어 입구를 물통의 물높이보다 낮춰 봐','그림 속 코어를 아래로 끌거나 ‘낮추기’를 눌러 봐. 물은 높은 곳에서 낮은 곳으로 흘러.',actions('core-lower'));
+ if(f.connected&&d?.resolved)return f.valve>0?move('test','코어에 물을 보내 봐','‘물 보내기’를 눌러 물이 코어까지 닿는지 확인해 봐.',actions('test-core')):move('tap','밸브를 열어 물길을 열어 봐','그림 속 밸브나 ‘밸브 열기’를 눌러 봐.',actions('core-open-valve'));
  if(d?.resolved)return move('connect','고친 장치를 코어에 이어 봐','‘코어에 연결’을 눌러 물이 갈 길을 열어 봐.',actions('connect-core'));
  if(!d?.tests.length)return move('test','물이 어디에서 멈췄는지 찾아 봐','‘장치 시험’을 눌러 물방울이 생기는 곳과 새는 곳을 살펴봐.',actions('diagnosis-test'));
  if(!d.hypothesis)return move('tap','고장의 원인을 골라 봐','물이 생기지 않았는지, 중간에 샜는지 보고 네 생각을 눌러 봐.','[data-action^="diagnose-"]');
  if(d.hypothesis==='cooling'&&!d.working.cold)return move('tap','냉각을 켜 봐','판이 차가워야 수증기가 물방울이 돼. ‘냉각 켜기’를 눌러 봐.',actions('core-cooling'));
  if(d.hypothesis==='connection'&&d.working.parts.funnel.x!==final.design.parts.funnel.x)return move('tap','깔때기를 제자리로 옮겨 봐','물이 새는 곳을 고쳐 봐. ‘깔때기 제자리로’를 눌러 봐.',actions('core-funnel'));
+ if(d.hypothesis===d.fault)return move('test','고친 장치를 시험해 봐','‘장치 시험’을 눌러 물이 물통까지 모이는지 확인해 봐.',actions('diagnosis-test'));
  return move('tap','다른 원인을 골라 봐','고쳐도 물이 오지 않아. 물방울이 안 생기는지, 중간에 새는지 다시 살펴봐.','[data-action^="diagnose-"]');
 }
 
@@ -147,7 +148,7 @@ export function pinQuestion(root){
  const main=root.querySelector('.experiment-main'),heading=root.querySelector('#stage-direction');if(!main||!heading)return;
  const text=heading.textContent.trim(),isQuestion=/[?？]\s*$/.test(text);
  heading.classList.toggle('is-question',isQuestion);
- if(!isQuestion||!main.classList.contains('manual-tools'))return; // while watching, the question panel already holds both
+ if(!isQuestion||root.querySelector('.scene-2')||!main.classList.contains('manual-tools'))return; // while watching, the question panel already holds both
  const panel=root.querySelector('.guided-question-panel'),shown=el=>el.offsetParent!==null&&!el.disabled;
  let answers;
  if(panel){

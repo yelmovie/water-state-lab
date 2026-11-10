@@ -2,12 +2,12 @@ import {state} from './state.js';
 import {observationTime,stop as stopClock} from './inquiry.js';
 import {dryTrace} from './activity-model.js';
 import {visibleDew,wipeDroplets} from './inquiry-model.js';
-import {resetDrawingExperiment} from './drawing-records.js';
 import {drawRealDrop,drawWaterStroke} from './study-materials.js';
 import {compareStage,comparedPours,iceSeat,iceDropTarget} from './scene-model.js';
-import {drawVessel,drawVesselFront,waterSurfaceY,dashedLine} from './pouring-scene.js';
+import {drawVessel,drawVesselFront,waterSurfaceY,dashedLine,createPourJug,drawWaterStream} from './pouring-scene.js';
+import {playCue} from './sound.js';
 const reduced=()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
-let lastIce=false,iceRelease=null,lastWet=false;
+let lastIce=false,iceRelease=null;
 export function createIceScene(scene){
  const o=state.activities.observe,moved=o.iceMoved,{water,ice:icePair,scale,floor}=compareStage;
  const keys=Object.keys(water),names={tall:'길쭉한 그릇',wide:'넓은 그릇'},pours=comparedPours(state.inquiry,o);
@@ -56,48 +56,103 @@ export function createIceScene(scene){
 }
 export function createClothScene(scene){
  const o=state.activities.observe;
- scene.add.image(360,166,'real-cloth','0').setDisplaySize(510,510);
- const wet=scene.add.image(360,166,'real-cloth','1').setDisplaySize(510,510).setAlpha(0);
- let appear=o.clothWet&&!lastWet&&!reduced()?0:1;
- lastWet=o.clothWet;
- scene.zone(360,160,465,270,()=>{if(!o.clothWet)scene.action('act-wet-cloth');});
- const label=scene.text(360,310,'',18);
- scene.tick=(_,dt)=>{
-  appear=Math.min(1,appear+dt/320);
-  const amount=o.clothWet?dryTrace('thin',observationTime(1)):0;
-  wet.setAlpha(amount*appear);
-  label.setText(!o.clothWet?'천을 누르거나 ‘천에 물 묻히기’를 눌러 봐.':amount>.08?'젖은 부분은 천의 색이 더 짙어 보여.':'천이 말랐어. 물은 눈에 보이지 않는 수증기가 되어 공기로 갔어.');
+ const label=scene.text(360,307,'',19).setWordWrapWidth(680);
+ const home={x:77,y:162},seat={x:273,y:94},landing={x:360,y:155};
+ const center=landing.x,size=464;
+ scene.add.image(center,153,'real-cloth','0').setDisplaySize(size,size);
+ if(o.clothWet){
+  const wet=scene.add.image(center,153,'real-cloth','1').setDisplaySize(size,size);
+  let previous;
+  scene.tick=()=>{
+   const time=observationTime(1);if(time===previous)return;previous=time;
+   const amount=dryTrace('thin',time);wet.setAlpha(amount);
+   label.setText(amount>.08?'젖은 부분은 천의 색이 더 짙어 보여.':'천이 말랐어. 물은 수증기가 되어 공기로 갔어.');
+  };
+  return;
+ }
+ const host=scene.game.canvas.closest('.phaser-stage'),stage=host.closest('.workspace-stage');
+ const wet=scene.add.image(center,153,'real-cloth','1').setDisplaySize(size,size).setAlpha(0);
+ const jugArt=createPourJug(scene,home.x,home.y,.58),jug=jugArt.image;
+ const full=85,tilt=.66,approach=280,fall=140,cutoff=870,settled=1190;
+ jugArt.paint(full);label.setText('주전자를 천 위로 끌거나 눌러 봐.');
+ let finish=null,elapsed=0,from,still=false,returning=null;
+ const pour=()=>scene.action('act-wet-cloth');
+ scene.zone(landing.x,153,422,252,pour);
+ jug.setInteractive({useHandCursor:true});scene.input.setDraggable(jug);
+ jug.on('pointerup',pointer=>{if(pointer.getDistance()<6)pour();});
+ jug.onMove=()=>returning?.stop();
+ jug.onRelease=()=>{
+  if(Math.abs(jug.x-landing.x)<205&&Math.abs(jug.y-153)<125){pour();return;}
+  returning=scene.tweens.add({targets:jug,...home,duration:reduced()?0:180,ease:'Sine.easeOut'});
+ };
+ const flow=scene.textures.createCanvas('cloth-pour-flow',1440,660),g=flow.context;
+ g.setTransform(2,0,0,2,0,0);
+ scene.add.image(360,165,'cloth-pour-flow').setDisplaySize(720,330).setDepth(7);
+ const stain=scene.textures.createCanvas('cloth-wet-spread',512,512),ink=stain.context;
+ const spread=scene.add.image(center,153,'cloth-wet-spread').setDisplaySize(size,size);
+ const clothPhoto=scene.textures.get('real-cloth').getSourceImage();
+ const request=event=>{
+  event.preventDefault();if(finish)return;
+  finish=event.detail;from={x:jug.x,y:jug.y};still=reduced();
+  returning?.stop();jug.disableInteractive();host.setAttribute('aria-busy','true');
+  label.setText('물이 천에 닿으면 어떻게 될까?');
+  stage?.querySelector('[data-action="act-wet-cloth"]')?.setAttribute('aria-disabled','true');
+ };
+ host.addEventListener('cloth-pour',request);
+ scene.events.once('shutdown',()=>host.removeEventListener('cloth-pour',request));
+ const unit=value=>Math.max(0,Math.min(1,value));
+ const ease=value=>(1-Math.cos(Math.PI*unit(value)))/2;
+ scene.tick=(time,dt)=>{
+  if(!finish)return;
+  const prev=elapsed;elapsed+=Math.min(dt,60)*(still?2.4:1);
+  const rise=still?1:ease(elapsed/approach),back=still?0:ease((elapsed-cutoff-fall)/(settled-cutoff-fall));
+  jug.setPosition(from.x+(seat.x-from.x)*rise+(home.x-seat.x)*back,from.y+(seat.y-from.y)*rise+(home.y-seat.y)*back).setRotation(tilt*(rise-back));
+  const sent=unit((elapsed-approach)/(cutoff-approach));
+  jugArt.paint(full-34*sent);
+  g.clearRect(0,0,720,330);
+  const head=unit((elapsed-approach)/fall),tail=unit((elapsed-cutoff)/fall);
+  if(head>tail)drawWaterStream(g,jugArt.mouth(),landing,still?0:time,head,tail);
+  const impact=approach+fall;
+  if(elapsed>=impact){
+   if(prev<impact){void playCue('pour');label.setText('물이 닿은 자리부터 천이 젖어.');}
+   const soak=ease((elapsed-impact)/600);
+   if(soak<1){
+    ink.clearRect(0,0,512,512);ink.drawImage(clothPhoto,512,0,512,512,0,0,512,512);
+    const radius=14+260*soak,edge=ink.createRadialGradient(256,258,Math.max(0,radius-52),256,258,radius);
+    edge.addColorStop(0,'#000');edge.addColorStop(1,'#0000');
+    ink.globalCompositeOperation='destination-in';ink.fillStyle=edge;ink.fillRect(0,0,512,512);ink.globalCompositeOperation='source-over';
+    spread.setAlpha(unit((elapsed-impact)/85));stain.refresh();
+   }else{spread.setVisible(false);wet.setAlpha(1);}
+   if(!still&&elapsed<cutoff+fall){
+    for(let i=0;i<4;i++){
+     const p=((elapsed-impact)/190+i*.27)%1;
+     drawRealDrop(g,landing.x+(-1)**i*p*(11+i*3),landing.y-30*p*(1-p)+i*.8,2-i*.2,(1-p)*.65);
+    }
+   }
+  }
+  flow.refresh();
+  if(elapsed>=settled){
+   const done=finish;finish=null;host.setAttribute('aria-busy','false');
+   queueMicrotask(()=>{if(host.isConnected)done();});
+  }
  };
 }
 export function createWaterDrawing(scene){
- const d=state.activities.draw,q=state.inquiry;
- for(const x of [185,535]){if(scene.textures.exists('drawing-board'))scene.add.image(x,166,'drawing-board').setDisplaySize(340,248);else scene.add.image(x,167,'real-painting','0').setDisplaySize(350,350);}
- scene.text(185,23,'A · 물을 조금 묻힌 붓',18);scene.text(535,23,'B · 물을 많이 묻힌 붓',18);
- const brushes=[scene.add.image(320,60,'real-painting','2'),scene.add.image(670,60,'real-painting','3')];
- brushes.forEach((b,i)=>b.setDisplaySize(i?74:50,65).setDepth(8));
- scene.text(360,314,'물감 없이 맑은 물로 그려. A에 그리면 B에도 같은 그림이 생겨.',16);
+ const d=state.activities.draw;
+ for(const x of [160,560]){if(scene.textures.exists('drawing-board'))scene.add.image(x,166,'drawing-board').setDisplaySize(290,248);else scene.add.image(x,167,'real-painting','0').setDisplaySize(300,350);}
+ scene.text(160,23,'A · 물을 조금 묻힌 붓',18);scene.text(560,23,'B · 물을 많이 묻힌 붓',18);
+ scene.text(360,314,'같은 그림에 물의 양만 달라. 어느 쪽이 먼저 마르는지 비교해 봐.',16);
  const texture=scene.textures.createCanvas('water-painting',1440,660),g=texture.context;
  const grain=g.createPattern(scene.textures.get('water-material').getSourceImage(),'repeat');
  grain?.setTransform(new DOMMatrix().scale(.26));
  scene.add.image(360,165,'water-painting').setDisplaySize(720,330).setDepth(5);
- let stroke=null,lastDrawing='';
- const point=p=>{
-  if(stroke&&stroke.length<400)stroke.push([Math.max(18,Math.min(482,(p.worldX-25)/320*500)),Math.max(20,Math.min(290,(p.worldY-50)/230*310))]); // keep the brush a stroke-width inside the frame
-  if(stroke){brushes[0].setPosition(p.worldX-18,p.worldY+18);brushes[1].setPosition(p.worldX+332,p.worldY+18);}
- };
- scene.input.on('pointerdown',p=>{
-  if(p.worldX<25||p.worldX>345||p.worldY<50||p.worldY>280||d.strokes.length>=35)return;
-  stopClock();if(d.records.length||q.drawPredictionLocked)resetDrawingExperiment(q,d);
-  d.time=0;stroke=[];d.strokes.push(stroke);point(p);
- });
- scene.input.on('pointermove',p=>{if(p.isDown)point(p);});
- scene.finishPointer=()=>{if(stroke){stroke=null;scene.commit();}};
+ let lastDrawing='';
  scene.tick=()=>{
   const time=observationTime(5),revision=[time,d.strokes.length,d.strokes.at(-1)?.length].join(':');
   if(lastDrawing===revision)return;lastDrawing=revision;
   g.setTransform(2,0,0,2,0,0);g.clearRect(0,0,720,330);
-  // Clip to the paper inside each wooden frame (board drawn at x±170, y 42–290) so a thick B stroke never crosses the frame.
-  for(let i=0;i<2;i++){g.save();g.beginPath();g.rect(27+i*350,55,316,222);g.clip();drawWaterStroke(g,d.strokes,{left:25+i*350,top:50,width:320,height:230,amount:i+1,time,grain});g.restore();}
+  // Leave the middle clear for the shared time control.
+  for(let i=0;i<2;i++){g.save();g.beginPath();g.rect(27+i*400,55,266,222);g.clip();drawWaterStroke(g,d.strokes,{left:25+i*400,top:50,width:270,height:230,amount:i+1,time,grain});g.restore();}
   texture.refresh();
  };
 }
@@ -107,30 +162,75 @@ export function createDewScene(scene,wipe){
  scene.add.image(205,165,'real-dew',d.sealed?'2':'0').setDisplaySize(265,265);
  scene.add.image(510,165,'real-dew',d.sealed?'1':'0').setDisplaySize(265,265);
  if(!d.sealed)scene.add.image(282,175,'real-tools','1').setDisplaySize(75,105);
- const wetMask=scene.add.graphics().setVisible(false),wet=scene.add.image(205,165,'real-dew','3').setDisplaySize(265,265).setDepth(6);wet.setMask(wetMask.createGeometryMask());
  const texture=scene.textures.createCanvas('real-dew-drops',1440,660),g=texture.context;
  scene.add.image(360,165,'real-dew-drops').setDisplaySize(720,330).setDepth(7);
- let ids=[],kind=null;
- const touch=p=>{if(kind)ids=wipeDroplets(ids,{x:p.worldX-(kind==='cold'?205:510)+120,y:p.worldY+5},30);};
+ // Isolate the light and shadow of the photographed beads from the wet/dry pair.
+ // The same transparent detail can sit on either glass without bringing over the wrap or cooling pack.
+ const photo=scene.textures.get('real-dew').getSourceImage();
+ const detail=document.createElement('canvas');detail.width=detail.height=512;
+ const detailCtx=detail.getContext('2d',{willReadFrequently:true});
+ detailCtx.drawImage(photo,0,512,512,512,0,0,512,512);
+ const dry=detailCtx.getImageData(0,0,512,512).data;
+ detailCtx.clearRect(0,0,512,512);detailCtx.drawImage(photo,512,512,512,512,0,0,512,512);
+ const wet=detailCtx.getImageData(0,0,512,512),pixels=wet.data;
+ for(let i=0;i<pixels.length;i+=4){
+  const x=i/4%512,y=Math.floor(i/2048),delta=(pixels[i]+pixels[i+1]+pixels[i+2]-dry[i]-dry[i+1]-dry[i+2])/3;
+  const edge=Math.max(0,Math.min(1,(x-86)/20,(389-x)/18,(y-142)/14,(440-y)/17));
+  pixels[i]=pixels[i+1]=pixels[i+2]=delta>0?255:55;
+  pixels[i+3]=Math.min(175,Math.max(0,Math.abs(delta)-6)*(delta>0?4:2.7))*edge;
+ }
+ detailCtx.putImageData(wet,0,0);
+ const patch=document.createElement('canvas');patch.width=patch.height=144;
+ const patchCtx=patch.getContext('2d');
+ const feather=patchCtx.createRadialGradient(72,72,39,72,72,72);feather.addColorStop(0,'#000');feather.addColorStop(1,'#0000');
+ const host=scene.game.canvas.closest('.phaser-stage');
+ const clothTexture=scene.textures.get('real-cloth');
+ clothTexture.add('wipe-cloth',0,16,108,480,300);
+ const cloth=scene.add.image(360,263,'real-cloth','wipe-cloth').setDisplaySize(100,63).setRotation(-.14).setDepth(30).setName('cup-wiping-cloth');
+ let ids=[],kind=null,previous='',wiping=null;
+ const touch=p=>{
+  if(!kind)return;
+  cloth.setPosition(p.worldX,p.worldY);
+  ids=wipeDroplets(ids,{x:p.worldX-(kind==='cold'?205:510)+120,y:(p.worldY-38)/.82},36);
+ };
+ const cancelWipe=()=>{wiping?.stop();wiping=null;kind=null;ids=[];host.removeAttribute('aria-busy');cloth.setPosition(360,263);};
+ const autoWipe=event=>{
+  event.preventDefault();if(wiping)return;
+  kind=event.detail.kind;ids=[];stopClock();host.setAttribute('aria-busy','true');
+  const cx=kind==='cold'?205:510,still=reduced();
+  cloth.setPosition(cx,165);
+  wiping=scene.tweens.addCounter({from:0,to:1,duration:still?350:900,onUpdate:tween=>{
+   const progress=tween.getValue();
+   touch({worldX:cx+(still?0:Math.sin(progress*Math.PI*4)*66),worldY:still?165:85+progress*170});
+  },onComplete:()=>{wiping=null;kind=null;ids=[];host.removeAttribute('aria-busy');queueMicrotask(()=>{if(host.isConnected)event.detail.finish();});}});
+ };
+ host.addEventListener('cup-wipe',autoWipe);
+ document.addEventListener('observation-stop',cancelWipe);
+ scene.events.once('shutdown',()=>{host.removeEventListener('cup-wipe',autoWipe);document.removeEventListener('observation-stop',cancelWipe);});
  scene.input.on('pointerdown',p=>{
-  if(p.worldY<55||p.worldY>280)return;
+  if(wiping||p.worldY<55||p.worldY>280)return;
   kind=Math.abs(p.worldX-205)<90?'cold':Math.abs(p.worldX-510)<90?'room':null;
   if(kind){stopClock();ids=[];touch(p);}
  });
- scene.input.on('pointermove',p=>{if(p.isDown)touch(p);});
- scene.finishPointer=()=>{if(kind){const k=kind,removed=ids;kind=null;ids=[];queueMicrotask(()=>wipe(k,removed));}};
+ scene.input.on('pointermove',p=>{if(p.isDown&&!wiping)touch(p);});
+ scene.finishPointer=()=>{if(kind&&!wiping){const k=kind,removed=ids;kind=null;ids=[];cloth.setPosition(360,263);queueMicrotask(()=>wipe(k,removed));}};
  scene.tick=()=>{
+  const time=observationTime(7),revision=[time,kind,ids.join(','),d.wiped.join(','),d.rewiped,q.dewRemoved.join(','),(q.dewRoomRemoved??[]).join(',')].join('|');
+  if(revision===previous)return;previous=revision;
   g.setTransform(2,0,0,2,0,0);g.clearRect(0,0,720,330);
-  wetMask.clear();
   for(const [k,cx] of [['cold',205],['room',510]]){
-   const drops=k==='room'?(!d.wiped.includes('room')?visibleDew(50,q.dewRoomRemoved):[]):!d.wiped.includes('cold')?visibleDew(50,q.dewRemoved):!d.rewiped?visibleDew(observationTime(7),q.dewRemoved):visibleDew(d.time,q.dewRemoved).concat(visibleDew(observationTime(7)).filter(p=>q.dewRegion.includes(p.id)));
+   const drops=k==='room'?(!d.wiped.includes('room')?visibleDew(50,q.dewRoomRemoved):[]):!d.wiped.includes('cold')?visibleDew(50,q.dewRemoved):!d.rewiped?visibleDew(time,q.dewRemoved):visibleDew(d.time,q.dewRemoved).concat(visibleDew(time).filter(p=>q.dewRegion.includes(p.id)));
    for(const p of drops)if(kind!==k||!ids.includes(p.id)){
-    if(k==='cold'&&d.sealed){const time=d.rewiped&&q.dewRegion.includes(p.id)?observationTime(7):d.time;wetMask.fillStyle(0xffffff).fillCircle(cx+p.x-120,p.y-5,Math.min(24,8+Math.max(0,time-p.id*5)/2));}
-    else drawRealDrop(g,cx+p.x-120,p.y-5,2.5+p.id%2,.58);
+    const age=d.wiped.includes(k)?Math.max(0,time-p.id*5):60;
+    const r=Math.min(24,8+age*.3),x=cx+p.x-120,y=p.y*.82+38,s=512/265;
+    patchCtx.clearRect(0,0,144,144);
+    patchCtx.drawImage(detail,(x-cx+132.5-r)*s,(y-32.5-r)*s,r*2*s,r*2*s,0,0,144,144);
+    patchCtx.globalCompositeOperation='destination-in';patchCtx.fillStyle=feather;patchCtx.fillRect(0,0,144,144);patchCtx.globalCompositeOperation='source-over';
+    g.drawImage(patch,x-r,y-r,r*2,r*2);
    }
   }
   texture.refresh();
  };
- scene.text(360,310,d.sealed?'랩과 고무줄로 두 컵 입구를 막았어. 겉면을 닦고 비교해 봐.':'두 컵의 겉면을 문질러 닦고, 입구를 막아 봐.',16);
+ scene.text(360,310,d.sealed?'랩과 고무줄로 두 컵 입구를 막았어. 겉면을 닦고 비교해 봐.':'수건으로 두 컵의 겉면을 닦고, 입구를 막아 봐.',16);
 }
 

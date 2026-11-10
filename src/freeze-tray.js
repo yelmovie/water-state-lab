@@ -1,5 +1,7 @@
+import {materialPattern} from './study-materials.js';
+import {paintTimeDial} from './time-dial.js';
 import {createObservationClock} from './observation-speed.js';
-import {icon,esc} from './ui.js';
+import {icon,esc,beakerGlass} from './ui.js';
 import {fieldAction} from './fieldwork-model.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
@@ -31,17 +33,17 @@ export function cupWaterSurface(amount,angle){
 }
 function cupArt(amount=72){
  const id='tray-cup-'+(++drawing),y=cupWaterSurface(amount,0);
- return `<svg class="beaker tray-cup-art" data-tray-cup-art viewBox="30 20 200 280" role="img" aria-label="얼음틀에 나누어 부을 물컵"><defs><clipPath id="${id}"><path d="M53 38H207V253Q207 268 192 268H68Q53 268 53 253Z"/></clipPath><linearGradient id="${id}-water" x2=".3" y2="1"><stop stop-color="#9ae7f5"/><stop offset=".5" stop-color="#4cbddd"/><stop offset="1" stop-color="#1788bc"/></linearGradient></defs><path d="M49 35V256Q49 272 66 272H194Q211 272 211 256V35" fill="#edfaff80" stroke="#76a7ba" stroke-width="4"/><g clip-path="url(#${id})"><g data-cup-water transform="rotate(0 130 160)"><rect data-cup-level x="-250" y="${y}" width="800" height="700" fill="url(#${id}-water)"/><ellipse data-cup-surface cx="130" cy="${y}" rx="170" ry="7" fill="#c8f3fc" stroke="#f5feff" stroke-width="2"/></g></g><path d="M58 52V247Q58 260 72 261" fill="none" stroke="#fff" stroke-width="6" opacity=".65"/><path d="M201 54V250Q201 259 194 262" fill="none" stroke="#3d7c98" stroke-width="2" opacity=".5"/>${Array.from({length:7},(_,i)=>`<path d="M54 ${61+i*26}h${i%2?12:22}" stroke="#477b94" stroke-width="2"/>`).join('')}<path d="M42 35H212L219 28" fill="none" stroke="#76a7ba" stroke-width="4" stroke-linecap="round"/></svg>`;
+ return `<svg class="beaker tray-cup-art" data-tray-cup-art viewBox="30 20 200 280" role="img" aria-label="얼음틀에 나누어 부을 물컵"><defs><clipPath id="${id}"><path d="M53 38H207V253Q207 268 192 268H68Q53 268 53 253Z"/></clipPath><linearGradient id="${id}-water" x2=".3" y2="1"><stop stop-color="#9ae7f5"/><stop offset=".5" stop-color="#4cbddd"/><stop offset="1" stop-color="#1788bc"/></linearGradient>${materialPattern(id+'-liquid','water',{x:53,y:38,width:154,height:230,base:'#d4e9e9'})}</defs>${beakerGlass()}<g clip-path="url(#${id})"><g data-cup-water transform="rotate(0 130 160)"><rect data-cup-level x="-250" y="${y}" width="800" height="700" fill="url(#${id}-liquid)"/><ellipse data-cup-surface cx="130" cy="${y}" rx="170" ry="7" fill="#c8f3fc" stroke="#f5feff" stroke-width="2"/></g></g><path d="M58 52V247Q58 260 72 261" fill="none" stroke="#fff" stroke-width="6" opacity=".65"/><path d="M201 54V250Q201 259 194 262" fill="none" stroke="#3d7c98" stroke-width="2" opacity=".5"/>${Array.from({length:7},(_,i)=>`<path d="M54 ${61+i*26}h${i%2?12:22}" stroke="#477b94" stroke-width="2"/>`).join('')}</svg>`;
 }
 export function trayArt(kind='empty',melted=0,fill=100){
  const id='ice-tray-'+(++drawing),ice=kind==='ice',fraction=Math.max(0,Math.min(1,melted/100));
  const water=kind==='water'||ice&&fraction>0,solid=ice&&fraction<1,scale=1-fraction*.9;
  const label=kind==='empty'?'비어 있는 여섯 칸 얼음틀':solid?fraction?'같은 틀 안에서 작아지는 얼음과 녹은 물':'같은 얼음틀의 여섯 칸에 생긴 얼음':'여섯 칸에 물이 담긴 얼음틀';
  const levels=trayFillLevels(fill);
- return `<svg class="transform-art ice-tray-art" viewBox="0 110 1536 800" role="img" aria-label="${label}"><defs><linearGradient id="${id}-water" x2=".2" y2="1"><stop stop-color="#9de6f3"/><stop offset=".52" stop-color="#58b9d4"/><stop offset="1" stop-color="#258dab"/></linearGradient><linearGradient id="${id}-ice" x2=".2" y2="1"><stop stop-color="#f2fdff"/><stop offset=".52" stop-color="#c9eaf1"/><stop offset="1" stop-color="#a9d4e4"/></linearGradient>${wells.map(([d],i)=>`<clipPath id="${id}-${i}"><rect data-well-clip="${i}" x="0" y="${(i<3?430:704)-(i<3?158:184)*levels[i]}" width="1536" height="${(i<3?158:184)*levels[i]+(levels[i]?4:0)}"/></clipPath>`).join('')}</defs><image href="/assets/learning/ice-tray-20261108/ice-tray-empty.webp" width="1536" height="1024"/>${wells.map(([d,x,y],i)=>`<g data-tray-well="${i}" data-well-x="${x}" data-well-y="${y}">${water?`<g class="tray-liquid" clip-path="url(#${id}-${i})" opacity="${ice?.35+fraction*.65:1}"><path d="${d}" fill="url(#${id}-water)" stroke="#a8eaf1" stroke-width="5"/><path d="M${x-68} ${y-27}q52-16 113-6" fill="none" stroke="#f4ffff" stroke-width="5" opacity=".85"/></g>`:''}${solid?`<g class="tray-solid" transform="translate(${x} ${y}) scale(${scale}) translate(${-x} ${-y})"><path d="${d}" fill="url(#${id}-ice)" stroke="#efffff" stroke-width="5"/><path d="M${x-68} ${y-27}q52-16 113-6m-65-9 27 45-32 42m32-42 53 18" fill="none" stroke="#f7ffff" stroke-width="6" opacity=".85"/></g>`:''}<ellipse data-tray-ripple="${i}" cx="${x}" cy="${y}" rx="42" ry="12" fill="none" stroke="#f4ffff" stroke-width="7" opacity="0"/></g>`).join('')}</svg>`;
+ return `<svg class="transform-art ice-tray-art" viewBox="0 110 1536 800" role="img" aria-label="${label}"><defs><linearGradient id="${id}-water" x2=".2" y2="1"><stop stop-color="#9de6f3"/><stop offset=".52" stop-color="#58b9d4"/><stop offset="1" stop-color="#258dab"/></linearGradient><linearGradient id="${id}-ice" x2=".2" y2="1"><stop stop-color="#f2fdff"/><stop offset=".52" stop-color="#c9eaf1"/><stop offset="1" stop-color="#a9d4e4"/></linearGradient>${wells.map(([d],i)=>`<clipPath id="${id}-${i}"><rect data-well-clip="${i}" x="0" y="${(i<3?430:704)-(i<3?158:184)*levels[i]}" width="1536" height="${(i<3?158:184)*levels[i]+(levels[i]?4:0)}"/></clipPath>`).join('')}${wells.map(([,x,y],i)=>['water','ice'].map(kind=>materialPattern(id+'-'+kind+i,kind,{x:x-205,y:y-92,width:410,height:196,base:kind==='ice'?'#bce4f3':'#86d7e7'})).join('')).join('')}</defs><image href="/assets/learning/ice-tray-20261108/ice-tray-empty.webp" width="1536" height="1024"/>${wells.map(([d,x,y],i)=>`<g data-tray-well="${i}" data-well-x="${x}" data-well-y="${y}">${water?`<g class="tray-liquid" clip-path="url(#${id}-${i})" opacity="${ice?.35+fraction*.65:1}"><path d="${d}" fill="url(#${id}-water${i})" stroke="#a8eaf1" stroke-width="5"/><path d="M${x-68} ${y-27}q52-16 113-6" fill="none" stroke="#f4ffff" stroke-width="5" opacity=".85"/></g>`:''}${solid?`<g class="tray-solid" transform="translate(${x} ${y}) scale(${scale}) translate(${-x} ${-y})"><path d="${d}" fill="url(#${id}-ice${i})" stroke="#efffff" stroke-width="5"/><path d="M${x-68} ${y-27}q52-16 113-6" fill="none" stroke="#f7ffff" stroke-width="6" opacity=".85"/></g>`:''}<ellipse data-tray-ripple="${i}" cx="${x}" cy="${y}" rx="42" ry="12" fill="none" stroke="#f4ffff" stroke-width="7" opacity="0"/></g>`).join('')}</svg>`;
 }
 const steps={
- empty:{index:0,title:'먼저 얼음틀에 물을 담아 봐',hint:'물컵을 얼음틀 위로 끌어 봐. 아래 버튼으로 부어도 돼.',action:'fill',label:'얼음틀에 물 붓기'},
+ empty:{index:0,title:'여섯 칸에 같은 양을 담아 봐',hint:'물컵을 얼음틀 위로 끌어 여섯 칸에 나눠 담아. 아래 버튼으로 부어도 돼.',action:'fill',label:'얼음틀에 물 붓기'},
  water:{index:1,title:'물 든 얼음틀을 냉동고에 넣어 봐',hint:'물을 담은 틀을 오른쪽 냉동고에 넣고 문을 닫자.',action:'load',label:'넣고 문 닫기'},
  cooling:{index:2,title:'차가운 냉동고에서 기다려 보자',hint:'시간 손잡이를 오른쪽으로 밀어 봐. 충분히 기다리면 어떻게 될까?',action:'wait',label:'충분히 기다리기'},
  frozen:{index:3,title:'이제 문을 열고 꺼내 보자',hint:'냉동고 안에서 충분한 시간이 지났어. 틀 속을 확인해 봐.',action:'take',label:'문 열고 꺼내기'},
@@ -56,8 +58,8 @@ export function freezeTrayView(c){
  ${comparison?`<div class="tray-comparison"><figure><figcaption>얼리기 전 <b>물</b></figcaption>${trayArt('water')}<p>같은 틀에 물을 나누어 담았어</p></figure><span class="tray-change-arrow" aria-label="냉동고에서 충분히 얼린 뒤">${icon('arrow',24)}</span><figure><figcaption>꺼낸 뒤 <b>얼음</b></figcaption>${trayArt('ice')}<p>여섯 칸의 모양대로 얼었어</p></figure></div>`:
  `<div class="tray-workbench"><div class="tray-prep"><h3>물컵에서 여섯 칸으로</h3><div class="tray-prep-art">
  <button type="button" class="tray-cup" data-tray-source="cup" aria-label="물컵을 얼음틀에 부어 보기" ${stage==='empty'?'':'disabled'}>${cupArt(72*(1-fill/100))}<span>${fill===100?'빈 컵':fill?'남은 물':'물컵'}</span></button>
- ${inside?'<div class="tray-away"><span>얼음틀은<br>냉동고 안에 있어</span></div>':`<div class="tray-seat" data-tray-target="tray"><button type="button" class="tray-carry" data-tray-source="tray" aria-label="물 든 얼음틀을 냉동고에 넣기" ${stage==='water'?'':'disabled'}>${trayArt('water',0,fill)}</button><span data-tray-fill-label>${fill===100?'물을 담은 얼음틀':fill?`${Math.floor(fill*.06)} / 6칸에 물을 담았어`:'여섯 칸에 나누어 담아 봐'}</span></div>`}
- </div></div><div class="tray-freezer"><h3>같은 틀을 냉동고로</h3><div class="tray-freezer-visual ${inside?'is-closed':''}" data-tray-target="freezer"><img class="tray-freezer-open" src="/assets/learning/ice-tray-20261108/freezer-open.webp" alt="문이 ${inside?'닫힌':'열린'} 냉동고" draggable="false"><img class="tray-freezer-closed" src="/assets/learning/freeze-props-20261108/freezer-closed.webp" alt="" aria-hidden="true" draggable="false"><div class="tray-freezer-drop" aria-hidden="true"></div><div class="tray-freezer-load">${inside?trayArt(stage==='frozen'?'ice':'water'):''}</div><span class="tray-freezer-readout">${inside?'−18 °C':'준비'}</span></div></div></div>`}
+ ${inside?'<div class="tray-away"><span>얼음틀은<br>냉동고 안에 있어</span></div>':`<div class="tray-seat" data-tray-target="tray"><button type="button" class="tray-carry" data-tray-source="tray" aria-label="물 든 얼음틀을 냉동고에 넣기" ${stage==='water'?'':'disabled'}>${trayArt('water',0,fill)}</button><span data-tray-fill-label class="tray-fill-goal">${fill===100?'물을 담은 얼음틀':fill?`${Math.floor(fill*.06)} / 6칸에 물을 담았어`:'목표 · 6칸에 같은 양'}</span></div>`}
+ </div></div><div class="tray-freezer"><h3>같은 틀을 냉동고로</h3><div class="tray-freezer-visual ${inside?'is-closed':''}" data-tray-target="freezer"><img class="tray-freezer-open" src="/assets/learning/ice-tray-20261108/freezer-open.webp" alt="문이 ${inside?'닫힌':'열린'} 냉동고" draggable="false"><img class="tray-freezer-closed" src="/assets/learning/freeze-props-20261108/freezer-closed.webp" alt="" aria-hidden="true" draggable="false"><div class="tray-freezer-drop" aria-hidden="true"></div><div class="tray-freezer-load">${inside?trayArt(stage==='frozen'?'ice':'water'):''}</div><span class="tray-freezer-readout">${stage==='frozen'?'얼리기 완료':inside?'얼리는 중':'준비'}</span></div></div></div>`}
  <div class="tray-action-row"><div class="tray-notice" role="status"><span class="tray-state-dot" aria-hidden="true"></span><p data-tray-status>${esc(c.message||'컵의 물을 먼저 얼음틀에 나누어 담자.')}</p></div>
  ${stage==='cooling'?`<div class="tray-time"><label for="tray-freeze-time">시간 보내기 <output data-tray-time-label>${time===0?'처음':'조금 지난 뒤'}</output></label><input id="tray-freeze-time" type="range" min="0" max="100" step="5" value="${time}" aria-valuetext="${time}%만큼 시간 보내기"><progress data-tray-progress max="100" value="${time}" aria-label="냉동고에서 기다린 정도"></progress></div>`:''}
  ${task.action?`<button type="button" class="btn primary tray-primary" data-tray-action="${task.action}">${task.label}${icon('arrow',20)}</button>`:'<button type="button" class="btn primary tray-primary" data-transform-next>다음 · 이 얼음을 녹여 보기'+icon('arrow',20)+'</button>'}</div></section>`;
@@ -71,7 +73,7 @@ export function bindFreezeTray(host,get,paint){
  function lock(value){busy=value;const lab=host.querySelector('.tray-lab');lab?.setAttribute('aria-busy',String(value));host.querySelectorAll('[data-tray-action]').forEach(b=>b.disabled=value);const input=host.querySelector('#tray-freeze-time');if(input)input.disabled=value;}
  function showTime(value){
   const input=host.querySelector('#tray-freeze-time'),progress=host.querySelector('[data-tray-progress]'),label=host.querySelector('[data-tray-time-label]');
-  if(input){input.value=value;input.setAttribute('aria-valuetext',value+'%만큼 시간 보내기');}
+  if(input){input.value=value;paintTimeDial(input);input.setAttribute('aria-valuetext',value+'%만큼 시간 보내기');}
   if(progress)progress.value=value;if(label)label.textContent=value===100?'충분히 지난 뒤':value===0?'처음':'얼음이 될 때까지 기다리는 중';
  }
  const cup=()=>host.querySelector('[data-tray-cup-art]');
@@ -96,7 +98,7 @@ export function bindFreezeTray(host,get,paint){
   for(const selector of ['[data-tray-cup-art]','.tray-carry','.tray-freezer-load']){const e=host.querySelector(selector);if(e)e.style.visibility='';}
  }
  function door(closed){
-  const freezer=host.querySelector('.tray-freezer-visual');if(!freezer)return;freezer.classList.toggle('is-closed',closed);freezer.querySelector('.tray-freezer-open').alt=`문이 ${closed?'닫힌':'열린'} 냉동고`;
+  const freezer=host.querySelector('.tray-freezer-visual');if(!freezer)return;freezer.classList.toggle('is-closed',closed);freezer.querySelector('.tray-freezer-readout').textContent=closed?'얼리는 중':'준비';freezer.querySelector('.tray-freezer-open').alt=`문이 ${closed?'닫힌':'열린'} 냉동고`;
  }
  function pour(finish,startRect){
   const original=cup(),home=original.getBoundingClientRect(),tray=host.querySelector('.tray-carry .ice-tray-art'),matrix=tray.getScreenCTM(),from=Number(get().moves.freezeFill)||0;
@@ -136,7 +138,7 @@ export function bindFreezeTray(host,get,paint){
   lock(true);const clock=createObservationClock(state.settings),from=Number(get().moves.freezeTime)||0;
   const tick=now=>{
    if(signal.aborted)return;
-   const p=Math.min(1,clock(now)/2000),value=Math.round((from+(100-from)*p)/5)*5;
+   const p=Math.min(1,clock(now)/1000),value=Math.round((from+(100-from)*p)/5)*5;
    if(value!==Number(get().moves.freezeTime)){commit('wait',value);showTime(value);}
    if(p<1)frame=requestAnimationFrame(tick);else{lock(false);void playCue('success');paint();}
   };frame=requestAnimationFrame(tick);
