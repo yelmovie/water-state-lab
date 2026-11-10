@@ -61,3 +61,8 @@ test('fast edits retain the initial condition and can finish after the first suc
  assert.equal(currentTrialValid(s),true);
  assert.equal(s.trials.length,2);
 });
+
+test('the required water-path test stays outside the optional details',()=>{
+ fresh();const html=workshopView(),test=html.indexOf('data-action="test-workshop"');
+ assert.ok(test>0);assert.ok(test<html.indexOf('<details>'));
+});

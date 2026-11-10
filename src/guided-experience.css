@@ -477,3 +477,7 @@
  .guided-shell .workspace-controls{max-height:45%}
  .guided-shell>.topbar .teacher-stage-launch{left:0;top:54px;width:92px;min-height:44px;font-size:13px}
 }
+
+/* Required controls must also fit a narrow portrait workspace. */
+.workspace-controls .cold-night-watch{min-width:0;max-width:100%;box-sizing:border-box}
+.workspace-controls .cold-night-watch>.btn{min-width:0;max-width:100%!important;white-space:normal}
