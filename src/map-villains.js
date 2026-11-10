@@ -3,7 +3,7 @@
 // The mole faces left in every frame, so facing right is a horizontal flip.
 const MOLE={idle:0,step:1,taunt:2,guard:3,lunge:4,hit:5,knocked:6,down:7};
 const BANGUL={ready:0,shoot:1,hurt:2,relief:3};
-const RANGE=24; // % of map width: how close Bangul must be for the Space key to reach a villain.
+const RANGE=24; // % of map width: how close Bangul must be for the attack button or Space key to reach a villain.
 const NEAR=16; // % of map width: Bangul this close makes the villain speak.
 const TAUNTS={
  locked:['흐흐, 이 물길은 내가 막았지!','밸브를 꽉 잠가 버릴 테다!','물 한 방울도 못 지나가게 할 거야~','꼬마 물방울, 저리 가!'],
@@ -47,7 +47,7 @@ export function mountMapVillains(world, options) {
   const label=b.querySelector('.mv-label'),meter=b.querySelector('.mv-meter'),creature=b.querySelector('.mv-creature'),sprite=b.querySelector('.mv-sprite');
   const say=b.querySelector('.mv-say'),sayText=say.querySelector('b'),sayHint=say.querySelector('small');
   let hits=0,busy=false,dx=0,dy=0,facingRight=false,roamTimer=0,sayTimer=0,wasNear=false,lastSaid=-1e9;
-  const hint=()=>stage.ready?(touch?'나를 눌러서 공격!':'스페이스로 공격!'):'이 구역 탐구를 마치면 물리칠 수 있어';
+  const hint=()=>stage.ready?(touch?'공격 버튼을 눌러 봐!':'공격 버튼 · 스페이스!'):'이 구역 탐구를 마치면 물리칠 수 있어';
   b.setAttribute('aria-label',stage.name+' 물길을 막는 밸브 두더지 · '+(cleared?'퇴치 완료':stage.ready?'물방울 파동으로 세 번 공격':'이 구역 탐구를 마치면 공격할 수 있어요'));
   if(cleared){b.disabled=true;label.textContent='물길 정화 완료';meter.textContent='✓';}
 
@@ -171,7 +171,7 @@ export function mountMapVillains(world, options) {
  });
 
  const cleanup=()=>{abort.abort();timers.forEach(clearTimeout);nodes.forEach(n=>n.remove());world.querySelectorAll('.mv-shot,.mv-particle').forEach(n=>n.remove());style.remove();status.remove();fighter?.pose?.(null);};
- /** Space key: attack the closest villain that Bangul can reach. */
+ /** Touch button and Space key share the same reach and combat rules. */
  cleanup.attackNearest=()=>{
   const at=fighter?.at?.();
   if(fighting)return;
@@ -180,7 +180,7 @@ export function mountMapVillains(world, options) {
   const ratio=world.offsetHeight/world.offsetWidth||1;
   const dist=t=>{if(!at)return Infinity;const p=t.where();return Math.hypot(p.x-at.x,(p.y-at.y)*ratio);};
   const near=live.reduce((a,t)=>dist(t)<dist(a)?t:a);
-  if(dist(near)>RANGE){tell(near.stage.name+' 밸브 두더지 가까이 걸어가서 스페이스를 눌러요.');return;}
+  if(dist(near)>RANGE){tell(near.stage.name+' 밸브 두더지 가까이 걸어가서 공격 버튼을 눌러요.');return;}
   near.attack();
  };
  return cleanup;

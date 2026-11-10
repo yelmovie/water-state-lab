@@ -559,6 +559,45 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 /* Bottom row: map pad and hint together at left, next place at right. */
 .journey-shell .journey-bottom{position:absolute;z-index:5;left:16px;right:16px;bottom:16px;width:auto;margin:0;display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:end;gap:16px;pointer-events:none}
 .journey-shell .journey-next{justify-self:end}
+.map-actions {
+ display:flex;
+ flex-direction:column;
+ align-items:flex-end;
+ gap:14px;
+ min-width:0;
+ justify-self:end;
+}
+.map-attack {
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ gap:4px;
+ width:88px;
+ min-width:88px;
+ height:88px;
+ padding:8px;
+ border:3px solid #236c80;
+ border-radius:50%;
+ background:radial-gradient(circle at 35% 25%,#efffff,#b9eaf3 65%,#8dcfdf);
+ color:#174d60;
+ box-shadow:0 5px 0 #205567,0 7px 12px #153d4533;
+ font:22px/1.1 var(--font-display);
+ cursor:pointer;
+ pointer-events:auto;
+ touch-action:manipulation;
+ user-select:none;
+ -webkit-user-select:none;
+ -webkit-touch-callout:none;
+}
+.map-attack svg,.map-attack b { pointer-events:none; }
+.map-attack:active { transform:translateY(4px);box-shadow:0 1px 0 #205567; }
+.map-attack:focus-visible { outline:4px solid var(--focus-ring);outline-offset:4px; }
+@media(max-height:620px) and (orientation:landscape) {
+ .map-actions { flex-direction:row;align-items:center;gap:12px; }
+ .map-attack { order:1;width:80px;min-width:80px;height:80px; }
+ .map-actions .journey-next { max-width:280px; }
+}
 /* The open hint bubble sits above the map pad. */
 .journey-shell .journey-companion{z-index:2}.map-pad{position:relative;z-index:1}
 .map-pad{justify-self:start;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:20px;background:#fff9e9f2;border:2px solid #c9b57c;box-shadow:var(--shadow-card);pointer-events:auto}
@@ -579,7 +618,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 @media(max-width:800px) and (orientation:portrait){
  .journey-shell .journey-heading{position:absolute;top:76px;left:16px;right:16px;width:auto;margin:0}
  .journey-shell .journey-bottom{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"pad coach" "next next"}
- .journey-shell .journey-companion{grid-area:coach}.journey-shell .journey-companion>.map-coach-help{left:auto;right:0}.map-pad{grid-area:pad;justify-self:start}.journey-shell .journey-next{grid-area:next;justify-self:stretch;max-width:none}
+ .journey-shell .journey-companion{grid-area:coach}.journey-shell .journey-companion>.map-coach-help{left:auto;right:0}.map-pad{grid-area:pad;justify-self:start}.map-actions{grid-area:next;justify-self:stretch;flex-direction:row;align-items:center;gap:12px}.map-attack{order:1;width:80px;min-width:80px;height:80px}.journey-shell .journey-next{flex:1;min-width:0;justify-self:stretch;max-width:none}
 }
 /* Ending on short landscape screens: the left column scrolls like the right one, so the 3D tour and stats stay reachable. */
 @media(max-height:620px) and (min-width:701px){.ending-illustration{align-self:stretch;max-height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:4px}}
