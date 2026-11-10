@@ -39,7 +39,7 @@ function legacyActivityView(n){const a=data();
  if(n===1){const s=a.observe,done=activityReady(1,a);let main,tools;
   if(s.step===0){main=`<div class="activity-stage-caption">같은 물을 다른 모양의 그릇에 옮겨 보자</div><div class="activity-pour">${moveable('jug',art('jug','물을 담은 주전자'),'주전자를 그릇 위로 끌어 줘')}<div class="activity-vessels">${['tall','wide'].map((k,i)=>target(k,`<div class="activity-vessel ${k}">${beaker(s.pours.includes(k)?60:0)}</div><b>${i?'넓은 그릇':'길쭉한 그릇'}</b>${s.pours.includes(k)?'<span class="activity-check">✓ 담긴 모양 관찰</span>':''}`,`${i?'넓은':'길쭉한'} 그릇에 물 붓기`)).join('')}</div></div>`;tools=`<h3>물이 담기면 모양이 달라져</h3><p>주전자를 잡고 <b>두 그릇 위</b>로 하나씩 옮겨 봐.</p>${status(s.pours.length===2?'같은 액체 물이 그릇에 맞게 모양을 바꿨어.':`${s.pours.length}/2 그릇 관찰`)}${button('얼음도 옮겨 보자 →','observe-step-1',s.pours.length<2,'activity-primary')}${alternatives(button('길쭉한 그릇에 붓기','drop-jug-tall')+button('넓은 그릇에 붓기','drop-jug-wide'))}`;
   }else if(s.step===1){main=`<div class="activity-stage-caption">같은 두 그릇 · 물과 얼음 비교</div><div class="activity-ice-play"><div class="activity-original">${s.iceMoved?art('ice','옮기기 전 얼음','activity-ghost'):moveable('ice',art('ice','얼음'),'얼음을 넓은 그릇으로 끌어 줘')}<b>처음 모습</b></div>${target('dish',s.iceMoved?art('ice','옮긴 뒤 같은 모양의 얼음'):'<span class="activity-dish">이곳에 놓아 봐</span>','얼음을 옮길 넓은 그릇')}</div>`;tools=`<h3>${s.iceMoved?'물과 얼음, 뭐가 다를까?':'얼음도 그릇 모양으로 바뀔까?'}</h3>${status(s.iceMoved?'물은 그릇마다 모양이 달랐지만, 얼음은 모양이 그대로야.':'물을 담았던 것과 같은 두 그릇이야. 얼음을 넓은 그릇으로 옮겨 봐.')}${button('사라지는 물을 찾아보자 →','observe-step-2',!s.iceMoved,'activity-primary')}${alternatives(button('얼음을 넓은 그릇으로 옮기기','drop-ice-dish'))}`;
-  }else{main=`<div class="activity-stage-caption">젖은 자국을 만들고 시간을 움직여 보자</div><div class="activity-cloth" id="activity-cloth" role="img" aria-label="물이 닿으면 젖는 천">${art('cloth','관찰할 천')}<span class="activity-wet" style="opacity:${s.clothWet?dryTrace('thin',observationTime(1)):0}"></span><b>${s.clothWet?'천에 묻힌 물':'천에 물을 부어 봐'}</b></div>${s.clothWet?slider('activity-observe-time','관찰 시간 · 가상 시간',s.time):''}${records(s.records.filter(r=>r.kind==='cloth'),r=>stamp('나중 관찰',`<b>물자국이 마름</b><small>관찰 시간 ${r.time}</small>`))}`;tools=`<h3>안 보이게 된 물은 어디에 있을까?</h3><p>젖은 자국이 <b>시간에 따라</b> 어떻게 바뀌는지 관찰해.</p>${status(s.time>=80?'물은 눈에 보이지 않는 수증기가 되어 공기 중으로 갔어.':s.clothWet?'마법봉을 톡 눌러 천이 마르는 모습을 살펴봐.':'물을 묻힌 뒤 마법봉을 톡 눌러 줘.')}${button('마른 모습 기록하기','observe-record',!s.clothWet||s.time<80)}${button('다음으로','next-1',!done,'activity-primary')}${s.clothWet?'':button('천에 물 붓기','wet-cloth')}${help('천 자체는 고체야. 여기서 찾는 것은 천에 묻어 있던 물이야. 수증기는 눈에 보이지 않아.')}`;}
+  }else{main=`<div class="activity-stage-caption">젖은 자국을 만들고 시간을 움직여 보자</div><div class="activity-cloth" id="activity-cloth" role="img" aria-label="물이 닿으면 젖는 천">${art('cloth','관찰할 천')}<span class="activity-wet" style="opacity:${s.clothWet?dryTrace('thin',observationTime(1)):0}"></span><b>${s.clothWet?'천에 묻힌 물':'천에 물을 부어 봐'}</b></div>${s.clothWet?slider('activity-observe-time','관찰 시간 · 가상 시간',s.time):''}${records(s.records.filter(r=>r.kind==='cloth'),r=>stamp('나중 관찰',`<b>물자국이 마름</b><small>관찰 시간 ${r.time}</small>`))}`;tools=`<h3>안 보이게 된 물은 어디에 있을까?</h3><p>젖은 자국이 <b>시간에 따라</b> 어떻게 바뀌는지 관찰해.</p>${status(s.time>=80?'물은 눈에 보이지 않는 수증기가 되어 공기 중으로 갔어.':s.clothWet?'시계를 톡 눌러 천이 마르는 모습을 살펴봐.':'물을 묻힌 뒤 시계를 톡 눌러 줘.')}${button('마른 모습 기록하기','observe-record',!s.clothWet||s.time<80)}${button('다음으로','next-1',!done,'activity-primary')}${s.clothWet?'':button('천에 물 붓기','wet-cloth')}${help('천 자체는 고체야. 여기서 찾는 것은 천에 묻어 있던 물이야. 수증기는 눈에 보이지 않아.')}`;}
   return shell(n,main,tools);
  }
  if(n===2){const s=a.sort,done=activityReady(2,a),count=Object.keys(s.placed).length;return shell(n,`<div class="activity-stage-caption">${count<3?'내 실험에서 찾은 물의 모습':'생활 속에서도 같은 모습을 찾아 줘'}</div><div class="activity-cardbank">${sortCards.filter(c=>!s.placed[c.id]&&(count>=3||c.source==='실험 기록')).map(c=>moveable(`card:${c.id}`,`${art(c.art,c.name)}<small>${c.source}</small>`,c.name)).join('')||'<div class="activity-all-found">세 가지 물의 모습을 모두 찾았어!</div>'}</div><div class="activity-sort-bins">${['solid','liquid','gas'].map((t,i)=>target(`bin:${t}`,`<h3>${['고체 · 얼음','액체 · 물','기체 · 수증기'][i]}</h3><p>${['모양이 유지돼','담긴 그릇에 맞춰 모양이 바뀌어','눈에 보이지 않아'][i]}</p>${sortCards.filter(c=>s.placed[c.id]===t).map(c=>`<span class="activity-sorted">✓ ${c.name}</span>`).join('')}`,`${['고체','액체','기체'][i]} 보관함`)).join('')}</div>`,`<h3>관찰 그림을 끌어서 연결해</h3><p>먼저 실험 기록 3개, 다음에는 생활 장면 3개를 연결해 봐.</p>${status(lastMessage||`${count}/6 연결했어. 그림을 집어서 아래 보관함에 넣어 줘.`)}${help('기체 그림의 천·빨래를 분류하는 게 아니야. 마르면서 공기로 간 물의 상태를 생각해 줘.')}${button('상태 관찰길 복구하기','complete-1',!done,'activity-primary')}${alternatives('<p>그림을 한 번 누른 뒤, 맞는 보관함을 눌러도 돼.</p>')}`);}
@@ -138,7 +138,7 @@ export function getActivityProgress(n){const a=experimentActivities(n,state),s=(
    :'길쭉한')+' 그릇 위에 주전자를 놓아 봐.'
    :'왼쪽 주전자를 그릇 하나로 끌어 물을 부어 봐.'):s.step===1?(s.iceMoved?'‘사라지는 물을 찾아보자’를 눌러 봐.'
    :'얼음을 넓은 그릇으로 끌어 놓아 봐.') : !s.clothWet?'주전자를 천 위로 끌거나 ‘천에 물 붓기’를 눌러 봐.'
-   :'마법봉을 톡 누르면 시간이 흐르고 마른 모습이 기록돼.';hint='물과 얼음은 옮겼을 때 모양이 같을까?';}
+   :'시계를 톡 누르면 시간이 흐르고 마른 모습이 기록돼.';hint='물과 얼음은 옮겼을 때 모양이 같을까?';}
  if(n===2){pairs=[['고체 찾기',sortCards.some(c=>c.type==='solid'&&s.placed[c.id]===c.type)],['액체 찾기',sortCards.some(c=>c.type==='liquid'&&s.placed[c.id]===c.type)],['기체 찾기',sortCards.some(c=>c.type==='gas'&&s.placed[c.id]===c.type)]];instruction=
   `‘${(sortCards.find(c=>c.id===state.inquiry.sortProof)||nextSortCard(s)).name}’은 어떤 상태일까? 알맞은 칸을 눌러 봐.`;hint='빨래 자체가 아니라 마르면서 공기 중으로 간 물을 생각해.';}
  if(n===3){pairs=[['처음 측정·높이 예상',s.predicted],['얼린 뒤 측정',s.records.some(r=>r.kind==='ice')],['녹인 뒤 비교',activityReady(3,a)]];instruction=measureTask(s);hint='눈금이 높아진 것과 무게가 늘어난 것은 같은 뜻일까? 같은 물의 세 측정값을 비교해 봐.';}
@@ -150,7 +150,7 @@ export function getActivityProgress(n){const a=experimentActivities(n,state),s=(
  if(n===5){pairs=[['같은 물그림 비교',s.strokes.some(x=>x.length>=3)],['세 시간 비교 기록',s.records.length===3],['마르는 순서와 행방',activityReady(5,a)]];instruction=
   !s.strokes.some(stroke=>stroke.length>=3)?'같은 모양의 A와 B 물그림을 비교해 봐.'
    :!state.inquiry.drawPrediction?'A와 B 중 먼저 마를 것 같은 쪽을 예상해서 눌러 봐.'
-   :s.records.length<3?'마법봉을 톡 눌러 두 물그림을 비교해 봐.'
+   :s.records.length<3?'시계를 톡 눌러 두 물그림을 비교해 봐.'
    :s.faster!=='thin'?'중간 기록에서 물자국을 비교하고 먼저 마른 쪽을 골라 봐.'
    :'그림에서 줄어든 물이 어디로 갔는지 눌러 봐.';hint='그림 모양·바닥·환경은 같고 물의 양만 달라.';}
  if(n===6){pairs=[['가열 전 같은 조건 비교',s.baseline],['끓는 변화 기록',s.records.some(r=>r.boiling)],['물의 행방 연결',activityReady(6,a)]];instruction=
@@ -172,7 +172,7 @@ export function getActivityProgress(n){const a=experimentActivities(n,state),s=(
    :!cupSummarySeen(s)?'두 컵에서 본 차이를 한 장에서 정리해 봐.'
    :!state.inquiry.transferPrediction?'어느 음료병에 물방울이 생길지 예상해 봐.'
    :!s.bottleWiped?'수건을 끌어 두 병의 겉면을 닦아 봐.'
-   :'마법봉을 톡 눌러 두 병의 모습을 살펴봐.';hint='공기 중 수증기가 차가운 표면을 만나면 어떤 모습이 될까?';}
+   :'시계를 톡 눌러 두 병의 모습을 살펴봐.';hint='공기 중 수증기가 차가운 표면을 만나면 어떤 모습이 될까?';}
  return {steps:pairs.map(([label,done])=>({label,done:!!done})),instruction:activityReady(n,a)?'관찰과 비교를 마쳤어! 얻은 기록으로 길을 복구하자.':instruction,hint,mood:activityReady(n,a)?'celebrate':'curious'};
 }
 

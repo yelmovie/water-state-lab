@@ -45,7 +45,7 @@ export function trayArt(kind='empty',melted=0,fill=100){
 const steps={
  empty:{index:0,title:'여섯 칸에 같은 양을 담아 봐',hint:'물컵을 얼음틀 위로 끌어 여섯 칸에 나눠 담아. 아래 버튼으로 부어도 돼.',action:'fill',label:'얼음틀에 물 붓기'},
  water:{index:1,title:'물 든 얼음틀을 냉동고에 넣어 봐',hint:'물을 담은 틀을 오른쪽 냉동고에 넣고 문을 닫자.',action:'load',label:'넣고 문 닫기'},
- cooling:{index:2,title:'차가운 냉동고에서 기다려 보자',hint:'시간 손잡이를 오른쪽으로 밀어 봐. 충분히 기다리면 어떻게 될까?',action:'wait',label:'충분히 기다리기'},
+ cooling:{index:2,title:'차가운 냉동고에서 기다려 보자',hint:'시계를 톡 눌러 봐. 충분히 기다리면 어떻게 될까?',action:'wait',label:'충분히 기다리기'},
  frozen:{index:3,title:'이제 문을 열고 꺼내 보자',hint:'냉동고 안에서 충분한 시간이 지났어. 틀 속을 확인해 봐.',action:'take',label:'문 열고 꺼내기'},
  taken:{index:3,title:'같은 얼음틀, 무엇이 달라졌을까?',hint:'물은 어디에서 어떤 모양으로 얼었는지 나란히 살펴봐.',action:'compare',label:'얼기 전·후 비교했어'},
  compared:{index:4,title:'물에서 얼음으로, 얼기를 관찰했어!',hint:'네모난 틀의 칸 모양대로 얼음이 생겼어.'}

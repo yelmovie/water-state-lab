@@ -277,7 +277,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
     this.input.on('pointermove',p=>{if(!p.isDown||p.worldY<50||p.worldY>280||s.bottleWiped||starting){last=null;return;}if(!q().transferPrediction){this.cue('어느 병에 물방울이 생길지 예상부터 해 보자.');return;}const key=Math.abs(p.worldX-205)<95?'cold':Math.abs(p.worldX-510)<95?'room':null;if(key&&last?.key===key)rubbed[key]+=Math.hypot(p.worldX-last.x,p.worldY-last.y);last={key,x:p.worldX,y:p.worldY};if(rubbed.cold>85&&rubbed.room>85){starting=true;this.action('ix-bottle-start');}else if(rubbed[key]>85)this.cue('이 병은 닦았어. 다른 병도 문질러 줘.');});
     const wetBottle=this.learningSprite('drink-bottle-wet',205,166,185,278).setAlpha(0).setDepth(7);
     this.tick=()=>wetBottle.setAlpha(s.bottleWiped?Math.min(1,observationTime(8)/100):0);
-    this.text(360,310,s.transfer?'차가운 병 바깥에만 물방울이 생겼어':s.bottleWiped?'마법봉을 톡 눌러 두 병을 비교해 봐':'예상한 뒤 두 병의 겉면을 문질러 봐',20);return;
+    this.text(360,310,s.transfer?'차가운 병 바깥에만 물방울이 생겼어':s.bottleWiped?'시계를 톡 눌러 두 병을 비교해 봐':'예상한 뒤 두 병의 겉면을 문질러 봐',20);return;
    }
    if(s.evidence.length>=2){
     const keys=['drops','air','cold'],labels={air:'공기 중 수증기',cold:'차가운 표면',drops:'물방울'};
