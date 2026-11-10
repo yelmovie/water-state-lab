@@ -29,7 +29,7 @@ export const SETTINGS_CONTENT={
   '배경 음악 「섬의 탐험」과 「물바퀴의 노래」는 제작자가 Suno로 만든 곡이에요. 물소리는 rubberduck, 책장·도구·버튼 소리는 Kenney의 CC0 효과음이에요. 음원 재생이 안 되면 자체 합성음으로 대신해요.',
   '개념 영상 5편은 직접 작성한 SVG 모션 그래픽으로 제작했어요. 영상은 무음이며, 큰 글씨 설명을 화면에서 함께 보여 줘요.',
   '도입·엔딩 영상은 제작자가 제공한 영상에 자막과 연출, 프로젝트 음악을 FFmpeg로 더했어요.',
-  '제목 글꼴 Jua는 SIL Open Font License 1.1에 따라 앱에 담았어요. 본문은 기기에 설치된 글꼴을 사용해요. Phaser 게임 엔진과 Three.js 3D 엔진은 MIT 라이선스에 따라 사용해요.',
+  '화면과 실험 글꼴은 네이버 나눔스퀘어네오이며 SIL Open Font License 1.1에 따라 앱에 담았어요. Phaser 게임 엔진과 Three.js 3D 엔진은 MIT 라이선스에 따라 사용해요.',
   '출처와 라이선스 상세 내용은 프로젝트의 assets/CREDITS.md에서 확인할 수 있어요.'
  ],sourcesTitle:'자료 출처 모아 보기',sourcesIntro:'활동 화면에서 쓰는 자료의 출처를 이곳에 모았어요.',sources:[
   ['연구섬·실험실·방울이','사용자 제공 ChatGPT 생성 이미지와 프로젝트 자체 AI 생성 이미지예요.'],
@@ -39,7 +39,7 @@ export const SETTINGS_CONTENT={
   ['3D 모형','프로젝트 자체 AI 생성 이미지를 Meshy로 3D로 바꾸고 Blender로 다듬었어요.'],
   ['게임 엔진','Phaser · Richard Davey, Phaser Studio Inc. · MIT License예요.'],
   ['3D 엔진','Three.js · three.js authors · MIT License예요.'],
-  ['제목 글꼴','Jua · Woowahan Brothers · SIL Open Font License 1.1이에요.'],
+  ['화면 글꼴','나눔스퀘어네오 · 네이버 · SIL Open Font License 1.1이에요.'],
   ['교육 내용','교육부 2022 개정 과학과 교육과정 및 경기도교육청·충청북도교육청 공개 교육 자료를 참고했어요.']
  ],copyright:'ⓒ 2026 옐샘 & 아이스크림미디어. All rights reserved.',own:'앱 화면 캡처·자체 제작 일러스트·자체 제작 음원은 무단 복제·재배포·전용·상업적 이용을 금지해요.',external:'외부 공개 자료·라이브러리·폰트의 저작권은 각 원저작자와 소장 기관에 있으며, 각 자료의 공개 라이선스와 이용 조건을 따라요.',references:'교육 내용 구성 참고: 교육부(moe.go.kr), 경기도교육청(goe.go.kr), 충청북도교육청(pain.cbe.go.kr).'},
  reset:{button:'연구 기록 초기화',title:'연구 기록을 초기화할까요?',body:'이 브라우저·주소의 진행 상황, 모은 도구와 현장 도장, 관찰·그림·비교·설계 기록이 모두 지워져요. 소리와 움직임 줄이기 설정은 그대로 남아요.',cancel:'취소',confirm:'기록 지우기',failed:'기록을 지우지 못했어요. 기존 기록은 그대로 남아 있어요. 창을 닫고 다시 확인해 주세요.'}

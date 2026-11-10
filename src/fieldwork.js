@@ -152,7 +152,7 @@ export function bindFieldwork(n,ctx){
   drag=null;lineStart=null;brush=false;save();ctx.render();
  };
  canvas.onpointerup=finish;canvas.onpointercancel=finish;
-  function text(str,x,y,size=22,color='#234f59',align='center'){const renderedScale=canvas.getBoundingClientRect().width/720;size=Math.max(size,Math.min(24,17/Math.max(.6,renderedScale)));g.font=`${size}px Jua, system-ui, sans-serif`;g.fillStyle=color;g.textAlign=align;g.textBaseline='middle';const lines=String(str).split('\n');lines.forEach((line,i)=>g.fillText(line,x,y+(i-(lines.length-1)/2)*size*1.15));}
+  function text(str,x,y,size=22,color='#234f59',align='center'){const renderedScale=canvas.getBoundingClientRect().width/720;size=Math.max(size,Math.min(24,17/Math.max(.6,renderedScale)));g.font=`${size}px NanumSquareNeo, system-ui, sans-serif`;g.fillStyle=color;g.textAlign=align;g.textBaseline='middle';const lines=String(str).split('\n');lines.forEach((line,i)=>g.fillText(line,x,y+(i-(lines.length-1)/2)*size*1.15));}
  function panel(x,y,w,h,fill='#fffdf3',stroke='#c8d5c9'){g.fillStyle=fill;g.strokeStyle=stroke;g.lineWidth=2;g.beginPath();g.roundRect(x,y,w,h,16);g.fill();g.stroke();}
  function art(index,x,y,w=100,type='equipment'){const im=assets[type];if(!im?.complete||!im.naturalWidth)return;const cols=type==='buddy'?4:3,rows=type==='buddy'?4:type==='workshop'?2:3,sw=im.naturalWidth/cols,sh=im.naturalHeight/rows;g.drawImage(im,index%cols*sw,Math.floor(index/cols)*sh,sw,sh,x-w/2,y-w/2,w,w);}
  const packArt=(x,y,w)=>art(5,x,y,w);

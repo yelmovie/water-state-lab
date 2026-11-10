@@ -20,7 +20,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
   <style>
-    #boot{position:fixed;inset:0;z-index:2147483000;display:grid;place-content:center;justify-items:center;gap:16px;padding:24px;background:#f5efdc;color:#123e60;font:700 clamp(18px,2.4vw,24px)/1.4 system-ui,sans-serif;text-align:center;transition:opacity .35s ease}
+    #boot{position:fixed;inset:0;z-index:2147483000;display:grid;place-content:center;justify-items:center;gap:16px;padding:24px;background:#f5efdc;color:#123e60;font:700 clamp(18px,2.4vw,24px)/1.4 NanumSquareNeo,system-ui,sans-serif;text-align:center;transition:opacity .35s ease}
     #boot img{width:88px;height:auto;animation:boot-bob 1.4s ease-in-out infinite alternate}
     #boot p{margin:0}
     .boot-bar{width:min(280px,72vw);height:14px;border-radius:99px;background:#e2e9e4;box-shadow:inset 0 1px 3px #123e6026;overflow:hidden}
@@ -39,7 +39,7 @@
       document.addEventListener('DOMContentLoaded',draw);addEventListener('load',()=>setTimeout(hide,800));})();
   </script>
   <link rel="stylesheet" href="/src/style.css">
-  <link rel="preload" href="/assets/fonts/jua-korean-400.woff2" as="font" type="font/woff2" crossorigin onload="bootStep('font')" onerror="bootStep('font')">
+  <link rel="preload" href="/assets/fonts/NanumSquareNeoTTF-bRg.woff2" as="font" type="font/woff2" crossorigin onload="bootStep('font')" onerror="bootStep('font')">
   <link rel="stylesheet" href="/src/v2.css">
   <link rel="stylesheet" href="/src/activities.css">
   <link rel="stylesheet" href="/src/inquiry.css">

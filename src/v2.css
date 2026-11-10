@@ -1,14 +1,6 @@
+@font-face{font-family:'NanumSquareNeo';src:url('/assets/fonts/NanumSquareNeoTTF-bRg.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:'NanumSquareNeo';src:url('/assets/fonts/NanumSquareNeoTTF-cBd.woff2') format('woff2');font-style:normal;font-weight:700;font-display:swap}
 /* Illustrated assets and shared components. Responsive layout lives in tablet.css. */
-@font-face {
-  font-family: 'Jua'; font-style: normal; font-weight: 400; font-display: swap;
-  src: url('/assets/fonts/jua-korean-400.woff2') format('woff2');
-  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF, U+3000-303F, U+FF00-FFEF;
-}
-@font-face {
-  font-family: 'Jua'; font-style: normal; font-weight: 400; font-display: swap;
-  src: url('/assets/fonts/jua-latin-400.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF, U+2300-25FF, U+2600-26FF, U+2700-27BF;
-}
 .buddy-pose {
   display: inline-block; width: 180px; aspect-ratio: 362/272; flex-shrink: 0;
   background: url('/assets/v2/buddy-poses-clean.webp') var(--buddy-x) var(--buddy-y)/400% 400% no-repeat;
