@@ -179,7 +179,7 @@ export function bindColdNight(host,get,set){
   if(button.dataset.pour!==undefined&&e.detail===0&&ui.phase==='fill'){const index=+button.dataset.pour,value=nightFills(get(),night())[index]+ +button.dataset.dir*TAP_STEP;commit('fill',{night:night().id,index,value});showLevels(nightFills(get(),night()),index);}
   if(button.hasAttribute('data-night-start')&&ui.phase==='fill'&&!pour)runNight();
   if(button.hasAttribute('data-night-next'))nextStep();
-  if(button.dataset.reason){commit('reason',{choice:button.dataset.reason});void playCue(fieldReady(4,get())?'success':'hint');paint(fieldReady(4,get())?'[data-action="field-finish"]':`[data-reason="${button.dataset.reason}"]`);}
+  if(button.dataset.reason){commit('reason',{choice:button.dataset.reason});void playCue(fieldReady(4,get())?'success':'error');paint(fieldReady(4,get())?'[data-action="field-finish"]':`[data-reason="${button.dataset.reason}"]`);}
  },{signal});
  document.addEventListener('observation-stop',()=>{if(ui.phase==='freezing'){cancelAnimationFrame(frame);ui.phase='fill';ui.trial=null;host.removeAttribute('aria-busy');paint();}},{signal});
  paint();

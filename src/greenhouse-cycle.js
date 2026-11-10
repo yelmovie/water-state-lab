@@ -1,5 +1,6 @@
 import {createObservationClock} from './observation-speed.js';
 import {btn,esc} from './ui.js';
+import {playCue} from './sound.js';
 
 export const cycleStatus=c=>({stage:c.moves.cycleStage||(c.done&&['evaporate','condense'].every(k=>c.marks.includes(k))?'compared':'start'),time:Number(c.moves.cycleTime)||0});
 const tasks={
@@ -80,7 +81,7 @@ export function bindCycle(host,get,commit,reduced,settings){
    };
    frame=requestAnimationFrame(tick);return;
   }
-  if(step!=='wait'||reduced()){commit(step,step==='wait'?100:undefined);paint();return;}
+  if(step!=='wait'||reduced()){commit(step,step==='wait'?100:undefined);void playCue(step==='compare'?'success':'drop');paint();return;}
   running=true;b.disabled=true;host.querySelector('[data-cycle-pause]').hidden=false;
   const clock=createObservationClock(settings),from=cycleStatus(get()).time;
   const tick=now=>{if(document.hidden||document.querySelector('dialog[open]')){pause();paint();return;}const time=Math.min(100,Math.floor(from+clock(now)/45));commit('wait',time);host.querySelector('[data-cycle-clock]').textContent=time+'%';host.querySelector('[data-cycle-progress]').value=time;const source=host.querySelector('[data-cycle-source]');if(cycleStatus(get()).stage==='evaporating'){source.textContent='남은 물 '+Math.round((100-time*.05)*10)/10;const glass=host.querySelector('[data-cycle-source-art]');if(glass)glass.innerHTML=cycleGlass(100-time*.05,{source:true});}const drops=host.querySelector('[data-cycle-droplets]');if(drops&&cycleStatus(get()).stage==='condensing')drops.innerHTML=cycleDrops(time);if(time<100)frame=requestAnimationFrame(tick);else{pause();paint();}};

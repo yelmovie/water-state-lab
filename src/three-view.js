@@ -45,9 +45,9 @@ async function mount(THREE,loader,stage,view,build){
  const ro=new ResizeObserver(resize);ro.observe(stage);resize();
  // Drag or arrow keys turn the model; it is never required to continue the lesson.
  el.style.touchAction='none';
- el.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,yaw,pitch};el.setPointerCapture(e.pointerId);};
- el.onpointermove=e=>{if(!drag)return;yaw=drag.yaw-(e.clientX-drag.x)*.008;pitch=Math.max(-.05,Math.min(1.1,drag.pitch+(e.clientY-drag.y)*.006));};
- el.onpointerup=el.onpointercancel=()=>{drag=null;};
+ el.onpointerdown=e=>{if(drag||e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw,pitch};el.setPointerCapture(e.pointerId);};
+ el.onpointermove=e=>{if(!drag||drag.id!==e.pointerId)return;yaw=drag.yaw-(e.clientX-drag.x)*.008;pitch=Math.max(-.05,Math.min(1.1,drag.pitch+(e.clientY-drag.y)*.006));};
+ el.onpointerup=el.onpointercancel=e=>{if(drag?.id===e.pointerId)drag=null;};
  stage.onkeydown=e=>{const k={ArrowLeft:[.15,0],ArrowRight:[-.15,0],ArrowUp:[0,.1],ArrowDown:[0,-.1]}[e.key];if(!k)return;e.preventDefault();yaw+=k[0];pitch=Math.max(-.05,Math.min(1.1,pitch+k[1]));};
  const loop=now=>{
   if(view.stop)return;if(!stage.isConnected){closeThreeView();return;}

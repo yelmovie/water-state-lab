@@ -25,7 +25,7 @@ async function setup(n,field=false,reduced=true,reset=true){
  },{n,field,reduced,reset});
  await page.waitForTimeout(180);
 }
-const click=async action=>{const el=page.locator(`[data-action="${action}"]`).first();await el.evaluate(e=>{for(let p=e;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}).catch(()=>{});await el.click();await page.waitForTimeout(action.startsWith('ix-wipe-')?600:120);};
+const click=async action=>{const el=page.locator(`[data-action="${action}"]:visible`).first();await el.evaluate(e=>{for(let p=e;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}).catch(()=>{});await el.click();await page.waitForTimeout(action.startsWith('ix-wipe-')?600:120);};
 const measure=async step=>{await page.locator(step==='wait'?'[data-time-magic]':`[data-measure-action="${step}"]`).click();await page.waitForTimeout(60);};
 const cycle=async step=>{await page.locator(step==='wait'?'[data-time-magic]':`[data-cycle-action="${step}"]`).click();await page.waitForTimeout(60);};
 const ready=async n=>{await page.locator(n===3?'#freeze-measure':n===4?'#freeze-bench':n===8?'.phaser-stage[data-ready=true],.stage-guard,.cup-summary':'.phaser-stage[data-ready=true]').waitFor();};
@@ -78,7 +78,7 @@ try{
   assert.equal(await page.evaluate(()=>window.__qaGame.scene.getScenes(true)[0].children.list.filter(o=>o.texture?.key==='drink-bottle').length),2,'cup summary opens both bottle illustrations');
   await click('ix-transfer-predict-cold');await click('ix-bottle-start');await scrub(8);await complete(8);
   await setup(9);await ready(9);await click('toggle-cold');await click('ramp-tilt');await click('funnel-fix');
-  await page.locator('[data-action="test-workshop"]').evaluate(e=>e.closest('details').open=true);await click('test-workshop');
+  await click('test-workshop');
   assert.equal((await get()).lab.workshop.trials.at(-1).ok,true);await layout('flow-lab-9-done');checks.push('lab-9');
   await click('complete-5');if(await page.locator('dialog[open] #close-dialog').count())await page.locator('#close-dialog').click();await ready(10);
   const fault=(await get()).lab.final.diagnosis.fault;
@@ -92,7 +92,7 @@ try{
   await click('three-continue');assert.equal((await get()).fieldwork.pending,'field-ending');
   for(const step of ['prepare','wait','observe','receiver','cool','wait','collect','compare'])await cycle(step);
   await click('field-finish');await page.locator('dialog.concept-dialog[open]').waitFor();assert.equal((await get()).restored,false);
-  await page.locator('[data-concept="continue"]').click();await page.locator('.ending-main').waitFor();assert.equal((await get()).restored,true);checks.push('core-to-field10-concept-ending');
+  await page.locator('[data-concept="continue"]').click();await page.locator('.ending-main').waitFor();assert.equal(await page.locator('.ending-stats').count(),0);await shot('ending-without-stat-boxes');assert.equal((await get()).restored,true);checks.push('core-to-field10-concept-ending');
   await page.reload({waitUntil:'networkidle'});await hook();assert.equal((await get()).route,'ending');assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push('ending-reload');
   await setup(2,true);for(const step of ['fill','load','wait','take','compare'])await page.locator(step==='wait'?'[data-time-magic]':`[data-tray-action="${step}"]`).click();await page.locator('[data-transform-next]').click();
   for(const [kind,steps] of Object.entries({melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']})){for(const step of steps)await page.locator(step==='wait'?'[data-time-magic]':`[data-process-action="${step}"]`).click();await page.locator('[data-transform-next]').click();}

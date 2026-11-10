@@ -21,7 +21,7 @@ const shortSteps=[[],['붓기','얼음 옮기기','물자국'],['고체','액체
 
 // What the learner expected, set against what happened. Empty when no prediction was made.
 function predictionNote(n,a,q){
- if(n===3)return ({66:'예상대로 물 윗면이 높아졌어. ',60:'그대로일 줄 알았지만 높아졌어. ',56:'낮아질 줄 알았지만 높아졌어. '})[a.freeze.prediction]??'';
+ if(n===3)return ({66:'예상대로 얼음 윗면이 높아졌어. ',60:'그대로일 줄 알았지만 높아졌어. ',56:'낮아질 줄 알았지만 높아졌어. '})[a.freeze.prediction]??'';
  if(n===5)return q.drawPrediction==='thin'?'예상대로 물이 적은 A가 먼저 말랐어. ':q.drawPrediction?'예상과 달리 물이 적은 A가 먼저 말랐어. ':'';
  if(n===7)return ({inside:'컵 안에서 나온다고 예상했지만, 입구를 막아도 생겼어. ',air:'예상대로 물방울은 공기에서 왔어. '})[q.dewHypothesis]??'';
  return '';
@@ -45,7 +45,7 @@ export function experimentMove(n,state,final){
  }
  if(n===2){
   const s=a.sort,card=sortCards.find(c=>c.id===q.sortProof)||nextSortCard(s);
-  return move('tap',`‘${card.name}’ 속 물은 어떤 상태일까?`,'모양이 그대로면 고체, 그릇 따라 바뀌면 액체, 눈에 안 보이면 기체야.',board,[[597.5,71,215,72,22],[597.5,155,215,72,22],[597.5,239,215,72,22]]);
+  return move('tap',`‘${card.name}’, 물의 어떤 상태일까?`,'모양이 그대로면 고체, 그릇 따라 바뀌면 액체, 눈에 안 보이면 기체야.',board,[[597.5,71,215,72,22],[597.5,155,215,72,22],[597.5,239,215,72,22]]);
  }
  if(n===3){
   const f=a.freeze,{stage}=measureStatus(f);
@@ -70,7 +70,7 @@ export function experimentMove(n,state,final){
  }
  if(n===6){
   const s=a.compare,t=heatingTrial(s.heat,s.time);
-  if(!s.baseline&&s.time<30)return move('slide','불을 켜지 않고 물을 지켜봐','시간 손잡이를 오른쪽으로 밀어 두 컵의 물높이를 봐.',time(n));
+  if(!s.baseline&&s.time<30)return move('slide','가열하지 않고 두 컵을 지켜봐','시간 손잡이를 오른쪽으로 밀어 두 컵의 물높이를 봐.',time(n));
   if(!s.baseline)return move('slide','가열하기 전 모습을 봐','가열하지 않은 채 시간 손잡이를 밀면 두 컵의 모습이 기록돼.',time(n));
   if(!s.records.some(r=>r.boiling)){
    if(s.heat<55&&!s.batchPrepared)return move('tap','새 실험의 두 컵을 같은 양으로 준비해','첫 실험은 기록했어. 같은 두 컵에 같은 양을 다시 담아, 이번에는 B만 가열해서 비교하자.',actions('ix-heat-prepare'));
@@ -102,7 +102,7 @@ export function experimentMove(n,state,final){
  if(n===9){
   const s=state.lab.workshop,last=s.trials.at(-1),live=last?.signature===testCollector(s.parts,s.cold,s.angle).signature,seat=funnelSeat(s.parts.ramp);
   if(!s.cold)return move('tap','판을 차갑게 만들어 봐','공기 중 수증기는 차가운 판에 닿아야 물방울이 돼. ‘냉각팩 붙이기’를 눌러 봐.',actions('toggle-cold'));
-  if(!live)return move('watch','물방울을 따라가 봐','물이 어디까지 가는지 지켜봐.');
+  if(!live)return move('tap','물방울을 따라가 봐','‘같은 시간 뒤 물길 시험’을 눌러 물이 어디까지 가는지 봐.',actions('test-workshop'));
   if(s.angle<=0)return move('tap','경사판을 기울여 봐','판이 평평해서 물방울이 멈췄어. 물은 아래로 흐르니까 ‘경사판 기울이기’를 눌러 봐.',actions('ramp-tilt'));
   if(currentTrialValid(s))return move('next','물이 물통에 모였어!',stageLessons[9],actions('complete-5'));
   if(last?.ok)return move('tap','한 조건을 바꾸어 비교해 봐','물이 잘 모였어. 냉각을 껐다 켜며 결과를 비교해 봐. 더 살펴보기에서 직접 시험할 수도 있어.',actions('toggle-cold'));
@@ -118,6 +118,9 @@ export function experimentMove(n,state,final){
  if(!d.hypothesis)return move('tap','고장의 원인을 골라 봐','물이 생기지 않았는지, 중간에 샜는지 보고 네 생각을 눌러 봐.','[data-action^="diagnose-"]');
  if(d.hypothesis==='cooling'&&!d.working.cold)return move('tap','냉각을 켜 봐','판이 차가워야 수증기가 물방울이 돼. ‘냉각 켜기’를 눌러 봐.',actions('core-cooling'));
  if(d.hypothesis==='connection'&&d.working.parts.funnel.x!==final.design.parts.funnel.x)return move('tap','깔때기를 제자리로 옮겨 봐','물이 새는 곳을 고쳐 봐. ‘깔때기 제자리로’를 눌러 봐.',actions('core-funnel'));
+ // After the chosen fix, ask for a new test first; 'pick another cause' only fits once the fixed device was tested and still failed.
+ const fixedNow=d.hypothesis==='cooling'?d.working.cold:d.working.parts.funnel.x===final.design.parts.funnel.x;
+ if(fixedNow&&d.tests.at(-1)?.signature!==testCollector(d.working.parts,d.working.cold,d.working.angle).signature)return move('test','고친 장치를 시험해 봐','‘장치 시험’을 눌러 물이 끝까지 오는지 확인해 봐.',actions('diagnosis-test'));
  if(d.hypothesis===d.fault)return move('test','고친 장치를 시험해 봐','‘장치 시험’을 눌러 물이 물통까지 모이는지 확인해 봐.',actions('diagnosis-test'));
  return move('tap','다른 원인을 골라 봐','고쳐도 물이 오지 않아. 물방울이 안 생기는지, 중간에 새는지 다시 살펴봐.','[data-action^="diagnose-"]');
 }
@@ -150,6 +153,7 @@ export function pinQuestion(root){
  heading.classList.toggle('is-question',isQuestion);
  if(!isQuestion||root.querySelector('.scene-2')||!main.classList.contains('manual-tools'))return; // while watching, the question panel already holds both
  const panel=root.querySelector('.guided-question-panel'),shown=el=>el.offsetParent!==null&&!el.disabled;
+ if(panel){panel.classList.add('show-in-manual');return;}
  let answers;
  if(panel){
   const actions=[...panel.querySelectorAll('[data-action]')].map(b=>b.dataset.action);
@@ -160,7 +164,8 @@ export function pinQuestion(root){
  if(!answers.length)return;
  let group=answers.length>1?answers[0].parentElement:(answers[0].matches('button,input,summary,label')?answers[0].parentElement:answers[0]);
  while(group&&!answers.every(b=>group.contains(b)))group=group.parentElement;
- if(!group||group===main)return;
+ // A canvas stage draws over its first row, leaving an empty frame; the title bar already shows this question.
+ if(!group||group===main||group.matches('.phaser-stage'))return;
  // The question becomes the first row of the answer group, so it sits on top of the answers in any layout.
  group.classList.add('stage-answer-group');group.classList.toggle('qa-wrap',getComputedStyle(group).display.includes('flex'));
  group.insertAdjacentHTML('afterbegin',`<div class="stage-question-pop" role="note"><b>❓ 문제</b><span>${esc(text)}</span></div>`);

@@ -103,3 +103,8 @@ test('choosing the cause after a successful repair unlocks the visible core conn
   assert.equal(d.resolved,false,'a stale successful trial cannot approve a changed device');
  }
 });
+
+test('the required water-path test stays outside the optional details',()=>{
+ fresh();const html=workshopView(),test=html.indexOf('data-action="test-workshop"');
+ assert.ok(test>0);assert.ok(test<html.indexOf('<details>'));
+});

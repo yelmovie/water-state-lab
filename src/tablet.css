@@ -2,7 +2,7 @@
 :root {
   --space-xs:4px; --space-sm:8px; --space-md:16px; --space-lg:24px; --space-xl:32px; --space-2xl:48px;
   --radius-sm:12px; --radius-md:20px; --radius-lg:28px; --radius-pill:999px;
-  --font-display:'Jua','Malgun Gothic',sans-serif; --font-body:'Segoe UI','Malgun Gothic',sans-serif;
+  --font-display:'NanumSquareNeo','Malgun Gothic',sans-serif; --font-body:'NanumSquareNeo','Segoe UI','Malgun Gothic',sans-serif;
   /* From the island's water, paper and brass. */
   --color-bg:#e2ecdf; --color-surface:#fffdf4; --color-panel:#fff8e7; --color-surface-glass:#fff8e7f5;
   --color-primary:#246c66; --color-primary-edge:#174f4a; --color-primary-soft:#e3eee3;

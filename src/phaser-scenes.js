@@ -53,6 +53,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
    // missing-texture square must never replace the learner's actual tools.
    if(this.assetLoadFailed){host.remove();this.scene.stop();return;}
    activeScene=this;
+   this.input.dragDistanceThreshold=16;
    if(route!=='map')this.cameras.main.setZoom(4).centerOn(360,165);
    for(const event of ['pointerdown','pointermove','pointerup']){
     this.input.on(event,p=>{
@@ -107,7 +108,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
    }
    if(route!=='map')this.events.emit('learner-ready');
   }
-  text(x,y,text,size=20,color='#244c57'){const scale=Math.min(host.clientWidth/W,host.clientHeight/H);if(route!=='map')size=Math.max(size,Math.min(28,18/Math.max(.5,scale)));return this.add.text(x,y,text,{fontFamily:'Jua, Pretendard, system-ui, sans-serif',fontSize:size+'px',fontStyle:'normal',color,align:'center',stroke:color==='#fffbea'?'#34585d':'#fffaf0',strokeThickness:2,resolution:4}).setOrigin(.5).setDepth(6);}
+  text(x,y,text,size=20,color='#244c57'){const scale=Math.min(host.clientWidth/W,host.clientHeight/H);if(route!=='map')size=Math.max(size,Math.min(28,18/Math.max(.5,scale)));return this.add.text(x,y,text,{fontFamily:'NanumSquareNeo, Pretendard, system-ui, sans-serif',fontSize:size+'px',fontStyle:'normal',color,align:'center',stroke:color==='#fffbea'?'#34585d':'#fffaf0',strokeThickness:2,resolution:4}).setOrigin(.5).setDepth(6);}
   prop(x,y,index,size=110,type='equipment',drag=false){const obj=this.add.image(x,y,type,String(index)).setDisplaySize(size,size).setDepth(2);if(drag){obj.setInteractive({useHandCursor:true});this.input.setDraggable(obj);}return obj;}
   learningSprite(key,x,y,width,height,depth=3){return this.textures.exists(key)?this.add.image(x,y,key).setDisplaySize(width,height).setDepth(depth):null;}
   zone(x,y,w,h,handler){const z=this.add.zone(x,y,w,h).setInteractive({useHandCursor:true});z.on('pointerdown',handler);return z;}
@@ -287,14 +288,14 @@ function makeScene(P,route,ctx,host,hidden,regions){
    }
    const proofs=[['sealed','입구를 막았어',4],['contrast','차가운 컵에 생겼어',5],['again','닦아도 다시 생겼어',3]];
    this.panel(180,195,360,110);this.text(360,248,'내 설명에 쓸 증거 놓는 곳',20);
-   proofs.forEach(([key,label,index],i)=>{const x=130+i*230,obj=this.add.image(x,85,'real-dew',key==='contrast'?'3':'2').setDisplaySize(115,115).setInteractive({useHandCursor:true});this.input.setDraggable(obj);this.text(x,153,label,17);if(s.evidence.includes(key)){obj.setTint(0xa9e9cf);this.text(x,27,'✓ 연결한 증거',17,'#21785d');}let tapStart;obj.on('pointerdown',p=>{tapStart={x:p.worldX,y:p.worldY};});obj.on('pointerup',p=>{if(tapStart&&Math.hypot(p.worldX-tapStart.x,p.worldY-tapStart.y)<12)this.action('ix-evidence-'+key);tapStart=null;});obj.onRelease=()=>{if(obj.y>190&&!s.evidence.includes(key))this.action('ix-evidence-'+key);else obj.setPosition(x,85);};});
+   proofs.forEach(([key,label,index],i)=>{const x=130+i*230,obj=this.add.image(x,85,'real-dew',key==='sealed'?'2':'3').setDisplaySize(115,115).setInteractive({useHandCursor:true});this.input.setDraggable(obj);this.text(x,153,label,17);if(s.evidence.includes(key)){obj.setTint(0xa9e9cf);this.text(x,27,'✓ 연결한 증거',17,'#21785d');}let tapStart;obj.on('pointerdown',p=>{tapStart={x:p.worldX,y:p.worldY};});obj.on('pointerup',p=>{if(tapStart&&Math.hypot(p.worldX-tapStart.x,p.worldY-tapStart.y)<12)this.action('ix-evidence-'+key);tapStart=null;});obj.onRelease=()=>{if(obj.y>190&&!s.evidence.includes(key))this.action('ix-evidence-'+key);else obj.setPosition(x,85);};});
   }
   workshopScene(){
    const final=route===10,context=final?finalContext():null,s=final?context.progress.diagnosis.working:state.lab.workshop;
    const names=['plate','ramp','funnel','tube','bucket'];const scale=.64,offset=10;
    const result=final?context.progress.diagnosis.tests.at(-1):s.trials.at(-1);
    const valid=()=>!this.dragging&&result?.signature===testCollector(s.parts,s.cold,s.angle).signature;
-   const firstBreak=result?.steps?.find(step=>!step.ok);const breakLabel=firstBreak?this.text(555,27,'붉은 표시: 처음 멈춘 곳',17,'#9a3629').setBackgroundColor('#fff1e6').setPadding(8,4).setDepth(12):null;
+   const firstBreak=result?.steps?.find(step=>!step.ok);const breakLabel=firstBreak?this.text(430,27,'붉은 표시: 처음 멈춘 곳',17,'#9a3629').setBackgroundColor('#fff1e6').setPadding(8,4).setDepth(12):null;
    const labelPosition=(obj,key)=>key==='plate'?[obj.x,Math.max(19,obj.y-44)]:key==='ramp'?[obj.x+65,Math.max(19,obj.y-44)]:[obj.x+(obj.x>570?-68:68),obj.y];
    this.parts={};names.forEach((key,i)=>{
     const p=s.parts[key],obj=this.prop(p.x,p.y*scale+offset,i,key==='plate'?120:key==='ramp'?150:85,'workshop',key==='funnel'&&(!final||context.progress.diagnosis.processVersion!==3||context.progress.diagnosis.tests.length>0));this.parts[key]=obj;
@@ -414,6 +415,6 @@ export function mountPhaser(route,ctx,regions=[]){
  const start=()=>{if(token!==generation||!host.isConnected)return;game=new P.Game({type:P.CANVAS,parent:host,width:mode==='map'?2000:2880,height:mode==='map'?1126:1320,transparent:true,resolution:1,scale:{mode:P.Scale.FIT,autoCenter:P.Scale.CENTER_BOTH},input:{activePointers:1},loader:{imageLoadType:'HTMLImageElement'},audio:{noAudio:true},banner:false,fps:{target:30,forceSetTimeOut:true},scene:makeScene(P,mode,ctx,host,hidden,regions)});};
  // Canvas text is rasterised once, so wait briefly for the local display font.
  // Keep the existing DOM experiment usable if a font fails to arrive.
- const fontReady=document.fonts?.load('20px Jua').catch(()=>{});
+ const fontReady=document.fonts?.load('20px NanumSquareNeo').catch(()=>{});
  Promise.race([fontReady||Promise.resolve(),new Promise(resolve=>setTimeout(resolve,1500))]).then(()=>requestAnimationFrame(start));
 }

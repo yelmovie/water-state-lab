@@ -122,7 +122,7 @@ export function handleInquiry(action,ctx){if(!action.startsWith('ix-'))return fa
  else if(c==='pour-auto'){const k=i.pourTarget;if(!s.observe.pours.includes(k))void playCue('pour');i.pours[k]=100;if(!s.observe.pours.includes(k))s.observe.pours.push(k);addRecord(i,1,0,{kind:'pour',pours:i.pours},'같은 양을 담은 물');}
  else if(c.startsWith('sort-card-')){i.hiddenProof='';i.sortProof=c.slice(10);}
  else if(c.startsWith('sort-place-')){const k=i.sortProof||nextSortCard(s.sort).id;i.sortDraft[k]=c.slice(11);}
- else if(c.startsWith('sort-answer-')||c==='sort-check'){const k=i.sortProof||nextSortCard(s.sort).id,card=sortCards.find(c=>c.id===k);if(c.startsWith('sort-answer-'))i.sortDraft[k]=c.slice(12);if(i.sortDraft[k]===card.type){s.sort.placed[k]=card.type;i.sortProof='';toast(card.proof);}else toast('옮겨 보기 전과 후를 생각해 봐. '+card.proof);}
+ else if(c.startsWith('sort-answer-')||c==='sort-check'){const k=i.sortProof||nextSortCard(s.sort).id,card=sortCards.find(c=>c.id===k);if(c.startsWith('sort-answer-'))i.sortDraft[k]=c.slice(12);if(i.sortDraft[k]===card.type){s.sort.placed[k]=card.type;i.sortProof='';toast(card.proof);void playCue('success');}else{toast('다시 생각해 봐. 모양이 그대로면 고체, 그릇 따라 바뀌면 액체, 눈에 보이지 않으면 기체야.');void playCue('error');}}
  else if(c.startsWith('hidden-card-')){if(!activityReady(2,s))return true;i.sortProof='';i.hiddenProof=c.slice(12);}
  else if(c.startsWith('hidden-place-')){const r=hiddenSceneTry(s.sort,i.hiddenProof,c.slice(13));if(!r.card||r.repeat)return true;toast(r.ok?r.card.proof:'다시 살펴봐. '+r.card.clue);if(r.ok)i.hiddenProof='';}
  else if(c==='draw-predict-change'){if(i.drawPredictionLocked)toast('처음 예상은 보관했어. 달라진 생각은 관찰 후 생각에 남겨 줘.');else i.drawPrediction='';}
@@ -132,8 +132,8 @@ export function handleInquiry(action,ctx){if(!action.startsWith('ix-'))return fa
  else if(c.startsWith('draw-view-')){const r=s.draw.records[+c.slice(10)];if(r){i.drawMode='record';i.drawCursor=r.time;}}
  else if(c==='draw-live')i.drawMode='live';
  else if(c==='draw-compare'){modal('내 그림의 변화',`<div class="record-comparison">${s.draw.records.map(r=>`<figure>${graphDraw(s.draw.strokes,r.time)}<figcaption>${['처음','중간','나중'][r.band]}</figcaption></figure>`).join('')}</div>`);}
- else if(c.startsWith('draw-answer-')){i.drawReflection=c.slice(12);if(c.slice(12)==='thin'){s.draw.faster='thin';i.drawCompared=true;}else{s.draw.faster='';s.draw.destination='';i.drawCompared=false;toast('중간 장면의 A와 B를 다시 비교해 봐.');}}
- else if(c.startsWith('draw-where-')&&s.draw.faster==='thin'){if(c==='draw-where-air')s.draw.destination='air';else toast('물은 없어지지 않아. 눈에 보이지 않는 모습으로 바뀌었을까?');}
+ else if(c.startsWith('draw-answer-')){i.drawReflection=c.slice(12);if(c.slice(12)==='thin'){s.draw.faster='thin';i.drawCompared=true;toast('맞아! 물이 적은 A가 먼저 말랐어.');void playCue('success');}else{s.draw.faster='';s.draw.destination='';i.drawCompared=false;toast('중간 장면의 A와 B를 다시 비교해 봐.');void playCue('error');}}
+ else if(c.startsWith('draw-where-')&&s.draw.faster==='thin'){if(c==='draw-where-air'){s.draw.destination='air';toast('맞아! 물은 눈에 보이지 않는 수증기가 되어 공기 중으로 갔어.');void playCue('success');}else{toast('물은 없어지지 않아. 눈에 보이지 않는 모습으로 바뀌었을까?');void playCue('error');}}
  else if(c==='dew-predict-change'){if(!s.dew.wiped.length)i.dewHypothesis='';}
  else if(c.startsWith('dew-predict-'))i.dewHypothesis=c.slice(12);
  else if(c==='wipe-cold'){wipeWithCloth('cold',Array.from({length:24},(_,k)=>k),ctx);return true;}
@@ -142,8 +142,8 @@ export function handleInquiry(action,ctx){if(!action.startsWith('ix-'))return fa
  else if(c.startsWith('dew-view-')){const r=s.dew.records[+c.slice(9)];if(r)modal('지난 컵 관찰',`<div class="record-pair">${dewPicture(r.cold.time)}${dewPicture(0,[],false)}</div><p>왼쪽: 차가운 컵 · 오른쪽: 실온 컵</p>`);}
  else if(c==='transfer-predict-change'){if(!s.explain.bottleWiped)i.transferPrediction='';}
  else if(c.startsWith('transfer-predict-'))i.transferPrediction=c.slice(17);
- else if(c==='bottle-start'){if(!cupSummarySeen(s.explain)||!i.transferPrediction)return true;s.explain.bottleWiped=true;s.explain.time=0;s.explain.transfer=false;}
- else if(c.startsWith('heat-where-')&&s.compare.baseline&&s.compare.records.some(r=>r.boiling)){if(c==='heat-where-air')s.compare.destination='air';else toast('흘린 물은 없고 물높이만 낮아졌어. 물이 어떤 모습으로 바뀌었을까?');}
+ else if(c==='bottle-start'){if(!cupSummarySeen(s.explain)||!i.transferPrediction)return true;s.explain.bottleWiped=true;s.explain.time=0;s.explain.transfer=false;void playCue('wipe');}
+ else if(c.startsWith('heat-where-')&&s.compare.baseline&&s.compare.records.some(r=>r.boiling)){if(c==='heat-where-air'){s.compare.destination='air';toast('맞아! 두 컵의 물 모두 수증기가 되어 공기 중으로 갔어.');void playCue('success');}else{toast('흘린 물은 없고 물높이만 낮아졌어. 물이 어떤 모습으로 바뀌었을까?');void playCue('error');}}
  else if(c==='freeze-overlay'){i.freezeOverlay=!i.freezeOverlay;}
  else if(c.startsWith('lens-')){i.lens=c.slice(5);const t=heatingTrial(s.compare.heat,observationTime(n));if(!s.compare.baseline)toast('가열하지 않은 두 물을 먼저 기록해 줘.');else if(t.time>=30&&(i.lens!=='inside'||t.boiling)&&!s.compare.pins.includes(i.lens))s.compare.pins.push(i.lens);}
  else return false;update();return true;

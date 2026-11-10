@@ -322,3 +322,7 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 - https://opengameart.org/content/object-dropping-into-water-0
 - https://opengameart.org/content/bubble-sound-effects
 - CC0 전문 https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+## 현재 화면 글꼴 · 2026-11-10
+
+화면과 실험 캔버스는 원격 저장소에 반영된 네이버 나눔스퀘어네오 Regular·Bold 파일을 사용한다. 배포 파일과 해시는 `fonts/NanumSquareNeo-SOURCE.json`, 재배포 허용 조건과 전문은 `fonts/NanumSquareNeo-OFL.txt`에 있다. 기존 Jua 파일은 이전 영상 자막 제작과 보관 자료에 해당한다.
