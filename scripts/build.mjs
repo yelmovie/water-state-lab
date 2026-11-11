@@ -25,6 +25,7 @@ for(const file of await readdir(path.join(root,'public/assets/v2'))){
 await copyFile(path.join(root,'public/assets/CREDITS.md'),path.join(output,'assets/CREDITS.md'));
 await copyFile(path.join(root,'public/manifest.webmanifest'),path.join(output,'manifest.webmanifest'));
 await copyFile(path.join(root,'index.html'),path.join(output,'index.html'));
+await copyFile(path.join(root,'public/update.html'),path.join(output,'update.html'));
 await writeFile(path.join(output,'build-info.json'),JSON.stringify({version,builtAt:new Date().toISOString()}));
 const offline=await writeServiceWorker();
 // exFAT on macOS can create AppleDouble metadata even when only the real files were copied.

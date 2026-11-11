@@ -2,7 +2,7 @@
 const CACHE='water-dev',SHELL=[],LATER=[];
 const STREAMED=/\.(mp4|webm|mp3)$/;
 // Install keeps only the first screen; the page warms the rest one file at a time when idle.
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL.map(url=>new Request(url,{cache:'reload'}))))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('water-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function warmNext(){
  const cache=await caches.open(CACHE),list=[...SHELL,...LATER];
@@ -40,6 +40,7 @@ async function networkRange(cache,url,range){
  return partial(whole,range);
 }
 async function respond(request){
+ if(new URL(request.url).pathname==='/update.html')return fetch(request);
  const cache=await caches.open(CACHE),url=new URL(request.url),range=request.headers.get('range');
  const page=request.mode==='navigate'&&/^\/(index\.html)?$/.test(url.pathname);
  const hit=await cache.match(page?'/':request);

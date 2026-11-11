@@ -13,3 +13,6 @@
 .topbar{position:sticky;top:0;gap:16px}.topbar-left,.page-nav{display:flex;align-items:center;gap:8px}.topbar-left{gap:20px}.topbar-right{gap:10px}.topbar .icon-btn{width:48px;min-width:48px;flex-shrink:0}.admin-active{border-color:#b99b4e;background:#fff4d3}.settings-body{gap:14px}.check-label{min-height:48px;font-weight:700}.settings-jump{display:flex;gap:10px;align-items:center}.settings-jump select{min-width:0;flex:1;min-height:48px}.settings-jump .btn{flex-shrink:0}
 @media(max-width:1000px){.topbar .progress-caption{display:none}}
 @media(max-width:640px){.topbar .brand{display:none}.topbar{padding:0 14px;gap:12px}.topbar-right{gap:8px}.topbar .nav-btn{width:48px;padding:0}.topbar .nav-btn span{display:none}}
+/* Kept outside #app so changing experiments does not hide a ready update. */
+#app-update{position:fixed;z-index:2147483001;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);max-width:calc(100vw - 32px);min-height:48px;padding:12px 20px;border:2px solid #e9ce7f;border-radius:16px;background:#175e58;color:#fffdf1;box-shadow:0 4px 18px #123e6040;font:700 18px/1.4 'NanumSquareNeo',system-ui,sans-serif;cursor:pointer}
+#app-update:focus-visible{outline:3px solid #fff;outline-offset:3px}

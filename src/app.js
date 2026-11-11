@@ -280,9 +280,25 @@ async function warmOffline(){
 if(OFFLINE_BUILD&&'serviceWorker' in navigator){
  offline={done:0,total:0};
  addEventListener('load',()=>{
-  // Registering after load lets the install reuse the files the page just fetched instead of downloading them twice.
-  // A waiting update takes over only here at start-up, never by reloading a class mid-lesson.
-  navigator.serviceWorker.register('/sw.js').then(reg=>reg.waiting?.postMessage('skip-waiting')).catch(()=>{});
+  // Start offline installation after the first screen has loaded.
+  // Offer an update even when installation finishes after register() has resolved.
+  // A new worker must reload the document too, so cached modules and styles stay together.
+  let controller=navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+   const previous=controller;controller=navigator.serviceWorker.controller;
+   if(previous){save();location.reload();}
+  });
+  navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(reg=>{
+   const offer=()=>{
+    if(!reg.waiting||!navigator.serviceWorker.controller||document.querySelector('#app-update'))return;
+    const button=document.createElement('button');
+    button.id='app-update';button.type='button';button.textContent='새 버전 준비됐어 · 적용하기';
+    button.addEventListener('click',()=>{save();button.disabled=true;button.textContent='새 버전을 여는 중…';reg.waiting?.postMessage('skip-waiting');});
+    document.body.append(button);
+   };
+   reg.addEventListener('updatefound',()=>reg.installing?.addEventListener('statechange',offer));
+   offer();
+  }).catch(()=>{});
   // ponytail: random 2-10 s start + sequential files keeps 30 tablets on one AP from bursting together.
   setTimeout(()=>{const run=()=>warmOffline().catch(()=>{});'requestIdleCallback' in window?requestIdleCallback(run,{timeout:10000}):run();},2000+Math.random()*8000);
  });
