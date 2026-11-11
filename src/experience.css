@@ -1003,7 +1003,7 @@ html.reduce-motion .tool-fx *{animation:none}
 .stage-guide-count{display:none}
 /* Floating clocks keep their absolute placement when the next-action guide highlights them. */
 .guided-control:not(.phaser-stage):not(#field-canvas):not(.time-magic){position:relative;z-index:2}
-.guided-control:not(.phaser-stage):not(#field-canvas){outline:3px solid #e0a92e;outline-offset:2px;animation:guide-pulse 1.3s ease-in-out infinite}
+.guided-control:not(.phaser-stage):not(#field-canvas):not(.time-magic){outline:3px solid #e0a92e;outline-offset:2px;animation:guide-pulse 1.3s ease-in-out infinite}
 :is(.phaser-stage,#field-canvas).guided-control{box-shadow:inset 0 0 0 2px #b28d40}
 .fieldwork-activity .quest-panel .field-choice-group{display:grid;gap:6px}
 .fieldwork-activity .quest-panel .field-choice-group .btn{white-space:normal;word-break:keep-all}

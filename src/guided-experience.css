@@ -626,39 +626,29 @@
 }
 
 
-/* Reserve a separate tool column so the clock cannot cover the observation. */
-.workspace-stage.has-time-magic{--time-tool-width:104px;--time-rail:calc(var(--time-tool-width) + 40px);--time-space-left:12px;--time-space-right:var(--time-rail);--time-anchor-left:auto;--time-anchor-right:16px}
-.scene-1 .workspace-stage.has-time-magic,.scene-6 .workspace-stage.has-time-magic,.workspace-stage.has-time-magic:has(.tray-freezer-visual,.process-evaporate){--time-space-left:var(--time-rail);--time-space-right:12px;--time-anchor-left:16px;--time-anchor-right:auto}
-.guided-shell .workspace-stage.has-time-magic>.activity-scene,.guided-shell .workspace-stage.has-time-magic>.lab-stage,.guided-shell .workspace-stage.has-time-magic.field-transform{padding-left:var(--time-space-left)!important;padding-right:var(--time-space-right)!important}
+/* A centered arrival popover does not reserve a lopsided scene column. */
+.workspace-stage.has-time-magic{--time-tool-width:260px;--time-space-left:12px;--time-space-right:12px}
+.guided-shell .workspace-stage.has-time-magic>.activity-scene,.guided-shell .workspace-stage.has-time-magic>.lab-stage,.guided-shell .workspace-stage.has-time-magic.field-transform{padding-left:12px!important;padding-right:12px!important}
 .time-magic {
- --clock-size:82px;
- position:absolute;
- z-index:13;
- left:var(--time-anchor-left);
- right:var(--time-anchor-right);
+ --clock-size:164px;
+ position:absolute;z-index:13;left:50%;right:auto;
  top:calc(50% + (var(--workspace-header-height,76px) - var(--workspace-controls-height,72px))/2);
- transform:translateY(-50%);
- width:var(--time-tool-width);
- display:grid;
- justify-items:center;
- gap:6px;
- padding:8px 4px;
- border:0;
- border-radius:50%;
- background:transparent;
- box-shadow:none;
- color:#214f4b;
- font:18px/1.25 var(--font-display);
- cursor:pointer;
- touch-action:manipulation;
+ transform:translate(-50%,-50%);width:var(--time-tool-width);
+ display:grid;justify-items:center;gap:6px;padding:16px 22px;
+ border:1px solid #b7d6cd;border-radius:24px;background:#fffef5f5;
+ box-shadow:0 8px 30px #183d4733;color:#214f4b;
+ font:18px/1.25 var(--font-display);cursor:pointer;touch-action:manipulation;
 }
-/* A short arrival cue points to the clock without moving its hit area. */
-.time-tap-cue{position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);display:none;justify-items:center;gap:2px;width:max-content;max-width:calc(var(--time-tool-width) + 16px);pointer-events:none;color:#214f4b}
+.time-magic[hidden]{display:none!important}
+/* The arrow sits above the face inside the card, not outside the safe area. */
+.time-tap-cue{position:static;display:none;justify-items:center;gap:4px;pointer-events:none;color:#214f4b}
 .time-magic.needs-attention .time-tap-cue{display:grid}
-.time-tap-cue b{padding:4px 7px;border:2px solid #b87a1a;border-radius:12px;background:#fff8d9;box-shadow:0 2px 0 #74562233;font:700 16px/1.2 var(--font-body);white-space:nowrap}
-.time-tap-cue svg{display:block;width:30px;height:28px;overflow:visible;fill:#f3c64f;stroke:#795b20;stroke-width:1.5;stroke-linejoin:round;filter:drop-shadow(0 1px 0 #fffdf4)}
+.time-tap-cue b{font:700 18px/1.2 var(--font-body);white-space:nowrap}
+.time-tap-cue svg{display:block;width:44px;height:38px;overflow:visible;fill:#35a59b;stroke:#205b58;stroke-width:1.5;stroke-linejoin:round;filter:drop-shadow(0 1px 0 #fffdf4)}
 @keyframes time-cue-point{0%,100%{transform:translateY(-3px)}50%{transform:translateY(3px)}}
 @media(prefers-reduced-motion:no-preference){html:not(.reduce-motion) .time-magic.needs-attention .time-tap-cue svg{animation:time-cue-point .9s ease-in-out 4}}
+.workspace-controls>.time-magic.is-running{position:static;transform:none;order:-1;flex:0 0 auto;width:auto;min-height:48px;display:flex;gap:10px;padding:8px 14px;border-radius:14px;box-shadow:none;background:#f1faf7;pointer-events:auto}
+.time-magic.is-running .time-magic-art,.time-magic.is-running .time-tap-cue{display:none}
 .time-magic-art {
  position:relative;
  display:block;
@@ -705,7 +695,7 @@
 }
 .time-magic-label,.time-magic output { text-shadow:0 1px 2px #fffdf4,0 0 5px #fffdf4,0 0 8px #fffdf4; }
 .time-magic output { font:16px/1.2 var(--font-body);font-variant-numeric:tabular-nums;color:#214f4b; }
-.time-magic:hover:not(:disabled) { background:transparent; }
+.time-magic:hover:not(:disabled) { background:#fffef5; }
 .time-magic:focus-visible { outline:3px solid #b87a1a;outline-offset:3px; }
 .time-magic:disabled { opacity:1;cursor:default; }
 .time-magic.is-running .time-magic-label { color:#235e56; }
@@ -738,18 +728,15 @@
 .guided-shell.scene-2 .workspace-controls .activity-status,.guided-shell.scene-2 .workspace-controls .science-detail,.guided-shell.scene-2 .workspace-controls .canvas-alternatives{display:none!important}
 .guided-shell.scene-2 .stage-question-pop{display:none}
 @media(max-width:800px){
- .workspace-stage.has-time-magic{--time-tool-width:88px}
- .time-magic{--clock-size:68px;font-size:16px}
+ .workspace-stage.has-time-magic{--time-tool-width:224px}
+ .time-magic{--clock-size:136px;font-size:16px}
 }
 @media(max-width:520px),(max-height:520px){
- .workspace-stage.has-time-magic{--time-tool-width:52px;--time-rail:84px}
- .time-magic{--clock-size:44px;padding:4px 2px;gap:2px}
- .time-magic-art .time-hour{width:3px;margin-left:-1.5px}
- .time-magic-art .time-minute{width:2px;margin-left:-1px}
- .time-magic-art .time-pivot{width:5px;height:5px;margin-left:-2.5px;margin-bottom:-2.5px}
- .time-spark{border-width:2px}
- .time-magic-label{display:none}
- .time-magic output{font-size:12px}
+ .workspace-stage.has-time-magic{--time-tool-width:176px}
+ .time-magic{--clock-size:88px;padding:8px 14px;gap:3px;border-radius:18px}
+ .time-tap-cue{gap:1px}.time-tap-cue b{font-size:16px}.time-tap-cue svg{width:34px;height:28px}
+ .time-magic-label{font-size:16px}.time-magic:not(.is-running) output{display:none}
+ .workspace-controls>.time-magic.is-running{font-size:16px;padding:6px 10px}
 }
 
 /* Keep core actions together, leaving the full upper area for the water path. */
@@ -817,4 +804,10 @@
 /* Keep the teacher preview entry separate from the pupil guide on portrait screens. */
 @media(max-width:820px) and (orientation:portrait){
  .guided-shell>.topbar .teacher-stage-launch{top:0;left:104px;max-width:110px}
+}
+
+/* On portrait screens the character gets its own header cell, not the play button's cell. */
+@media(max-width:700px) and (orientation:portrait){
+ .guided-shell .building-guide-npc{grid-column:1;grid-row:2}
+ .guided-shell .building-guide-actions{grid-column:2;grid-row:2;min-width:0;flex-wrap:wrap}
 }

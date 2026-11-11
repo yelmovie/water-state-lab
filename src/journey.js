@@ -134,14 +134,17 @@ export function mountMapCamera(){
   world.classList.toggle('glide',glide&&!state.settings.reduced);
   world.style.width=ww+'px';world.style.height=wh+'px';world.style.transform=`translate3d(${ox}px,${oy}px,0)`;
   // Keep visible names inside the viewport when their building is near an edge.
+  const hudBottom=Math.max(top,...[...document.querySelectorAll('.journey-shell>.topbar')].map(el=>el.getBoundingClientRect().bottom))-box.top;
   const labelSizes=labels.map(node=>[node.offsetWidth,node.offsetHeight]);
   for(const [i,node] of labels.entries()){
    const [x,y]=islandStops[i],px=x*scale+ox,py=Math.max(.09,y/MAP_H-.1)*wh+oy;
    const [width,height]=labelSizes[i],halfW=width/2+5,halfH=height/2+5;
    node.toggleAttribute('data-offscreen',px<0||px>w||py<0||py>h);
    node.style.setProperty('--map-label-x',clamp(px,halfW,w-halfW)-px+'px');
-   node.style.setProperty('--map-label-y',clamp(py,halfH,h-halfH)-py+'px');
+   node.style.setProperty('--map-label-y',clamp(py,Math.max(halfH,hudBottom+halfH+8),h-halfH)-py+'px');
   }
+  // Keep moving map characters clear of the fixed header; they return when panned into view.
+  for(const villain of world.querySelectorAll('.mv-target')){const r=villain.getBoundingClientRect();villain.style.visibility=r.top<box.top+hudBottom+24?'hidden':'';}
   // A villain's caption steps aside while the action bubble sits on it.
   const bubble=nearby.hidden?null:nearby.getBoundingClientRect();
   for(const tag of world.querySelectorAll('.mv-say.show'))tag.style.visibility=bubble&&(r=>r.left<bubble.right&&r.right>bubble.left&&r.top<bubble.bottom&&r.bottom>bubble.top)(tag.getBoundingClientRect())?'hidden':'';

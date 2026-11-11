@@ -26,10 +26,12 @@ function fixture(t,{waitControl=false,reduced=false}={}){
  const progress={value:0};
  const range={value:0,max:100,classList:classList(),hasAttribute:()=>true,closest:()=>stage};
  const wait={disabled:false,click(){wait.disabled=true;}};
+ const dock={append(){magic.parentElement=dock;}};
  const stage={
   dataset:{},classList:classList(),isConnected:true,
-  append(){mounted=true;},
+  append(){mounted=true;magic.parentElement=stage;},
   querySelector(selector){
+   if(selector===':scope > .workspace-controls')return dock;
    if(selector==='[data-time-magic]')return mounted?magic:null;
    if(selector.includes('[data-inquiry-time]'))return waitControl?null:range;
    if(selector.includes('[data-tray-action='))return waitControl?wait:null;
@@ -46,7 +48,7 @@ function fixture(t,{waitControl=false,reduced=false}={}){
  t.after(()=>{globalThis.document=previousDocument;globalThis.matchMedia=previousMedia;});
  const mount=()=>mountTimeTools(stage,()=>{playing=!playing;},()=>playing);
  mount();
- return {magic,range,wait,progress,styles,mount,output,
+ return {magic,range,wait,progress,styles,mount,output,stage,dock,
   click:()=>events.get('click')(),
   finishCast:()=>events.get('animationend')({animationName:'time-wand-tap'}),
   block:()=>{blocked=true;}
@@ -107,20 +109,39 @@ test('an open dialog prevents starting a clock behind it',t=>{
  assert.ok(!css.includes(".guided-control:not(.phaser-stage):not(#field-canvas){position:relative"));
  });
 
-test("clock arrival cue hides on first use and stays hidden when paused",t=>{
+test("clock arrival cue disappears while running and returns when paused",t=>{
  const f=fixture(t);
  assert.equal(f.magic.classList.contains("needs-attention"),true);
  assert.match(f.magic.innerHTML,/time-tap-cue/);
  f.click();assert.equal(f.magic.classList.contains("needs-attention"),false);
- f.click();f.mount();assert.equal(f.magic.classList.contains("needs-attention"),false);
+ f.click();f.mount();assert.equal(f.magic.classList.contains("needs-attention"),true);
 });
-test("automatic observation and completion do not ask for another tap",t=>{
+test("automatic observation hides the cue, pausing restores it, completion hides it",t=>{
  const f=fixture(t,{waitControl:true});
  f.wait.click();f.mount();assert.equal(f.magic.classList.contains("needs-attention"),false);
- f.click();f.mount();assert.equal(f.magic.classList.contains("needs-attention"),false);
+ f.click();f.mount();assert.equal(f.magic.classList.contains("needs-attention"),true);
  f.progress.value=100;f.mount();assert.equal(f.magic.classList.contains("needs-attention"),false);
 });
 test("reduced motion keeps the static arrival cue available",t=>{
  const f=fixture(t,{reduced:true});assert.equal(f.magic.classList.contains("needs-attention"),true);
  f.click();assert.equal(f.magic.classList.contains("needs-attention"),false);
 });
+
+ test('completed clocks disappear rather than shifting the observation scene',t=>{
+ const f=fixture(t);f.range.value=100;paintTimeDial(f.range);assert.equal(f.magic.hidden,true);
+ f.range.value=50;paintTimeDial(f.range);assert.equal(f.magic.hidden,false);
+ });
+ test('large arrival clock has no yellow guided ring and no side rail',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const css=await readFile(new URL('../src/guided-experience.css',import.meta.url),'utf8');
+ const guide=await readFile(new URL('../src/experience.css',import.meta.url),'utf8');
+ assert.ok(css.includes('--clock-size:164px'));assert.ok(css.includes('--clock-size:136px'));assert.ok(css.includes('--clock-size:88px'));
+ assert.ok(!css.includes('--time-rail:'));assert.ok(guide.includes('.guided-control:not(.phaser-stage):not(#field-canvas):not(.time-magic){outline:'));
+ });
+
+ test('clock moves into toolbar while running and returns to center on pause',t=>{
+ const f=fixture(t);assert.equal(f.magic.parentElement,f.stage);
+ f.click();assert.equal(f.magic.parentElement,f.dock);
+ f.click();assert.equal(f.magic.parentElement,f.stage);
+ f.click();assert.equal(f.magic.parentElement,f.dock);
+ });

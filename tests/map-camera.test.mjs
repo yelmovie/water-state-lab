@@ -31,7 +31,7 @@ function camera(t,width,height,top=100,bottom=height-160){
  root.nodes.set('[data-map-mode="hand"]',hand);root.nodes.set('[data-map-mode="overview"]',overview);arrow.dataset.mapMove='right';root.querySelectorAll=()=>[arrow];
  view.nodes.set('.journey-world',world);view.nodes.set('.map-hand-hint',new Element());view.nodes.set('.map-nearby',nearby);view.nodes.set('.map-nearby-status',new Element());
  world.nodes.set('.journey-traveler',actor);actor.nodes.set('.map-walk-sprite',new Element());
- const document={querySelector:selector=>selector==='.map-viewport'?view:null,addEventListener(){},body:new Element(),createElement:()=>new Built()};
+ const document={querySelectorAll:()=>[],querySelector:selector=>selector==='.map-viewport'?view:null,addEventListener(){},body:new Element(),createElement:()=>new Built()};
  replace('document',document);replace('addEventListener',(type,fn)=>globalEvents.set(type,fn));replace('matchMedia',()=>({matches:true}));replace('Image',class{});
  replace('requestAnimationFrame',()=>1);replace('cancelAnimationFrame',()=>{});replace('ResizeObserver',class{constructor(fn){resized=fn;}observe(){}disconnect(){}});
  Object.assign(state,initialState());state.settings.reduced=true;mountMapCamera();
