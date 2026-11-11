@@ -9,3 +9,8 @@
 @media(prefers-reduced-transparency:reduce){#app :is(.btn,.icon-btn,.building-guide,.stage-question-pop),dialog{background:#fffdf0!important;backdrop-filter:none;-webkit-backdrop-filter:none;}}
 
 #app .time-magic{background:#fffef0cf;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-color:#84b5a880;box-shadow:0 8px 28px #173c4929;}
+
+:root{--scenic-card-radius:20px;--scenic-card-gap:12px;}
+#app :is(.lesson-card,.mission-card,.expedition-card,.ending-art-card,.settings-concept-card,.settings-unlock-card,.activity-object,.activity-target){border-radius:var(--scenic-card-radius);}
+#app :is(.activity-cardbank,.inquiry-cardbank,.guided-question-choices,.activity-two){gap:var(--scenic-card-gap);}
+#app :is(.activity-object,.activity-target,.settings-concept-card){background-color:#fffdf0d9;}

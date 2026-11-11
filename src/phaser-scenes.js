@@ -208,8 +208,8 @@ function makeScene(P,route,ctx,host,hidden,regions){
     texture.add(c.id,0,left,top+Math.floor((photo.height/2-frameH)/2),Math.floor(photo.width/3),frameH);
     const extra=bonus&&hiddenScenes.find(s=>s.card===c.id);
     const done=!!a().sort.placed[c.id],selected=card?.id===c.id||!!extra&&extra===hiddenActive;
-    this.g.fillStyle(selected?0xffe2a1:done?0xe2f0e2:0xfff9e9).fillRoundedRect(x-2,y-2,width+4,height+caption+4,6);
-    this.g.lineStyle(selected?3:1,selected?0x9a6a21:0x779485).strokeRoundedRect(x-2,y-2,width+4,height+caption+4,6);
+    this.g.fillStyle(selected?0xffe2a1:done?0xe2f0e2:0xfff9e9).fillRoundedRect(x-2,y-2,width+4,height+caption+4,18);
+    this.g.lineStyle(selected?3:1,selected?0x9a6a21:0x779485).strokeRoundedRect(x-2,y-2,width+4,height+caption+4,18);
     this.add.image(x,y,'water-search',c.id).setOrigin(0).setDisplaySize(width,height);
     const labelY=y+height+caption/2;
     this.add.graphics().setDepth(5).fillStyle(0xfff9e9,.92).fillCircle(x+13,y+13,11).lineStyle(1,0x779485).strokeCircle(x+13,y+13,11);
