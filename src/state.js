@@ -74,7 +74,7 @@ function loadState(storage){
   if(s.evidence[1]&&!Array.isArray(s.evidence[1].records)||s.evidence[2]&&!Array.isArray(s.evidence[2].trials)||s.evidence[3]&&!Array.isArray(s.evidence[3].observations)||s.evidence[4]&&!Array.isArray(s.evidence[4].chain))return result(fallback,'damaged');
   if(s.evidence[5]&&(!matches(s.evidence[5].parts,parts)||!s.evidence[5].result)){delete s.evidence[5];s.completed=s.completed.filter(n=>n!==5);s.pages=s.pages.filter(n=>n<9);s.lab.final=fallback.lab.final;s.restored=false;repaired=true;}
   if(typeof s.route==='number'&&!canEnter(s.route,s))s.route='map';
-  if(!['home','map','ending'].includes(s.route)&&typeof s.route!=='number')s.route='home';
+  if(!['home','map','ending','adventure'].includes(s.route)&&typeof s.route!=='number')s.route='home';
   if(s.route==='ending'&&!s.restored&&!s.settings.adminUnlock)s.route='map';
   return result(s,repaired?'damaged':'ready');
  }catch{return result(fallback,source===null?'unavailable':'damaged');}
