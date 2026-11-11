@@ -29,7 +29,8 @@ function paintMagic(stage){
  magic.classList.toggle("needs-attention",!running&&!done);
  if(magic.hidden!==done)magic.hidden=done;
  // Keep the face visible while the hands show the actual observation progress.
- if(magic.parentElement&&magic.parentElement!==stage)stage.append(magic);
+ const clockHost=stage.querySelector('.cycle-scene')||stage;
+ if(magic.parentElement&&magic.parentElement!==clockHost)clockHost.append(magic);
  if(running&&!done&&!magic.classList.contains('is-running'))castMagic(magic);
  if(!running||done)magic.classList.remove('is-casting');
  magic.style.setProperty('--time-minute',value/max*1440+'deg');

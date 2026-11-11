@@ -11,7 +11,7 @@ function classList(){
   toggle(name,on){if(on)values.add(name);else values.delete(name);}
  };
 }
-function fixture(t,{waitControl=false,reduced=false}={}){
+function fixture(t,{waitControl=false,reduced=false,greenhouse=false}={}){
  const styles=new Map(),events=new Map(),attributes=new Map();
  const label={textContent:''},output={textContent:''};
  const magic={
@@ -27,11 +27,13 @@ function fixture(t,{waitControl=false,reduced=false}={}){
  const range={value:0,max:100,classList:classList(),hasAttribute:()=>true,closest:()=>stage};
  const wait={disabled:false,click(){wait.disabled=true;}};
  const dock={append(){magic.parentElement=dock;}};
+ const cycleScene={append(){magic.parentElement=cycleScene;}};
  const stage={
   dataset:{},classList:classList(),isConnected:true,
   append(){mounted=true;magic.parentElement=stage;},
   querySelector(selector){
    if(selector===':scope > .workspace-controls')return dock;
+   if(selector==='.cycle-scene')return greenhouse?cycleScene:null;
    if(selector==='[data-time-magic]')return mounted?magic:null;
    if(selector.includes('[data-inquiry-time]'))return waitControl?null:range;
    if(selector.includes('[data-tray-action='))return waitControl?wait:null;
@@ -48,7 +50,7 @@ function fixture(t,{waitControl=false,reduced=false}={}){
  t.after(()=>{globalThis.document=previousDocument;globalThis.matchMedia=previousMedia;});
  const mount=()=>mountTimeTools(stage,()=>{playing=!playing;},()=>playing);
  mount();
- return {magic,range,wait,progress,styles,mount,output,stage,dock,
+ return {magic,range,wait,progress,styles,mount,output,stage,dock,cycleScene,
   click:()=>events.get('click')(),
   finishCast:()=>events.get('animationend')({animationName:'time-wand-tap'}),
   block:()=>{blocked=true;}
@@ -152,3 +154,11 @@ test("reduced motion keeps the static arrival cue available",t=>{
  f.range.value=100;paintTimeDial(f.range);assert.equal(writes,1);
  f.mount();f.mount();assert.equal(writes,1);
  });
+
+
+test('the greenhouse clock stays in its own scene grid cell across progress updates',t=>{
+ const f=fixture(t,{greenhouse:true});
+ assert.equal(f.magic.parentElement,f.cycleScene);
+ f.click();f.range.value=30;paintTimeDial(f.range);f.mount();
+ assert.equal(f.magic.parentElement,f.cycleScene);
+});

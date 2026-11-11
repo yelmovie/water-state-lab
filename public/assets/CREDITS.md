@@ -341,3 +341,7 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 - `learning/bangul-hit-20261111/bangul-hit.webp`는 기존 방울이 캐릭터를 참고해 Codex 내장 image_gen으로 생성한 단일 투명 피격 포즈다.
 - 원본과 정확한 생성 프롬프트는 외장 프로젝트의 `assets/source-media/bangul-hit-20261111/`에 보관한다.
 - 접촉 판정, 짧은 반동, 물방울 파편, 충격 링과 회복 시간은 코드로 구현했다. 효과음은 기존 프로젝트의 `thud` 효과를 사용한다.
+
+### Phaser 로컬 수정 · 2026-11-11
+
+게임 인스턴스를 파괴할 때 `visibilitychange` 리스너와 해당 인스턴스의 창 포커스 핸들러를 정리하도록 수정했다. MIT 고지를 유지한다. 앱 어댑터는 풀에 반환하는 Canvas의 `wheel` 리스너도 해제한다. `scripts/chapter-process-qa.mjs lifecycle`로 장면 왕복 15회 후 DOM과 리스너 수가 누적되지 않는지 검사한다.

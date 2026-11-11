@@ -63,7 +63,7 @@
 #app .drop-adventure .btn.warm{background:#ffe6b3;color:#603a12;border-color:#bd923a}
 #app .drop-adventure .btn.cool{background:#c9edff;color:#16475b;border-color:#6d9fb5}
 .drop-energy{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:6px;font-size:16px}
-.drop-energy>span{white-space:nowrap}.drop-energy meter{width:120px;max-width:160px;min-width:60px;flex:1}.drop-science{margin-top:3px;font-size:16px}.drop-science summary{min-height:40px;align-content:center;cursor:pointer}.drop-science p{max-width:900px;line-height:1.55;margin:4px 0 10px}
+.drop-energy>span{white-space:nowrap}.drop-energy meter{width:120px;max-width:160px;min-width:60px;flex:1}.drop-science{margin-top:3px;font-size:16px}.drop-science summary{min-height:48px;align-content:center;cursor:pointer}.drop-science p{max-width:900px;line-height:1.55;margin:4px 0 10px}
 .drop-dock:has(.drop-science[open]){max-height:45dvh;overflow:auto}
 .drop-unlock{text-align:center}.drop-unlock h2,.drop-discovery h2{font-size:20px;margin:4px 0}.drop-unlock p{font-size:17px;margin:4px 0 10px;line-height:1.45}
 .drop-discovery ul{margin:4px 0 8px;padding-left:24px;font-size:16px;line-height:1.4}

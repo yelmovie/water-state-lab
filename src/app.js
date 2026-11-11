@@ -4,7 +4,7 @@ import {prepareDrawingComparison} from './drawing-records.js';
 import {mountTimeTools} from './time-dial.js';
 import {observationSpeed,OBSERVATION_SPEEDS} from './observation-speed.js';
 import {openStageLetter} from './field-briefing.js';
-import {experimentMove,stageGuide,markStageControls,pinQuestion} from './stage-guide.js';
+import {experimentMove,markStageControls,pinQuestion} from './stage-guide.js';
 import {fieldTask} from './field-guidance.js';
 import {playStoryFilm} from './story-film.js';
 import {residentReward,openResidentList,talkToResident,stageEndTalk,residentForStage} from './island-residents.js';
@@ -16,8 +16,8 @@ import {mountPhaser,cleanupPhaser,focusExperiment} from './phaser-scenes.js';
 import {discoveryStars,discoveryGoals} from './scene-model.js';
 import {state,save,reset,setPreviewMode,getStorageStatus,captureResetToken} from './state.js';
 import {missions,screenNames,canEnter,previousRoute} from './domain.js';
-import {icon,btn,mascot,buddy,propArt,note,toast,modal,esc,celebrate} from './ui.js';
-import {journey,journeyView,mapEntryScreen,workshopProgress,travelRoute,mountMapCamera,cleanupMapCamera,travelIsland} from './journey.js';
+import {icon,btn,buddy,propArt,note,toast,modal,esc,celebrate} from './ui.js';
+import {journey,journeyView,mapEntryScreen,workshopProgress,mountMapCamera,cleanupMapCamera,travelIsland} from './journey.js';
 import {activityView,handleActivity,bindActivity,cleanupActivity,getActivityProgress} from './activities.js';
 import {workshopView,finalView,handleWorkshop,bindWorkshop,cleanupWorkshop,resetFinalPreview,finalContext} from './workshop.js';
 import {playClick,playCue,setMusicTheme,setSoundSettings} from './sound.js';
@@ -25,9 +25,9 @@ import {openSettings,offlineText} from './settings.js';
 import {OFFLINE_BUILD} from './version.js';
 import {syncCoach,cleanupCoach,handleCoach,updateCoachMessage} from './coach.js';
 import {closeConcept,openConcept} from './concepts.js';
-import {activityReady,experimentActivities,nextSortCard,sortCards} from './activity-model.js';
-import {currentTrialValid} from './domain.js';
-import {fieldMissions,fieldStages,areaStages,experimentTitles,experimentQuestions,fieldProgress} from './fieldwork-model.js';
+import {activityReady,experimentActivities,sortCards} from './activity-model.js';
+
+import {fieldMissions,areaStages,experimentTitles} from './fieldwork-model.js';
 import {fieldworkView,bindFieldwork,cleanupFieldwork,handleFieldwork,startFieldwork,hasFieldSeal,fieldChapter} from './fieldwork.js';
 import {passportView,certificateView,researchRecords} from './achievement.js';
 const app=document.querySelector('#app');
@@ -125,6 +125,11 @@ function simplifyControls(route){
  if(tools){
   const extra=document.createElement('details');extra.className='canvas-alternatives essential-controls';extra.open=false;extra.innerHTML='<summary>다른 조작</summary>';
   if(route===1&&state.activities.observe.step===0)extra.innerHTML+=btn('길쭉한 그릇 선택','ix-pour-target-tall')+btn('넓은 그릇 선택','ix-pour-target-wide');
+  if(route===2){
+   extra.classList.add('sort-keyboard-controls');
+   extra.innerHTML='<summary>버튼으로 분류하기</summary><div class="sort-keyboard-cards">'+sortCards.map(card=>btn(card.name,'ix-sort-card-'+card.id)).join('')+'</div><div class="sort-keyboard-answers">'+['고체','액체','기체'].map((label,i)=>btn(label,'ix-sort-answer-'+['solid','liquid','gas'][i])).join('')+'</div>';
+  }
+
 
 
   if(route===1&&state.activities.observe.step===0){const hold=tools.querySelector('#hold-pour');if(hold)extra.append(hold);}
@@ -175,8 +180,9 @@ function integrateWorkspaceControls(){
  if(question&&!dock.contains(question))dock.append(question);
  dock.dataset.hasQuestion=String(!!question);
  const stageRect=stage.getBoundingClientRect();
- const note=app.querySelector('.stage-question-pop');
- const headerBottom=Math.max(header?.getBoundingClientRect().bottom||stageRect.top+58,note?.getBoundingClientRect().bottom||0);
+ // Questions in the bottom dock must never contribute to top padding.
+ // Including their position feeds the previous layout back into its own height.
+ const headerBottom=header?.getBoundingClientRect().bottom||stageRect.top+58;
  const top=Math.max(58,headerBottom-stageRect.top)+12;
  const bottom=dock.getBoundingClientRect().height+20;
  for(const [name,value] of [['--workspace-header-height',top],['--workspace-controls-height',bottom]])if(stage.style.getPropertyValue(name)!==value+'px')stage.style.setProperty(name,value+'px');
@@ -256,7 +262,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
 let offline=null;
 async function warmOffline(){
  const reg=await navigator.serviceWorker.ready,pause=ms=>new Promise(r=>setTimeout(r,ms));let fails=0;
- const ask=()=>new Promise(ok=>{const ch=new MessageChannel(),t=setTimeout(()=>ok(null),60000);ch.port1.onmessage=e=>{clearTimeout(t);ok(e.data);};reg.active?reg.active.postMessage({type:'warm'},[ch.port2]):ok(null);});
+ const ask=()=>new Promise(ok=>{
+  const ch=new MessageChannel();
+  const finish=data=>{clearTimeout(timer);ch.port1.close();ch.port2.close();ok(data);};
+  const timer=setTimeout(()=>finish(null),60000);
+  ch.port1.onmessage=e=>finish(e.data);
+  if(reg.active)reg.active.postMessage({type:'warm'},[ch.port2]);else finish(null);
+ });
  for(;;){
   if(document.hidden||!navigator.onLine){await pause(5000);continue;}
   const r=await ask();

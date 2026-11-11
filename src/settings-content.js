@@ -1,9 +1,17 @@
+import {stageLessons,screenNames} from './domain.js';
 // Keep all settings copy here; activity screens use their own concise prompts.
 export const STANDARDS=[
  {code:'4과10-01',text:'물이 세 가지 상태로 변할 수 있음을 알고, 우리 주변에서 예를 찾을 수 있다.'},
  {code:'4과10-02',text:'물이 얼 때, 얼음이 녹을 때, 물이 증발할 때와 끓을 때, 수증기가 응결할 때의 변화를 관찰할 수 있다.'},
  {code:'4과10-03',text:'물의 상태 변화를 이용하여 물을 얻을 수 있는 장치를 설계하고 만들 수 있다.'}
 ];
+// Existing curriculum wording and the learner-facing lesson share one source.
+export const STAGE_LEARNING=stageLessons.slice(1).map((objective,index)=>({
+ stage:index+1,
+ title:screenNames[index+1],
+ standard:STANDARDS[index<2?0:index<8?1:2].code,
+ objective
+}));
 export const SETTINGS_CONTENT={
  title:'연구실 설정',close:'닫기',
  sound:{bgm:'배경 음악',sfx:'효과음',volume:'배경 음악 크기',on:'켜짐 · 끄기',off:'꺼짐 · 켜기',reduced:'움직임 줄이기'},

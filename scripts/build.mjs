@@ -12,7 +12,8 @@ if(output!==path.join(path.resolve(root),'dist')&&path.dirname(output)!==path.jo
 await rm(output,{recursive:true,force:true});
 await mkdir(path.join(output,'assets/v2'),{recursive:true});
 // Skip metadata and unfinished hidden transfer files; only runtime files ship.
-const copyTree={recursive:true,filter:source=>!path.basename(source).startsWith('.')};
+const retiredFiles=new Set(['collector-figure-art.js','collector-figure-model.js','collector-figure-view.js']);
+const copyTree={recursive:true,filter:source=>!path.basename(source).startsWith('.')&&!retiredFiles.has(path.basename(source))&&path.basename(source)!=='colorfigures'};
 await cp(path.join(root,'src'),path.join(output,'src'),copyTree);
 await writeFile(path.join(output,'src/version.js'),versionModule(true));
 await cp(path.join(root,'public/assets/vendor'),path.join(output,'assets/vendor'),copyTree);

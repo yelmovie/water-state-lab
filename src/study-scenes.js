@@ -99,7 +99,8 @@ export function createClothScene(scene){
   stage?.querySelector('[data-action="act-wet-cloth"]')?.setAttribute('aria-disabled','true');
  };
  host.addEventListener('cloth-pour',request);
- scene.events.once('shutdown',()=>host.removeEventListener('cloth-pour',request));
+ const removePour=()=>host.removeEventListener('cloth-pour',request);
+ scene.events.once('shutdown',removePour);scene.events.once('destroy',removePour);
  const unit=value=>Math.max(0,Math.min(1,value));
  const ease=value=>(1-Math.cos(Math.PI*unit(value)))/2;
  scene.tick=(time,dt)=>{
@@ -210,7 +211,8 @@ export function createDewScene(scene,wipe){
  };
  host.addEventListener('cup-wipe',autoWipe);
  document.addEventListener('observation-stop',cancelWipe);
- scene.events.once('shutdown',()=>{host.removeEventListener('cup-wipe',autoWipe);document.removeEventListener('observation-stop',cancelWipe);});
+ const removeWipe=()=>{host.removeEventListener('cup-wipe',autoWipe);document.removeEventListener('observation-stop',cancelWipe);};
+ scene.events.once('shutdown',removeWipe);scene.events.once('destroy',removeWipe);
  scene.input.on('pointerdown',p=>{
   if(wiping||p.worldY<55||p.worldY>280)return;
   kind=Math.abs(p.worldX-205)<90?'cold':Math.abs(p.worldX-510)<90?'room':null;

@@ -1341,8 +1341,8 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
 .passport-drops i{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#ffffff26;color:#ffffff66}
 .passport-drops i.on{background:#ffe9a8;color:#2f7f76}
 .stamp-pages{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:14px;border-radius:14px;background:var(--paper);background-image:repeating-linear-gradient(#0000 0 33px,#e7dcbc 33px 34px)}
-.stamp-page{--ink:#2a9db5;flex:0 0 calc((100% - 20px)/3);min-width:0;max-width:none;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px 12px;border-radius:14px;text-align:center;color:#6d7a6c}
-.stamp-page.area-2{--ink:#4a7fc4}.stamp-page.area-3{--ink:#d9862a}.stamp-page.area-4{--ink:#4a9a63}.stamp-page.area-5{--ink:#d2674a}
+.stamp-page{--ink:#14687b;flex:0 0 calc((100% - 20px)/3);min-width:0;max-width:none;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px 12px;border-radius:14px;text-align:center;color:#6d7a6c}
+.stamp-page.area-2{--ink:#355f9c}.stamp-page.area-3{--ink:#925018}.stamp-page.area-4{--ink:#2d7042}.stamp-page.area-5{--ink:#a74732}
 .stamp-page.earned{background:#fffdf5;box-shadow:0 2px 0 #e4d6ad;color:#27504a}
 .stamp-page b{font:21px/1.25 var(--font-display)}
 .stamp-page small{font-size:16px;color:var(--ink);font-weight:700}
@@ -1377,8 +1377,8 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
 .cert-foot{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*2);width:100%;padding-top:calc(var(--u)*1);border-top:1px solid #d4bc7e}
 .cert-foot p{margin:0;font-size:calc(var(--u)*1.7);font-weight:700;line-height:1.65;text-align:right}
 .cert-seals{display:flex;justify-content:center;gap:calc(var(--u)*1)}
-.cert-seals span{--ink:#2a9db5;width:calc(var(--u)*8)}
-.cert-seals span:nth-child(2){--ink:#4a7fc4}.cert-seals span:nth-child(3){--ink:#d9862a}.cert-seals span:nth-child(4){--ink:#4a9a63}.cert-seals span:nth-child(5){--ink:#d2674a}
+.cert-seals span{--ink:#14687b;width:calc(var(--u)*8)}
+.cert-seals span:nth-child(2){--ink:#355f9c}.cert-seals span:nth-child(3){--ink:#925018}.cert-seals span:nth-child(4){--ink:#2d7042}.cert-seals span:nth-child(5){--ink:#a74732}
 .cert-seals .seal{width:100%;height:auto}
 .certificate-form>p{margin:0;flex:1;font-size:17px}
 /* Motion is the reward: stamps land one by one, the certificate assembles, then the gold seal lands. */

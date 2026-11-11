@@ -587,7 +587,9 @@
 }
 
 /* The greenhouse uses the available height for observing water and its collection. */
-#field-greenhouse .cycle-scene{grid-template-columns:minmax(0,1fr) 144px minmax(0,1fr);gap:8px}
+#field-greenhouse .cycle-scene{grid-template-columns:minmax(0,1fr) minmax(140px,20%) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:8px}
+#field-greenhouse .cycle-source-panel{grid-column:1;grid-row:1}
+#field-greenhouse .cycle-collector-panel{grid-column:3;grid-row:1}
 #field-greenhouse .cycle-scene article{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:4px;padding:12px 12px 8px;border:1px solid #b9cdc5;border-radius:14px;background:#fffef7;justify-content:stretch;align-items:stretch}
 #field-greenhouse .cycle-scene h3{margin:0;font-size:clamp(20px,1.6vw,28px);line-height:1.3;text-wrap:balance}
 #field-greenhouse .cycle-source-art,#field-greenhouse .cycle-collector-art{width:100%;height:100%;min-height:0;display:grid;place-items:center;overflow:hidden}
@@ -595,10 +597,11 @@
 .guided-shell #field-greenhouse .cycle-scene .cycle-collector-art>.cycle-plate-art,#field-greenhouse .cycle-collector-art>.cycle-plate-art{display:block;width:100%;height:100%;min-height:0;max-height:none;overflow:visible}
 #field-greenhouse .cycle-scene article>b{font-size:clamp(22px,1.8vw,32px);line-height:1.25;font-variant-numeric:tabular-nums}
 #field-greenhouse .cycle-scene article>p{font-size:clamp(17px,1.2vw,22px);line-height:1.3;margin:0;color:#456762}
-#field-greenhouse .cycle-air{gap:8px;align-self:start;padding-top:20px;font-size:18px;color:#315d60}
+#field-greenhouse .cycle-air{grid-column:1/-1;grid-row:2;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;padding:4px;font-size:18px;color:#315d60}
 #field-greenhouse .cycle-air b{font-size:clamp(20px,1.6vw,27px)}
 #field-greenhouse .cycle-air p{display:block;margin:0;font-size:clamp(16px,1.1vw,20px);line-height:1.5}
-#field-greenhouse .cycle-air svg{width:80%;height:28px;margin:auto}
+#field-greenhouse .cycle-air svg{width:28px;height:20px;margin:0}
+#field-greenhouse .cycle-air p br{display:none}
 #field-greenhouse .cycle-air strong{font-size:1.2em}
 #field-greenhouse .transform-progress{font-size:clamp(16px,1.15vw,21px)}
 #field-greenhouse .workspace-controls .cycle-controls>p{font-size:clamp(18px,1.2vw,22px)!important;line-height:1.4;max-width:1200px}
@@ -606,7 +609,7 @@
 #field-greenhouse[aria-busy="true"] .cycle-collector-panel{border-color:#6c9d96}
 #field-greenhouse .btn:focus-visible{outline:3px solid #366e68;outline-offset:3px}
 @media(max-width:900px){
- #field-greenhouse .cycle-scene{grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr);gap:6px}
+ #field-greenhouse .cycle-scene{grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);gap:6px}
  #field-greenhouse .cycle-scene article{padding:8px 6px}
  #field-greenhouse .cycle-scene h3{font-size:19px}
  #field-greenhouse .cycle-scene article>b{font-size:22px}
@@ -615,6 +618,7 @@
 @media(max-width:600px){
  #field-greenhouse.workspace-stage.field-transform{padding-top:calc(var(--workspace-header-height) + 76px)!important}
  #field-greenhouse .cycle-scene{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(280px,1fr) auto;column-gap:56px}
+ #field-greenhouse .cycle-collector-panel{grid-column:2}
  #field-greenhouse .cycle-air{grid-column:1/-1;grid-row:2;display:flex;justify-content:center;gap:8px;padding:6px}
  #field-greenhouse .cycle-air svg{width:36px;height:20px;margin:0}
  #field-greenhouse .cycle-air p{font-size:14px;line-height:1.2}
@@ -727,7 +731,7 @@
 .has-time-magic [data-measure-pause],.has-time-magic [data-cycle-pause]{position:absolute!important;width:1px!important;height:1px!important;min-width:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap;pointer-events:none!important}
 .time-native-range{position:absolute!important;width:1px!important;height:1px!important;opacity:0;pointer-events:none}
 .guided-shell .workspace-controls [data-action="ix-forward"]{display:none!important}
-.guided-shell.scene-2 .workspace-controls .activity-status,.guided-shell.scene-2 .workspace-controls .science-detail,.guided-shell.scene-2 .workspace-controls .canvas-alternatives{display:none!important}
+.guided-shell.scene-2 .workspace-controls .activity-status,.guided-shell.scene-2 .workspace-controls .science-detail,.guided-shell.scene-2 .workspace-controls .canvas-alternatives:not(.sort-keyboard-controls){display:none!important}
 .guided-shell.scene-2 .stage-question-pop{display:none}
 @media(max-width:800px){
  .workspace-stage.has-time-magic{--time-tool-width:224px}
@@ -832,3 +836,87 @@
  .ending-shell .ending-copy{height:auto;align-self:stretch}
 }
 .map-finale-status{max-width:620px;margin:8px 0 0;padding:8px 12px;border-radius:12px;background:#fffdf0eb;color:#214f51;font-size:18px;line-height:1.4;word-break:keep-all}
+
+/* The water-cycle explanation has its own row beneath the clock and apparatus. */
+#field-greenhouse .time-magic{
+ --clock-size:clamp(72px,14vh,136px);
+ width:clamp(140px,20vw,220px);padding:8px;gap:4px;
+ position:static;transform:none;grid-column:2;grid-row:1;align-self:center;justify-self:center;
+}
+@media(max-height:540px){
+ #field-greenhouse .time-tap-cue{display:none}
+ #field-greenhouse .time-magic{--clock-size:72px;font-size:16px}
+ #field-greenhouse .time-magic output{display:none}
+ #field-greenhouse .cycle-air{gap:4px}
+ #field-greenhouse .cycle-air b,#field-greenhouse .cycle-air p{font-size:16px}
+}
+
+/* Classroom captions keep the same readable minimum as the experiment choices. */
+@media(min-width:1600px){
+ #app .unit-label,#app .ending-copy>p,#app .ending-replay-actions .btn,#app .classroom-making,
+ #app .observation-speed-control,#app .observation-speed-control span,#app .observation-speed-control select,
+ #app .bench-fill-controls button small,#app .bench-readout,#app .bench-readout small,#app .bench-zone-title>span,
+ #app .workspace-controls .activity-status,#app .science-detail summary,#app .canvas-alternatives summary,
+ #app .core-connect-step>span,#app .core-height-fine summary,#app .core-flow-hint,
+ #app .time-tap-cue b,#app .time-magic output,
+ #app .drop-mission small,#app .drop-world-top,#app .drop-station-status,#app .drop-station-caption>span,
+ #app .drop-vapor-marker,#app .drop-arrival,#app .drop-world-label,#app .drop-energy,#app .drop-science,
+ #app .drop-unlock p,#app .drop-discovery ul,
+ #dialog .passport-cover small,#dialog .stamp-page small,#dialog .stamp-page p,#dialog .notebook-record .eyebrow,
+ .settings-dialog .settings-muted{font-size:18px}
+}
+
+/* Keyboard and switch users can choose a picture and its state through native buttons. */
+.workspace-controls .sort-keyboard-controls[open]{display:block}
+.workspace-controls .sort-keyboard-controls[open]>summary{display:list-item}
+.sort-keyboard-controls summary{min-height:48px;align-content:center;cursor:pointer}
+.sort-keyboard-cards,.sort-keyboard-answers{display:flex;flex-wrap:wrap;gap:8px;padding:8px}
+.sort-keyboard-cards .btn{flex:1 1 180px;min-height:48px}
+.sort-keyboard-answers .btn{flex:1;min-height:48px}
+
+/* Keep the shared controls comfortable for fingers as well as a mouse. */
+#app .btn,#app .activity-button,#app .icon-btn,#app .building-guide-npc,#app .guided-tools-toggle,
+#app summary,
+#app .observation-speed-control select,#dialog summary,.settings-dialog summary{
+ min-height:48px;
+}
+#app .icon-btn,#app .building-guide-npc,#app .guided-tools-toggle{min-width:48px}
+
+#field-greenhouse .stage-question-pop{display:none}
+@media(max-width:600px){
+ #field-greenhouse .cycle-scene{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(150px,1fr) auto auto;column-gap:8px}
+ #field-greenhouse .time-magic{--clock-size:72px;grid-column:1/-1;grid-row:2;display:flex;width:auto;max-width:100%;padding:4px;gap:10px;font-size:16px}
+ #field-greenhouse .time-tap-cue,#field-greenhouse .time-magic output{display:none}
+ #field-greenhouse .cycle-air{grid-row:3}
+ #field-greenhouse .cycle-scene article>p{font-size:14px}
+}
+@media(max-height:540px){
+ #field-greenhouse .cycle-scene article{padding:4px}
+ #field-greenhouse .cycle-scene h3{font-size:16px}
+ #field-greenhouse .cycle-scene article>b{font-size:18px}
+ #field-greenhouse .cycle-scene article>p{font-size:14px}
+}
+
+#app [data-measure-action]:not([data-measure-action="wait"]){min-height:48px}
+
+#app .building-guide .hint-button{min-width:48px}
+@media(min-width:1600px){
+ #app .workspace-controls .activity-status{font-size:18px!important}
+ #app .guided-question-note,#app .trial-result,#app .mv-label,#dialog .certificate-form>p{font-size:18px}
+}
+@media screen and (min-width:1024px){
+ .dialog-body .cert-sheet .cert-ribbon small,.dialog-body .cert-sheet .cert-foot p{font-size:max(14px,calc(var(--u)*1.7))}
+ .dialog-body .cert-sheet .cert-lead{font-size:max(14px,calc(var(--u)*2.15))}
+}
+@media screen and (min-width:1600px){
+ .dialog-body .cert-sheet .cert-ribbon small,.dialog-body .cert-sheet .cert-foot p{font-size:max(18px,calc(var(--u)*1.7))}
+}
+
+#app .cold-taps button{min-height:48px;min-width:48px}
+
+@media(min-width:1024px){
+ #app .tray-cup>span,#app .tray-fill-goal,#app .process-steps li>span,#app .transform-progress li>span{font-size:14px}
+}
+@media(min-width:1600px){
+ #app .tray-cup>span,#app .tray-fill-goal,#app .process-steps li>span,#app .transform-progress li>span,#app .cold-night-watch>.btn{font-size:18px}
+}

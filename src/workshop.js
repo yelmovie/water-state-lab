@@ -4,7 +4,7 @@ import {previousTrial,funnelSeat,rampTilt} from './workshop-controls.js';
 import {state,save} from './state.js';
 import {testCollector,currentTrialValid,confirmedWorkshop,clamp,targetParts} from './domain.js';
 import {newDiagnosis,diagnosisResolved,chooseDiagnosisFault} from './collector-model.js';
-import {btn,range,toast,icon} from './ui.js';
+import {btn,range,toast} from './ui.js';
 import {openDevice,openIsland} from './three-view.js';
 let previewFinal,cleanup=[];export function resetFinalPreview(){previewFinal={submitted:[],connected:false,valve:0,tested:false,lever:0,cooling:false,coreHeight:90};}resetFinalPreview();
 export function cleanupWorkshop(){cleanup.forEach(fn=>fn());cleanup=[];}

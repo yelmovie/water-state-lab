@@ -150,7 +150,7 @@ function overlayProgram(name,cues,total,freezeAt){
   }
   bars(BAR*out(span(t,.2,1.2))*(1-out(span(t,16.5,17.3))));
   chip(t,6.8,11.6,`코어 복구 ${Math.round(100*span(t,7,9.3))}%`,'#7fe3ff',false,span(t,7,9.3));
-  if(t>12.4&&t<15.8)chip(t,12.4,15.8,`현장 도장 ${clamp(Math.floor((t-12.6)/.3)+1,1,10)}/10`,'#ffd35c');
+  if(t>12.4&&t<15.8)chip(t,12.4,15.8,`실험 탐구 ${clamp(Math.floor((t-12.6)/.3)+1,1,10)}/10`,'#ffd35c');
   if(t>9.1&&t<10.8){
    const v=span(t,9.2,9.45),decay=1-span(t,9.45,10.7),power=Math.min(v,decay);
    const flash=g.createRadialGradient(CORE[0],CORE[1],20,CORE[0],CORE[1],1250);
@@ -189,7 +189,7 @@ async function render(name){
  @font-face{font-family:Jua;src:url(${dataUrl('public/assets/fonts/jua-latin-400.woff2','font/woff2')}) format('woff2');unicode-range:U+0000-00FF,U+2000-206F}
  img{display:none}</style><canvas width="1920" height="1080"></canvas>
  <img id="logo" src="${dataUrl('public/assets/v2/title-logo.webp','image/webp')}">`;
- const browser=await chromium.launch({channel:'chrome',headless:true});const page=await browser.newPage();
+ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-crash-reporter','--disable-breakpad','--use-mock-keychain']});const page=await browser.newPage();
  await page.setContent(html,{waitUntil:'load'});
  await page.evaluate(async()=>{await Promise.all([document.fonts.load('50px Jua','물길 1/5'),...[...document.images].map(i=>i.decode())]);});
  await page.evaluate(`(${overlayProgram})(${JSON.stringify(name)},${JSON.stringify(film.cues)},${film.total},${film.srcEnd})`);
@@ -203,7 +203,7 @@ async function render(name){
   `[0:v]trim=end=${film.srcEnd},setpts=PTS-STARTPTS,fps=${FPS},${GRADE}${film.grade},tpad=stop_mode=${film.hold?'clone':'add'}:stop_duration=${extra}:color=black[${still.length?'clip':'base'}]`,
   ...(still.length?[`[3:v]format=yuva420p,fade=t=in:st=${film.srcEnd}:d=0.6:alpha=1[still]`,`[clip][still]overlay=0:0:eof_action=pass[base]`]:[]),
   `[1:v]scale=out_color_matrix=bt709,format=yuva420p[ui]`,
-  `[base][ui]overlay=0:0:eof_action=endall,format=yuv420p[v]`,
+  `[base][ui]overlay=0:0:eof_action=endall,scale=1280:720,format=yuv420p[v]`,
   `[0:a]atrim=end=${film.srcEnd},asetpts=PTS-STARTPTS,aformat=sample_rates=44100:channel_layouts=stereo,volume=7dB[amb]`,
   `[2:a]aformat=sample_rates=44100:channel_layouts=stereo,volume='${film.music.volume}':eval=frame,afade=t=in:d=1.2[music]`,
   ...mix,
@@ -216,12 +216,20 @@ async function render(name){
   if(!encoder.stdin.write(png))await new Promise(ok=>encoder.stdin.once('drain',ok));
   if(frame%150===0)console.log(`${name} ${frame}/${frames}`);
  }
- encoder.stdin.end();await done;await browser.close();
+ encoder.stdin.end();await done;
 
  const stamp=s=>{const m=Math.floor(s/60),r=(s%60).toFixed(3).padStart(6,'0');return `00:${String(m).padStart(2,'0')}:${r}`;};
  writeFileSync(`${OUT}/${name}.vtt`,`WEBVTT\n\n${film.cues.map(([a,b,text])=>`${stamp(a)} --> ${stamp(b)}\n${text.replace(/[[\]]/g,'')}`).join('\n\n')}\n`);
- const poster=spawnSync(ffmpeg,['-y','-v','error','-ss',String(film.poster),'-i',`${OUT}/${name}.mp4`,'-frames:v','1','-vf','scale=1280:-2','-c:v','libwebp','-quality','80',`${OUT}/${name}.webp`]);
- if(poster.status)throw Error(String(poster.stderr));
+ // Chrome also encodes the poster, so FFmpeg builds without libwebp work.
+ const poster=spawnSync(ffmpeg,['-v','error','-ss',String(film.poster),'-i',`${OUT}/${name}.mp4`,'-frames:v','1','-vf','scale=1280:-2','-f','image2pipe','-c:v','png','pipe:1'],{maxBuffer:16*1024*1024});
+ if(poster.status){await browser.close();throw Error(String(poster.stderr));}
+ const webp=await page.evaluate(async png=>{
+  const picture=new Image();picture.src='data:image/png;base64,'+png;await picture.decode();
+  const posterCanvas=document.createElement('canvas');posterCanvas.width=picture.width;posterCanvas.height=picture.height;
+  posterCanvas.getContext('2d').drawImage(picture,0,0);
+  return posterCanvas.toDataURL('image/webp',.8).split(',')[1];
+ },poster.stdout.toString('base64'));
+ writeFileSync(`${OUT}/${name}.webp`,Buffer.from(webp,'base64'));await browser.close();
 }
 
 for(const name of process.argv[2]?[process.argv[2]]:Object.keys(films))await render(name);

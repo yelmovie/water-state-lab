@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {STANDARDS,SETTINGS_CONTENT} from '../src/settings-content.js';
+import {STANDARDS,SETTINGS_CONTENT,STAGE_LEARNING} from '../src/settings-content.js';
 
 class FakeElement{
  constructor(doc){this.doc=doc;this.nodes=new Map();this.events=new Map();this.attributes=new Map();this.dataset={};this.open=false;this.isConnected=true;}
@@ -143,4 +143,15 @@ test('area 4 keeps the hands-on explanation and opens its film from the same pla
  assert.equal(film.open,true);assert.equal(film.querySelector('video').src,'/assets/concepts/zone-4.mp4');
  assert.match(film.innerHTML,/주민 만나기/,'the film keeps the same way forward');
  film.close();assert.equal(continued,0,'closing the film does not skip ahead');
+});
+
+
+test('all ten experiments expose their learning objective and an existing curriculum standard',()=>{
+ assert.equal(STAGE_LEARNING.length,10);
+ assert.deepEqual(STAGE_LEARNING.map(stage=>stage.stage),[1,2,3,4,5,6,7,8,9,10]);
+ for(const stage of STAGE_LEARNING){
+  assert.ok(stage.title.length>0);
+  assert.ok(stage.objective.length>20);
+  assert.ok(STANDARDS.some(standard=>standard.code===stage.standard));
+ }
 });

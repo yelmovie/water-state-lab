@@ -1,5 +1,5 @@
 import {esc,icon} from './ui.js';
-import {SETTINGS_CONTENT as C,STANDARDS} from './settings-content.js';
+import {SETTINGS_CONTENT as C,STANDARDS,STAGE_LEARNING} from './settings-content.js';
 import {APP_VERSION} from './version.js';
 import {playClick,setSoundSettings} from './sound.js';
 import {concepts} from './concept-data.js';
@@ -23,13 +23,14 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  const earnedCertificate=()=>!settings.adminUnlock&&state.restored===true&&[1,2,3,4,5].every(id=>state.completed.includes(id));
  const conceptUnlocked=n=>settings.adminUnlock||([3,4].includes(n)&&state.completed.includes(n))||fieldReady(n*2,state.fieldwork?.chapters?.[n*2]);
  const done=earnedCertificate();
- const cache=offline(),teacher=`<h3>${esc(C.teacher.standardsTitle)}</h3><ul class="settings-standards">${STANDARDS.map(s=>`<li><strong>[${esc(s.code)}]</strong> ${esc(s.text)}</li>`).join('')}</ul>`;
+ const learning=details('실험별 배움',`<ol class="settings-learning">${STAGE_LEARNING.map(stage=>`<li><strong>${stage.stage}장 · ${esc(stage.title)}</strong><p>${esc(stage.objective)}</p><small>성취기준 [${esc(stage.standard)}]</small></li>`).join('')}</ol>`);
+ const cache=offline(),teacher=`<h3>${esc(C.teacher.standardsTitle)}</h3><ul class="settings-standards">${STANDARDS.map(s=>`<li><strong>[${esc(s.code)}]</strong> ${esc(s.text)}</li>`).join('')}</ul>${learning}`;
  const offlineStatus=cache?`<p id="settings-offline" class="settings-muted" role="status">${esc(offlineText(cache))}</p>`:'';
  const teacherTools=`<section class="settings-unlock-card" aria-label="교사 시연"><h3>교사용 설정</h3>${switchButton('settings-autoplay','자동으로 보기',settings.autoplay!==false)}<p class="settings-muted">켜면 준비와 시간 관찰을 자동으로 진행해요. 예상과 답은 학생이 직접 골라요. 끄면 학생이 도구와 시계를 눌러 진행해요.</p>${switchButton('settings-unlock',C.teacher.toolsTitle,!!settings.adminUnlock)}<p id="settings-preview-notice" class="settings-muted" role="status">${esc(settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff)}</p></section>`;
  const credits=`${paragraphs(C.credits.lines)}${details(C.credits.sourcesTitle,`<p>${esc(C.credits.sourcesIntro)}</p>${C.credits.sources.map(([title,text])=>`<p><strong>${esc(title)}</strong><br>${esc(text)}</p>`).join('')}`)}<p>${esc(C.credits.copyright)}</p><p>${esc(C.credits.own)}</p><p>${esc(C.credits.external)}</p><p>${esc(C.credits.references)}</p>`;
  const clips=()=>concepts.slice(1).map(clip=>{
   const unlocked=conceptUnlocked(clip.id);
-  return `<button type="button" class="settings-concept-card" data-settings-concept="${clip.id}" ${unlocked?'':'disabled'}><img src="/assets/concepts/zone-${clip.id}.webp" alt="" loading="lazy"><span><strong>${clip.id}. ${esc(unlocked?clip.title:experimentTitles[clip.id])}</strong><small>${unlocked?(settings.adminUnlock?'교사 시연 · ${clip.seconds}초':C.replay.conceptReady):esc(C.replay.conceptLocked.replace('{n}',clip.id))}</small></span>${unlocked?'':icon('lock',20)}</button>`;
+  return `<button type="button" class="settings-concept-card" data-settings-concept="${clip.id}" ${unlocked?'':'disabled'}><img src="/assets/concepts/zone-${clip.id}.webp" alt="" loading="lazy"><span><strong>${clip.id}. ${esc(unlocked?clip.title:experimentTitles[clip.id])}</strong><small>${unlocked?(settings.adminUnlock?`교사 시연 · ${clip.seconds}초`:C.replay.conceptReady):esc(C.replay.conceptLocked.replace('{n}',clip.id))}</small></span>${unlocked?'':icon('lock',20)}</button>`;
  }).join('');
  const records=`<div class="settings-records">${notebook?`<button type="button" id="settings-notebook" class="btn secondary">${icon('book')}${esc(C.app.notebook)}</button>`:''}${discoveries?`<button type="button" id="settings-discoveries" class="btn secondary">${icon('flask')}${esc(C.app.discoveries)}</button>`:''}</div>`;
  const audio=`${switchButton('settings-bgm',C.sound.bgm,settings.bgm===true)}${switchButton('settings-sfx',C.sound.sfx,settings.sfx!==false)}<div class="settings-volume"><label for="settings-bgm-volume">${esc(C.sound.volume)} <output id="settings-volume-output" for="settings-bgm-volume">${settings.bgmVolume??35}%</output></label><input type="range" id="settings-bgm-volume" min="0" max="100" step="5" value="${settings.bgmVolume??35}" aria-valuetext="${settings.bgmVolume??35}%" ${settings.bgm?'':'disabled'}></div>${switchButton('settings-reduced',C.sound.reduced,settings.reduced===true)}`;

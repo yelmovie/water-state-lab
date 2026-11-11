@@ -16,6 +16,7 @@ test('the built precache list covers every asset the app references, without PNG
  const [,cache,shell,later]=/^const CACHE=("[^"]+"),SHELL=(\[.*?\]),LATER=(\[.*?\]);$/m.exec(sw).map((v,i)=>i?JSON.parse(v):v);
  assert.match(cache,/^water-[0-9a-f]{12}$/);
  const all=new Set([...shell,...later]);
+ assert.ok(![...all].some(url=>url.includes('colorfigures')||url.includes('collector-figure-')),'retired 2D viewer stays out of the delivery');
  assert.equal(all.size,shell.length+later.length,'install and background lists do not overlap');
  for(const url of ['/','/manifest.webmanifest','/src/app.js','/src/style.css','/assets/vendor/phaser.min.js','/assets/fonts/jua-korean-400.woff2','/assets/icons/icon-192.png'])assert.ok(shell.includes(url),url);
  assert.ok(!later.some(u=>u.startsWith('/src/')),'code ships with the first screen so versions never mix');
@@ -26,7 +27,7 @@ test('the built precache list covers every asset the app references, without PNG
  for(let n=1;n<=5;n++)for(const ext of ['webp','mp4'])assert.ok(all.has(`/assets/concepts/zone-${n}.${ext}`),`concept ${n}.${ext}`);
  // Legacy MVP backgrounds in style.css were never part of the built site.
  const legacy=new Set();
- const files=[...readdirSync('src').filter(f=>/\.(js|css)$/.test(f)).map(f=>'src/'+f),'index.html'];
+ const files=[...readdirSync(`${out}/src`).filter(f=>/\.(js|css)$/.test(f)).map(f=>`${out}/src/`+f),'index.html'];
  let checked=0;
  for(const file of files){
   const text=readFileSync(file,'utf8'),refs=[...text.matchAll(/\/assets\/(?:\$\{[^}]*\}|[^'"`)\s])*/g)].map(m=>m[0]);

@@ -1,19 +1,19 @@
 import {coreTransfer} from './core-transfer.js';
-import {drawRealDrop} from './study-materials.js';
+
 import {addStudyFrames,studySheets} from './study-materials.js';
 import {createIceScene,createClothScene,createWaterDrawing,createDewScene} from './study-scenes.js';
 import {createPouringScene,drawBeakerWater,drawVessel,waterSurfaceY} from './pouring-scene.js';
 import {createFreezeScene} from './freeze-scene.js';
 import {partPosition,funnelSeat} from './workshop-controls.js';
-import {resetDrawingExperiment} from './drawing-records.js';
+
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
-import {sortCards,nextSortCard,hiddenScenes,activityReady,cupSummarySeen,dryTrace,heatingTrial} from './activity-model.js';
-import {visibleDew,wipeDroplets} from './inquiry-model.js';
+import {sortCards,nextSortCard,hiddenScenes,activityReady,cupSummarySeen,heatingTrial} from './activity-model.js';
+
 import {stop as stopClock,observationTime} from './inquiry.js';
 import {finalContext} from './workshop.js';
 import {testCollector} from './domain.js';
-import {clampValue as clamp,waterHeight,beakerShell,beakerInner,islandStops,islandTrails,pointOnRoute,lensRegion} from './scene-model.js';
+import {clampValue as clamp,waterHeight,beakerShell,beakerInner,islandStops,islandTrails,pointOnRoute} from './scene-model.js';
 
 let game=null,activeScene=null,generation=0;
 // Visual continuity survives a DOM redraw; learner records remain in the state model.
@@ -22,7 +22,17 @@ const a=()=>state.activities,q=()=>state.inquiry;
 const reduced=()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
 const later=fn=>queueMicrotask(fn);
 // Transparent window in the generated tank frame; water keeps its original geometry.
-export function cleanupPhaser(){generation++;if(game){game.destroy(true);game=null;}activeScene=null;}
+export function cleanupPhaser(){
+ generation++;
+ if(game){
+  // The bundled Phaser removes mouse events except wheel. Pooled canvases
+  // otherwise retain the input manager, game and detached scene DOM.
+  const mouse=game.input?.mouse;
+  if(mouse?.target&&mouse.onMouseWheel)mouse.target.removeEventListener('wheel',mouse.onMouseWheel);
+  game.destroy(true);game=null;
+ }
+ activeScene=null;
+}
 export function focusExperiment(){activeScene?.focusObjects?.();}
 
 function makeScene(P,route,ctx,host,hidden,regions){
@@ -80,7 +90,9 @@ function makeScene(P,route,ctx,host,hidden,regions){
    });
    modalWatcher.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['open']});
    syncModalInput();
-   this.events.once('shutdown',()=>{sizing.disconnect();modalWatcher.disconnect();});
+   const disconnectObservers=()=>{sizing.disconnect();modalWatcher.disconnect();};
+   this.events.once('shutdown',disconnectObservers);
+   this.events.once('destroy',disconnectObservers);
    this.g=this.add.graphics();this.dynamic=this.add.graphics().setDepth(4);this.labels=[];this.dragging=null;
    this.input.on('dragstart',(pointer,obj)=>{this.dragging=obj;obj.restoreDepth=obj.depth;obj.setDepth(20);this.home={x:obj.x,y:obj.y};stopClock();this.reactAt(obj.x,obj.y,'grab');this.buddyApproach(obj);});
    this.input.on('drag',(pointer,obj,x,y)=>{obj.x=clamp(x,35,W-35);obj.y=clamp(y,40,H-20);obj.onMove?.(pointer);});
@@ -88,7 +100,10 @@ function makeScene(P,route,ctx,host,hidden,regions){
    this.input.on('pointerup',p=>this.finishPointer?.(p));
    this.input.on('pointerupoutside',p=>this.finishPointer?.(p));
    this.game.events.on('blur',this.blur=()=>{this.dragging=null;this.finishPointer?.();save();});
-   this.events.once('shutdown',()=>this.game.events.off('blur',this.blur));
+   const gameEvents=this.game.events;
+   const removeBlur=()=>gameEvents.off('blur',this.blur);
+   this.events.once('shutdown',removeBlur);
+   this.events.once('destroy',removeBlur);
    if(route==='map')this.mapScene();
    else if(route===1)this.observeScene();
    else if(route===2)this.sortScene();
@@ -104,7 +119,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
      cue.lineStyle(9,0xfff8d5,.95).strokeRoundedRect(x-w/2,y-h/2,w,h,r);
      cue.lineStyle(4,0xe0a92e,1).strokeRoundedRect(x-w/2,y-h/2,w,h,r);
     }
-    if(!state.settings.reduced)this.tweens.add({targets:cue,alpha:.35,duration:650,yoyo:true,repeat:-1});
+    if(!reduced())this.tweens.add({targets:cue,alpha:.35,duration:650,yoyo:true,repeat:2});
    }
    if(route!=='map')this.events.emit('learner-ready');
   }
@@ -315,7 +330,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
     if(s.parts.funnel.x!==seat.x||s.parts.funnel.y!==seat.y){
      const ring=this.add.circle(x,y,44,0xffdf91,.28).setStrokeStyle(4,0xe0a92e).setDepth(1);
      this.text(x,y,'여기로!',18,'#8a5a10').setDepth(3);
-     if(!state.settings.reduced)this.tweens.add({targets:ring,scale:1.18,alpha:.55,duration:700,yoyo:true,repeat:-1});
+     if(!reduced())this.tweens.add({targets:ring,scale:1.18,alpha:.55,duration:700,yoyo:true,repeat:2});
     }
    }
    let core,coreLabel,valve,valveText;

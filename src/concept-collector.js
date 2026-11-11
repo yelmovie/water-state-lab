@@ -1,4 +1,4 @@
-import {btn,buddy,icon,esc,canArt} from './ui.js';
+import {btn,icon,canArt} from './ui.js';
 import {setMusicQuiet} from './sound.js';
 const phases=[
  {title:'먼저, 차갑게 하지 않은 판',text:'받이를 같은 자리에 놓아도 판이 차갑지 않으면 이 모형에서는 물이 모이지 않아.'},

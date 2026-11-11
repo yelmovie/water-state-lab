@@ -6,7 +6,7 @@ import * as ui from './ui.js';
 import {exampleWaterDrawing} from './drawing-records.js';
 import {benchMarkup,bindBench} from './freeze-bench.js';
 import {freezeTalk,talkDone,pipeChoices} from './freeze-talk.js';
-import {cupSummarySeen,initialActivities,activityReady,experimentActivities,nextSortCard,sortCards,heatingTrial,pipeTrial,recordPipeTrial,dryTrace,dewTrial,limit,freezeAmounts,freezeChallengeTrial,bestFreezeChallenge} from './activity-model.js';
+import {cupSummarySeen,initialActivities,activityReady,experimentActivities,nextSortCard,sortCards,heatingTrial,recordPipeTrial,dryTrace,dewTrial,limit,freezeAmounts,freezeChallengeTrial,bestFreezeChallenge} from './activity-model.js';
 export {initialActivities} from './activity-model.js';
 const {esc,beaker,canArt}=ui;
 const data=()=>experimentActivities(state.route,state);

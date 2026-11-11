@@ -4,7 +4,7 @@ import {finalContext} from './workshop.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
 import {villageLights} from './village-lights.js';
-import {missions,canEnter,currentTrialValid,testCollector} from './domain.js';
+import {missions,canEnter,currentTrialValid} from './domain.js';
 import {buddy,icon,btn,propArt,toast} from './ui.js';
 import {islandStops,islandLanding,walkIslandStep,islandWalkTo,nearbyMapActions,routeDistance,pointOnRoute,clampValue as clamp} from './scene-model.js';
 

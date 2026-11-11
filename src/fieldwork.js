@@ -11,7 +11,7 @@ import {restingIceY,beakerInner} from './scene-model.js';
 import {drawVessel,drawVesselFront,drawBeakerWater,waterSurfaceY} from './pouring-scene.js';
 import {state,save} from './state.js';
 import {fieldMissions,chapterState,fieldAction,fieldReady} from './fieldwork-model.js';
-import {btn,buddy,icon,esc,toast,modal,propArt} from './ui.js';
+import {btn,buddy,esc,toast} from './ui.js';
 import {playCue} from './sound.js';
 import {openConcept} from './concepts.js';
 

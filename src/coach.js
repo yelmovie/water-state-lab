@@ -1,6 +1,6 @@
 import {fieldTask} from './field-guidance.js';
 import {state} from './state.js';
-import {fieldMissions,fieldReady} from './fieldwork-model.js';
+import {fieldMissions} from './fieldwork-model.js';
 import {btn,esc,icon} from './ui.js';
 import {openConcept} from './concepts.js';
 import {playCue} from './sound.js';

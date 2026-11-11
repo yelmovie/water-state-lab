@@ -35,7 +35,7 @@ const audit=()=>{
  if(document.documentElement.scrollWidth>innerWidth+2)issues.push('horizontal overflow');
  if(document.querySelectorAll('#field-greenhouse').length>1)issues.push('duplicate greenhouse root');
  for(const e of document.querySelectorAll('button,summary,input,select')){if(!visible(e))continue;const r=e.getBoundingClientRect(),name=(e.textContent||e.getAttribute('aria-label')||e.id).trim().slice(0,35);
-  if(e.tagName!=='INPUT'&&(r.width<40||r.height<40))issues.push(`small target ${name} ${r.width}x${r.height}`);
+  if(e.tagName!=='INPUT'&&(r.width<47.5||r.height<47.5))issues.push(`small target ${name} ${r.width}x${r.height}`);
   if(r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight){let clipped=false;for(let p=e.parentElement;p;p=p.parentElement){const pr=p.getBoundingClientRect(),cs=getComputedStyle(p);if(/hidden|clip|auto|scroll/.test(cs.overflowY)&&(r.top+r.height/2<pr.top||r.top+r.height/2>pr.bottom))clipped=true;}
    const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);if(!clipped&&hit&&!e.contains(hit)&&!hit.contains(e))issues.push(`covered ${name} by ${hit.className}`);
   }
@@ -109,6 +109,58 @@ try{
   await setup(10,true);for(const step of ['prepare','wait','observe','receiver','cool','wait','collect','compare']){await cycle(step);await layout('flow-greenhouse-'+step+(step==='wait'?'-'+(await get()).fieldwork.chapters[10].moves.cycleStage:''));}
   assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push('field-10');
   await page.reload({waitUntil:'networkidle'});assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push('greenhouse-reload');
+  }else if(process.argv[2]==='keyboard'){
+  await setup(2);await ready(2);
+  const summary=page.locator('.sort-keyboard-controls>summary');
+  let reached=false;
+  for(let i=0;i<25;i++){
+   await page.keyboard.press('Tab');
+   if(await summary.evaluate(el=>el===document.activeElement)){reached=true;break;}
+  }
+  assert.ok(reached,'Tab must reach the classification alternative');
+  await page.keyboard.press('Enter');
+  const cards=await page.evaluate(async()=>(await import('/src/activity-model.js')).sortCards);
+  for(const card of cards){
+   await page.locator(`[data-action="ix-sort-card-${card.id}"]:visible`).press('Enter');
+   await page.locator(`[data-action="ix-sort-answer-${card.type}"]:visible`).press('Enter');
+   assert.equal((await get()).activities.sort.placed[card.id],card.type);
+  }
+  assert.equal(await isReady(2),true);checks.push('keyboard-six-classifications');
+  await layout('keyboard-classification');
+ }else if(process.argv[2]==='lifecycle'){
+  const cdp=await context.newCDPSession(page),samples=[];
+  await cdp.send('Performance.enable');
+  for(let cycle=1;cycle<=15;cycle++){
+   await setup(1);await ready(1);
+   await page.evaluate(async()=>{const {state}=await import('/src/state.js');state.route='map';(await import('/src/app.js')).render();});
+   await page.waitForTimeout(250);
+   if(cycle%5===0){
+    await cdp.send('HeapProfiler.collectGarbage');
+    const m=Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(m=>[m.name,m.value]));
+    samples.push({cycle,nodes:m.Nodes,listeners:m.JSEventListeners,heap:m.JSHeapUsedSize});
+   }
+  }
+  console.log(JSON.stringify(samples));
+  assert.ok(samples.at(-1).nodes-samples[0].nodes<100,'detached scene nodes must not accumulate');
+  assert.ok(samples.at(-1).listeners-samples[0].listeners<6,'pooled canvas listeners must not accumulate');
+  checks.push('15-scene-round-trips');
+  await writeFile(`${out}/lifecycle.json`,JSON.stringify(samples,null,2));
+ }else if(process.argv[2]==='resume'){
+  for(const [width,height] of (process.env.QA_VIEWPORTS?JSON.parse(process.env.QA_VIEWPORTS):[[1280,800],[1024,600],[915,412]])){
+   await page.setViewportSize({width,height});await setup(10,true);
+   for(const step of ['prepare','wait','observe','receiver','cool'])await cycle(step);
+   const reachable=async label=>{
+    await page.waitForTimeout(300);
+    const bounds=await page.locator('.cycle-scene').boundingBox(),clock=await page.locator('[data-time-magic]').boundingBox();
+    assert.ok(bounds&&bounds.height>80&&bounds.y+bounds.height<=height,`${label}: experiment must stay in view`);
+    assert.ok(clock&&clock.y>=0&&clock.y+clock.height<=height,`${label}: clock must stay in view`);
+    await layout(`${label}-${width}x${height}`);
+   };
+   await click('settings');await page.locator('#settings-x').click();await reachable('greenhouse-settings');
+   await page.reload({waitUntil:'networkidle'});await hook();await reachable('greenhouse-reload');
+   await cycle('wait');await cycle('collect');await cycle('compare');
+   assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push(`greenhouse-resume-${width}x${height}`);
+  }
  }else if(process.argv[2]==='states'){
   const stages=['start','measured','cooling','frozen','taken','ice-measured','resting','melted','melt-measured','compared'];
   const cycles=['start','evaporating','evaporated','observed','receiving','condensing','droplets','collected','compared'];
