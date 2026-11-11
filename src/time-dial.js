@@ -27,7 +27,7 @@ function paintMagic(stage){
  const done=value>=max;
  if(running)magic.dataset.cueSeen="true";
  magic.classList.toggle("needs-attention",!running&&!done);
- magic.hidden=done;
+ if(magic.hidden!==done)magic.hidden=done;
  // The large arrival clock is transient. While observing, only a compact pause
  // control remains in the existing bottom toolbar, never over the experiment.
  const dock=stage.querySelector(':scope > .workspace-controls');

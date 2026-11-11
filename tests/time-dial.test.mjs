@@ -145,3 +145,10 @@ test("reduced motion keeps the static arrival cue available",t=>{
  f.click();assert.equal(f.magic.parentElement,f.stage);
  f.click();assert.equal(f.magic.parentElement,f.dock);
  });
+
+ test('unchanged completion does not retrigger hidden-attribute observers',t=>{
+ const f=fixture(t);let value=false,writes=0;Object.defineProperty(f.magic,'hidden',{get:()=>value,set:v=>{value=v;writes++;}});
+ f.mount();f.mount();assert.equal(writes,0);
+ f.range.value=100;paintTimeDial(f.range);assert.equal(writes,1);
+ f.mount();f.mount();assert.equal(writes,1);
+ });
