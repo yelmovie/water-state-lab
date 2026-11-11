@@ -106,3 +106,21 @@ test('an open dialog prevents starting a clock behind it',t=>{
  assert.ok(css.includes(".guided-control:not(.phaser-stage):not(#field-canvas):not(.time-magic){position:relative;z-index:2}"));
  assert.ok(!css.includes(".guided-control:not(.phaser-stage):not(#field-canvas){position:relative"));
  });
+
+test("clock arrival cue hides on first use and stays hidden when paused",t=>{
+ const f=fixture(t);
+ assert.equal(f.magic.classList.contains("needs-attention"),true);
+ assert.match(f.magic.innerHTML,/time-tap-cue/);
+ f.click();assert.equal(f.magic.classList.contains("needs-attention"),false);
+ f.click();f.mount();assert.equal(f.magic.classList.contains("needs-attention"),false);
+});
+test("automatic observation and completion do not ask for another tap",t=>{
+ const f=fixture(t,{waitControl:true});
+ f.wait.click();f.mount();assert.equal(f.magic.classList.contains("needs-attention"),false);
+ f.click();f.mount();assert.equal(f.magic.classList.contains("needs-attention"),false);
+ f.progress.value=100;f.mount();assert.equal(f.magic.classList.contains("needs-attention"),false);
+});
+test("reduced motion keeps the static arrival cue available",t=>{
+ const f=fixture(t,{reduced:true});assert.equal(f.magic.classList.contains("needs-attention"),true);
+ f.click();assert.equal(f.magic.classList.contains("needs-attention"),false);
+});

@@ -651,6 +651,13 @@
  cursor:pointer;
  touch-action:manipulation;
 }
+/* A short arrival cue points to the clock without moving its hit area. */
+.time-tap-cue{position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);display:none;justify-items:center;gap:2px;width:max-content;max-width:calc(var(--time-tool-width) + 16px);pointer-events:none;color:#214f4b}
+.time-magic.needs-attention .time-tap-cue{display:grid}
+.time-tap-cue b{padding:4px 7px;border:2px solid #b87a1a;border-radius:12px;background:#fff8d9;box-shadow:0 2px 0 #74562233;font:700 16px/1.2 var(--font-body);white-space:nowrap}
+.time-tap-cue svg{display:block;width:30px;height:28px;overflow:visible;fill:#f3c64f;stroke:#795b20;stroke-width:1.5;stroke-linejoin:round;filter:drop-shadow(0 1px 0 #fffdf4)}
+@keyframes time-cue-point{0%,100%{transform:translateY(-3px)}50%{transform:translateY(3px)}}
+@media(prefers-reduced-motion:no-preference){html:not(.reduce-motion) .time-magic.needs-attention .time-tap-cue svg{animation:time-cue-point .9s ease-in-out 4}}
 .time-magic-art {
  position:relative;
  display:block;

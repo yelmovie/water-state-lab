@@ -25,6 +25,8 @@ function paintMagic(stage){
  const {range,wait,max,value}=source;
  const running=!!wait?.disabled||stage.dataset.magicPlaying==='true';
  const done=value>=max;
+ if(running)magic.dataset.cueSeen="true";
+ magic.classList.toggle("needs-attention",!running&&!done&&magic.dataset.cueSeen!=="true");
  if(running&&!done&&!magic.classList.contains('is-running'))castMagic(magic);
  if(!running||done)magic.classList.remove('is-casting');
  magic.style.setProperty('--time-minute',value/max*1440+'deg');
@@ -46,13 +48,14 @@ export function mountTimeTools(stage,playInquiry,isInquiryPlaying){
  if(!source){magic?.remove();return;}
  if(!magic){
   magic=document.createElement('button');magic.type='button';magic.className='time-magic';magic.dataset.timeMagic='';
-  magic.innerHTML='<span class="time-magic-art" aria-hidden="true"><img class="time-face" src="/assets/learning/time-clock-face.webp" alt="" draggable="false"><i class="time-hour"></i><i class="time-minute"></i><i class="time-pivot"></i><img class="time-tap-wand" src="/assets/learning/time-wand-tap.webp" alt="" draggable="false"><span class="time-spark"></span></span><span class="time-magic-label">시계를 톡 눌러 봐!</span><output>0%</output>';
+  magic.innerHTML='<span class="time-tap-cue" aria-hidden="true"><b>여기 톡!</b><svg viewBox="0 0 32 30" focusable="false"><path d="M11 2h10v13h8L16 28 3 15h8Z"/></svg></span><span class="time-magic-art" aria-hidden="true"><img class="time-face" src="/assets/learning/time-clock-face.webp" alt="" draggable="false"><i class="time-hour"></i><i class="time-minute"></i><i class="time-pivot"></i><img class="time-tap-wand" src="/assets/learning/time-wand-tap.webp" alt="" draggable="false"><span class="time-spark"></span></span><span class="time-magic-label">시계를 톡 눌러 봐!</span><output>0%</output>';
   stage.append(magic);
   magic.addEventListener('animationend',event=>{
    if(event.animationName==='time-wand-tap')magic.classList.remove('is-casting');
   });
   magic.addEventListener('click',()=>{
    const current=sourceFor(stage);if(!current||magic.disabled||document.hidden||document.querySelector('dialog[open]'))return;
+   magic.dataset.cueSeen="true";magic.classList.remove("needs-attention");
    if(current.wait){
     if(current.wait.disabled)document.dispatchEvent(new Event('observation-stop'));
     else current.wait.click();
