@@ -141,7 +141,7 @@ export function mountMapCamera(){
    const [width,height]=labelSizes[i],halfW=width/2+5,halfH=height/2+5;
    node.toggleAttribute('data-offscreen',px<0||px>w||py<0||py>h);
    node.style.setProperty('--map-label-x',clamp(px,halfW,w-halfW)-px+'px');
-   node.style.setProperty('--map-label-y',clamp(py,Math.max(halfH,hudBottom+halfH+8),h-halfH)-py+'px');
+   node.style.setProperty('--map-label-y',clamp(py-36,Math.max(halfH,hudBottom+halfH+8),h-halfH)-py+'px');
   }
   // Keep moving map characters clear of the fixed header; they return when panned into view.
   for(const villain of world.querySelectorAll('.mv-target')){const r=villain.getBoundingClientRect();villain.style.visibility=r.top<box.top+hudBottom+24?'hidden':'';}
