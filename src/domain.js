@@ -6,7 +6,7 @@ export const missions = [
   {id:4,name:'컵 밖 물방울 사건',short:'물방울 분석실',subtitle:'물방울은 어디에서 왔을까?',reward:'응결 증거 보고서',world:'응결 수집판에 물방울이 모이기 시작했어.',screens:[7,8],color:'#9b7cc8'},
   {id:5,name:'마지막 물길을 설계하라',short:'물길 설계 공방',subtitle:'네 설계로 연구실을 다시 움직여',reward:'물 수집 장치 설계도',world:'마지막 설계 기록 완성! 이제 코어를 연결하자.',screens:[9,10],color:'#399b7b'}
 ];
-export const screenNames=['','그릇을 바꾸면 어떻게 될까?','어떤 물의 모습일까?','얼면 높이와 무게가 달라질까?','얼음이 커질 자리를 남겨 볼까?','내 물그림은 어떻게 달라질까?','끓지 않아도 물은 줄어들까?','닦은 자리에 또 생길까?','내 증거로 설명해 볼까?','어디를 고치면 물이 더 모일까?','물이 도착하지 않는 이유는 뭘까?'];
+export const screenNames=['','그릇을 바꾸면 어떻게 될까?','어떤 물의 모습일까?','얼면 높이와 무게가 달라질까?','얼음이 커질 자리를 남겨 볼까?','내 물그림은 어떻게 달라질까?','끓지 않아도 물은 줄어들까?','닦은 자리에 또 생길까?','관찰결과를 확인해 볼까?','어디를 고치면 물이 더 모일까?','물이 도착하지 않는 이유는 뭘까?'];
 export const observations=[
   {name:'물 붓기',label:'물',evidence:'다른 용기에 부으니 용기에 맞게 모양이 달라졌어.',type:'액체'},
   {name:'얼음 옮기기',label:'얼음',evidence:'다른 곳으로 옮겨도 얼음의 모양은 유지됐어.',type:'고체'},
@@ -39,4 +39,4 @@ export function confirmedWorkshop(evidence){if(!evidence?.parts||!evidence.resul
 export function canEnter(screen,state){if(!Number.isInteger(screen)||screen<1||screen>10)return false;if(state.settings?.adminUnlock)return true;const m=Math.ceil(screen/2);if(m>1&&!state.completed.includes(m-1))return false;if(screen%2===0&&!state.pages.includes(screen-1))return false;return true;}
 export function researchStyle(state){const counts={ '끈질긴 실험가':(state.activities?.pipe.trials.length||state.lab.pipe.trials.length),'창의적 설계자':state.lab.workshop.trials.length*2,'꼼꼼한 관찰자':(state.activities?.compare.pins.length||state.lab.compare.pins.length)+(state.activities?.dew.records.length||state.lab.condensation.snapshots.length)};return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];}
 
-export function previousRoute(route){return route==='home'?null:route==='map'?'home':route==='ending'?10:route===1?'map':route-1;}
+export function previousRoute(route){return route==='home'?null:route==='map'?'home':route==='adventure'?'map':route==='ending'?10:route===1?'map':route-1;}

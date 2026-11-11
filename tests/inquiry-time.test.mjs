@@ -318,3 +318,28 @@ test('inspecting an earlier still frame cannot award a later boiling observation
  handleInquiry('ix-lens-inside',ctx);
  assert.deepEqual(state.activities.compare.pins,['inside']);
 });
+
+test('one cup wipe action cleans both cups and supports wiping again after comparison',()=>{
+ reset(7);state.settings.sound=false;state.inquiry.dewHypothesis='air';
+ handleInquiry('ix-wipe-cups',ctx);
+ assert.deepEqual(state.activities.dew.wiped,['cold','room']);
+ state.activities.dew.sealed=true;
+ handleInquiry('ix-forward',ctx);
+ seekInquiryTime(7,100);
+ handleInquiry('ix-record',ctx);
+ assert.equal(state.activities.dew.records.length,2);
+ handleInquiry('ix-wipe-cups',ctx);
+ assert.equal(state.activities.dew.rewiped,true);
+ assert.equal(state.activities.dew.againTime,0);
+ assert.ok(state.inquiry.dewRegion.length>0);
+ seekInquiryTime(7,100);
+ handleInquiry('ix-record',ctx);
+ assert.equal(state.activities.dew.again,true);
+});
+
+test('one cup wipe action finishes a partially wiped saved comparison',()=>{
+ reset(7);state.settings.sound=false;state.inquiry.dewHypothesis='air';
+ state.activities.dew.wiped=['cold'];
+ handleInquiry('ix-wipe-cups',ctx);
+ assert.deepEqual(state.activities.dew.wiped,['cold','room']);
+});

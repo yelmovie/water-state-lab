@@ -18,7 +18,7 @@ export function closeThreeView(){if(!active)return;const v=active;active=null;v.
 
 function open(title,hint,build,onContinue){
  closeThreeView();
- const d=modal(title,`<div class="three-view"><div class="three-stage" id="three-stage" tabindex="0" role="img" aria-label="${esc(title)}. 화살표 키로도 돌릴 수 있어."><p class="three-status" id="three-status">3D 모형을 불러오고 있어…</p></div><p class="three-hint">${esc(hint)}</p>${onContinue?btn('관찰 마치고 계속','three-continue','primary'):''}</div>`);
+ const d=modal(title,`<div class="three-view"><div class="three-stage" id="three-stage" tabindex="0" role="img" aria-label="${esc(title)}. 화살표 키로도 돌릴 수 있어."><p class="three-status" id="three-status">3D 모형을 불러오고 있어…</p></div><div class="three-controls" role="group" aria-label="3D 관찰 조작">${[['left','왼쪽 회전'],['right','오른쪽 회전'],['height','높이 바꾸기'],['in','＋ 확대'],['out','− 축소'],['reset','전체 보기']].map(([action,label])=>`<button type="button" class="btn secondary" data-three-camera="${action}">${label}</button>`).join('')}</div><p class="three-hint">${esc(hint)} 휠 또는 두 손가락으로 확대하고, 오른쪽 버튼으로 끌어 위치를 옮겨 봐.</p>${onContinue?btn('관찰 마치고 계속','three-continue','primary'):''}</div>`);
  if(onContinue)d.querySelector('[data-action="three-continue"]').addEventListener('click',()=>{closeThreeView();d.close();onContinue();},{once:true});
  d.classList.add('three-dialog');
  const stage=d.querySelector('#three-stage'),status=d.querySelector('#three-status'),view={stop:false,dispose:[]};active=view;
@@ -40,26 +40,58 @@ async function mount(THREE,loader,stage,view,build){
  root.position.sub(centre);root.add(decor);
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true}),el=renderer.domElement;
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));stage.append(el);
- let yaw=-.55,pitch=.32,drag=null,frame=0,last=performance.now(),dist=1;
+ let yaw=-.55,pitch=.32,drag=null,frame=0,last=performance.now(),dist=1,zoom=1,interacted=false,height=0;
+ const target=new THREE.Vector3(),pointers=new Map(),input=new AbortController();
+ const setZoom=value=>{zoom=Math.max(1,Math.min(5,value));camera.zoom=zoom;camera.updateProjectionMatrix();stage.dataset.zoom=zoom.toFixed(2);interacted=true;};
+ const pan=(dx,dy)=>{const units=2*dist*Math.tan(camera.fov*Math.PI/360)/stage.clientHeight/zoom;const right=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,0),up=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,1);target.addScaledVector(right,-dx*units).addScaledVector(up,dy*units);target.clamp(size.clone().multiplyScalar(-.55),size.clone().multiplyScalar(.55));};
  const resize=()=>{const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();dist=orbitDistance(size,camera.aspect,camera.fov);};
  const ro=new ResizeObserver(resize);ro.observe(stage);resize();
- // Drag or arrow keys turn the model; it is never required to continue the lesson.
+ // Zoom is optical, so detail stays visible without pushing the camera through the model.
  el.style.touchAction='none';
- el.onpointerdown=e=>{if(drag||e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw,pitch};el.setPointerCapture(e.pointerId);};
- el.onpointermove=e=>{if(!drag||drag.id!==e.pointerId)return;yaw=drag.yaw-(e.clientX-drag.x)*.008;pitch=Math.max(-.05,Math.min(1.1,drag.pitch+(e.clientY-drag.y)*.006));};
- el.onpointerup=el.onpointercancel=e=>{if(drag?.id===e.pointerId)drag=null;};
- stage.onkeydown=e=>{const k={ArrowLeft:[.15,0],ArrowRight:[-.15,0],ArrowUp:[0,.1],ArrowDown:[0,-.1]}[e.key];if(!k)return;e.preventDefault();yaw+=k[0];pitch=Math.max(-.05,Math.min(1.1,pitch+k[1]));};
+ el.addEventListener('wheel',e=>{e.preventDefault();const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?stage.clientHeight:1);setZoom(zoom*Math.exp(-Math.max(-300,Math.min(300,delta))*.0025));},{passive:false,signal:input.signal});
+ el.oncontextmenu=e=>e.preventDefault();
+ el.onpointerdown=e=>{
+  if(![0,2].includes(e.button))return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});interacted=true;
+  drag={id:e.pointerId,x:e.clientX,y:e.clientY,pan:e.button===2||e.shiftKey};el.setPointerCapture(e.pointerId);
+ };
+ el.onpointermove=e=>{
+  const previous=pointers.get(e.pointerId);if(!previous)return;
+  const other=[...pointers.entries()].find(([id])=>id!==e.pointerId)?.[1];
+  const dx=e.clientX-previous.x,dy=e.clientY-previous.y;
+  if(other){const before=Math.hypot(previous.x-other.x,previous.y-other.y),after=Math.hypot(e.clientX-other.x,e.clientY-other.y);if(before>4)setZoom(zoom*after/before);pan(dx/2,dy/2);}
+  else if(drag?.pan)pan(dx,dy);
+  else{yaw-=dx*.008;pitch=Math.max(.12,Math.min(1.1,pitch+dy*.006));}
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ };
+ el.onpointerup=el.onpointercancel=el.onlostpointercapture=e=>{pointers.delete(e.pointerId);if(drag?.id===e.pointerId)drag=null;};
+ window.addEventListener('blur',()=>{pointers.clear();drag=null;},{signal:input.signal});
+ stage.parentElement.querySelector('.three-controls').addEventListener('click',e=>{
+  const action=e.target.closest('[data-three-camera]')?.dataset.threeCamera;if(!action)return;
+  interacted=true;
+  if(action==='in')setZoom(zoom*1.3);
+  if(action==='out')setZoom(zoom/1.3);
+  if(action==='left')yaw+=Math.PI/4;
+  if(action==='right')yaw-=Math.PI/4;
+  if(action==='height'){height=(height+1)%3;pitch=[.32,.65,1][height];}
+  if(action==='reset'){yaw=-.55;pitch=.32;height=0;target.set(0,0,0);setZoom(1);}
+ },{signal:input.signal});
+ stage.onkeydown=e=>{
+  if(['+','=','-','0'].includes(e.key)){e.preventDefault();if(e.key==='0'){target.set(0,0,0);setZoom(1);}else setZoom(zoom*(e.key==='-'?1/1.2:1.2));return;}
+  const k={ArrowLeft:[.15,0],ArrowRight:[-.15,0],ArrowUp:[0,.1],ArrowDown:[0,-.1]}[e.key];if(!k)return;
+  e.preventDefault();interacted=true;yaw+=k[0];pitch=Math.max(.12,Math.min(1.1,pitch+k[1]));
+ };
  const loop=now=>{
   if(view.stop)return;if(!stage.isConnected){closeThreeView();return;}
   frame=requestAnimationFrame(loop);if(document.hidden)return;
   const dt=Math.min(.05,(now-last)/1000),still=reduced();last=now;
-  if(!drag&&!still)yaw-=dt*.22;
+  if(!drag&&!still&&!interacted)yaw-=dt*.22;
   tick?.(dt,now/1000,still);
-  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*dist,Math.sin(pitch)*dist,Math.cos(yaw)*Math.cos(pitch)*dist);camera.lookAt(0,0,0);
+  camera.position.set(Math.sin(yaw)*Math.cos(pitch)*dist,Math.sin(pitch)*dist,Math.cos(yaw)*Math.cos(pitch)*dist).add(target);camera.lookAt(target);
   renderer.render(scene,camera);stage.dataset.ready='true';
  };
  frame=requestAnimationFrame(loop);
- view.dispose.push(()=>cancelAnimationFrame(frame),()=>ro.disconnect(),()=>{
+ view.dispose.push(()=>input.abort(),()=>cancelAnimationFrame(frame),()=>ro.disconnect(),()=>{
   scene.traverse(o=>{o.geometry?.dispose();for(const m of [].concat(o.material||[])){for(const k in m)if(m[k]?.isTexture)m[k].dispose();m.dispose();}});
   renderer.dispose();renderer.forceContextLoss();el.remove();
  });
@@ -112,5 +144,5 @@ export async function buildIsland({THREE,root,decor,load}){
  };
 }
 export function openIsland(){
- open('되살린 연구섬','모은 물이 물레의 받이에서 수로를 따라 마을로 흘러. 드래그해서 이어진 물길을 둘러봐.',buildIsland);
+ open('되살린 연구섬 다시보기','모은 물이 물레의 받이에서 수로를 따라 마을로 흘러. 드래그해서 이어진 물길을 둘러봐.',buildIsland);
 }

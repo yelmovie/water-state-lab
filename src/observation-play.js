@@ -53,16 +53,15 @@ export function observationStep(n, state, final=null, visited=[]) {
    return a.draw.time < 110 ? 'ix-forward' : null;
   case 6: {
    const c = a.compare;
-   return c.baseline&&c.heat<55?(c.batchPrepared?'ix-heat-on':'ix-heat-prepare'):null;
+   return c.heat<55?'ix-heat-on':null;
   }
   case 7: {
    const d = a.dew;
    if (!q.dewHypothesis || d.again) return null;
-   if (!d.wiped.includes('cold')) return 'ix-wipe-cold';
-   if (!d.wiped.includes('room')) return 'ix-wipe-room';
+   if (d.wiped.length < 2) return 'ix-wipe-cups';
    if (!d.sealed) return 'act-dew-seal';
    if (d.records.length < 2) return d.time < 100 ? 'ix-forward' : 'ix-record';
-   if (!d.rewiped) return 'ix-wipe-middle';
+   if (!d.rewiped) return null;
    return d.againTime < 100 ? 'ix-forward' : 'ix-record';
   }
   case 8: {
@@ -96,9 +95,7 @@ export function replayStep(n, state) {
  if(n===4&&state.fieldwork.active!==n&&state.activities.pipe.trials.some(t=>t.safe)&&state.activities.pipe.trials.some(t=>!t.safe))return 'bench-run';
  return n === 3 && state.fieldwork.active !== n && activityReady(3, state.activities) ? 'act-freeze-replay' : null;
 }
-let playingStage=null,playingField=false,timer,revision=0,visited=[],scope=null,pauseScope=null,pausedBy=null,preference=null,stepsSincePause=0;
-// Watching hands back to the learner after this many steps so they can step in.
-export const CHECKPOINT_STEPS=2;
+let playingStage=null,playingField=false,timer,revision=0,visited=[],scope=null,pauseScope=null,pausedBy=null,preference=null;
 export const observationPlaying = () => playingStage !== null;
 export function stopObservation(message='',reason='manual') {
  clearTimeout(timer);
@@ -107,8 +104,6 @@ export function stopObservation(message='',reason='manual') {
  revision++;
  stopClock();
  if(wasPlaying)document.dispatchEvent(new Event('observation-stop'));
- const button=document.getElementById('observation-play');
- if(button){button.disabled=false;button.setAttribute('aria-pressed','false');const resumeText=reason==='checkpoint'?'이어서 보기':'자동으로 보기';button.setAttribute('aria-label',resumeText);button.title='자동으로 이어서 관찰해.';button.dataset.playState='paused';const label=button.querySelector?.('[data-guided-play-label]');if(label)label.textContent=resumeText;else button.textContent='▶ 자동재생';}
  const main=document.querySelector('.experiment-main');if(main)main.dataset.guidedPhase=reason==='question'?'question':'manual';
  if(typeof message==='string'&&message)toast(message);
 }
@@ -122,33 +117,30 @@ export function observationPauseMessage(n,state){
  if(n===10&&!state.lab.final.tested)return '고장 원인을 먼저 골라 줘. 그다음 자동으로 관찰할 수 있어.';
  return '관찰을 마쳤어. 결과를 비교하고 직접 선택해 봐.';
 }
-export function bindObservation(state, perform, final=null,onPreferenceChange=()=>{},onManualChange=()=>{}) {
+export function bindObservation(state, perform, final=null,onPreferenceChange=()=>{}) {
  clearTimeout(timer);
  let binding=++revision;
  let awaitedMotion=false;
- const button=document.getElementById('observation-play'),guided=state.settings.autoplay!==false;
- if(!button||typeof state.route!=='number'){stopObservation('','transition');scope=null;return;}
+ const guided=state.settings.autoplay!==false;
+ const speedControl=document.getElementById('observation-speed');
+ if(speedControl)speedControl.onchange=()=>{state.settings.observationPace=observationSpeed({observationPace:Number(speedControl.value)});onPreferenceChange();if(playingStage!==null)bindObservation(state,perform,final,onPreferenceChange);};
+ if(typeof state.route!=='number'||!guided){stopObservation('','transition');scope=null;return;}
  const nextScope=state.route+'|'+(state.fieldwork.active===state.route?'field':'experiment');
- // Every stage opens with the learner's own hands on the tools; watching is an opt-in button.
+ // The teacher preference controls playback; predictions always pause for the learner.
  const opening=nextScope!==scope;
  if(opening){stopObservation('','transition');scope=nextScope;pauseScope=scope;pausedBy='manual';visited=[];}
  if(preference!==null&&preference!==guided){stopObservation('','transition');pauseScope=scope;pausedBy='manual';}
- if(opening&&guided){const opened=revision;queueMicrotask(()=>{if(revision===opened&&playingStage===null)onManualChange(true);});}
  preference=guided;
  binding=revision;
  const question=()=>guided?guidedQuestion(state.route,state,final):null;
  const paint=()=>{
   const q=question(),playing=playingStage!==null,main=document.querySelector('.experiment-main'),phase=q&&pausedBy==='question'?'question':playing?'observe':'manual';
   if(main)main.dataset.guidedPhase=phase;
-  button.disabled=phase==='question';button.setAttribute('aria-pressed',String(playing));button.dataset.playState=phase==='question'?'question':playing?'playing':'paused';
-  const text=phase==='question'?'답을 고르면 계속':playing?'직접 해보기':pausedBy==='checkpoint'?'이어서 보기':'자동으로 보기',label=button.querySelector?.('[data-guided-play-label]');
-  if(label)label.textContent=text;else button.textContent=phase==='question'?text:playing?'직접 해보기':'▶ 자동재생';
-  button.setAttribute('aria-label',text);button.title=phase==='question'?'답을 고르면 관찰이 이어져.':playing?'실험 도구를 직접 조작해 봐.':'자동으로 이어서 관찰해.';
+
  };
  const schedule=(delay,scaled=true)=>{clearTimeout(timer);timer=setTimeout(tick,scaled?observationDelay(delay,state.settings):delay);};
- const speedControl=document.getElementById('observation-speed');
- if(speedControl)speedControl.onchange=()=>{state.settings.observationPace=observationSpeed({observationPace:Number(speedControl.value)});onPreferenceChange();if(playingStage!==null)schedule(assistStep(state.route,state,final)?.delay??observationDwell(state.route,state));};
- const begin=()=>{resumeObservationTime();stepsSincePause=0;playingStage=state.route;playingField=state.fieldwork.active===state.route;pausedBy=null;pauseScope=null;};
+
+ const begin=()=>{resumeObservationTime();playingStage=state.route;playingField=state.fieldwork.active===state.route;pausedBy=null;pauseScope=null;};
  const notifyQuestion=q=>{
   const main=document.querySelector('.experiment-main');if(main&&(main.dataset.questionId||'')!==(q?.id||''))document.dispatchEvent(new Event('guided-question-change'));
  };
@@ -182,31 +174,23 @@ export function bindObservation(state, perform, final=null,onPreferenceChange=()
   if(awaitedMotion){awaitedMotion=false;return schedule(state.fieldwork.active===4?600:500);}
   const q=question();if(q&&(playingStage!==null||pausedBy==='question'))return waitForAnswer(q);
   if(playingStage===null){if(pausedBy!=='question')return;begin();paint();notifyQuestion(null);if(revision!==binding)return;}
-  // Every few steps the learner gets the tools back, after the reading pause and any running motion.
-  if(stepsSincePause>=CHECKPOINT_STEPS){stepsSincePause=0;stopObservation('','checkpoint');paint();onManualChange(true);return;}
   const n=state.route,assist=assistStep(n,state,final),routine=guided?guidedRoutineAction(n,state,final):null,step=routine??assist?.action??observationStep(n,state,final,visited);
   if(!step||!run(step)){stopObservation(guided?'':observationPauseMessage(n,state),'complete');paint();return;}
-  stepsSincePause++;
   // In-place process animations do not render the app; keep the same controller alive for them.
   if(revision===binding&&playingStage!==null)schedule(routine?900:assist?.delay??observationDwell(n,state));
  }
  const q=question();
- if(q&&(guided&&pausedBy!=='manual'||playingStage!==null||pausedBy==='question'))waitForAnswer(q);
+ if(q)waitForAnswer(q);
  else{
-  const resume=guided&&pauseScope!==scope||guided&&pausedBy==='question';
+  const resume=guided&&(pauseScope!==scope||pausedBy==='question'||pausedBy==='manual');
   if(playingStage===null&&resume)begin();
   paint();if(playingStage!==null)schedule(assistStep(state.route,state,final)?.delay??250);
  }
- button.onclick=()=>{
-  if (playingStage !== null){stopObservation();onManualChange(true);return;}
-  binding=++revision;
-  begin();visited=[];
-  paint();schedule(250);onManualChange(false);
- };
+
 }
 // Hand control back on the first manual interaction, including navigation and dialogs.
 function manual(event) {
- if (playingStage!==null && !event.target.closest?.('#observation-play,[data-observation-speed]')) stopObservation();
+ if (playingStage!==null && !event.target.closest?.('[data-observation-speed]')) stopObservation();
 }
 document.addEventListener('pointerdown', manual, true);
 document.addEventListener('input',event=>{if(event.isTrusted)manual(event);},true);

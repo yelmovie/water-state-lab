@@ -20,8 +20,9 @@ test('the little-water brush is thinner and darker in both live and recorded vie
 
 test('heating comparison explicitly prepares a new equal-water trial without erasing the unheated record',()=>{
  const c=initialActivities().compare;
- assert.equal(prepareHeatingComparison(c),false);
- c.baseline=true;c.time=100;c.records=[{heat:0,time:100,room:60,heated:60,boiling:false}];
+ assert.equal(prepareHeatingComparison(c),true);
+ assert.equal(c.baseline,true);assert.equal(c.records[0].time,0);assert.equal(c.records[0].room,c.records[0].heated);
+ c.batchPrepared=false;c.baseline=true;c.time=100;c.records=[{heat:0,time:100,room:60,heated:60,boiling:false}];
  assert.equal(prepareHeatingComparison(c),true);assert.equal(c.time,0);assert.equal(c.batchPrepared,true);
  assert.equal(c.records[0].room,60);assert.equal(prepareHeatingComparison(c),false);
 });
@@ -96,4 +97,16 @@ test('greenhouse needs evaporation, a receiver, cold surface, elapsed condensati
 test('a completed old greenhouse keeps its stamp',()=>{
  const raw=initialFieldwork();raw.chapters[10]={...chapterState(10),marks:['evaporate','condense'],done:true};
  assert.equal(fieldReady(10,cleanFieldwork(raw).chapters[10]),true);
+});
+
+
+test('one sealed-cup observation unlocks its summary without a second wipe or bottle trial',()=>{
+ const a=initialActivities();
+ a.dew.wiped=['cold','room'];a.dew.sealed=true;
+ a.dew.records=[{time:0,cold:{drops:0}},{time:100,cold:{drops:20}}];
+ assert.equal(activityReady(7,a),true);
+ assert.equal(activityReady(8,a),false);
+ a.explain.summarySeen=true;
+ assert.equal(activityReady(8,a),true);
+ assert.equal(a.dew.again,false);assert.equal(a.explain.transfer,false);
 });

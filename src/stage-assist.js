@@ -20,7 +20,6 @@ function drawStep(d,q){
  return d.time<110?watch('두 물그림이 마르고 있어','어느 쪽 물자국이 먼저 옅어지는지 지켜봐.'):null;
 }
 function heatStep(c){
- if(!c.baseline)return c.time<100?watch('가열하지 않아도 물이 줄어드는지 봐','두 컵의 물높이를 지켜봐.'):step('ix-record',1800,'끓이지 않아도 조금씩 줄어들어','표면에서 물이 수증기로 변해. 이게 증발이야.');
  if(c.heat<55)return null;
  if(!c.records.some(r=>r.boiling))return c.time<100?watch('B 컵의 물이 끓고 있어','물속에서 기포가 올라오는지 지켜봐.'):step('ix-record',1800,'물속에서 기포가 올라와','끓을 때는 물속에서도 수증기가 생겨.');
  return null;

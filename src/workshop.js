@@ -6,12 +6,9 @@ import {testCollector,currentTrialValid,confirmedWorkshop,clamp,targetParts} fro
 import {newDiagnosis,diagnosisResolved,chooseDiagnosisFault} from './collector-model.js';
 import {btn,range,toast,icon} from './ui.js';
 import {openDevice,openIsland} from './three-view.js';
-import {openCollectorFigure} from './collector-figure-view.js';
 let previewFinal,cleanup=[];export function resetFinalPreview(){previewFinal={submitted:[],connected:false,valve:0,tested:false,lever:0,cooling:false,coreHeight:90};}resetFinalPreview();
 export function cleanupWorkshop(){cleanup.forEach(fn=>fn());cleanup=[];}
 export function finalContext(){const preview=state.settings.adminUnlock&&(!confirmedWorkshop(state.evidence[5])||[1,2,3,4].some(n=>!state.evidence[n]));const design=preview?{parts:structuredClone(targetParts),cold:true,angle:20,selected:'',trials:[testCollector(targetParts,true,20)]}:confirmedWorkshop(state.evidence[5]);return {preview,progress:preview?previewFinal:state.lab.final,design};}
-const iconForFigure=icon('drop',20);
-const canFigureTrial=trial=>!!(trial?.design&&trial.links?.length);
 const partNames={plate:'냉각판',ramp:'경사판',funnel:'깔때기',tube:'연결관',bucket:'물통'};
 function workshopPartKey(){return `<p class="workshop-part-key" aria-label="장치의 부품 순서"><b>부품 찾기</b><span>냉각판 → 경사판 → 깔때기 → 연결관 → 물통</span></p>`;}
 function partImage(k,x,y,w,h){const i=['plate','ramp','funnel','tube','bucket','core'].indexOf(k);return `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${i%3*512} ${Math.floor(i/3)*512} 512 512" preserveAspectRatio="none" overflow="hidden"><image href="/assets/v2/workshop-atlas.webp" width="1536" height="1024"/></svg>`;}
@@ -30,7 +27,7 @@ function workshopResult(s,last){
 }
 export function workshopView(){const s=state.lab.workshop,last=s.trials.at(-1),ready=currentTrialValid(s),placed=funnelPlaced(s);
  const chain=[['공기 중 수증기',true],['차가운 판에 물방울',s.cold],['아래로 흐르기',s.cold&&s.angle>0],['물통에 모임',ready]];
- return `<div class="experiment-layout workshop-layout"><div class="lab-stage"><ol class="water-chain" aria-label="물이 모이는 순서">${chain.map(([label,on])=>`<li class="${on?'is-on':''}">${label}</li>`).join('')}</ol><div class="workshop-purpose"><img src="/assets/v2/resident-10.webp" alt="온실지기 느티"><p><b>느티의 부탁</b><br>온실 모종에 줄 물이 모자라. 공기 중 수증기를 물방울로 모아 물통에 담아 줘.</p><button class="field-help-btn" data-action="field-help">부탁 듣기</button></div>${workshopSVG(s)}${workshopPartKey()}<p class="collector-conditions">수증기가 충분한 공기 · 충분히 차가운 판 · 같은 시간 뒤를 비교하는 모형</p><p class="trial-result ${ready?'is-done':''}" role="status">${workshopResult(s,last)}</p></div><aside class="control-panel"><h2>물길 고치기</h2>${btn(s.cold?'✓ 판이 차가워졌어':'냉각팩 붙이기','toggle-cold','wide '+(s.cold?'selected':''))}${btn(s.angle>0?'✓ 경사판을 기울였어':'경사판 기울이기','ramp-tilt','wide '+(s.angle>0?'selected':''))}${btn(placed?'✓ 깔때기를 이었어':'깔때기 옮기기','funnel-fix','wide '+(placed?'selected':''),placed)}${btn('같은 시간 뒤 물길 시험','test-workshop','wide')}${btn('이 장치로 출발','complete-5','gold wide',!ready)}<details><summary>더 살펴보기</summary>${s.trials.some(t=>t.source==='initial-model')?'<p>처음 배치의 모형 결과를 자동으로 남겼어. 직접 바꾼 조건과 비교해 봐.</p>':''}${canFigureTrial(last)?btn(iconForFigure+' 내 물방울 길 보기','collector-figure','wide figure-entry'):''}${btn('내 장치 3D로 돌려 보기','three-device','wide')}</details></aside></div>`;
+ return `<div class="experiment-layout workshop-layout"><div class="lab-stage"><ol class="water-chain" aria-label="물이 모이는 순서">${chain.map(([label,on])=>`<li class="${on?'is-on':''}">${label}</li>`).join('')}</ol><div class="workshop-purpose"><img src="/assets/v2/resident-10.webp" alt="온실지기 느티"><p><b>느티의 부탁</b><br>온실 모종에 줄 물이 모자라. 공기 중 수증기를 물방울로 모아 물통에 담아 줘.</p><button class="field-help-btn" data-action="field-help">부탁 듣기</button></div>${workshopSVG(s)}${workshopPartKey()}<p class="collector-conditions">수증기가 충분한 공기 · 충분히 차가운 판 · 같은 시간 뒤를 비교하는 모형</p><p class="trial-result ${ready?'is-done':''}" role="status">${workshopResult(s,last)}</p></div><aside class="control-panel"><h2>물길 고치기</h2>${btn(s.cold?'✓ 판이 차가워졌어':'냉각팩 붙이기','toggle-cold','wide '+(s.cold?'selected':''))}${btn(s.angle>0?'✓ 경사판을 기울였어':'경사판 기울이기','ramp-tilt','wide '+(s.angle>0?'selected':''))}${btn(placed?'✓ 깔때기를 이었어':'깔때기 옮기기','funnel-fix','wide '+(placed?'selected':''),placed)}${btn('같은 시간 뒤 물길 시험','test-workshop','wide')}${btn('이 장치로 출발','complete-5','gold wide',!ready)}<details><summary>더 살펴보기</summary>${s.trials.some(t=>t.source==='initial-model')?'<p>처음 배치의 모형 결과를 자동으로 남겼어. 직접 바꾼 조건과 비교해 봐.</p>':''}${btn('내 장치 3D로 돌려 보기','three-device','wide')}</details></aside></div>`;
 }
 function ensureDiagnosis(f,design){if(!f.diagnosis&&design){f.diagnosis=newDiagnosis(design,chooseDiagnosisFault());f.cooling=f.diagnosis.working.cold;}}
 export function finalView(){
@@ -42,7 +39,6 @@ export function finalView(){
  const heading=flowReady?(f.tested?'코어에 물이 도착했어!':!transfer.downhill?'코어 입구를 낮춰 봐':'밸브를 돌려 물길을 열어 봐'):'원인을 찾아 고쳐 봐';
  const status=f.tested?'물이 열린 밸브를 지나 더 낮은 코어 입구에 도착했어! 도착한 물로 코어를 깨워 줘.':r?(r.generated===0?'새 물방울이 생기지 않아.':r.collected<60?'중간에 새는 물이 있어.':d.resolved?'장치가 다시 물을 모았어.':'물길은 좋아졌어. 원인과 증거도 확인해 줘.'):'먼저 시험하고 물방울을 살펴봐.';
  const causes=`<div class="diagnosis-choices"><div role="group" aria-label="고장 원인">${btn('냉각 문제','diagnose-cooling',d.hypothesis==='cooling'?'selected':'')}${btn('연결 문제','diagnose-connection',d.hypothesis==='connection'?'selected':'')}</div></div>`;
- const figureEntry=r&&d.hypothesis?btn(iconForFigure+' 두 고장 비교하기','collector-compare','wide figure-entry'):'';
  const needsBaseline=d.processVersion===3&&!d.tests.length;
  const connection=`<div class="core-connect-step">${btn('코어에 연결','connect-core','primary',!d.resolved)}${d.resolved?'':`<span>${needsBaseline?'먼저 장치 시험을 눌러 봐':!d.hypothesis||d.hypothesis!==d.fault?'고장 원인을 고르면 다음으로 갈 수 있어':'고친 장치를 시험하면 연결할 수 있어'}</span>`}</div>`;
  const repair=`${needsBaseline?'<p class="repair-before-note">먼저 고장 난 상태를 시험해서 어디서 멈추는지 살펴봐.</p>':''}${btn(w.cold?'✓ 냉각 켜짐':'냉각 켜기','core-cooling','wide '+(w.cold?'selected':''),needsBaseline)}${btn('깔때기 제자리로','core-funnel','wide',needsBaseline||w.parts.funnel.x===design.parts.funnel.x)}${btn('장치 시험','diagnosis-test','wide')}`;
@@ -54,13 +50,11 @@ export function finalView(){
  <div class="lab-stage"><span class="stage-tag">${preview?'선생님 미리보기 · 예시 장치':'내가 만든 장치'} · ${f.tested?'코어까지 물이 도착했어':d.resolved?'고친 장치로 물을 모았어':'물이 코어에 도착하지 않아'}</span>
  ${workshopSVG(display,true)}${workshopPartKey()}<div class="observation-strip" role="status">${status}</div>${r?`<p class="diagnosis-readout">모은 물 ${r.collected} · 새는 물 ${r.lost}</p>`:''}${flowReady?'':causes}</div>
  <aside class="control-panel core-control-panel"><h2>${heading}</h2>
- ${flowReady?`${flow}<details class="core-repair"><summary>더 살펴보기</summary>${figureEntry}${btn('3D로 보기','three-final','wide')}${repair}</details>`:`${connection}${figureEntry}${repair}<details><summary>더 살펴보기</summary>${btn('내 장치 3D로 돌려 보기','three-final','wide')}<p>물방울이 처음부터 생기지 않는지, 중간에서 새는지 살펴봐.</p></details>`}
+ ${flowReady?`${flow}<details class="core-repair"><summary>더 살펴보기</summary>${btn('3D로 보기','three-final','wide')}${repair}</details>`:`${connection}${repair}<details><summary>더 살펴보기</summary>${btn('내 장치 3D로 돌려 보기','three-final','wide')}<p>물방울이 처음부터 생기지 않는지, 중간에서 새는지 살펴봐.</p></details>`}
  </aside></div>`;
 }
 export function handleWorkshop(action,ctx){const s=state.lab.workshop;const {progress:f,preview,design}=finalContext();const redraw=()=>{if(!preview||state.route!==10)save();ctx.render();};
  // Figures are optional observation tools. A snapshot is never used as a new trial or hint about the actual fault.
- if(action==='collector-figure'){const last=s.trials.at(-1);if(canFigureTrial(last))openCollectorFigure(last);return true;}
- if(action==='collector-compare'){if(f.diagnosis?.tests.length&&f.diagnosis.hypothesis)openCollectorFigure();return true;}
  // 3D views only look at the current design; they never change records.
  if(action==='three-device'){const last=s.trials.at(-1);openDevice({parts:s.parts,cold:s.cold,angle:s.angle},{flowing:!!last?.ok&&last.signature===testCollector(s.parts,s.cold,s.angle).signature});return true;}
  if(action==='three-final'){const w=f.diagnosis?.working||design;if(w)openDevice({parts:w.parts,cold:w.cold,angle:w.angle},{withCore:true,flowing:!!f.tested,coreInletY:coreTransfer(f,w).inletY,connected:!!f.connected});return true;}

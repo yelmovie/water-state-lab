@@ -28,18 +28,15 @@ function paintMagic(stage){
  if(running)magic.dataset.cueSeen="true";
  magic.classList.toggle("needs-attention",!running&&!done);
  if(magic.hidden!==done)magic.hidden=done;
- // The large arrival clock is transient. While observing, only a compact pause
- // control remains in the existing bottom toolbar, never over the experiment.
- const dock=stage.querySelector(':scope > .workspace-controls');
- const parent=running&&dock?.append?dock:stage;
- if(magic.parentElement&&magic.parentElement!==parent)parent.append(magic);
+ // Keep the face visible while the hands show the actual observation progress.
+ if(magic.parentElement&&magic.parentElement!==stage)stage.append(magic);
  if(running&&!done&&!magic.classList.contains('is-running'))castMagic(magic);
  if(!running||done)magic.classList.remove('is-casting');
  magic.style.setProperty('--time-minute',value/max*1440+'deg');
  magic.style.setProperty('--time-hour',value/max*120+'deg');
  magic.classList.toggle('is-running',running&&!done);
  magic.disabled=done;
- const label=done?'관찰 완료':running?'관찰 멈추기':'시계를 톡 눌러 봐!';
+ const label=done?'관찰 완료':running?'시간이 흐르는 중':'시계를 톡 눌러 봐!';
  const status=magic.querySelector('.time-magic-label');
  if(status.textContent!==label)status.textContent=label;
  magic.setAttribute('aria-label',done?'시간 관찰 완료':running?'시간 관찰 멈추기':'시계를 눌러 시간 관찰 시작');

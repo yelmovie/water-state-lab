@@ -114,11 +114,11 @@ test('complete interaction sequence requires observations, comparisons, and tran
  for(const site of ['surface','inside','level'])put('lens',site);put('heated-water','heat-air');act('complete-3');
  assert.equal(completed[3].trials[0].room,completed[3].trials[0].heated);assert.equal(completed[3].trials[1].boiling,true);
  act('dew-wipe-cold');act('dew-wipe-room');act('dew-seal');act('dew-record');a.dew.time=80;act('dew-record');
- assert.equal(activityReady(7,a),false);act('dew-wipe-cold');a.dew.againTime=80;act('dew-again');act('next-7');
+ assert.equal(activityReady(7,a),true);act('dew-wipe-cold');a.dew.againTime=80;act('dew-again');act('next-7');
  act('bottle-wipe');assert.equal(a.explain.bottleWiped,false,'review the cup observations before applying them');
  act('cup-summary');assert.equal(a.explain.summarySeen,true);
- assert.deepEqual(getActivityProgress(8).steps.map(s=>s.done),[true,false]);
- act('complete-4');assert.equal(completed[4],undefined);act('bottle-wipe');a.explain.time=80;act('transfer-record');act('complete-4');
+ assert.deepEqual(getActivityProgress(8).steps.map(s=>s.done),[true,true]);
+ act('complete-4');assert.ok(completed[4]);assert.equal(completed[4].transfer,'');act('bottle-wipe');a.explain.time=80;act('transfer-record');act('complete-4');
  assert.equal(completed[4].reobserved,true);assert.equal(completed[4].snapshots[1].cold.drops,16);
  assert.equal(completed[4].mass,'250.0 g → 251.6 g');assert.deepEqual(pages,[1,3,5,7]);assert.deepEqual(routes,[2,4,6,8]);
  for(let n=1;n<=8;n++){assert.equal(activityReady(n,a),true,`screen ${n}`);assert.ok(activityView(n));}

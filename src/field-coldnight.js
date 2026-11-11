@@ -106,7 +106,8 @@ export function coldNightView(c){return `<section id="field-coldnight" class="fi
 export function bindColdNight(host,get,set){
  const ui={phase:'fill',trial:null,ghost:null};
  const life=new AbortController(),{signal}=life;
- let pour=null,frame=0;
+ let pour=null,frame=0,fillAnimation=0;
+ let finishFill=null;
  const paint=selector=>{host.innerHTML=coldNightMarkup(get(),ui);if(selector)host.querySelector(selector)?.focus();};
  const commit=(action,payload)=>{set(fieldAction(4,get(),action,payload));save();};
  const night=()=>currentNight(get());
@@ -128,7 +129,7 @@ export function bindColdNight(host,get,set){
   if(!pour)return;
   const fills=nightFills(get(),night());
   fills[pour.index]=Math.max(0,Math.min(100,Math.round(pour.start+pour.dir*POUR_PER_SECOND*(now-pour.began)/1000)));
-  pour.value=fills[pour.index];showLevels(fills,pour.index);
+  if(pour.value!==fills[pour.index]){pour.value=fills[pour.index];showLevels(fills,pour.index);}
   frame=requestAnimationFrame(stepPour);
  }
  function endPour(e){
@@ -160,6 +161,30 @@ export function bindColdNight(host,get,set){
   else ui.ghost=ui.trial.vessels.map(v=>v.ice);
   ui.phase='fill';paint(night()?'[data-pour]':'[data-reason]');
  }
+ // Automatic fills update the existing vessels, preserving decoded images and pointer targets.
+ host.addEventListener('cold-levels-change',()=>{
+  finishFill?.();
+  if(ui.phase!=='fill'||!night())return;
+  const target=nightFills(get(),night());
+  const start=target.map((_,i)=>Number(host.querySelector(`[data-amount="${i}"]`)?.textContent)||0);
+  const changed=target.map((value,i)=>value!==start[i]?i:-1).filter(i=>i>=0);
+  if(!changed.length)return;
+  const began=performance.now(),duration=state.settings.reduced?0:700;
+  host.setAttribute('aria-busy','true');
+  for(const i of changed)host.querySelector(`.cold-vessel[data-index="${i}"]`)?.classList.add('is-pouring');
+  finishFill=()=>{
+   cancelAnimationFrame(fillAnimation);
+   for(const i of changed){showLevels(target,i);host.querySelector(`.cold-vessel[data-index="${i}"]`)?.classList.remove('is-pouring');}
+   host.removeAttribute('aria-busy');finishFill=null;
+  };
+  const rise=now=>{
+   const progress=duration?Math.min(1,(now-began)/duration):1;
+   const levels=start.map((value,i)=>Math.round(value+(target[i]-value)*progress));
+   for(const i of changed)showLevels(levels,i);
+   if(progress===1)finishFill();else fillAnimation=requestAnimationFrame(rise);
+  };
+  fillAnimation=requestAnimationFrame(rise);
+ },{signal});
  host.addEventListener('pointerdown',e=>{
   if(e.button!==0)return;
   const tap=e.target.closest('[data-pour]');
@@ -181,7 +206,7 @@ export function bindColdNight(host,get,set){
   if(button.hasAttribute('data-night-next'))nextStep();
   if(button.dataset.reason){commit('reason',{choice:button.dataset.reason});void playCue(fieldReady(4,get())?'success':'error');paint(fieldReady(4,get())?'[data-action="field-finish"]':`[data-reason="${button.dataset.reason}"]`);}
  },{signal});
- document.addEventListener('observation-stop',()=>{if(ui.phase==='freezing'){cancelAnimationFrame(frame);ui.phase='fill';ui.trial=null;host.removeAttribute('aria-busy');paint();}},{signal});
+ document.addEventListener('observation-stop',()=>{finishFill?.();if(ui.phase==='freezing'){cancelAnimationFrame(frame);ui.phase='fill';ui.trial=null;host.removeAttribute('aria-busy');paint();}},{signal});
  paint();
- return ()=>{life.abort();cancelAnimationFrame(frame);};
+ return ()=>{life.abort();cancelAnimationFrame(frame);cancelAnimationFrame(fillAnimation);};
 }

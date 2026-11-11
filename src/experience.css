@@ -1341,7 +1341,7 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
 .passport-drops i{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#ffffff26;color:#ffffff66}
 .passport-drops i.on{background:#ffe9a8;color:#2f7f76}
 .stamp-pages{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:14px;border-radius:14px;background:var(--paper);background-image:repeating-linear-gradient(#0000 0 33px,#e7dcbc 33px 34px)}
-.stamp-page{--ink:#2a9db5;flex:1 1 170px;max-width:220px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px 12px;border-radius:14px;text-align:center;color:#6d7a6c}
+.stamp-page{--ink:#2a9db5;flex:0 0 calc((100% - 20px)/3);min-width:0;max-width:none;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px 12px;border-radius:14px;text-align:center;color:#6d7a6c}
 .stamp-page.area-2{--ink:#4a7fc4}.stamp-page.area-3{--ink:#d9862a}.stamp-page.area-4{--ink:#4a9a63}.stamp-page.area-5{--ink:#d2674a}
 .stamp-page.earned{background:#fffdf5;box-shadow:0 2px 0 #e4d6ad;color:#27504a}
 .stamp-page b{font:21px/1.25 var(--font-display)}
@@ -1359,42 +1359,28 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
 #certificate-print{container-type:inline-size;width:min(100%,max(640px,calc((100dvh - 232px)*1.414)));margin:0 auto;padding:6px}
 .app-dialog:has(.cert-sheet) .dialog-head{padding:8px 16px}
 .app-dialog:has(.cert-sheet) .dialog-body{padding:12px}
-.cert-sheet{--u:1cqw;position:relative;display:flex;flex-direction:column;align-items:center;aspect-ratio:1.414;padding:calc(var(--u)*2.2) calc(var(--u)*4.5);border:calc(var(--u)*.45) solid #2f7f76;border-radius:calc(var(--u)*2.4);outline:calc(var(--u)*.2) solid #e0b95a;outline-offset:calc(var(--u)*-1.1);background:#fffdf5;color:#214c50;text-align:center;overflow:hidden}
-.cert-sheet::before,.cert-sheet::after{content:"";position:absolute;width:calc(var(--u)*5);height:calc(var(--u)*5);border-radius:0 50% 50% 50%;background:#bfe8ee;transform:rotate(45deg)}
-.cert-sheet::before{top:calc(var(--u)*3);left:calc(var(--u)*4)}
-.cert-sheet::after{top:calc(var(--u)*3);right:calc(var(--u)*4);background:#fbe3a6}
-.cert-ribbon{padding:calc(var(--u)*.8) calc(var(--u)*7);border-radius:calc(var(--u)*1.2);background:#2f7f76;color:#fff;box-shadow:0 calc(var(--u)*.4) 0 #1f5f58}
-.cert-ribbon small{display:block;font-size:calc(var(--u)*1.8);opacity:.9}
-.cert-ribbon h3{margin:0;font:calc(var(--u)*4.4)/1.15 var(--font-display);color:#ffe9a8}
-.cert-name{margin:calc(var(--u)*1.8) 0 calc(var(--u)*.3);padding:0 calc(var(--u)*3) calc(var(--u)*.3);border-bottom:calc(var(--u)*.3) solid #e0b95a;font:calc(var(--u)*5.2)/1.2 var(--font-display);color:#1f6b73}
-.cert-lead{margin:calc(var(--u)*.9) 0;font-size:calc(var(--u)*2.1);line-height:1.4}
-.cert-columns{display:grid;grid-template-columns:1.25fr 1fr;gap:calc(var(--u)*2.5);align-items:center;width:100%;margin-top:calc(var(--u)*.4)}
-.cert-skills{display:grid;gap:calc(var(--u)*1);margin:0;padding:0;list-style:none;text-align:left;font-size:calc(var(--u)*1.95);line-height:1.3;word-break:keep-all}
-.cert-skills li{display:flex;align-items:flex-start;gap:calc(var(--u)*.8)}
-.cert-skills span{flex:none;display:grid;place-items:center;width:calc(var(--u)*2.8);height:calc(var(--u)*2.8);border-radius:50%;background:#2f7f76;color:#fff}
+.cert-sheet{--u:1cqw;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;aspect-ratio:1.414;box-sizing:border-box;padding:calc(var(--u)*3) calc(var(--u)*4.5);border:3px solid #2f7f76;border-radius:12px;outline:1px solid #d0a858;outline-offset:-9px;background:#fffdf5;color:#214c50;text-align:center;overflow:hidden;font-weight:700}
+.cert-ribbon{width:100%;padding-bottom:calc(var(--u)*1.2);border-bottom:1px solid #d4bc7e}
+.cert-ribbon small{display:block;font-size:calc(var(--u)*1.7);font-weight:700;letter-spacing:.12em;color:#38746d}
+.cert-ribbon h3{margin:calc(var(--u)*.7) 0 0;font:900 calc(var(--u)*5)/1.2 var(--font-display);letter-spacing:.12em;color:#215f59}
+.cert-name{margin:calc(var(--u)*1.3) 0 calc(var(--u)*.5);font-size:calc(var(--u)*2.4);font-weight:800}
+.cert-student{display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:calc(var(--u)*1.8);width:100%;padding:calc(var(--u)*1) 0}
+.cert-student>div{display:flex;align-items:center;gap:calc(var(--u)*.8);min-width:0;font-size:calc(var(--u)*1.9)}
+.cert-student b{flex:none;font-weight:800}.cert-student span{flex:1;min-width:0;height:calc(var(--u)*2.5);border-bottom:1px solid #56716d}
+.cert-lead{margin:calc(var(--u)*1.2) 0;font-size:calc(var(--u)*2.15);font-weight:800;line-height:1.55}
+.cert-columns{display:grid;grid-template-columns:minmax(0,1fr) calc(var(--u)*21);gap:calc(var(--u)*3);align-items:center;width:100%}
+.cert-skills{display:grid;gap:calc(var(--u)*1.4);margin:0;padding:0;list-style:none;text-align:left;line-height:1.55;word-break:keep-all}
+.cert-skills li{display:flex;align-items:flex-start;gap:calc(var(--u)*1);font-size:calc(var(--u)*2.15);font-weight:700}
+.cert-skills span{flex:none;display:grid;place-items:center;width:calc(var(--u)*2.5);height:calc(var(--u)*2.5);margin-top:calc(var(--u)*.2);border-radius:50%;background:#2f7f76;color:#fff}
 .cert-skills svg{width:70%;height:70%}
-.cert-seals{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--u)*.4)}
-.cert-seals span{--ink:#2a9db5;width:calc(var(--u)*10.4)}
+.cert-mascot .buddy-pose{display:block;width:calc(var(--u)*21);height:calc(var(--u)*23);margin:auto}
+.cert-foot{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*2);width:100%;padding-top:calc(var(--u)*1);border-top:1px solid #d4bc7e}
+.cert-foot p{margin:0;font-size:calc(var(--u)*1.7);font-weight:700;line-height:1.65;text-align:right}
+.cert-seals{display:flex;justify-content:center;gap:calc(var(--u)*1)}
+.cert-seals span{--ink:#2a9db5;width:calc(var(--u)*8)}
 .cert-seals span:nth-child(2){--ink:#4a7fc4}.cert-seals span:nth-child(3){--ink:#d9862a}.cert-seals span:nth-child(4){--ink:#4a9a63}.cert-seals span:nth-child(5){--ink:#d2674a}
 .cert-seals .seal{width:100%;height:auto}
-.cert-strength{margin:calc(var(--u)*1.2) 0 0;padding:calc(var(--u)*.5) calc(var(--u)*2);border-radius:99px;background:#fbeec6;font-size:calc(var(--u)*1.9)}
-.cert-strength b{color:#9a6a12}
-.cert-student{display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:calc(var(--u)*1.8);width:100%;margin:calc(var(--u)*1) 0 calc(var(--u)*.4);padding:calc(var(--u)*.9) calc(var(--u)*1.4);border:1px solid #ceb675;border-radius:calc(var(--u)*.5);background:#fffdf7}
-.cert-student>div{display:flex;align-items:center;gap:calc(var(--u)*.8);min-width:0;font-size:calc(var(--u)*1.8);line-height:1.4}
-.cert-student b{flex:none;font-weight:500}.cert-student span{flex:1;min-width:0;height:calc(var(--u)*2.5);border-bottom:1px solid #56716d}
-.cert-authority{display:flex;align-items:center;gap:calc(var(--u)*1.2)}
-.cert-office-seal{width:calc(var(--u)*11.5);height:calc(var(--u)*11.5);color:#ac403a;transform:rotate(-8deg);overflow:visible}
-.cert-office-seal circle,.cert-office-seal path{fill:none;stroke:currentColor;stroke-width:2.4}
-.cert-office-seal text{fill:currentColor;stroke:none;font:16px var(--font-display);text-anchor:middle;letter-spacing:1px}
-.cert-office-seal .cert-office-small{font-size:12px;letter-spacing:3px}
 .certificate-form>p{margin:0;flex:1;font-size:17px}
-.cert-foot{position:absolute;left:calc(var(--u)*3);right:calc(var(--u)*3);bottom:calc(var(--u)*1.8);display:flex;align-items:flex-end;justify-content:space-between;font-size:calc(var(--u)*1.6);line-height:1.3;color:#54716c}
-.cert-foot .buddy-pose{width:calc(var(--u)*9);height:calc(var(--u)*9)}
-.cert-gold{width:calc(var(--u)*10.5);height:calc(var(--u)*10.5);filter:drop-shadow(0 calc(var(--u)*.3) calc(var(--u)*.4) #8a5a1055)}
-.cert-gold polygon{fill:#e8b93f;stroke:#b98a1c;stroke-width:2}
-.cert-gold circle{fill:#fff3c4;stroke:#d3a02c;stroke-width:3}
-.cert-gold path{fill:#46b6c5;stroke:#2a8797;stroke-width:2}
-.cert-gold .shine{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round}
 /* Motion is the reward: stamps land one by one, the certificate assembles, then the gold seal lands. */
 @keyframes stamp-slam{0%{opacity:0;transform:scale(2.3) rotate(-24deg)}55%{opacity:1;transform:scale(.88) rotate(4deg)}75%{transform:scale(1.08) rotate(-9deg)}100%{opacity:1;transform:scale(1) rotate(-7deg)}}
 @keyframes page-thud{0%,100%{transform:none}40%{transform:translateY(3px) scale(.985)}}
@@ -1423,8 +1409,6 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
  html:not(.reduce-motion) .cert-name.is-typed{animation:name-pop .3s ease-out both}
  html:not(.reduce-motion) .cert-skills li{animation:fade-up .35s ease-out calc(var(--i)*160ms + 600ms) both}
  html:not(.reduce-motion) .cert-seals span .seal{animation:stamp-slam .45s cubic-bezier(.3,1.3,.5,1) calc(var(--i)*130ms + 900ms) both}
- html:not(.reduce-motion) .cert-gold{animation:gold-land .7s cubic-bezier(.3,1.3,.5,1) 1.6s both}
- html:not(.reduce-motion) .cert-foot .buddy-pose{animation:buddy-hop .8s ease-in-out 2.2s 2}
  html:not(.reduce-motion) .lesson-card span{display:inline-block;animation:name-pop .5s ease-out .3s both}
 }
 @media print{@page{size:A4 landscape;margin:10mm}*{print-color-adjust:exact;-webkit-print-color-adjust:exact;animation:none!important}.confetti{display:none!important}.app-dialog:has(.cert-sheet){width:100%;max-width:none;max-height:none;overflow:visible}.app-dialog:has(.cert-sheet) .dialog-body{padding:0;max-height:none;overflow:visible}#certificate-print{width:100%;padding:0}.cert-sheet{height:190mm;aspect-ratio:auto}}
@@ -1463,8 +1447,36 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
  .scene-9 .water-chain li{padding:5px 4px}
  .scene-9 .trial-result{font-size:17px;line-height:1.4}
 }
-/* 2026-11-10: '.dialog-body p/li' (22~26px) beat the certificate's own sizes, so 나의 강점 ran into the date line. */
-.dialog-body .cert-strength{font-size:calc(var(--u)*1.9)}
-.dialog-body .cert-sheet :is(.cert-lead,.cert-skills li){font-size:min(22px,calc(var(--u)*2.8))}
-.cert-foot{justify-content:flex-start;gap:calc(var(--u)*1)}
-.cert-foot .cert-authority{margin-left:auto}
+/* Certificate typography scales with the landscape page, including narrow previews. */
+.dialog-body .cert-sheet .cert-name{font-size:calc(var(--u)*2.4)}
+.dialog-body .cert-sheet .cert-foot p{font-size:calc(var(--u)*1.7)}
+.dialog-body .cert-sheet .cert-lead{font-size:calc(var(--u)*2.15)}
+.dialog-body .cert-sheet .cert-skills li{font-size:calc(var(--u)*2.15)}
+
+.journey-traveler.is-hurt{z-index:18}
+.journey-traveler.is-hurt .map-walk-sprite{background:url('/assets/learning/bangul-hit-20261111/bangul-hit.webp') center/contain no-repeat!important;transform:scaleX(var(--hurt-facing,1))!important;filter:drop-shadow(0 0 3px #fff8c3) drop-shadow(0 2px 3px #164d6599)}
+.journey-traveler.is-hurt::after{content:'';position:absolute;left:21%;top:18%;width:58%;aspect-ratio:1;border:3px solid #f4fffa;border-radius:50%;box-shadow:0 0 0 4px #ffd27988,0 0 16px #aff8ff;pointer-events:none;animation:map-contact-ring .5s ease-out both}
+@keyframes map-contact-ring{from{opacity:1;scale:.4}to{opacity:0;scale:1.8}}
+@media(prefers-reduced-motion:reduce){.journey-traveler.is-hurt::after{animation:none;opacity:.65}}
+.reduce-motion .journey-traveler.is-hurt::after{animation:none;opacity:.65}
+
+.notebook-record strong,.stamp-page p strong{font-weight:800;color:#176a67;background:#ddf0d9;border-radius:4px;padding:0 3px}
+.notebook-record p{line-height:1.65;word-break:keep-all}
+.notebook-observations{margin-top:20px;padding:14px;border:1px solid #c5cfb2;border-radius:12px}
+.notebook-observations>summary{cursor:pointer;font-weight:700}
+@media(max-width:520px){
+ .stamp-pages{padding:8px;gap:6px}
+ .stamp-page{flex-basis:calc((100% - 12px)/3);padding:8px 4px}
+ .stamp-page .seal,.stamp-page .seal-empty{width:68px;height:68px}
+ .stamp-page b{font-size:15px}
+ .stamp-page small,.stamp-page p{font-size:12px}
+}
+
+.three-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px}
+.three-controls .btn{min-height:48px;min-width:48px;font-size:16px}
+
+@media print{
+ #dialog:has(#certificate-print){position:static!important;inset:auto!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;max-height:none!important;border:0!important;overflow:visible!important;box-shadow:none!important}
+ #certificate-print{break-inside:avoid}
+ .cert-sheet{height:188mm;break-inside:avoid}
+}

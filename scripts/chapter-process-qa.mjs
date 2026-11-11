@@ -18,14 +18,14 @@ async function setup(n,field=false,reduced=true,reset=true){
   document.querySelectorAll('dialog[open]').forEach(d=>d.close());
   const {state,initialState,setPreviewMode,save}=await import('/src/state.js'),{chapterState}=await import('/src/fieldwork-model.js'),{render}=await import('/src/app.js');
   setPreviewMode(false);if(reset)Object.assign(state,initialState());
-  Object.assign(state.settings,{sound:false,bgm:false,sfx:false,reduced,adminUnlock:false});
+  Object.assign(state.settings,{sound:false,bgm:false,sfx:false,reduced,autoplay:false,adminUnlock:false});
   state.route=n;state.lastScreen=n;state.pages=Array.from({length:n-1},(_,i)=>i+1);state.completed=Array.from({length:Math.floor((n-1)/2)},(_,i)=>i+1);
   state.fieldwork.introSeen=true;state.fieldwork.briefed=[2,4,10];state.inquiry.stageBriefed=Array.from({length:10},(_,i)=>i+1);state.fieldwork.active=field?n:0;
   if(field&&reset)state.fieldwork.chapters[n]=chapterState(n);save();render();
  },{n,field,reduced,reset});
  await page.waitForTimeout(180);
 }
-const click=async action=>{const el=page.locator(`[data-action="${action}"]:visible`).first();await el.evaluate(e=>{for(let p=e;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}).catch(()=>{});await el.click();await page.waitForTimeout(action.startsWith('ix-wipe-')?600:120);};
+const click=async action=>{await page.locator(`[data-action="${action}"]`).evaluateAll(els=>{for(const el of els)for(let p=el;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;});await page.locator(`[data-action="${action}"]:visible`).first().click();await page.waitForTimeout(action.startsWith('ix-wipe-')?600:120);};
 const measure=async step=>{await page.locator(step==='wait'?'[data-time-magic]':`[data-measure-action="${step}"]`).click();await page.waitForTimeout(60);};
 const cycle=async step=>{await page.locator(step==='wait'?'[data-time-magic]':`[data-cycle-action="${step}"]`).click();await page.waitForTimeout(60);};
 const ready=async n=>{await page.locator(n===3?'#freeze-measure':n===4?'#freeze-bench':n===8?'.phaser-stage[data-ready=true],.stage-guard,.cup-summary':'.phaser-stage[data-ready=true]').waitFor();};
@@ -71,8 +71,8 @@ try{
   await setup(5);await ready(5);const a=await world(60,110),b=await world(290,200);await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:35});await page.mouse.up();await page.waitForTimeout(180);
   assert.ok((await get()).activities.draw.strokes[0].length>=3);await click('ix-draw-predict-thin');await scrub(5);await click('ix-draw-answer-thin');await click('ix-draw-where-air');await complete(5);
   const strokes=(await get()).activities.draw.strokes;await page.reload({waitUntil:'networkidle'});await hook();await ready(5);assert.deepEqual((await get()).activities.draw.strokes,strokes);checks.push('drawing-reload');
-  await setup(6);await ready(6);await scrub(6);let h=(await get()).activities.compare;assert.equal(h.records[0].room,h.records[0].heated);await click('ix-heat-prepare');await click('ix-heat-on');await scrub(6);await click('ix-heat-where-air');await complete(6);
-  await setup(7);await click('ix-dew-predict-air');await click('ix-wipe-cold');if(!(await get()).activities.dew.wiped.includes('room'))await click('ix-wipe-room');if(!(await get()).activities.dew.sealed)await click('act-dew-seal');await scrub(7);await click('ix-wipe-middle');await scrub(7);await complete(7);
+  await setup(6);await ready(6);await click('ix-heat-on');let h=(await get()).activities.compare;assert.equal(h.records[0].time,0);assert.equal(h.records[0].room,h.records[0].heated);await scrub(6);await click('ix-heat-where-air');await complete(6);
+  await setup(7);await click('ix-dew-predict-air');await click('ix-wipe-cups');if(!(await get()).activities.dew.sealed)await click('act-dew-seal');await scrub(7);assert.equal((await get()).activities.dew.rewiped,false);await complete(7);
   await click('act-next-7');if(await page.locator('dialog[open] #close-dialog').count())await page.locator('#close-dialog').click();await ready(8);
   await click('act-cup-summary');await ready(8);
   assert.equal(await page.evaluate(()=>window.__qaGame.scene.getScenes(true)[0].children.list.filter(o=>o.texture?.key==='drink-bottle').length),2,'cup summary opens both bottle illustrations');
@@ -92,7 +92,12 @@ try{
   await click('three-continue');assert.equal((await get()).fieldwork.pending,'field-ending');
   for(const step of ['prepare','wait','observe','receiver','cool','wait','collect','compare'])await cycle(step);
   await click('field-finish');await page.locator('dialog.concept-dialog[open]').waitFor();assert.equal((await get()).restored,false);
-  await page.locator('[data-concept="continue"]').click();await page.locator('.ending-main').waitFor();assert.equal(await page.locator('.ending-stats').count(),0);await shot('ending-without-stat-boxes');assert.equal((await get()).restored,true);checks.push('core-to-field10-concept-ending');
+  await page.locator('[data-concept="continue"]').click();
+  await page.locator('.journey-main').waitFor();assert.equal(await page.locator('.story-film[open]').count(),0);
+  await page.locator('[data-map-mode="overview"]').click();await page.waitForTimeout(250);
+  for(let i=0;i<5;i++)for(let hit=0;hit<3;hit++){await page.locator(`.mv-target[data-stage="${i}"]`).click({force:true});await page.waitForTimeout(180);}
+  await page.locator('.story-film[open]').waitFor();await page.locator('[data-film="skip"]').click();
+  await page.locator('.ending-main').waitFor();assert.equal(await page.locator('.ending-stats').count(),0);await shot('ending-without-stat-boxes');assert.equal((await get()).restored,true);checks.push('core-to-field10-concept-villains-ending');
   await page.reload({waitUntil:'networkidle'});await hook();assert.equal((await get()).route,'ending');assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push('ending-reload');
   await setup(2,true);for(const step of ['fill','load','wait','take','compare'])await page.locator(step==='wait'?'[data-time-magic]':`[data-tray-action="${step}"]`).click();await page.locator('[data-transform-next]').click();
   for(const [kind,steps] of Object.entries({melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']})){for(const step of steps)await page.locator(step==='wait'?'[data-time-magic]':`[data-process-action="${step}"]`).click();await page.locator('[data-transform-next]').click();}

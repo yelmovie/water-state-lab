@@ -100,6 +100,7 @@ export function handleActivity(action,ctx){if(handleInquiry(action,ctx))return t
  else if(cmd.startsWith('dew-wipe-')){s=a.dew;const k=cmd.slice(9);if(!['cold','room'].includes(k))return true;if(!s.wiped.includes(k))s.wiped.push(k);else if(k==='cold'&&s.records.length>=2){s.rewiped=true;s.againTime=0;s.again=false;}message=s.rewiped?'다시 깨끗이 닦았어. 시간을 보내 한 번 더 확인해 줘.':'겉면을 깨끗이 닦았어.';}
  else if(cmd==='dew-record'){s=a.dew;if(s.wiped.length!==2||!s.sealed)return true;if(!s.records.length){if(s.time!==0){announce('처음 시간 0으로 돌려 마른 모습을 기록해 줘.');return true;}s.records.push({kind:'before',cold:dewTrial(0),room:dewTrial(0,false),sealed:true});}else if(s.records.length===1&&s.time>=70)s.records.push({kind:'after',cold:dewTrial(s.time),room:dewTrial(s.time,false),sealed:true});}
  else if(cmd==='dew-again'){s=a.dew;if(!s.rewiped||s.againTime<70)return true;s.again=true;message='입구를 막고 다시 닦아도 물방울이 생겼어. 물은 어디에서 왔을까?';}
+ else if(cmd==='cup-finish'){if(!activityReady(7,a))return true;a.explain.summarySeen=true;state.inquiry.explanation='air';save();ctx.action('act-complete-4');return true;}
  else if(cmd==='cup-summary'){if(!activityReady(7,a))return true;a.explain.summarySeen=true;state.inquiry.explanation='air';}
  else if(cmd==='bottle-wipe'){if(!cupSummarySeen(a.explain))return true;a.explain.bottleWiped=true;a.explain.time=0;a.explain.transfer=false;}
  else if(cmd==='transfer-record'){s=a.explain;if(!s.bottleWiped||s.time<70)return true;s.transfer=true;}
@@ -107,7 +108,7 @@ export function handleActivity(action,ctx){if(handleInquiry(action,ctx))return t
   if(m===1)record={records:sortCards.filter(c=>a.sort.placed[c.id]===c.type).map(c=>`${c.name}: ${({solid:'고체',liquid:'액체',gas:'기체'})[c.type]} — ${c.proof}`),observed:structuredClone(a.observe),classification:{...a.sort.placed}};
   if(m===2)record={prediction:a.freeze.prediction,initial:60,result:65.4,mass:'100.0 g → 100.0 g',melted:true,trials:structuredClone(a.pipe.trials),measurements:structuredClone(a.freeze.records),safeFill:a.pipe.trials[a.pipe.chosen].fill};
   if(m===3)record={drawing:a.draw.strokes.length,comparison:'같은 조건에서 물이 적은 자국이 먼저 마름',observations:['가열 없이도 물의 양 감소','끓을 때 물속에서 기포 발생','두 경우 모두 물이 수증기로 변함'],drawingRecords:structuredClone(a.draw.records),trials:structuredClone(a.compare.records)};
-  if(m===4){const before=a.dew.records[0].cold.mass.toFixed(1),after=a.dew.records[1].cold.mass.toFixed(1);record={chain:['공기 중 수증기','차가운 표면','액체 물방울'],mass:`${before} g → ${after} g`,sealed:true,evidence:a.explain.summarySeen?['sealed','contrast','again']:[...a.explain.evidence],transfer:'차가운 음료병 겉면의 물방울',snapshots:structuredClone(a.dew.records),reobserved:a.dew.again};}
+  if(m===4){const before=a.dew.records[0].cold.mass.toFixed(1),after=a.dew.records[1].cold.mass.toFixed(1);record={chain:['공기 중 수증기','차가운 표면','액체 물방울'],mass:`${before} g → ${after} g`,sealed:true,evidence:['sealed','contrast',...(a.dew.again?['again']:[])],transfer:a.explain.transfer?'차가운 음료병 겉면의 물방울':'',snapshots:structuredClone(a.dew.records),reobserved:a.dew.again};}
   if(record){save();ctx.complete(m,record);}return true;
  }else return false;
  change(ctx,message,cue);return true;
@@ -154,20 +155,20 @@ export function getActivityProgress(n){const a=experimentActivities(n,state),s=(
    :s.faster!=='thin'?'중간 기록에서 물자국을 비교하고 먼저 마른 쪽을 골라 봐.'
    :'그림에서 줄어든 물이 어디로 갔는지 눌러 봐.';hint='그림 모양·바닥·환경은 같고 물의 양만 달라.';}
  if(n===6){pairs=[['가열 전 같은 조건 비교',s.baseline],['끓는 변화 기록',s.records.some(r=>r.boiling)],['물의 행방 연결',activityReady(6,a)]];instruction=
-  !s.baseline?'가열하지 않은 채 시간을 밀어 봐. 그때 모습이 기록돼.'
+  !s.baseline?'두 컵의 물높이가 같은지 보고 B 컵만 가열해 봐.'
    :!s.records.some(r=>r.boiling)?'B의 가열 세기를 높여 봐. 시간을 밀어 물속에서 기포가 올라오면 모습을 남겨.'
    :!s.destination?'처음 물높이 선과 지금을 비교하고, 줄어든 물의 행방을 골라 봐.'
    :'두 용기에서 줄어든 물이 무엇으로 변했는지 골라 봐.';hint='끓지 않는 A도 물의 양이 줄어들까?';}
- if(n===7){pairs=[['두 컵 닦고 처음 기록',s.records.length>=1],['같은 시간 겉면 비교',s.records.length>=2],['다시 닦아 재관찰',activityReady(7,a)]];instruction=
+ if(n===7){pairs=[['두 컵 닦고 처음 기록',s.records.length>=1],['같은 시간 겉면 비교',s.records.length>=2],['관찰 완료',activityReady(7,a)]];instruction=
   !state.inquiry.dewHypothesis?'물방울은 어디서 왔을까? 네 예상을 하나 눌러 봐.'
    :s.wiped.length<2?(s.wiped.includes('cold')?'실온 컵'
    :s.wiped.includes('room')?'차가운 컵'
    :'두 컵')+' 겉면의 물방울을 문질러 닦아 봐.'
    :!s.sealed?'‘두 컵 입구 막기’를 눌러 같은 조건을 만들어 봐.'
    :s.records.length<2?'시간을 ‘나중’까지 밀고 두 컵이 어떻게 다른지 모습을 남겨 봐.'
-   :!s.rewiped?'차가운 컵의 물방울이 있는 자리를 다시 문질러 봐.'
+   :!s.rewiped?'관찰결과 확인하기를 눌러 두 컵의 차이를 정리해 봐.'
    :'시간을 다시 끝까지 밀면 닦은 자리 모습이 기록돼.';hint='입구는 막혀 있어. 차가운 용기와 실온 용기의 바깥을 비교해.';}
- if(n===8){pairs=[['컵 관찰 정리',cupSummarySeen(s)],['음료병에 적용',s.transfer]];instruction=
+ if(n===8){pairs=[['컵 관찰 정리',cupSummarySeen(s)],['관찰 완료',activityReady(8,a)]];instruction=
   !activityReady(7,a)?'‘컵 실험으로’를 눌러 두 컵을 먼저 관찰해 봐.'
    :!cupSummarySeen(s)?'두 컵에서 본 차이를 한 장에서 정리해 봐.'
    :!state.inquiry.transferPrediction?'어느 음료병에 물방울이 생길지 예상해 봐.'

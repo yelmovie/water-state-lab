@@ -1,8 +1,42 @@
-/** Map-only reward. Never writes learning progress or unlocks a lesson. */
+import {missions} from './domain.js';
+
+export const MAP_VILLAINS_KEY='water-state-lab:map-villains:v1';
+const sessionClears=new Set();
+export const mapVillainToken=(state,id)=>state.mapRunId+JSON.stringify(state.evidence[id]||null);
+function readVillainRecord(storage,key=MAP_VILLAINS_KEY){
+ try{
+  const raw=JSON.parse((storage??globalThis.localStorage).getItem(key)||'{}');
+  if(raw&&typeof raw==='object'&&!Array.isArray(raw))return raw;
+ }catch{}
+ return {};
+}
+export function remainingMapVillains(state,storage){
+ const record=readVillainRecord(storage);
+ return missions.filter((mission,index)=>{
+  const token=mapVillainToken(state,mission.id);
+  return !state.completed.includes(mission.id)||(record[index]!==token&&!sessionClears.has(index+':'+token));
+ }).length;
+}
+export function recordMapVillainClear(index,token,storage,key=MAP_VILLAINS_KEY){
+ sessionClears.add(index+':'+token);
+ const record=readVillainRecord(storage,key);record[index]=token;
+ try{(storage??globalThis.localStorage).setItem(key,JSON.stringify(record));return true;}catch{return false;}
+}
+
+/** Elliptical body bounds ignore transparent sprite corners at any map zoom. */
+export function spritesTouch(actor,target){
+ if(!actor?.width||!actor.height||!target?.width||!target.height)return false;
+ const dx=actor.left+actor.width*.5-target.left-target.width*.5;
+ const dy=actor.top+actor.height*.55-target.top-target.height*.55;
+ const rx=actor.width*.3+target.width*.32,ry=(actor.height+target.height)*.36;
+ return (dx/rx)**2+(dy/ry)**2<=1;
+}
+
+/** Combat changes the finale condition, independently of lesson access. */
 // Sprite sheets: map-villain-mole.webp is 4×2 frames, bangul-combat-sheet.webp is 4×1 frames (256 px each).
 // The mole faces left in every frame, so facing right is a horizontal flip.
 const MOLE={idle:0,step:1,taunt:2,guard:3,lunge:4,hit:5,knocked:6,down:7};
-const BANGUL={ready:0,shoot:1,hurt:2,relief:3};
+const BANGUL={ready:0,shoot:1,relief:3};
 const RANGE=24; // % of map width: how close Bangul must be for the attack button or Space key to reach a villain.
 const NEAR=16; // % of map width: Bangul this close makes the villain speak.
 const TAUNTS={
@@ -15,7 +49,7 @@ export function mountMapVillains(world, options) {
  const abort=new AbortController(), timers=new Set(), nodes=[], targets=[];
  const style=document.createElement('style');style.textContent=STYLES;world.append(style);
  const status=document.createElement('span');status.className='mv-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');world.append(status);
- let stored={};try{const raw=JSON.parse(localStorage.getItem(options.key)||'{}');if(raw&&typeof raw==='object'&&!Array.isArray(raw))stored=raw;}catch{}
+ const stored=readVillainRecord(undefined,options.key);
  const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);fn();},ms);timers.add(id);return id;};
  const cancel=id=>{if(id){clearTimeout(id);timers.delete(id);}};
  const reducedNow=()=>options.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -24,8 +58,8 @@ export function mountMapVillains(world, options) {
  const tell=message=>{status.textContent=message;options.notify?.(message);};
  const pick=list=>list[Math.floor(Math.random()*list.length)];
  // Load both sheets up front so the first pose change never shows an empty frame.
- for(const src of ['/assets/v2/map-villain-mole.webp','/assets/v2/bangul-combat-sheet.webp'])if(typeof Image==='function')Object.assign(new Image(),{src});
- let fighting=null;
+ for(const src of ['/assets/v2/map-villain-mole.webp','/assets/v2/bangul-combat-sheet.webp','/assets/learning/bangul-hit-20261111/bangul-hit.webp'])if(typeof Image==='function')Object.assign(new Image(),{src});
+ let fighting=null,nextHurtAt=performance.now()+900;
 
  const frameAt=(el,f)=>{el.style.backgroundPosition=f==null?'':`${(f%4)*100/3}% ${Math.floor(f/4)*100}%`;el.closest('.mv-target')?.classList.toggle('mv-acting',f!=null);};
  const pointPx=(x,y)=>[x/100*world.offsetWidth,y/100*world.offsetHeight];
@@ -36,12 +70,22 @@ export function mountMapVillains(world, options) {
    const angle=(up?-Math.PI/2:fall?-Math.PI/2:0)+(Math.random()-.5)*(up?1.6:fall?2.2:Math.PI*2),dist=(up?38:26)+Math.random()*22;
    const end=fall?`translate(calc(-50% + ${Math.cos(angle)*dist}px),calc(-50% + ${18+Math.random()*10}px)) scale(.7)`:`translate(calc(-50% + ${Math.cos(angle)*dist}px),calc(-50% + ${Math.sin(angle)*dist}px)) scale(${up?1.6:.9})`;
    const keys=fall?[{transform:'translate(-50%,-50%) scale(.6)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(angle)*dist*.6}px),calc(-50% + ${Math.sin(angle)*dist*.8}px)) scale(1)`,opacity:1,offset:.45},{transform:end,opacity:0}]:[{transform:'translate(-50%,-50%) scale(.5)',opacity:1},{transform:end,opacity:0}];
-   p.animate(keys,{duration:up?700:fall?650:480,easing:fall?'ease-in':'cubic-bezier(.16,1,.3,1)'}).finished.finally(()=>p.remove());
+   p.animate(keys,{duration:up?700:fall?650:480,easing:fall?'ease-in':'cubic-bezier(.16,1,.3,1)'}).finished.then(()=>p.remove(),()=>p.remove());
   }
  };
 
+ const hitFighter=from=>{
+  const now=performance.now();
+  if(abort.signal.aborted||document.hidden||document.querySelector('dialog[open]')||now<nextHurtAt)return;
+  nextHurtAt=now+1300;
+  const at=fighter?.at?.();
+  fighter?.hurt?.(from);options.sound?.('thud');
+  status.textContent='앗! 방울이가 두더지에 부딪혔어. 살짝 떨어져서 움직여 봐!';
+  if(at&&!reducedNow()){const [x,y]=pointPx(at.x,at.y);burst(x,y-world.offsetWidth*.027,'drop',9);}
+ };
+
  options.stages.forEach((stage,index)=>{
-  const token=stage.token||'pending';const cleared=stage.ready&&stored[index]===token;
+  const token=stage.token||'pending';const cleared=stage.ready&&(stored[index]===token||sessionClears.has(index+':'+token));
   const b=document.createElement('button');b.type='button';b.className='mv-target';b.style.left=stage.x+'%';b.style.top=stage.y+'%';b.dataset.stage=String(index);b.dataset.state=cleared?'cleared':stage.ready?'ready':'locked';
   b.innerHTML='<span class="mv-murk" aria-hidden="true"><i></i><i></i><i></i></span><span class="mv-wave" aria-hidden="true"></span><span class="mv-say" aria-hidden="true"><b></b><small></small></span><span class="mv-creature" aria-hidden="true"><span class="mv-sprite"></span></span><span class="mv-label"></span><span class="mv-meter" aria-hidden="true">● ● ●</span>';
   const label=b.querySelector('.mv-label'),meter=b.querySelector('.mv-meter'),creature=b.querySelector('.mv-creature'),sprite=b.querySelector('.mv-sprite');
@@ -57,7 +101,7 @@ export function mountMapVillains(world, options) {
    say.classList.remove('show');void say.offsetWidth;say.classList.add('show');lastSaid=performance.now();
    cancel(sayTimer);sayTimer=later(()=>say.classList.remove('show'),ms);
   };
-  const where=()=>({x:stage.x+dx/(world.offsetWidth||1)*100,y:stage.y+dy/(world.offsetHeight||1)*100});
+  const where=()=>{const offset=getComputedStyle(b).translate.match(/-?[\d.]+/g)?.map(Number)||[dx,dy];return {x:stage.x+offset[0]/(world.offsetWidth||1)*100,y:stage.y+(offset[1]||0)/(world.offsetHeight||1)*100};};
   const freeze=()=>{
    cancel(roamTimer);roamTimer=0;b.classList.remove('mv-walking','mv-crank');
    const now=getComputedStyle(b).translate.match(/-?[\d.]+/g)?.map(Number);if(now){dx=now[0];dy=now[1]||0;}
@@ -65,7 +109,7 @@ export function mountMapVillains(world, options) {
   };
   const sfx=text=>{
    const t=document.createElement('span');t.className='mv-sfx';t.textContent=text;t.setAttribute('aria-hidden','true');b.append(t);
-   t.animate([{transform:'translate(-50%,0) scale(.6) rotate(-8deg)',opacity:0},{transform:'translate(-50%,-14px) scale(1.15) rotate(6deg)',opacity:1,offset:.3},{transform:'translate(-50%,-34px) scale(1) rotate(0)',opacity:0}],{duration:900,easing:'ease-out'}).finished.finally(()=>t.remove());
+   t.animate([{transform:'translate(-50%,0) scale(.6) rotate(-8deg)',opacity:0},{transform:'translate(-50%,-14px) scale(1.15) rotate(6deg)',opacity:1,offset:.3},{transform:'translate(-50%,-34px) scale(1) rotate(0)',opacity:0}],{duration:900,easing:'ease-out'}).finished.then(()=>t.remove(),()=>t.remove());
   };
 
   // Roaming: wander near the home spot, then stop and wreck the waterway.
@@ -132,7 +176,7 @@ export function mountMapVillains(world, options) {
     if(reduced||!at){impact();return;}
     const [bx,by]=pointPx(at.x,at.y),size=world.offsetWidth*.052,ox=bx+(bangulRight?1:-1)*size*.42,oy=by-size*.5;
     const shot=document.createElement('span');shot.className='mv-shot';shot.style.left=ox+'px';shot.style.top=oy+'px';world.append(shot);
-    shot.animate([{transform:'translate(-50%,-50%) scale(.5)'},{transform:`translate(calc(-50% + ${vx-ox}px),calc(-50% + ${impactY-oy}px)) scale(1.1)`}],{duration:280,easing:'cubic-bezier(.5,0,.75,0)'}).finished.finally(()=>{shot.remove();impact();});
+    shot.animate([{transform:'translate(-50%,-50%) scale(.5)'},{transform:`translate(calc(-50% + ${vx-ox}px),calc(-50% + ${impactY-oy}px)) scale(1.1)`}],{duration:280,easing:'cubic-bezier(.5,0,.75,0)'}).finished.then(()=>{shot.remove();if(!abort.signal.aborted)impact();},()=>shot.remove());
    };
    const settle=()=>{frameAt(sprite,null);fighter?.pose?.(null);busy=false;fighting=null;delete b.dataset.busy;b.classList.remove('mv-hit');resume();};
    if(reduced){
@@ -144,7 +188,7 @@ export function mountMapVillains(world, options) {
    if(hit<3){
     // The villain answers back once; it never changes progress.
     later(()=>{frameAt(sprite,MOLE.lunge);lunge(bangulRight?-1:1);sfx('쾅!');options.sound?.('thud');},760);
-    later(()=>{fighter?.pose?.(BANGUL.hurt,bangulRight);fighter?.shake?.();},860);
+    later(()=>hitFighter(me),860);
     later(settle,1150);
    }else{
     later(()=>{
@@ -156,21 +200,30 @@ export function mountMapVillains(world, options) {
    }
   };
   const finish=reduced=>{
-   let saved=true;if(!options.preview){try{stored[index]=token;localStorage.setItem(options.key,JSON.stringify(stored));}catch{saved=false;}}
+   const saved=options.preview||recordMapVillainClear(index,token,undefined,options.key);
    b.dataset.state='cleared';b.classList.remove('mv-hit','mv-cleaning');delete b.dataset.busy;label.textContent='물길 정화 완료';meter.textContent='✓';say.classList.remove('show');
    b.setAttribute('aria-label',stage.name+' 밸브 두더지 퇴치 완료');b.setAttribute('aria-disabled','true');
    status.textContent=stage.name+' 밸브 두더지가 사라지고 물길이 맑아졌어요. '+(options.preview?'시연 기록은 저장하지 않아요.':saved?'퇴치 기록을 저장했어요.':'저장하지 못했어요. 이 창에서만 유지돼요.');
    if(!reduced)options.sound?.('success');
-   later(()=>{fighter?.pose?.(null);fighting=null;},reduced?0:300);
+   later(()=>{fighter?.pose?.(null);fighting=null;options.onCleared?.();},reduced?0:300);
   };
   b.addEventListener('pointerdown',e=>e.stopPropagation(),{signal:abort.signal});
   b.addEventListener('keydown',e=>{if(e.repeat&&(e.key==='Enter'||e.key===' '))e.preventDefault();},{signal:abort.signal});
   b.addEventListener('click',e=>{e.stopPropagation();attack();},{signal:abort.signal});
-  world.append(b);nodes.push(b);targets.push({stage,b,attack,where});
+  world.append(b);nodes.push(b);targets.push({stage,b,creature,attack,where});
   if(!cleared){roamTimer=later(roam,300+index*450);later(watch,600);}
  });
 
  const cleanup=()=>{abort.abort();timers.forEach(clearTimeout);nodes.forEach(n=>n.remove());world.querySelectorAll('.mv-shot,.mv-particle').forEach(n=>n.remove());style.remove();status.remove();fighter?.pose?.(null);};
+ cleanup.checkContact=()=>{
+  if(abort.signal.aborted||fighting||document.hidden||performance.now()<nextHurtAt||document.querySelector('dialog[open]'))return;
+  const bounds=fighter?.bounds?.();
+  if(!bounds)return;
+  const target=targets.find(t=>['locked','ready'].includes(t.b.dataset.state)&&getComputedStyle(t.b).visibility!=='hidden'&&spritesTouch(bounds,t.creature.getBoundingClientRect()));
+  if(target)hitFighter(target.where());
+ };
+ const watchContact=()=>{cleanup.checkContact();later(watchContact,100);};
+ later(watchContact,100);
  /** Touch button and Space key share the same reach and combat rules. */
  cleanup.attackNearest=()=>{
   const at=fighter?.at?.();

@@ -17,7 +17,7 @@ const board='.phaser-stage';
 const time=n=>`[data-time-magic],#inquiry-time-${n},[data-action="ix-forward"]`;
 const record=actions('ix-record');
 const next=['','act-next-1','act-complete-1','act-next-3','act-complete-2','act-next-5','act-complete-3','act-next-7','act-complete-4','complete-5'];
-const shortSteps=[[],['붓기','얼음 옮기기','물자국'],['고체','액체','기체'],['예상','얼리기','녹이기'],['가득 담기','덜 담기','남은 공간 찾기'],['그리기','시간 비교','물의 행방'],['가열 전','끓이기','물의 행방'],['닦기','겉면 비교','다시 닦기'],['증거','설명 잇기','새 병'],['판 차갑게','기울이기','고치기'],['증상','고치기','물 보내기']];
+const shortSteps=[[],['붓기','얼음 옮기기','물자국'],['고체','액체','기체'],['예상','얼리기','녹이기'],['가득 담기','덜 담기','남은 공간 찾기'],['그리기','시간 비교','물의 행방'],['B 가열','끓이기','물의 행방'],['닦기','겉면 비교','결과 확인'],['증거','설명 잇기','새 병'],['판 차갑게','기울이기','고치기'],['증상','고치기','물 보내기']];
 
 // What the learner expected, set against what happened. Empty when no prediction was made.
 function predictionNote(n,a,q){
@@ -31,7 +31,7 @@ export function experimentMove(n,state,final){
  if(n===3&&activityReady(3,a)&&a.freeze.talk<3)return a.freeze.talk<2
   ?move('tap','냉동실에 넣으면 어떻게 되는지 살펴보자','‘냉동실에 넣기’를 누르고 쭈쭈바 봉지의 모양을 비교해 봐.',actions('act-talk-chill'))
   :move('tap','배관은 왜 고장 났을까?','얼리기 전과 얼린 뒤 봉지의 모양을 살펴보고, 물이 꽉 찬 배관에는 어떤 일이 생길지 골라 봐.','.freeze-guess');
- if(n<=8&&activityReady(n,a))return move('next','오늘 알게 된 것',predictionNote(n,a,q)+stageLessons[n],actions(next[n]));
+ if(n<=8&&activityReady(n,a)&&!(n===7&&a.dew.rewiped&&!a.dew.again)&&!(n===8&&cupSummarySeen(a.explain)&&!a.explain.transfer))return move('next','오늘 알게 된 것',predictionNote(n,a,q)+stageLessons[n],actions(next[n]));
  if(n===1){
   const s=a.observe;
   if(s.step===0){
@@ -70,11 +70,8 @@ export function experimentMove(n,state,final){
  }
  if(n===6){
   const s=a.compare,t=heatingTrial(s.heat,s.time);
-  if(!s.baseline&&s.time<30)return move('tap','가열하지 않고 두 컵을 지켜봐','시계를 눌러 시간이 흐르는 동안 두 컵의 물높이를 봐.',time(n));
-  if(!s.baseline)return move('tap','가열하기 전 모습을 봐','가열하지 않은 채 시계로 시간을 보내면 두 컵의 모습이 기록돼.',time(n));
   if(!s.records.some(r=>r.boiling)){
-   if(s.heat<55&&!s.batchPrepared)return move('tap','새 실험의 두 컵을 같은 양으로 준비해','첫 실험은 기록했어. 같은 두 컵에 같은 양을 다시 담아, 이번에는 B만 가열해서 비교하자.',actions('ix-heat-prepare'));
-   if(s.heat<55)return move('tap','B 컵만 가열해 봐','같은 양으로 다시 준비했어. A는 그대로 두고 B만 가열해.',actions('ix-heat-on'));
+   if(s.heat<55)return move('tap','이번에는 B 컵만 가열해 봐','두 컵의 물높이가 같아. B만 가열하고, A와 어떻게 달라지는지 비교해 봐.',actions('ix-heat-on'));
    if(!t.boiling)return move('tap','B의 물속에 기포가 생기는지 봐','시계로 시간을 보내며 B의 물속을 자세히 살펴봐.',time(n));
    return move('tap','기포가 올라오는 모습을 봐','시계로 시간을 보내면 끓는 모습이 기록돼.',time(n));
   }
@@ -84,17 +81,17 @@ export function experimentMove(n,state,final){
   const s=a.dew;
   if(!q.dewHypothesis)return move('tap','컵 바깥 물방울은 어디서 왔을까?','실험하기 전에 네 생각을 하나 골라 봐.','[data-action^="ix-dew-predict-"]');
   if(s.wiped.length<2){
-   return move('brush','차가운 컵의 겉면을 닦아 봐','컵을 손가락으로 문지르거나 ‘A 전체 닦기’를 눌러 봐.',actions('ix-wipe-cold')+',#wipe-cold');
+   return move('brush','두 컵의 겉면을 닦아 봐','‘컵 닦기’를 누르면 두 컵을 함께 닦아.',actions('ix-wipe-cups')+',#wipe-cold');
   }
   if(!s.sealed)return move('tap','두 컵의 입구를 막아 봐','컵 안의 물이 밖으로 나오지 않게 ‘두 컵 입구 막기’를 눌러 봐.',actions('act-dew-seal'));
   if(s.records.length<2)return s.time<70?move('tap','같은 시간 뒤의 두 컵을 비교해 봐','시계를 눌러 어느 컵 바깥에 물방울이 생기는지 봐.',time(n)):move('tap','두 컵의 겉면을 비교해 봐','시간 관찰이 끝나면 두 컵의 모습이 기록돼.',time(n));
-  if(!s.rewiped)return move('brush','차가운 컵의 물방울을 한 번 더 닦아 봐','물방울을 문지르거나 ‘A 가운데 닦기’를 눌러 봐.',actions('ix-wipe-middle'));
+  if(!s.rewiped)return move('brush','차가운 컵의 물방울을 한 번 더 닦아 봐','‘컵 닦기’를 눌러 물방울을 다시 닦아 봐.',actions('ix-wipe-cups'));
   return s.againTime<70?move('tap','닦은 자리에 물방울이 다시 생길까?','시계를 다시 눌러 시간을 보내 봐.',time(n)):move('tap','다시 생긴 물방울을 봐','시간 관찰이 끝나면 닦은 자리 모습이 기록돼.',time(n));
  }
  if(n===8){
   const s=a.explain;
   if(!activityReady(7,a))return move('next','컵 실험에서 증거를 가져와 봐','두 컵의 겉면을 관찰한 뒤 이 설명을 만들 수 있어.',actions('act-go-7'));
-  if(!cupSummarySeen(s))return move('compare','컵에서 관찰한 것을 정리해 보자','두 컵에서 본 차이를 읽고, 음료병에서도 확인해 봐.',actions('act-cup-summary'));
+  if(!cupSummarySeen(s))return move('compare','컵에서 관찰한 것을 정리해 보자','두 컵에서 본 차이를 읽고 관찰을 마쳐 봐.',actions('act-cup-finish'));
   if(!q.transferPrediction)return move('tap','어느 음료병에 물방울이 생길까?','차가운 병과 실온 병을 보고 네 예상을 골라 봐.','[data-action^="ix-transfer-predict-"]');
   if(!s.bottleWiped)return move('brush','두 음료병의 겉면을 닦아 봐','수건을 끌어 두 병의 겉면을 문질러 봐.',board);
   return s.time<70?move('tap','음료병에도 같은 일이 생길까?','시계를 눌러 두 병 바깥을 비교해 봐.',time(n)):move('tap','음료병 바깥을 끝까지 봐','시간 관찰이 끝나면 두 병의 모습이 기록돼.',time(n));
@@ -165,7 +162,7 @@ export function pinQuestion(root){
  let group=answers.length>1?answers[0].parentElement:(answers[0].matches('button,input,summary,label')?answers[0].parentElement:answers[0]);
  while(group&&!answers.every(b=>group.contains(b)))group=group.parentElement;
  // A canvas stage draws over its first row, leaving an empty frame; the title bar already shows this question.
- if(!group||group===main||group.matches('.phaser-stage'))return;
+ if(!group||group===main||group.matches('.phaser-stage,.workspace-stage,.workspace-controls,.time-magic'))return;
  // The question becomes the first row of the answer group, so it sits on top of the answers in any layout.
  group.classList.add('stage-answer-group');group.classList.toggle('qa-wrap',getComputedStyle(group).display.includes('flex'));
  group.insertAdjacentHTML('afterbegin',`<div class="stage-question-pop" role="note"><b>❓ 문제</b><span>${esc(text)}</span></div>`);

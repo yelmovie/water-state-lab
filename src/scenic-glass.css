@@ -1,14 +1,14 @@
 /* Transparent chrome, opaque learning objects: never fade entire controls. */
 #app :is(.icon-btn,.nav-btn,.guided-tools-toggle,.btn:not(.primary):not(.danger),.building-parts button:not([aria-current=step])){background:linear-gradient(135deg,#fffdf2d9,#edf6edbd);border-color:#53796b80;box-shadow:0 4px 14px #173c491c,inset 0 1px 0 #ffffffe0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#214f51;}
-#app :is(.guided-play,.btn.primary){background:linear-gradient(135deg,#fff4ccd9,#f4d77bc9);border-color:#99722b80;box-shadow:0 4px 14px #73572526,inset 0 1px 0 #fff8e8;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+#app :is(.guided-play,.btn.primary){color:#574116;background:linear-gradient(135deg,#fff4ccd9,#f4d77bc9);border-color:#99722b80;box-shadow:0 4px 14px #73572526,inset 0 1px 0 #fff8e8;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 #app .guided-shell .building-guide{background:#fffdf0c7;border-color:#8ea89988;box-shadow:0 4px 18px #173c491c;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 #app :is(.stage-question-pop,.activity-status,.process-status,.cold-goal,.core-flow-controls,.journey-label,.map-place-label){background:#fffdf0d9;box-shadow:0 4px 14px #173c4919;border-color:#72918180;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 #app .guided-shell .guided-question-panel,#app .workspace-detail-content,dialog{background:#fffdf0eb;border-color:#8aa69580;box-shadow:0 12px 38px #173c4930;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
 #app .guided-question-choices>.btn{background:#fffef2e3;box-shadow:0 3px 12px #173c4920;}
 #app :is(.btn,.icon-btn,.guided-play,.guided-tools-toggle):focus-visible{outline:3px solid #17655c;outline-offset:3px;}
-@media(prefers-reduced-transparency:reduce){#app :is(.btn,.icon-btn,.building-guide,.stage-question-pop),dialog{background:#fffdf0!important;backdrop-filter:none;-webkit-backdrop-filter:none;}}
+@media(prefers-reduced-transparency:reduce){#app :is(.btn,.icon-btn,.building-guide,.stage-question-pop),dialog{background:#fffdf0!important;color:#214f51!important;backdrop-filter:none;-webkit-backdrop-filter:none;}}
 
-#app .time-magic{background:#fffef0cf;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-color:#84b5a880;box-shadow:0 8px 28px #173c4929;}
+#app .time-magic,#app .time-magic:hover{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border-color:transparent;box-shadow:none;}
 
 :root{--scenic-card-radius:20px;--scenic-card-gap:12px;}
 #app :is(.lesson-card,.mission-card,.expedition-card,.ending-art-card,.settings-concept-card,.settings-unlock-card,.activity-object,.activity-target){border-radius:var(--scenic-card-radius);}

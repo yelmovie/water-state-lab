@@ -139,11 +139,11 @@ test("reduced motion keeps the static arrival cue available",t=>{
  assert.ok(!css.includes('--time-rail:'));assert.ok(guide.includes('.guided-control:not(.phaser-stage):not(#field-canvas):not(.time-magic){outline:'));
  });
 
- test('clock moves into toolbar while running and returns to center on pause',t=>{
+ test('clock stays visible on the stage while its hands advance, then disappears',t=>{
  const f=fixture(t);assert.equal(f.magic.parentElement,f.stage);
- f.click();assert.equal(f.magic.parentElement,f.dock);
+ f.click();assert.equal(f.magic.parentElement,f.stage);assert.equal(f.magic.hidden,false);
  f.click();assert.equal(f.magic.parentElement,f.stage);
- f.click();assert.equal(f.magic.parentElement,f.dock);
+ f.click();assert.equal(f.magic.parentElement,f.stage);assert.equal(f.magic.hidden,false);
  });
 
  test('unchanged completion does not retrigger hidden-attribute observers',t=>{

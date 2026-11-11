@@ -12,7 +12,8 @@ export function initialActivities(){return {
  explain:{summarySeen:false,evidence:[],chain:[],bottleWiped:false,time:0,transfer:false}
 };}
 export function prepareHeatingComparison(s){
- if(!s.baseline||s.heat!==0||s.batchPrepared)return false;
+ if(s.heat!==0||s.batchPrepared)return false;
+ if(!s.baseline){s.records.push(heatingTrial(0,0));s.baseline=true;}
  s.batchPrepared=true;s.time=0;s.pins=[];s.destination='';return true;
 }
 export function heatingTrial(heat,time){
@@ -81,8 +82,8 @@ export function activityReady(n,a){switch(n){
  case 4:return pipeStep(a.pipe)==='done';
  case 5:return a.draw.strokes.some(s=>s.length>=3)&&[0,1,2].every(b=>a.draw.records.some(r=>r.band===b))&&a.draw.faster==='thin'&&a.draw.destination==='air';
  case 6:return a.compare.baseline&&a.compare.records.some(r=>r.boiling)&&a.compare.destination==='air';
- case 7:return a.dew.records.length>=2&&a.dew.rewiped&&a.dew.again;
- case 8:return cupSummarySeen(a.explain)&&a.explain.transfer&&activityReady(7,a);
+ case 7:return a.dew.records.length>=2&&a.dew.sealed&&a.dew.wiped.length===2;
+ case 8:return cupSummarySeen(a.explain)&&activityReady(7,a);
  default:return false;
 }}
 export function validateActivities(value){

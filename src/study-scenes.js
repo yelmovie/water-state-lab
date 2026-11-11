@@ -197,11 +197,15 @@ export function createDewScene(scene,wipe){
  const autoWipe=event=>{
   event.preventDefault();if(wiping)return;
   kind=event.detail.kind;ids=[];stopClock();host.setAttribute('aria-busy','true');
-  const cx=kind==='cold'?205:510,still=reduced();
+  const both=kind==='both',still=reduced();
+  const cx=kind==='cold'||both?205:510;
   cloth.setPosition(cx,165);
-  wiping=scene.tweens.addCounter({from:0,to:1,duration:still?350:900,onUpdate:tween=>{
+  wiping=scene.tweens.addCounter({from:0,to:1,duration:still?350:both?1400:900,onUpdate:tween=>{
    const progress=tween.getValue();
-   touch({worldX:cx+(still?0:Math.sin(progress*Math.PI*4)*66),worldY:still?165:85+progress*170});
+   const part=both?Math.min(1,progress*2%1):progress;
+   if(both){const next=progress<.5?'cold':'room';if(kind!==next)ids=[];kind=next;}
+   const center=both?(progress<.5?205:510):cx;
+   touch({worldX:center+(still?0:Math.sin(part*Math.PI*4)*66),worldY:still?165:85+part*170});
   },onComplete:()=>{wiping=null;kind=null;ids=[];host.removeAttribute('aria-busy');queueMicrotask(()=>{if(host.isConnected)event.detail.finish();});}});
  };
  host.addEventListener('cup-wipe',autoWipe);

@@ -36,7 +36,7 @@ test('old saves acquire settings defaults and reload always exits teacher previe
  for(const route of [10,'ending']){s.route=route;const loaded=readState(storage(JSON.stringify(s)));assert.equal(loaded.route,'map');assert.equal(loaded.settings.adminUnlock,false);assert.equal(loaded.settings.sound,false);}
 });
 test('previous page follows the lesson sequence with a disabled home boundary',()=>{
- assert.equal(previousRoute('home'),null);assert.equal(previousRoute('map'),'home');assert.equal(previousRoute(1),'map');
+ assert.equal(previousRoute('adventure'),'map');assert.equal(previousRoute('home'),null);assert.equal(previousRoute('map'),'home');assert.equal(previousRoute(1),'map');
  for(let n=2;n<=10;n++)assert.equal(previousRoute(n),n-1);assert.equal(previousRoute('ending'),10);
 });
 test('admin final preview keeps sample design and submissions out of student records',()=>{

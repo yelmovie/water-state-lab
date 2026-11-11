@@ -1,7 +1,75 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {freshAdventure,adventureMove,expeditions,restoreAdventure} from '../src/drop-adventure-model.js';
 import {initialState,readState} from '../src/state.js';
+import {handleDropAdventure} from '../src/drop-adventure.js';
 test('five adventures require physical state changes and keep retry nonpunitive',()=>{for(let c=0;c<5;c++){let s=freshAdventure(c);for(const gate of expeditions[c].gates){const start=s.gate;s=adventureMove(s,'move');if(s.gate!==start)continue;if(gate.space)s=adventureMove(s,'space');let guard=0;while(s.phase!==gate.phase&&guard++<5){const rank={ice:0,water:1,vapor:2};const a=rank[s.phase]<rank[gate.phase]?'warm':'cool';s=adventureMove(adventureMove(s,a),a);}s=adventureMove(s,'move');assert.equal(s.gate,start+1);}assert.equal(s.done,true);assert.equal(s.log.length,expeditions[c].gates.length);assert.equal(adventureMove(s,'retry').gate,0);assert.equal(adventureMove(s,'next').chapter,(c+1)%5);}});
 test('freezing a full container requires room and never advances on wrong state',()=>{let s=freshAdventure(1);s=adventureMove(adventureMove(s,'cool'),'cool');assert.equal(s.phase,'water');assert.equal(s.gate,0);s=adventureMove(s,'space');s=adventureMove(adventureMove(s,'cool'),'cool');assert.equal(s.phase,'ice');assert.equal(adventureMove(s,'move').gate,1);});
 test('saved laboratory records survive adventure resume',()=>{const s=initialState();s.route='adventure';s.dropAdventure=adventureMove(freshAdventure(),'warm');s.completed=[1];s.pages=[1,2];s.evidence[1]={records:['관찰']};const loaded=readState({getItem:()=>JSON.stringify(s)});assert.equal(loaded.route,'adventure');assert.deepEqual(loaded.evidence,s.evidence);assert.equal(loaded.dropAdventure.heat,1);});
 test('invalid adventure record is safely reset without touching lab',()=>{assert.deepEqual(restoreAdventure({chapter:99}),freshAdventure());assert.equal(restoreAdventure({chapter:0,phase:'fire',gate:0}).phase,'ice');});
+
+
+test('all five adventures run independently of laboratory completion',async()=>{
+ const {dropAdventureView}=await import('../src/drop-adventure.js');
+ for(let chapter=0;chapter<5;chapter++){
+  const state=initialState();state.route='adventure';state.settings.reduced=true;
+  state.dropAdventure=freshAdventure(chapter);
+  const html=dropAdventureView(state,'');
+  assert.ok(html.includes('data-action="drop-warm"'));
+  assert.ok(!html.includes('실험에서 능력 발견하기'));
+  handleDropAdventure('drop-warm',state,{save(){},render(){}});
+  assert.notDeepEqual(state.dropAdventure,freshAdventure(chapter));
+  assert.deepEqual(state.completed,[]);assert.deepEqual(state.pages,[]);
+  assert.equal(state.dropReturn,false);
+ }
+});
+
+test('an old adventure lab link returns to the map without creating a required detour',()=>{
+ const state=initialState();state.route='adventure';state.dropReturn=true;let destination;
+ handleDropAdventure('drop-lab',state,{go:route=>{destination=route;}});
+ assert.equal(destination,'map');assert.equal(state.dropReturn,false);
+});
+
+test('reentering adventure clears an abandoned laboratory return flag',()=>{
+ const state=initialState();
+ state.dropReturn=true;
+ handleDropAdventure('drop-start',state,{go:()=>{}});
+ assert.equal(state.dropReturn,false);
+});
+
+test('teacher adventure preview restores an untouched student adventure',async()=>{
+ const {state,setPreviewMode}=await import('../src/state.js');
+ const before=structuredClone(state);
+ try{
+  Object.assign(state,initialState());
+  setPreviewMode(true);
+  state.dropAdventure=adventureMove(freshAdventure(),'warm');
+  state.dropReturn=true;
+  setPreviewMode(false);
+  assert.equal(state.dropAdventure,null);
+  assert.equal(state.dropReturn,false);
+ }finally{
+  setPreviewMode(false);
+  Object.assign(state,before);
+ }
+});
+
+test('every adventure gate has a concrete illustrated device',()=>{
+ for(const mission of expeditions)for(const gate of mission.gates){
+  assert.ok(['channel','cooling','air','condenser'].includes(gate.scene),gate.name);
+ }
+});
+
+test('water and ice use distinct art while invisible vapor uses a location marker',async()=>{
+ const {dropAdventureView}=await import('../src/drop-adventure.js');
+ const state=initialState();state.completed=[1];
+ for(const phase of ['water','ice','vapor']){
+  state.dropAdventure={...freshAdventure(),phase};
+  const html=dropAdventureView(state,'');
+  assert.ok(!html.includes('bangul-title.webp'));
+  assert.ok(html.includes('/adventure-20261111/channel-right.webp'));
+  if(phase==='vapor'){
+   assert.ok(html.includes('drop-vapor-marker'));
+   assert.ok(!html.includes('/adventure-20261111/vapor.webp'));
+  }else assert.ok(html.includes(`/adventure-20261111/${phase}.webp`));
+ }
+});

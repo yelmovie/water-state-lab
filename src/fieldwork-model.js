@@ -2,8 +2,8 @@ import {cycleAction} from './greenhouse-cycle.js';
 import {heatingTrial} from './activity-model.js';
 import {coldNightAction,coldNightsDone,nights} from './cold-night-model.js';
 // Field applications follow an observed experiment. No speed, precision or click-count score.
-export const experimentTitles=['','옮겨 담기','생활 속 세 상태','얼기·녹기','얼 때의 공간','물그림 마르기','증발과 끓음','컵 바깥 물방울','내 증거로 설명','물 모으는 장치','마지막 물길 복구'];
-export const experimentQuestions=['','물과 얼음의 모양은 어떻게 달라질까?','생활 속 물은 어떤 상태일까?','얼고 녹으면 높이와 무게는?','물이 얼 때 공간이 충분할까?','물의 양이 다르면 마르는 순서는?','증발과 끓음은 무엇이 같을까?','컵 바깥 물방울은 어디서 왔을까?','내 증거로 물방울을 설명할까?','어떻게 고치면 물이 모일까?','내 기록과 장치로 물길을 고칠까?'];
+export const experimentTitles=['','옮겨 담기','생활 속 세 상태','얼기·녹기','얼 때의 공간','물그림 마르기','증발과 끓음','컵 바깥 물방울','관찰결과 확인','물 모으는 장치','마지막 물길 복구'];
+export const experimentQuestions=['','물과 얼음의 모양은 어떻게 달라질까?','생활 속 물은 어떤 상태일까?','얼고 녹으면 높이와 무게는?','물이 얼 때 공간이 충분할까?','물의 양이 다르면 마르는 순서는?','증발과 끓음은 무엇이 같을까?','컵 바깥 물방울은 어디서 왔을까?','컵에서 관찰한 결과는 무엇일까?','어떻게 고치면 물이 모일까?','내 기록과 장치로 물길을 고칠까?'];
 // One request closes each area. Odd stages lead straight on to the second experiment of the area.
 export const fieldStages=[2,4,10];
 export const areaStages=[2,4,6,8,10];
