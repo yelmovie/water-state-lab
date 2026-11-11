@@ -288,7 +288,8 @@
 .workspace-controls>details>summary{min-height:44px;padding:8px 12px;border:1px solid #b8cbb5;border-radius:10px;background:#fffdf0;font-size:14px}
 .guided-shell .workspace-stage.cold-night{padding:0!important}
 .guided-shell .workspace-stage .cold-yard{position:relative;display:block!important;height:100%;padding:calc(var(--workspace-header-height) + 34px) 12px var(--workspace-controls-height)!important}
-.guided-shell .workspace-stage .cold-intro{position:absolute;left:16px;right:auto;top:var(--workspace-header-height);display:block!important}
+/* Absolute night badges must use the yard, not the inherited grid row, as their containing block. */
+.guided-shell .workspace-stage .cold-intro{position:absolute;grid-area:auto;left:16px;right:auto;top:var(--workspace-header-height);display:block!important}
 .guided-shell .workspace-stage .cold-intro .transform-progress{flex-direction:row!important;width:auto}
 .guided-shell .workspace-stage .cold-row{height:100%;grid-column:auto;grid-row:auto;padding:0;gap:16px}
 .guided-shell .workspace-stage .cold-yard:has(>.cold-goal){display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:8px;padding-top:calc(var(--workspace-header-height) + 40px)!important}
