@@ -99,3 +99,10 @@ test('an open dialog prevents starting a clock behind it',t=>{
  assert.equal(f.magic.classList.contains('is-running'),false);
  assert.equal(f.magic.classList.contains('is-casting'),false);
 });
+
+ test("guided clock highlights preserve absolute placement",async()=>{
+ const {readFile}=await import("node:fs/promises");
+ const css=await readFile(new URL("../src/experience.css",import.meta.url),"utf8");
+ assert.ok(css.includes(".guided-control:not(.phaser-stage):not(#field-canvas):not(.time-magic){position:relative;z-index:2}"));
+ assert.ok(!css.includes(".guided-control:not(.phaser-stage):not(#field-canvas){position:relative"));
+ });
