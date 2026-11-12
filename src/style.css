@@ -16,3 +16,10 @@
 /* Kept outside #app so changing experiments does not hide a ready update. */
 #app-update{position:fixed;z-index:2147483001;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);max-width:calc(100vw - 32px);min-height:48px;padding:12px 20px;border:2px solid #e9ce7f;border-radius:16px;background:#175e58;color:#fffdf1;box-shadow:0 4px 18px #123e6040;font:700 18px/1.4 'NanumSquareNeo',system-ui,sans-serif;cursor:pointer}
 #app-update:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+/* Map controls: clear local feedback without moving the layout. */
+[data-map-pad] { min-width:44px; min-height:44px; touch-action:none; user-select:none; -webkit-user-select:none; }
+[data-map-pad] > * { pointer-events:none; }
+[data-map-pad][data-map-held] { filter:brightness(1.15); outline:3px solid #f4bc45; outline-offset:1px; box-shadow:inset 0 0 0 2px #fff8da; }
+[data-map-pad]:focus-visible { outline:3px solid #165fba; outline-offset:3px; }
+[data-map-pad]:disabled { opacity:.5; }

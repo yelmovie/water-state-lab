@@ -1,3 +1,4 @@
+import {assistMapStep} from './map-controls.js';
 // Shared geometry and learner actions. No renderer, clock or DOM dependency.
 export const clampValue=(v,min,max)=>Math.max(min,Math.min(max,v));
 export const pourServing=100,jugCapacity=2*pourServing;
@@ -74,9 +75,8 @@ function nearestRoad([x,y]){
 }
 // A narrow walking lane allows diagonal steering and slides along bends at its edge.
 export function walkIslandStep(position,dx,dy){
- const next=[position[0]+dx,position[1]+dy],{foot,offset}=nearestRoad(next),width=12;
- if(offset<=width)return next;
- return next.map((v,i)=>foot[i]+(v-foot[i])*width/offset);
+ const next=assistMapStep({x:position[0],y:position[1]},{x:dx,y:dy},p=>nearestRoad([p.x,p.y]).offset<=12);
+ return [next.x,next.y];
 }
 function connectedPath(from,to,parent=null){
  if(from===to)return [to];

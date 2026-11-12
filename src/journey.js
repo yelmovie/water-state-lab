@@ -1,3 +1,4 @@
+import {bindDirectionPad,mapKeyDirection,MAP_VECTORS} from './map-controls.js';
 import { mountMapVillains,MAP_VILLAINS_KEY,mapVillainToken,remainingMapVillains } from './map-villains.js';
 import {residentForStage,returnedResidents,nextGreeting,villageFriend} from './island-residents.js';
 import {finalContext} from './workshop.js';
@@ -201,17 +202,9 @@ export function mountMapCamera(onVillainCleared){
  addEventListener('pointerup',letGo,{signal});addEventListener('pointercancel',letGo,{signal});
  // A drag, or any tap while the hand is on, never opens a place.
  view.addEventListener('click',e=>{if(e.detail===0||e.target.closest('.map-nearby')||(!dragged&&!mapView.hand))return;dragged=false;e.preventDefault();e.stopPropagation();},{signal,capture:true});
- root.querySelectorAll('[data-map-move]').forEach(button=>{
-  const name=button.dataset.mapMove,direction=directions['Arrow'+name[0].toUpperCase()+name.slice(1)];
-  button.addEventListener('pointerdown',e=>{
-   if(e.button!==0)return;
-   button.setPointerCapture(e.pointerId);press(e.pointerId,direction);
-  },{signal});
-  for(const type of ['pointerup','pointercancel','lostpointercapture']){
-   button.addEventListener(type,e=>release(e.pointerId),{signal});
-  }
-  // A keyboard or assistive-technology activation has no pointerdown.
-  button.addEventListener('click',e=>{if(e.detail===0&&!blocked()){hideHint();step(...direction,8);paintPose();}},{signal});
+ bindDirectionPad(root,'[data-map-move]',b=>b.dataset.mapMove,{signal,blocked:()=>!!blocked()||departing||document.hidden,
+  press:d=>{const v=MAP_VECTORS[d];release('pad');mapView.hand=false;press('pad',[v.x,v.y]);},release:()=>release('pad'),
+  tap:d=>{const v=MAP_VECTORS[d];hideHint();step(v.x,v.y,8);paintPose();}
  });
  const attack=()=>{
   if(blocked()||departing||document.hidden)return;
@@ -228,11 +221,11 @@ export function mountMapCamera(onVillainCleared){
   if(e.key===' '&&(e.target===view||e.target===document.body||e.target.closest?.('.map-pad'))){
    e.preventDefault();if(!e.repeat){view.focus({preventScroll:true});attack();}return;
   }
-  if(!Object.hasOwn(directions,e.key))return;
+  const dir=mapKeyDirection(e);if(!dir)return;
   e.preventDefault();
-  if(!e.repeat){view.focus({preventScroll:true});press(e.key,directions[e.key]);}
+  if(!e.repeat){view.focus({preventScroll:true});const v=MAP_VECTORS[dir];mapView.hand=false;press(e.code||e.key,[v.x,v.y]);}
  },{signal});
- document.addEventListener('keyup',e=>release(e.key),{signal});
+ document.addEventListener('keyup',e=>release(e.code||e.key),{signal});
  addEventListener('blur',stopWalking,{signal});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWalking();},{signal});
  world.addEventListener('focusin',e=>{
