@@ -1,0 +1,234 @@
+{
+  "engine": "ElevenLabs v4",
+  "language": "ko",
+  "flow": "kXM1J1JvZB9JFNWfoMmU",
+  "recordings": [
+    {
+      "key": "letter-01",
+      "text": "안녕, 나는 물소식을 전하는 파랑이야. 같은 물을 다른 그릇에 부으면 모양은 어떻게 될까? 물을 옮겨 보고, 얼음도 옮겨서 비교해 줘.",
+      "speaker": "파랑",
+      "voice": "dnZGOA54w68T7vLLPFTp",
+      "node_id": "TKIeP17KWM4nN2yiqp4o",
+      "generation_id": "Bwzfc8RLSLNDt4los0Hr",
+      "duration": 10
+    },
+    {
+      "key": "letter-02",
+      "text": "안녕, 나는 물소식을 전하는 파랑이야. 얼음, 물, 수증기는 모두 물의 다른 모습이야. 생활 속 장면을 보고 어떤 상태인지 찾아볼래?",
+      "speaker": "파랑",
+      "voice": "dnZGOA54w68T7vLLPFTp",
+      "node_id": "uJMegJidEBEWVfybsjUa",
+      "generation_id": "m1rYDfIB90CdYdK1Sgp8",
+      "duration": 10.56
+    },
+    {
+      "key": "letter-03",
+      "text": "나는 얼음 다리의 배관공 뚝딱이야. 물을 더 넣거나 흘리지 않고 얼리면 높이와 무게는 어떻게 될까? 예상하고, 얼리고, 다시 녹여서 비교해 보자.",
+      "speaker": "뚝딱",
+      "voice": "IQt4I2Udet4gAwcFGAlU",
+      "node_id": "Gp1Hyy2phjuxnoTRVBQW",
+      "generation_id": "qxnVckscYmkh33Hh7mrP",
+      "duration": 12.095,
+      "voice_name": "oki",
+      "flow": "ehkILKtFy3AvDQ4QfhHn",
+      "sha256": "aa275d845100345fd6e747487beb81c24207e93895f50fb4c723185202a8b09b",
+      "pickup": {
+        "key": "letter-04",
+        "generation_id": "L1WuCUpjRrojKfkfc7MX",
+        "segment": "나는 얼음 다리의 배관공 뚝딱이야."
+      }
+    },
+    {
+      "key": "letter-04",
+      "text": "안녕, 나는 얼음 다리의 배관공 뚝딱이야. 물이 얼 때 커질 자리가 있어야 통이 멀쩡하겠지? 시험관에 물을 가득 담았을 때와 덜 담았을 때를 비교해 보자.",
+      "speaker": "뚝딱",
+      "voice": "IQt4I2Udet4gAwcFGAlU",
+      "node_id": "SPKNt3doezqFpRsJFdep",
+      "generation_id": "L1WuCUpjRrojKfkfc7MX",
+      "duration": 12.591,
+      "voice_name": "oki",
+      "flow": "ehkILKtFy3AvDQ4QfhHn",
+      "sha256": "412ed99f7dcdd89ad36cd41f5be4a08e68257e676334105f5872e5f569a0333f"
+    },
+    {
+      "key": "letter-05",
+      "text": "안녕! 햇살 찻집의 보리야. 두 붓에 물을 다르게 묻혀 같은 그림을 그려 보자. 물을 조금 묻힌 그림과 많이 묻힌 그림 중 어느 쪽이 먼저 마를까?",
+      "speaker": "보리",
+      "voice": "7Tms2JpTU4QYeCNp0Gtn",
+      "node_id": "4Ao2C5d2e3Npk9ngi5iA",
+      "generation_id": "bXef8ymanbTTrkY21GQ2",
+      "duration": 10.8
+    },
+    {
+      "key": "letter-06",
+      "text": "어서 와, 나는 찻집 주인 보리야. 가열하지 않은 물도 줄어들까? 두 컵을 같은 시간 동안 보고, 이번엔 한 컵만 데워서 물높이와 기포를 비교해 줘. 실제 가열은 선생님이 다뤄.",
+      "speaker": "보리",
+      "voice": "7Tms2JpTU4QYeCNp0Gtn",
+      "node_id": "IfqIJnKmvRoJsfc5FzyY",
+      "generation_id": "7VWc5Rz6vfvojdWfLR6l",
+      "duration": 12.96
+    },
+    {
+      "key": "letter-07",
+      "text": "나는 이슬 정원사 송이야. 입구를 막은 차가운 컵 바깥에 물방울이 생겼어. 컵을 닦고 같은 시간 뒤를 비교해서, 물방울이 어디에서 왔는지 찾아보자.",
+      "speaker": "송이",
+      "voice": "AiutpBawf78dyoTpoaHl",
+      "node_id": "D82fgW8pfBoARzXEuacz",
+      "generation_id": "zBZhlQdkkxPfHu1d824g",
+      "duration": 12.08
+    },
+    {
+      "key": "letter-08",
+      "text": "안녕, 나는 정원사 송이야. 컵 실험에서 직접 본 증거를 모아 설명을 이어 보자. 다른 차가운 병에도 같은 일이 생기는지 확인한 뒤, 이 원리로 물을 모으는 장치를 살펴볼 거야.",
+      "speaker": "송이",
+      "voice": "AiutpBawf78dyoTpoaHl",
+      "node_id": "w5KCcwqYmMECfmjMwcyv",
+      "generation_id": "ZtGO3njEH93IUgjxySdY",
+      "duration": 13.12
+    },
+    {
+      "key": "letter-09",
+      "text": "안녕, 온실지기 느티야. 차가운 판에서 모은 물을 물통까지 보내자. 물은 높은 곳에서 낮은 곳으로 흘러. 경사판과 깔때기를 맞추고 새는 곳을 고쳐 줘.",
+      "speaker": "느티",
+      "voice": "5LbhUNiU0e2s8EafwnT5",
+      "node_id": "jODvhGbDJR6L3foI5C1K",
+      "generation_id": "HznF0gQlhGi5umf5PGlJ",
+      "duration": 11.6
+    },
+    {
+      "key": "letter-10",
+      "text": "기다리고 있었단다. 나는 온실지기 느티야. 네가 만든 장치에서 물이 왜 멈췄는지 찾아 고쳐 주렴. 물통과 코어의 높이를 맞추고, 관을 연결한 뒤 밸브를 열어 물을 보내 보자.",
+      "speaker": "느티",
+      "voice": "5LbhUNiU0e2s8EafwnT5",
+      "node_id": "GniesMzhkK209scLOFOA",
+      "generation_id": "rtQRBBcfdTqmdgI9nfn4",
+      "duration": 13.28
+    },
+    {
+      "key": "reply-02",
+      "text": "고드름이랑 시냇물을 그렸어. 공기 중 수증기는 눈에 보이지 않아서 글로 적었지!",
+      "speaker": "파랑",
+      "voice": "dnZGOA54w68T7vLLPFTp",
+      "node_id": "8BGdCueDM7nR9An68tyN",
+      "generation_id": "USfBKoiJV8p25s2kg0V8",
+      "duration": 6
+    },
+    {
+      "key": "hello-04",
+      "text": "톡톡, 수리 끝! 네 겨울 물통 기록을 보고 우리 작업장에도 얼음이 커질 자리를 남겼어.",
+      "speaker": "뚝딱",
+      "voice": "IQt4I2Udet4gAwcFGAlU",
+      "node_id": "xu46PCQLyiSr3PT07hl2",
+      "generation_id": "AC0ydbtuRY4l7oaSljia",
+      "duration": 7.131,
+      "voice_name": "oki",
+      "flow": "ehkILKtFy3AvDQ4QfhHn",
+      "sha256": "3773e159d151d49845c84dfa09b186dbd59a60de17d80ee0163b727703d89e50"
+    },
+    {
+      "key": "reply-04",
+      "text": "물이 얼면 부피가 커져. 가득 찬 단단한 통에는 얼음이 커질 자리가 부족할 수 있어.",
+      "speaker": "뚝딱",
+      "voice": "IQt4I2Udet4gAwcFGAlU",
+      "node_id": "zjukjrXnFOHNVws1msn3",
+      "generation_id": "EAjoTMRn3JtH9D6WehOJ",
+      "duration": 7.131,
+      "voice_name": "oki",
+      "flow": "ehkILKtFy3AvDQ4QfhHn",
+      "sha256": "603266d1ff2d254eeff9e250ad366799d953d028f67108a3bcd50f8a62a8b186"
+    },
+    {
+      "key": "hello-06",
+      "text": "어서 와, 햇살 찻집 첫 손님이야! 네 관찰 기록 옆에 내 주전자를 걸어 뒀어.",
+      "speaker": "보리",
+      "voice": "7Tms2JpTU4QYeCNp0Gtn",
+      "node_id": "dYMOMkwJ8fdu0aHWX3kP",
+      "generation_id": "ORP8zQFPeyOsMv497BFQ",
+      "duration": 5.76
+    },
+    {
+      "key": "reply-06",
+      "text": "응! 끓지 않아도 물 표면에서 증발해. 물이 끓을 때는 물속에서도 수증기 기포가 생겨.",
+      "speaker": "보리",
+      "voice": "7Tms2JpTU4QYeCNp0Gtn",
+      "node_id": "hbtl7xKO0xExWsbERUCQ",
+      "generation_id": "4GqGcnGVYBOmRkvPCJbo",
+      "duration": 6.96
+    },
+    {
+      "key": "hello-08",
+      "text": "물방울 받이를 펴니까 정원 일이 다시 시작됐어. 네가 시험한 것처럼 받이를 냉각판 바로 아래에 뒀지.",
+      "speaker": "송이",
+      "voice": "AiutpBawf78dyoTpoaHl",
+      "node_id": "9HFiDm2g38QFKafTHdXP",
+      "generation_id": "ArIjARRCPo0g6DewVqsA",
+      "duration": 7.44
+    },
+    {
+      "key": "reply-08",
+      "text": "차가운 판에 맺혀 떨어지는 물방울을 받아. 물방울이 떨어질 곳을 보고 자리를 잘 잡아야 해!",
+      "speaker": "송이",
+      "voice": "AiutpBawf78dyoTpoaHl",
+      "node_id": "8uWAz12haExkSUJ68ywf",
+      "generation_id": "6hQuqR7o8mdIZ8CQjEFb",
+      "duration": 6.8
+    },
+    {
+      "key": "hello-10",
+      "text": "들리니? 물레가 다시 도는 소리야. 네 장치에서 온 물로 오늘 첫 모종에 물을 줬단다.",
+      "speaker": "느티",
+      "voice": "5LbhUNiU0e2s8EafwnT5",
+      "node_id": "QXBUqlgUshCZ7vdMLGAm",
+      "generation_id": "IakiAivtCkyMkGN6i3Lh",
+      "duration": 6
+    },
+    {
+      "key": "reply-10",
+      "text": "네가 물을 관찰하고, 차가운 판에 맺힌 물을 모으고, 새는 곳을 고쳐 줬지. 자, 우리가 함께 키울 첫 잎이야!",
+      "speaker": "느티",
+      "voice": "5LbhUNiU0e2s8EafwnT5",
+      "node_id": "1WfSwi3b2yr3DDq3X43P",
+      "generation_id": "rCSVJUGufHPnMPYNGAAx",
+      "duration": 8
+    },
+    {
+      "key": "hello-02",
+      "text": "오늘 첫 물소식이야! 네가 물의 여러 모습을 찾아 줘서 샘터 관찰책을 다시 펼쳤어.",
+      "speaker": "파랑",
+      "voice": "dnZGOA54w68T7vLLPFTp",
+      "node_id": "f7MjDE3XSXBfJ3LtJw4N",
+      "generation_id": "sszQz4JXMOZe4gfvAo5d",
+      "duration": 6.32
+    },
+    {
+      "key": "field-02",
+      "text": "나 파랑이야! 이제 물의 모습이 바뀌는 길을 이어 보자. 얼리기, 녹이기, 증발, 응결에 어울리는 도구를 하나씩 골라서 결과를 확인해 줘.",
+      "speaker": "파랑",
+      "voice": "dnZGOA54w68T7vLLPFTp",
+      "node_id": "vPuPEuh4gHCPu3nETGfl",
+      "generation_id": "c5iJEmln5OwRT9tyPDts",
+      "duration": 10.4
+    },
+    {
+      "key": "field-10",
+      "text": "온실까지 물을 보내 주었구나. 마지막으로 물이 모습을 바꾸는 길을 이어 보렴. 물에서 눈에 보이지 않는 수증기로, 다시 물방울로 돌아오는 길이야. 네가 관찰했던 변화를 떠올려 알맞은 도구를 골라 주렴.",
+      "speaker": "느티",
+      "voice": "5LbhUNiU0e2s8EafwnT5",
+      "node_id": "3UYvGWGkLthjThaB3PzF",
+      "generation_id": "nYvRGV7QOtOvZw0Pkk3c",
+      "duration": 13.76
+    },
+    {
+      "key": "field-04",
+      "text": "뚝딱뚝딱, 한파가 온대! 사흘 동안 쓸 물을 미리 준비해야 해. 시험관에서 찾은 물의 양을 가져왔어. 마을이 쓸 물은 넉넉하게 담고 얼음이 커질 자리도 남겨 줘. 준비가 되면 추운 밤 동안 통이 어떻게 되는지 지켜보자.",
+      "speaker": "뚝딱",
+      "voice": "IQt4I2Udet4gAwcFGAlU",
+      "node_id": "irKq7lMVciUrU60Qf2ZI",
+      "generation_id": "xey1bTK7ZVEff5dw1MfM",
+      "duration": 16.588,
+      "voice_name": "oki",
+      "flow": "ehkILKtFy3AvDQ4QfhHn",
+      "sha256": "c7de904a6e4bc61b7e218f5f4e6465a4ec3c6f39baeacb6300217f1b3ba3a3eb"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+#dialog.water-stage-dialog[open]{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden;backdrop-filter:none}
+#dialog.water-stage-dialog::backdrop{background:#173b367d}
+#dialog.water-stage-dialog>.dialog-head{display:contents}
+#dialog.water-stage-dialog>.dialog-head h2{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#dialog.water-stage-dialog #close-dialog{position:absolute;top:20px;right:5%;z-index:3;width:48px;height:48px;background:#fff7df;border:1px solid #b29561;color:#60472a}
+#dialog.water-stage-dialog>.dialog-body{width:100%;height:100%;max-height:none;padding:0;overflow:visible;background:transparent}
+.water-conversation{position:absolute;left:5%;bottom:max(24px,env(safe-area-inset-bottom));width:90%}
+.water-character{position:absolute;right:5%;bottom:calc(100% - 6px);width:500px;height:450px;overflow:hidden;pointer-events:none}
+.water-character>img,.water-character figure img{position:absolute;left:50%;top:0;width:500px;height:500px;max-width:none;max-height:none;object-fit:contain;transform:translateX(-50%)}
+.water-character figure{margin:0}.water-character .npc-portrait-art{display:contents;background:none}.water-character figcaption{display:none}
+
+.water-paper{position:relative;padding:25px 28px 16px;border:2px solid #b4965d;border-radius:8px;color:#423728;background:linear-gradient(#fff7e3,#f1e1bb);box-shadow:0 10px 30px #163a3538}
+.water-speaker{position:absolute;left:24px;top:-30px;display:flex;gap:14px;align-items:center;padding:8px 20px;border-radius:6px;background:#725134;color:#fff3d4}.water-speaker strong{font-size:24px;line-height:1.3}.water-speaker span{font-size:14px}
+.water-speech{position:relative;margin:0;font-size:26px;line-height:1.5;font-weight:500;word-break:keep-all;overflow-wrap:anywhere;cursor:pointer}.water-layout{display:block;visibility:hidden}.water-visual{position:absolute;inset:0}.water-readable{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.water-context{margin:0 0 10px;font-size:17px;color:#705934}.water-context .lesson-card{display:flex;gap:8px;margin:0;padding:0;border:0;background:transparent;box-shadow:none}.water-context .lesson-card small{display:none}.water-context .lesson-card strong,.water-context .lesson-card span{font-size:17px}
+.water-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:12px}.water-actions{display:flex;flex-wrap:wrap;gap:10px}.water-controls .btn{min-height:48px;padding:8px 16px;font-size:19px;line-height:1.4}.water-controls .npc-voice-control{display:flex;gap:8px;align-items:center;padding:0;border:0;background:transparent}.water-controls .npc-voice-status{font-size:14px;max-width:230px}
+@media(max-width:800px){.water-speaker span{display:none}.water-speech{font-size:24px}.water-character{right:1%;width:460px}.water-paper{padding:24px 22px 14px}.water-context{font-size:15px}}
+@media(max-width:600px){.water-character{right:0;width:90vw;height:360px}.water-character>img,.water-character figure img{width:430px;height:430px}.water-speech{font-size:22px}.water-controls .btn{font-size:17px}.water-paper{padding:22px 18px 12px}}
+@media(max-height:600px){.water-conversation{bottom:max(12px,env(safe-area-inset-bottom))}.water-character{height:210px;width:320px}.water-character>img,.water-character figure img{width:300px;height:300px}.water-speech{font-size:20px;line-height:1.4}.water-paper{padding:18px 22px 10px}.water-controls{margin-top:8px}.water-context{display:none}.water-controls .btn{font-size:17px}.water-speaker strong{font-size:21px}}
+
+#dialog.water-stage-dialog .water-character img{animation:none!important}
+@media(prefers-reduced-motion:no-preference){html:not(.reduce-motion) #dialog.water-stage-dialog.npc-speaking .water-character{animation:water-speaking 1.2s ease-in-out infinite}}
+@keyframes water-speaking{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+#dialog.water-stage-dialog .water-speech{font-size:26px;line-height:1.5}
+@media(max-width:800px){#dialog.water-stage-dialog .water-speech{font-size:24px}}
+@media(max-width:600px){#dialog.water-stage-dialog .water-speech{font-size:22px}}
+@media(max-height:600px){#dialog.water-stage-dialog .water-speech{font-size:20px;line-height:1.4}}
+
+/* This stage places the resident on the right, facing into the open map. */
+.water-character figure[data-character] img { transform: translateX(-50%) scaleX(-1); }

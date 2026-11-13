@@ -829,10 +829,10 @@ button.village-slot{cursor:pointer}
 .letter-body{padding-bottom:2px;color:#26484f;background:repeating-linear-gradient(#0000 0 calc(var(--letter-line) - 2px),#bcdce2 calc(var(--letter-line) - 2px) var(--letter-line))}
 .letter-body p{margin:0;font:clamp(20px,2.5vw,24px)/var(--letter-line) var(--font-display);word-break:keep-all;overflow-wrap:anywhere}
 .letter-from{margin:8px 0 0;color:#c0603f;font:clamp(19px,2.2vw,23px)/1.3 var(--font-display);text-align:right}
-.field-briefing.is-speaking .letter-stamp{animation:letter-stamp-talk .9s ease-in-out infinite alternate}
+.npc-speaking .field-briefing .letter-stamp{animation:letter-stamp-talk .9s ease-in-out infinite alternate}
 @keyframes letter-stamp-talk{from{transform:rotate(3deg)}to{transform:rotate(-3deg) translateY(-3px)}}
-@media(prefers-reduced-motion:reduce){.letter-paper,.field-briefing.is-speaking .letter-stamp{animation:none}}
-.reduce-motion .letter-paper,.reduce-motion .field-briefing.is-speaking .letter-stamp{animation:none}
+@media(prefers-reduced-motion:reduce){.letter-paper,.npc-speaking .field-briefing .letter-stamp{animation:none}}
+.reduce-motion .letter-paper,.reduce-motion .npc-speaking .field-briefing .letter-stamp{animation:none}
 .briefing-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:13px}
 .briefing-actions .btn{min-height:44px;padding:8px 12px;font-size:clamp(16px,2.2vw,20px)}
 .briefing-actions .briefing-listen{display:inline-flex;align-items:center;gap:6px;color:#255c55}

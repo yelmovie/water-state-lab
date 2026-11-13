@@ -1,0 +1,127 @@
+/* Parang's dialogue portrait keeps one fixed stage while the line changes. */
+.npc-portrait {
+  align-self: center;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+}
+.npc-portrait-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 65%, #c6e5dd 0%, #eaf2dd 55%, transparent 72%);
+  transform-origin: 50% 85%;
+}
+.npc-portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  transform-origin: 50% 85%;
+  filter: drop-shadow(0 4px 3px #2d60552b);
+}
+.npc-portrait figcaption {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 3px 18px;
+  border: 1px solid #8ca995;
+  border-radius: 14px;
+  background: #f7f4da;
+  color: #24584e;
+  font: 23px/1.25 var(--font-display);
+}
+.resident-chat:has(.npc-portrait) {
+  grid-template-columns: minmax(140px, 34%) minmax(0, 1fr);
+  align-items: center;
+}
+.resident-chat:has(.npc-portrait) .resident-line {
+  padding: 12px 14px;
+  border: 1px solid #aac7b4;
+  border-radius: 16px 16px 16px 4px;
+  background: #fffff5;
+  box-shadow: 0 3px 0 #dce8d6;
+}
+.letter-head > .npc-portrait {
+  flex: 0 0 145px;
+}
+.letter-head:has(.npc-portrait) .letter-postmark {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.reduce-motion) .npc-portrait[data-portrait-ready][data-emotion="happy"] .npc-portrait-art {
+    animation: npc-greeting 420ms ease-out both;
+  }
+  html:not(.reduce-motion) .npc-portrait[data-portrait-ready][data-emotion="think"] .npc-portrait-art {
+    animation: npc-consider 350ms ease-out both;
+  }
+  html:not(.reduce-motion) .npc-speaking .npc-portrait img {
+    animation: npc-speaking 720ms ease-in-out infinite;
+  }
+}
+@keyframes npc-greeting {
+  0% { transform: translateY(6px) rotate(-3deg); }
+  55% { transform: translateY(-3px) rotate(2deg); }
+  100% { transform: none; }
+}
+@keyframes npc-consider {
+  from { transform: rotate(0); }
+  to { transform: rotate(-3deg); }
+}
+@keyframes npc-speaking {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-2px) rotate(.6deg); }
+  70% { transform: translateY(-1px) rotate(-.4deg); }
+}
+@media (max-width: 640px) {
+  .resident-chat:has(.npc-portrait) {
+    grid-template-columns: minmax(88px, 26%) minmax(0, 1fr);
+    gap: 12px;
+  }
+  .npc-portrait figcaption { padding: 3px 12px; font-size: 20px; }
+  .resident-chat:has(.npc-portrait) .resident-line { padding: 10px; }
+  .letter-head > .npc-portrait { flex-basis: 100px; }
+}
+@media (max-height: 520px) {
+  .resident-chat:has(.npc-portrait) .npc-portrait-art { max-width: 130px; margin: auto; }
+  .letter-head > .npc-portrait { flex-basis: 90px; }
+  .npc-portrait figcaption { font-size: 18px; }
+}
+
+/* Short landscape screens keep the reply and its action above the voice control. */
+@media (max-height: 600px) {
+  .app-dialog:has(.npc-portrait) {
+    width: min(760px, calc(100vw - 24px));
+    max-height: calc(100dvh - 16px);
+  }
+  .app-dialog:has(.npc-portrait) > .dialog-head { padding: 6px 14px; }
+  .app-dialog:has(.npc-portrait) > .dialog-head h2 { font-size: 23px; }
+  .app-dialog:has(.npc-portrait) > .dialog-head .icon-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  .app-dialog:has(.npc-portrait) > .dialog-body { padding: 8px 16px; }
+  .app-dialog:has(.npc-portrait) > .npc-voice-control { padding: 4px 16px 8px; gap: 8px; }
+  .app-dialog:has(.npc-portrait) > .npc-voice-control .btn { min-height: 44px; padding: 6px 12px; font-size: 17px; }
+  .resident-chat:has(.npc-portrait) { grid-template-columns: minmax(88px, 20%) minmax(0, 1fr); gap: 16px; }
+  .resident-chat:has(.npc-portrait) small { font-size: 14px; line-height: 1.2; }
+  .resident-chat:has(.npc-portrait) h3 { margin: 3px 0; font-size: 21px; line-height: 1.25; }
+  .resident-chat:has(.npc-portrait) .resident-line { margin: 6px 0 8px; padding: 8px 10px; font-size: 19px; line-height: 1.4; }
+  .resident-chat:has(.npc-portrait) .village-stamp { margin-bottom: 7px; padding: 2px 7px; font-size: 14px; }
+  .resident-chat:has(.npc-portrait) .resident-replies .btn { min-height: 44px; padding: 6px 12px; font-size: 18px; }
+  .app-dialog:has(.npc-portrait) .npc-portrait figcaption { margin-top: 0; padding: 2px 12px; font-size: 18px; }
+  .app-dialog:has(.npc-portrait) .lesson-card { margin-bottom: 8px; padding: 8px 10px; gap: 3px; }
+  .app-dialog:has(.npc-portrait) .lesson-card small { display: none; }
+  .app-dialog:has(.npc-portrait) .lesson-card strong { font-size: 18px; line-height: 1.3; }
+  .app-dialog:has(.npc-portrait) .lesson-card span { font-size: 15px; line-height: 1.2; }
+  .field-briefing:has(.npc-portrait) { --letter-line: 26px; }
+  .field-briefing:has(.npc-portrait) .letter-paper { padding: 8px 12px; border-width: 6px; }
+  .field-briefing:has(.npc-portrait) .letter-head { margin-bottom: 4px; }
+  .field-briefing:has(.npc-portrait) .letter-head > .npc-portrait { flex-basis: 64px; }
+  .field-briefing:has(.npc-portrait) .npc-portrait figcaption { display: none; }
+  .field-briefing:has(.npc-portrait) .letter-to { font-size: 16px; line-height: 1.2; }
+  .field-briefing:has(.npc-portrait) .letter-subject h3 { font-size: 22px; line-height: 1.25; }
+  .field-briefing:has(.npc-portrait) .letter-body p { font-size: 18px; line-height: var(--letter-line); }
+  .field-briefing:has(.npc-portrait) .letter-from { margin-top: 4px; font-size: 16px; line-height: 1.2; }
+  .field-briefing:has(.npc-portrait) .briefing-actions { margin-top: 6px; }
+  .field-briefing:has(.npc-portrait) .briefing-actions .btn { min-height: 44px; padding: 6px 12px; font-size: 18px; }
+}

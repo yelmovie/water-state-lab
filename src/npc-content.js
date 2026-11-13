@@ -18,39 +18,39 @@ export const fieldLetters={
 };
 export const npcVoiceProfiles={
   "2": {
-    "id": "momo-parang",
+    "id": "eleven-parang",
     "speaker": "파랑",
-    "voice": "preset-01",
+    "voice": "dnZGOA54w68T7vLLPFTp",
     "pitch": 0,
-    "rate": 0.95
+    "rate": 1
   },
   "4": {
-    "id": "momo-ttukttak",
+    "id": "eleven-ttukttak",
     "speaker": "뚝딱",
-    "voice": "preset-03",
-    "pitch": -1,
+    "voice": "IQt4I2Udet4gAwcFGAlU",
+    "pitch": 1.33,
     "rate": 1
   },
   "6": {
-    "id": "momo-bori",
+    "id": "eleven-bori",
     "speaker": "보리",
-    "voice": "preset-06",
+    "voice": "7Tms2JpTU4QYeCNp0Gtn",
     "pitch": 0,
-    "rate": 0.97
+    "rate": 1
   },
   "8": {
-    "id": "momo-songi",
+    "id": "eleven-songi",
     "speaker": "송이",
-    "voice": "preset-04",
-    "pitch": 1,
+    "voice": "AiutpBawf78dyoTpoaHl",
+    "pitch": 0,
     "rate": 1
   },
   "10": {
-    "id": "momo-neuti",
+    "id": "eleven-neuti",
     "speaker": "느티",
-    "voice": "preset-09",
+    "voice": "5LbhUNiU0e2s8EafwnT5",
     "pitch": 0,
-    "rate": 0.92
+    "rate": 1
   }
 };
 export const npcVoices=Object.fromEntries(Array.from({length:10},(_,i)=>[i+1,npcVoiceProfiles[Math.ceil((i+1)/2)*2].id]));

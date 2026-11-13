@@ -345,3 +345,15 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 ### Phaser 로컬 수정 · 2026-11-11
 
 게임 인스턴스를 파괴할 때 `visibilitychange` 리스너와 해당 인스턴스의 창 포커스 핸들러를 정리하도록 수정했다. MIT 고지를 유지한다. 앱 어댑터는 풀에 반환하는 Canvas의 `wheel` 리스너도 해제한다. `scripts/chapter-process-qa.mjs lifecycle`로 장면 왕복 15회 후 DOM과 리스너 수가 누적되지 않는지 검사한다.
+
+## 파랑의 대화 표정 · 2026-11-12
+
+- `v2/parang-neutral.webp`, `parang-think.webp`, `parang-happy.webp`는 기존 `v2/resident-2.webp`의 물총새 파랑을 참고해 Codex 내장 image_gen으로 각각 생성한 대화용 표정이다.
+- 세 사용본은 투명 배경의 512×512 WebP다. 기본 표정을 기준으로 생각·기쁨 표정을 파생했고, 대사·이름표·말하는 동안의 작은 몸짓은 DOM/CSS로 표시한다.
+- 원본 PNG는 외장 SSD의 `/Volumes/T7 Shield/iscreammedia_sc34/_scratch/npc-dialogue-plan-20261112/generated-parang/`에 보관한다. 기존 주민 원본도 보존한다.
+
+## 주민 대화 반신 초상과 음성 · 2026-11-12
+
+- `npc-expressions/resident-{2,4,6,8,10}-{neutral,think,happy}.webp`는 기존 주민을 참조해 Codex image_gen으로 생성한 640×640 투명 반신 초상이다. 대사 의미에 따라 단일 이미지의 표정을 전환한다.
+- 생성 원본과 적용 검수는 외장 프로젝트 `output/npc-dialogue-expanded-20261112/`에 보관한다.
+- `audio/npc-elevenlabs/`의 23개 한국어 발화는 ElevenLabs v4의 한국어 라이브러리 음성으로 생성했다. 캐릭터별 voice ID와 원문, 생성 ID는 같은 폴더의 manifest.json에 기록했다.

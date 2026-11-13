@@ -1,5 +1,5 @@
-import {attachNpcVoice} from './npc-voice.js';
-import {modal,btn} from './ui.js';
+import {residentStage} from './resident-stage.js';
+import {modal,btn,esc} from './ui.js';
 import {playCue} from './sound.js';
 import {state,save} from './state.js';
 import {stageLessons} from './domain.js';
@@ -28,6 +28,23 @@ export function nextGreeting(progress) {
  return returnedResidents(progress).filter(r=>!met(progress,r)).at(-1);
 }
 const portrait=r=>`/assets/v2/resident-${r.stage}.webp`;
+export function residentPortrait(resident, emotion='neutral') {
+ const expression=['neutral','think','happy'].includes(emotion)?emotion:'neutral';
+ const portraitSource=emotion=>`/assets/npc-expressions/resident-${resident.stage}-${emotion}.webp`;
+ return `<figure class="npc-portrait" data-character="${resident.stage===2?'parang':resident.stage}" data-emotion="${expression}"><span class="npc-portrait-art"><img src="${portraitSource('neutral')}" data-portrait-expression="${portraitSource(expression)}" data-portrait-fallback="${portrait(resident)}" alt="${esc(resident.role)} ${esc(resident.name)}" width="640" height="640" decoding="async" draggable="false"></span><figcaption>${esc(resident.name)}</figcaption></figure>`;
+}
+export function prepareResidentPortrait(dialog) {
+ const image=dialog.querySelector('[data-portrait-expression]');
+ if(!image)return;
+ image.onerror=()=>{image.onerror=null;image.src=image.dataset.portraitFallback;};
+ const expression=new Image();
+ expression.src=image.dataset.portraitExpression;
+ void expression.decode().then(()=>{
+  if(!image.isConnected||!dialog.open)return;
+  image.src=expression.src;
+  image.closest('.npc-portrait').dataset.portraitReady='true';
+ }).catch(()=>{/* Keep the neutral portrait if an expression cannot be decoded. */});
+}
 const action=(name,r)=>`resident-${name}-${r.stage}`;
 export function residentMarkers(progress) {
  const arriving=nextGreeting(progress);
@@ -85,7 +102,9 @@ export function talkToResident(stage, followUp=false) {
   }
  }
  const lesson=flow&&!followUp?`<section class="lesson-card"><small>${r.spot}에서 발견했어</small><strong>${stageLessons[r.stage]}</strong>${flow.tool?`<span>${flow.tool}${(flow.tool.charCodeAt(flow.tool.length-1)-0xAC00)%28?'을':'를'} 얻었어!</span>`:''}</section>`:'';
- const dialog=modal(`${r.name}의 이야기`,`${lesson}<article class="resident-chat"><img src="${portrait(r)}" alt="${r.role}"><div><small>${r.spot}</small><h3>${r.role} ${r.name}</h3><p>${followUp?r.reply:r.hello}</p><div class="village-stamp">${first?'✓ 처음 만난 친구':'✓ 다시 만난 친구'} · ${r.name}</div><div class="resident-replies">${followUp?'':btn(r.ask,action('ask',r),'primary')}${flow?(followUp?btn(flow.next.label,flow.next.action,'primary'):''):btn('지도 보기','resident-close',followUp?'primary':'secondary')}</div></div></article>`);
- attachNpcVoice(dialog,`${followUp?'reply':'hello'}-${String(stage).padStart(2,'0')}`);
+ let emotion=first?'happy':'neutral';
+ if(followUp)emotion='think';
+ const dialog=residentStage(r,{lines:[followUp?r.reply:r.hello],context:lesson,portrait:residentPortrait(r,emotion),actions:`${followUp?'':btn(r.ask,action('ask',r),'primary')}${flow?(followUp?btn(flow.next.label,flow.next.action,'primary'):''):btn('지도 보기','resident-close',followUp?'primary':'secondary')}`,voice:`${followUp?'reply':'hello'}-${String(stage).padStart(2,'0')}`});
+ prepareResidentPortrait(dialog);
 }
 

@@ -14,7 +14,7 @@ test('all building dialogue and letters match validated local character recordin
  }
  for(const r of residents){const id=String(r.stage).padStart(2,'0');for(const kind of ['hello','reply'])assert.equal(recordings[kind+'-'+id].text,r[kind]);}
  for(const [key,recording] of Object.entries(recordings)){
-  assert.match(recording.engine,/Qwen3-TTS.*Momo/);assert.ok(recording.speaker);
+  assert.match(recording.engine,/ElevenLabs v4/);assert.ok(recording.speaker);
   assert.ok(recording.duration>1&&recording.duration<65,key+' has a useful duration');
   const path=new URL('../public'+npcAudio[key],import.meta.url);assert.ok(statSync(path).size>1000,key+' is a real playable asset');
   assert.equal(createHash('sha256').update(readFileSync(path)).digest('hex'),recording.sha256,key+' matches verified audio');
