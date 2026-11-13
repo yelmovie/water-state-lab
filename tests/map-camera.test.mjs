@@ -33,7 +33,7 @@ function camera(t,width,height,top=100,bottom=height-160){
  const hintAnchor=new Element();hintAnchor.nodes.set('.map-coach',new Element());hintAnchor.nodes.set('.map-coach-help',new Element());world.nodes.set('.map-hint-anchor',hintAnchor);
  world.nodes.set('.journey-traveler',actor);actor.nodes.set('.map-walk-sprite',new Element());
  const document={querySelectorAll:selector=>selector==='.journey-shell>.topbar'?[{getBoundingClientRect:()=>({bottom:top})}]:[],querySelector:selector=>selector==='.map-viewport'?view:null,addEventListener(type,fn){documentEvents.set(type,fn);},body:new Element(),createElement:()=>new Built()};
- replace('document',document);replace('addEventListener',(type,fn)=>globalEvents.set(type,fn));replace('matchMedia',()=>({matches:true}));replace('Image',class{});replace('getComputedStyle',()=>({translate:'none',visibility:'visible'}));
+ replace('document',document);replace('addEventListener',(type,fn)=>globalEvents.set(type,fn));replace('matchMedia',()=>({matches:true}));replace('Image',class{});
  replace('requestAnimationFrame',()=>1);replace('cancelAnimationFrame',()=>{});replace('ResizeObserver',class{constructor(fn){resized=fn;}observe(){}disconnect(){}});
  Object.assign(state,initialState());state.settings.reduced=true;mountMapCamera();
  t.after(()=>{if(overview.attributes.get('aria-pressed')==='true')overview.fire('click');if(hand.attributes.get('aria-pressed')==='true')hand.fire('click');cleanupMapCamera();for(const [key,value] of previous){if(value===undefined)delete globalThis[key];else globalThis[key]=value;}});

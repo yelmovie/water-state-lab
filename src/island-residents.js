@@ -59,7 +59,7 @@ export function residentReward(stage){
 }
 export function residentCounter(progress) {
  const count=returnedResidents(progress).length;
- return `<button type="button" class="resident-counter" data-action="resident-list" aria-label="마을 수첩 열기, 돌아온 주민 ${count}명"><span class="village-friend-star" ${villageFriend(progress)?'':'hidden'} aria-label="마을의 단짝">★</span>마을 수첩 <b>${count}/5</b></button>`;
+ return `<button type="button" class="resident-counter" data-action="resident-list" aria-label="마을 수첩 열기, 돌아온 주민 ${count}명">마을 수첩 <b>${count}/5</b></button>`;
 }
 export function openResidentList() {
  const returned=returnedResidents(state),greetedCount=returned.filter(r=>met(state,r)).length;
@@ -91,7 +91,6 @@ export function talkToResident(stage, followUp=false) {
   void playCue('discover');
   if(villageFriend(state)){
    document.querySelector('.festival-ropes')?.setAttribute('visibility','visible');
-   document.querySelector('.village-friend-star')?.removeAttribute('hidden');
   }
   // Refresh the two arrival flags without replacing the focused map or moving its camera.
   const next=nextGreeting(state);

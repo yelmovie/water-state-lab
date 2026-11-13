@@ -85,6 +85,7 @@ export function mountMapVillains(world, options) {
  };
 
  options.stages.forEach((stage,index)=>{
+  if(!stage.ready)return;
   const token=stage.token||'pending';const cleared=stage.ready&&(stored[index]===token||sessionClears.has(index+':'+token));
   const b=document.createElement('button');b.type='button';b.className='mv-target';b.style.left=stage.x+'%';b.style.top=stage.y+'%';b.dataset.stage=String(index);b.dataset.state=cleared?'cleared':stage.ready?'ready':'locked';
   b.innerHTML='<span class="mv-murk" aria-hidden="true"><i></i><i></i><i></i></span><span class="mv-wave" aria-hidden="true"></span><span class="mv-say" aria-hidden="true"><b></b><small></small></span><span class="mv-creature" aria-hidden="true"><span class="mv-sprite"></span></span><span class="mv-label"></span><span class="mv-meter" aria-hidden="true">● ● ●</span>';
@@ -222,8 +223,16 @@ export function mountMapVillains(world, options) {
   const target=targets.find(t=>['locked','ready'].includes(t.b.dataset.state)&&getComputedStyle(t.b).visibility!=='hidden'&&spritesTouch(bounds,t.creature.getBoundingClientRect()));
   if(target)hitFighter(target.where());
  };
- const watchContact=()=>{cleanup.checkContact();later(watchContact,100);};
+ const watchContact=()=>{cleanup.checkContact();options.onProximity?.();later(watchContact,100);};
  later(watchContact,100);
+ cleanup.hasNearbyTarget=()=>{
+  const at=fighter?.at?.();
+  const ratio=world.offsetHeight/world.offsetWidth||1;
+  return !!at&&targets.some(t=>{
+   if(t.b.dataset.state!=='ready')return false;
+   const p=t.where();return Math.hypot(p.x-at.x,(p.y-at.y)*ratio)<=RANGE;
+  });
+ };
  /** Touch button and Space key share the same reach and combat rules. */
  cleanup.attackNearest=()=>{
   const at=fighter?.at?.();

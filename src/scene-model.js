@@ -109,14 +109,3 @@ export function routeDistance(points){return points.slice(1).reduce((sum,p,i)=>s
 export function freezeLevel(phase){return phase==='ice'?65.4:60;}
 export function lensRegion(x,y){return x<350?'surface':y>218?'level':'inside';}
 export function rampEndpoint(position,angle,scale=.64,offset=10){return {x:position.x+180,y:(position.y+angle*2)*scale+offset};}
-export function discoveryStars(m,s){
- const a=s.activities;
- return ({
- 1:[a.observe.pours.length===2,a.observe.iceMoved,a.observe.records.some(r=>r.kind==='cloth')],
- 2:[a.freeze.records.length>=3,a.pipe.trials.some(t=>t.safe)&&new Set(a.pipe.trials.map(t=>t.fill)).size>=2,a.pipe.marked&&a.pipe.chosen>=0],
- 3:[a.draw.records.length>=3,!!a.compare.baseline,a.compare.pins.length===3],
- 4:[a.dew.records.length>=2,a.dew.again,!!a.explain.transfer],
- 5:[s.lab.workshop.trials.length>0,new Set(s.lab.workshop.trials.map(t=>t.signature)).size>=2,s.restored]
- })[m];
-}
-export const discoveryGoals=[['물과 그릇 비교','얼음 옮겨 관찰','젖은 자국 추적'],['얼기와 녹기 비교','두 배관 비교','남는 공간 찾기'],['물그림 시간 기록','가열 전 비교','세 곳 확대 관찰'],['두 컵 비교','닦고 다시 관찰','새로운 병에 적용'],['내 물길 시험','고치기 전후 비교','코어에 물 보내기']];

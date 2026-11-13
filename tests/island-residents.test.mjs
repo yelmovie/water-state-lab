@@ -35,14 +35,15 @@ test('legacy area records restore residents while an individual demo stage stays
  assert.deepEqual(returnedResidents(s).map(r=>r.stage),[2]);
 });
 
-test('the map has five building entries and keeps its guides inside those buildings',async()=>{
+test('the map keeps five building entries and adds optional conversations as residents return',async()=>{
  globalThis.matchMedia=()=>({matches:true});
  const {state}=await import('../src/state.js'),{journeyView}=await import('../src/journey.js');
- Object.assign(state,initialState());state.settings.adminUnlock=true;state.completed=[1,2,3,4,5];state.pages=[1,2,3,4,5,6,7,8,9,10];state.restored=true;state.villageArrivals=[10];
+ Object.assign(state,initialState());
+ assert.doesNotMatch(journeyView(),/data-action="resident-talk-/,'the first visit stays clear');
+ state.completed=[1];state.pages=[1,2];state.villageArrivals=[2];
  const html=journeyView();
  assert.equal((html.match(/class="journey-node /g)||[]).length,5);
- assert.doesNotMatch(html,/class="island-resident/);
- assert.doesNotMatch(html,/data-action="resident-talk-/);
+ assert.deepEqual([...html.matchAll(/data-action="resident-talk-(\d+)"/g)].map(m=>m[1]),['2']);
  assert.doesNotMatch(html,/\d장 복구/);
  for(const r of residents)assert.ok(html.includes('담당 '+r.name),r.name+' belongs to one building');
  Object.assign(state,initialState());

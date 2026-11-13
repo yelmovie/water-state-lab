@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initialState} from '../src/state.js';
-import {pourWaterHeight,jugRemaining,vesselGeometry,pourInto,islandRoute,islandStops,islandLanding,islandWalkTo,walkIslandStep,nearbyMapActions,pointOnRoute,discoveryStars} from '../src/scene-model.js';
+import {pourWaterHeight,jugRemaining,vesselGeometry,pourInto,islandRoute,islandStops,islandLanding,islandWalkTo,walkIslandStep,nearbyMapActions,pointOnRoute} from '../src/scene-model.js';
 
 test('equal amounts occupy equal volume in round vessels of different widths',()=>{
  const {tall,wide}=vesselGeometry;
@@ -62,12 +62,4 @@ test('nearby actions use character feet and order overlapping choices by distanc
  assert.deepEqual(nearbyMapActions([12,10],[gate,npc,far]),[npc,gate]);
  assert.deepEqual(nearbyMapActions([32,10],[gate,npc,far]),[gate,npc]);
  assert.deepEqual(nearbyMapActions([150,60],[gate,npc,far]),[]);
-});
-test('discovery stars track the learner observations and survive a state round trip',()=>{
- const s=initialState();
- for(let m=1;m<=5;m++)assert.deepEqual(discoveryStars(m,s),[false,false,false]);
- s.activities.observe.pours=['tall','wide'];s.activities.observe.iceMoved=true;
- s.activities.observe.records=[{kind:'cloth',time:100}];
- assert.deepEqual(discoveryStars(1,JSON.parse(JSON.stringify(s))),[true,true,true]);
- assert.deepEqual(discoveryStars(2,s),[false,false,false]);
 });

@@ -1,15 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,readdirSync,rmSync} from 'node:fs';
+import {mkdirSync,mkdtempSync,readFileSync,readdirSync,rmSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import vm from 'node:vm';
 
-const out='tmp/offline-test-dist';
 const swContext=extra=>{const ctx=vm.createContext({self:{addEventListener(){}},location:{origin:'http://lab.test'},Response,Blob,URL,...extra});return ctx;};
 
 test('the built precache list covers every asset the app references, without PNG originals',t=>{
- const built=spawnSync(process.execPath,['scripts/build.mjs','--out',out],{encoding:'utf8'});
+ mkdirSync('tmp',{recursive:true});
+ const out=mkdtempSync('tmp/offline-test-dist-');
  t.after(()=>rmSync(out,{recursive:true,force:true}));
+ const built=spawnSync(process.execPath,['scripts/build.mjs','--out',out],{encoding:'utf8'});
  assert.equal(built.status,0,built.stderr);
  const sw=readFileSync(`${out}/sw.js`,'utf8');
  new vm.Script(sw);

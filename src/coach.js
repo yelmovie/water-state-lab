@@ -22,7 +22,7 @@ document.addEventListener('click',event=>{
  // A hint button can replace itself while the click bubbles. The original path still identifies the panel.
  if(help&&!event.composedPath().some(node=>node.classList?.contains('compact-guide')))closeHelp();
  const mapHint=document.querySelector('#map-coach-help');
- if(mapHint&&!mapHint.hidden&&!event.target.closest('.journey-companion')){mapHint.hidden=true;document.querySelector('.map-coach')?.setAttribute('aria-expanded','false');}
+ if(mapHint&&!mapHint.hidden&&!event.target.closest('.map-hint-anchor')){mapHint.hidden=true;document.querySelector('.map-coach')?.setAttribute('aria-expanded','false');}
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&help){event.preventDefault();closeHelp(true);}});
 const fieldClues={

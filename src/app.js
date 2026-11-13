@@ -13,7 +13,6 @@ import {guidedQuestion,handleGuidedAction} from './guided-flow.js';
 import {assistStep} from './stage-assist.js';
 import {inquiryNotebook,wipe,observationClockBusy} from './inquiry.js';
 import {mountPhaser,cleanupPhaser,focusExperiment} from './phaser-scenes.js';
-import {discoveryStars,discoveryGoals} from './scene-model.js';
 import {state,save,reset,setPreviewMode,getStorageStatus,captureResetToken} from './state.js';
 import {missions,screenNames,canEnter,previousRoute} from './domain.js';
 import {icon,btn,buddy,propArt,note,toast,modal,esc,celebrate} from './ui.js';
@@ -116,7 +115,10 @@ function teacherStages(){
 function settings(){openSettings({state,save:()=>{setPreviewMode(state.settings.adminUnlock);return persist();},render:()=>{resetFinalPreview();if(typeof state.route==='number'&&!canEnter(state.route,state))state.route='map';if(state.route==='ending'&&!state.restored&&!state.settings.adminUnlock)state.route='map';render();},go,reset,showStory,certificate,notebook,discoveries,offline:()=>offline,onSoundChange:()=>{setSoundSettings(state.settings);const b=document.querySelector('[data-action="sound"]');if(b){b.innerHTML=soundButton();b.setAttribute('aria-pressed',String(state.settings.sound));}},onReset:(audio,token)=>{if(!reset(token))return false;Object.assign(state.settings,audio);resetFinalPreview();setSoundSettings(state.settings);go('home');return true;}});}
 function changeSound(enabled){state.settings.sound=enabled;setSoundSettings(state.settings);persist();const b=document.querySelector('[data-action="sound"]');if(b){b.innerHTML=soundButton();b.setAttribute('aria-pressed',String(enabled));b.setAttribute('aria-label',`소리 ${enabled?'끄기':'켜기'}`);b.title=b.getAttribute('aria-label');}if(enabled)playClick();}
 function certificate(){modal('연구 인증서',`<div class="certificate-form"><p>학교·반·번호·이름은 인쇄한 뒤 빈칸에 직접 적어 줘.</p>${btn(icon('print')+' 인쇄 / PDF 저장','print-certificate','primary')}</div>${certificateView()}`);void playCue('success');celebrate(document.querySelector('#dialog'),1700);}
-function discoveries(){modal('우리의 발견과 도구',`<p>빨리 끝내는 대신, 관찰하고 비교해서 얻은 별이야.</p><div class="discovery-collection">${journey.map((j,i)=>`<article>${propArt(j.prop)}<div><h3>${j.tool}</h3><p>${j.need}</p><ul>${discoveryGoals[i].map((goal,k)=>`<li class="${discoveryStars(i+1,state)[k]?'earned':''}"><span>${discoveryStars(i+1,state)[k]?'★':'☆'}</span> ${goal}</li>`).join('')}</ul></div></article>`).join('')}</div>`);}
+function discoveries(){
+ const found=journey.filter((_,i)=>state.completed.includes(i+1)||(i===4&&state.restored));
+ modal('우리의 발견과 도구',found.length?`<div class="discovery-collection">${found.map(j=>`<article>${propArt(j.prop)}<div><h3>${j.tool}</h3><p>${j.after}</p></div></article>`).join('')}</div>`:'<p>연구를 마치면 여기에서 발견과 도구를 다시 볼 수 있어.</p>');
+}
 function simplifyControls(route){
  if(typeof route!=='number')return;
  const scene=document.querySelector('.activity-scene');
