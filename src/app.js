@@ -226,7 +226,7 @@ export function render(){
  if(resumeFinale)showStory('final');
  if(route==='ending'&&!state.settings.reduced){const lines=['다섯 개의 연구 기록이 하나의 물길로.','예상과 달라도, 다시 관찰했어.','흘러내린 물방울을 모아 장치를 고쳤어.','네가 알아낸 과학으로 연구실이 다시 움직여.'];let i=0;endingTimer=setInterval(()=>{const el=document.querySelector('#ending-caption');if(el)el.textContent=lines[++i%lines.length];if(i>=3)clearInterval(endingTimer);},4000);}
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action;if(handleDropAdventure(a,state,{go,render,save:persist}))return;if(a!=='sound'&&state.settings.sound)playClick();
+document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b||b.disabled||b.getAttribute('aria-busy')==='true')return;const a=b.dataset.action;if(handleDropAdventure(a,state,{go,render,save:persist}))return;if(a!=='sound'&&state.settings.sound)playClick();
  if(a==='guided-tools'){stopObservation();const opening=manualToolsRoute!==state.route;manualToolsRoute=opening?state.route:null;render();return;}
  if(a.startsWith('building-part-')){const n=Number(a.slice(14));if(canEnter(n,state)){manualToolsRoute=null;state.fieldwork.active=0;go(n);}return;}
  if(handleCoach(a))return;
@@ -252,7 +252,14 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
   const [,kind,n]=a.split('-');if(kind==='experiment'||kind==='field')return previewStage(Number(n),kind==='field');
  }
  if(a==='reward-map'){document.querySelector('#dialog').close();go('map');return;}
- if(a.startsWith('mission-')){const m=+a.slice(8),screen=mapEntryScreen(m);if(!canEnter(screen,state))return;if(b.hasAttribute('data-map-enter'))return go(screen);if(travelIsland(m-1,()=>{}))return;return go(screen);}
+ if(a.startsWith('mission-')){
+  const m=+a.slice(8),screen=mapEntryScreen(m);if(!canEnter(screen,state))return;
+  if(b.hasAttribute('data-map-enter'))return go(screen);
+  const guided=!!b.closest('.journey-next');
+  if(travelIsland(m-1,()=>{if(guided&&state.route==='map')go(mapEntryScreen(m));},guided))return;
+  return go(screen);
+ }
+ if(a==='screen-10'&&b.closest('.journey-next')&&canEnter(10,state)&&travelIsland(4,()=>{if(state.route==='map')go(10);},true))return;
  if(a.startsWith('screen-'))return go(+a.slice(7));
  if(a==='stage-letter'&&typeof state.route==='number'){openStageLetter(state.route);return;}
  if(a==='buddy-hint'&&state.fieldwork.active===state.route){toast(fieldMissions[state.route].goal);return;}if(a==='buddy-hint'){const p=state.route<=8?getActivityProgress(state.route):workshopProgress(state.route);toast(p.hint);return;}

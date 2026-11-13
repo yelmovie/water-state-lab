@@ -14,6 +14,11 @@ const lamps=[
  {x:1516,y:526,rx:71,ry:80,art:'<path class="wheel-light" d="M1472 540q9-63 53-64 45 1 35 60"/><circle class="lamp-core" cx="1515" cy="527" r="6"/><path class="water-jet" d="M1494 569q5 20 1 30m11-21q5 14 3 23"/>'}
 ];
 const pennantColors=['#f3bf57','#5cbfb2','#e98a66'];
+// Original isometric features sit above the calmer building silhouettes at rest.
+const sites=[
+ [232,384,170,132], [545,177,151,120], [808,422,178,132],
+ [1165,165,151,124], [1458,461,190,132]
+];
 function festivalFlags(){
  const flags=Array.from({length:7},(_,i)=>{
   const t=(i+1)/8,x=541+155*t,y=554+26*t+36*t*(1-t);
@@ -33,16 +38,25 @@ export function villageLights(returned,fresh,festival,motion=true){
  const restored=new Set(returned.flatMap(({stage})=>stage%2?[stage]:[stage-1,stage]));
  returned=[...restored].sort((a,b)=>a-b).map(stage=>({stage}));
  fresh=[...new Set(fresh.flatMap(stage=>stage%2?[stage]:[stage-1,stage]))];
+ const count=sites.filter((_,i)=>restored.has(i*2+2)).length;
+ const facades=sites.map(([x,y,rx,ry],i)=>{
+  const stage=i*2+2;
+  if(restored.has(stage)&&!(motion&&fresh.includes(stage)))return '';
+  return `<ellipse class="village-facade${restored.has(stage)?' is-waking':''}" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#village-facade)"/>`;
+ }).join('');
  const dormant=lamps.map(({x,y,rx,ry},i)=>returned.some(r=>r.stage===i+1)?'':`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#village-sleep)"/>`).join('');
  const lights=returned.map(({stage})=>{
   const {x,y,rx,ry,cool,art}=lamps[stage-1];
   return `<g class="village-upgrade${fresh.includes(stage)?' is-new':''}" data-upgrade="${stage}">
    <ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#village-${cool?'aqua':'amber'})"/>
-   <g class="village-art">${art}</g>${fresh.includes(stage)?`<ellipse class="lighting-ring" cx="${x}" cy="${y}" rx="${rx*.72}" ry="${ry*.72}"/>`:''}</g>`;
+   <g class="village-art">${art}</g>${motion&&fresh.includes(stage)?`<ellipse class="lighting-ring" cx="${x}" cy="${y}" rx="${rx*.72}" ry="${ry*.72}"/>`:''}</g>`;
  }).join('');
  return `<svg class="village-lights${motion?' has-clips':''}" viewBox="0 0 1672 941" preserveAspectRatio="none" aria-hidden="true">
-  <defs><radialGradient id="village-sleep"><stop stop-color="#29404f" stop-opacity=".48"/><stop offset=".55" stop-color="#425763" stop-opacity=".32"/><stop offset="1" stop-color="#425763" stop-opacity="0"/></radialGradient><radialGradient id="village-amber"><stop stop-color="#ffeaa1" stop-opacity=".85"/><stop offset=".48" stop-color="#ffc962" stop-opacity=".52"/><stop offset="1" stop-color="#ffb545" stop-opacity="0"/></radialGradient>
+  <defs><radialGradient id="village-facade"><stop stop-color="#254654" stop-opacity=".48"/><stop offset=".52" stop-color="#355868" stop-opacity=".33"/><stop offset="1" stop-color="#486674" stop-opacity="0"/></radialGradient><radialGradient id="village-sleep"><stop stop-color="#29404f" stop-opacity=".48"/><stop offset=".55" stop-color="#425763" stop-opacity=".32"/><stop offset="1" stop-color="#425763" stop-opacity="0"/></radialGradient><radialGradient id="village-amber"><stop stop-color="#ffeaa1" stop-opacity=".85"/><stop offset=".48" stop-color="#ffc962" stop-opacity=".52"/><stop offset="1" stop-color="#ffb545" stop-opacity="0"/></radialGradient>
   <radialGradient id="village-aqua"><stop stop-color="#e2ffff" stop-opacity=".85"/><stop offset=".52" stop-color="#75f4e9" stop-opacity=".53"/><stop offset="1" stop-color="#61e9f1" stop-opacity="0"/></radialGradient></defs>
-  ${dormant}${lights}<g class="festival-ropes" visibility="${festival?'visible':'hidden'}">${festivalFlags()}</g></svg>${motion?clipMarkup(returned,fresh):''}`;
+  <rect width="1672" height="941" fill="#345864" opacity="${(.10*(1-count/sites.length)).toFixed(3)}"/>
+  ${facades}${dormant}${lights}
+  ${count===sites.length?'<g class="village-complete-beacon"><ellipse cx="652" cy="552" rx="58" ry="24" fill="url(#village-aqua)"/><path d="M652 530q-24 26-12 36a16 16 0 0 0 24 0q12-10-12-36Z" fill="#79dbd7" stroke="#f1ffed" stroke-width="3"/><path d="M648 546q-8 10-4 16" fill="none" stroke="#effff9" stroke-linecap="round" stroke-width="3"/></g>':''}
+  <g class="festival-ropes" visibility="${festival?'visible':'hidden'}">${festivalFlags()}</g></svg>${motion?clipMarkup(returned,fresh):''}`;
 }
 

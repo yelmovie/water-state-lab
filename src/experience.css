@@ -1480,3 +1480,9 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
  #certificate-print{break-inside:avoid}
  .cert-sheet{height:188mm;break-inside:avoid}
 }
+
+.village-facade.is-waking{opacity:0}
+@media(prefers-reduced-motion:no-preference){
+ html:not(.reduce-motion) .village-facade.is-waking{animation:village-facade-clears .95s ease-out both}
+}
+@keyframes village-facade-clears{from{opacity:1}to{opacity:0}}
