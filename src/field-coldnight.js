@@ -108,7 +108,7 @@ export function bindColdNight(host,get,set){
  const life=new AbortController(),{signal}=life;
  let pour=null,frame=0,fillAnimation=0;
  let finishFill=null;
- const paint=selector=>{host.innerHTML=coldNightMarkup(get(),ui);if(selector)host.querySelector(selector)?.focus();};
+ const paint=selector=>{host.innerHTML=coldNightMarkup(get(),ui);host.dispatchEvent(new Event('cold-phase-change'));if(selector)host.querySelector(selector)?.focus({preventScroll:true});};
  const commit=(action,payload)=>{set(fieldAction(4,get(),action,payload));save();};
  const night=()=>currentNight(get());
  function showLevels(fills,index){
@@ -120,9 +120,10 @@ export function bindColdNight(host,get,set){
   host.querySelector(`[data-stream="${index}"]`)?.setAttribute('d',`M116 69Q112 100 116 ${y}`);host.querySelector(`[data-splash="${index}"]`)?.setAttribute('transform',`translate(116 ${y})`);
   const amount=host.querySelector(`[data-amount="${index}"]`);if(amount)amount.textContent=fills[index];
   const total=fills.reduce((a,b)=>a+b,0);
-  host.querySelector('[data-total]').textContent=total;
-  host.querySelector('.cold-meter').dataset.enough=String(total>=current.need);
-  host.querySelector('[data-amount-message]').textContent=amountMessage(total,current.need);
+  const totalLabel=host.querySelector('[data-total]'),message=host.querySelector('[data-amount-message]'),meter=host.querySelector('.cold-meter'),enough=String(total>=current.need),label=amountMessage(total,current.need);
+  if(totalLabel.textContent!==String(total))totalLabel.textContent=total;
+  if(meter.dataset.enough!==enough)meter.dataset.enough=enough;
+  if(message.textContent!==label)message.textContent=label;
   host.querySelector('[data-gauge]').style.width=total/(current.vessels.length*100)*100+'%';
  }
  function stepPour(now){
@@ -136,7 +137,7 @@ export function bindColdNight(host,get,set){
   if(pour?.id!==e.pointerId)return;
   cancelAnimationFrame(frame);
   const {index,dir,start,began,button}=pour,quick=performance.now()-began<TAP_MS;
-  const value=quick?Math.max(0,Math.min(100,start+dir*TAP_STEP)):pour.value;
+  const value=e.type==='pointerup'&&quick?Math.max(0,Math.min(100,start+dir*TAP_STEP)):pour.value;
   pour=null;button.classList.remove('is-held');host.querySelector(`.cold-vessel[data-index="${index}"]`)?.classList.remove('is-pouring');
   commit('fill',{night:night().id,index,value});showLevels(nightFills(get(),night()),index);
  }
@@ -169,7 +170,7 @@ export function bindColdNight(host,get,set){
   const start=target.map((_,i)=>Number(host.querySelector(`[data-amount="${i}"]`)?.textContent)||0);
   const changed=target.map((value,i)=>value!==start[i]?i:-1).filter(i=>i>=0);
   if(!changed.length)return;
-  const began=performance.now(),duration=state.settings.reduced?0:700;
+  const began=performance.now(),duration=motionOff()?0:700;
   host.setAttribute('aria-busy','true');
   for(const i of changed)host.querySelector(`.cold-vessel[data-index="${i}"]`)?.classList.add('is-pouring');
   finishFill=()=>{
@@ -189,6 +190,7 @@ export function bindColdNight(host,get,set){
   if(e.button!==0)return;
   const tap=e.target.closest('[data-pour]');
   if(tap&&!pour&&ui.phase==='fill'){
+   finishFill?.();
    const index=+tap.dataset.pour,dir=+tap.dataset.dir,start=nightFills(get(),night())[index];
    pour={id:e.pointerId,index,dir,start,value:start,began:performance.now(),button:tap};
    tap.classList.add('is-held');
@@ -201,8 +203,8 @@ export function bindColdNight(host,get,set){
  host.addEventListener('click',e=>{
   const button=e.target.closest('button');if(!button)return;
   // Keyboard and switch presses arrive as a click with no pointer behind them.
-  if(button.dataset.pour!==undefined&&e.detail===0&&ui.phase==='fill'){const index=+button.dataset.pour,value=nightFills(get(),night())[index]+ +button.dataset.dir*TAP_STEP;commit('fill',{night:night().id,index,value});showLevels(nightFills(get(),night()),index);}
-  if(button.hasAttribute('data-night-start')&&ui.phase==='fill'&&!pour)runNight();
+  if(button.dataset.pour!==undefined&&e.detail===0&&ui.phase==='fill'&&!pour){finishFill?.();const index=+button.dataset.pour,value=nightFills(get(),night())[index]+ +button.dataset.dir*TAP_STEP;commit('fill',{night:night().id,index,value});showLevels(nightFills(get(),night()),index);}
+  if(button.hasAttribute('data-night-start')&&ui.phase==='fill'&&!pour){finishFill?.();runNight();}
   if(button.hasAttribute('data-night-next'))nextStep();
   if(button.dataset.reason){commit('reason',{choice:button.dataset.reason});void playCue(fieldReady(4,get())?'success':'error');paint(fieldReady(4,get())?'[data-action="field-finish"]':`[data-reason="${button.dataset.reason}"]`);}
  },{signal});

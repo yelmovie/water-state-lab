@@ -1,5 +1,6 @@
 // Offline cache for classroom use. scripts/build.mjs replaces the next line with the real lists; the dev server never registers this file.
 const CACHE='water-dev',SHELL=[],LATER=[];
+const SCENE_ENGINE='/assets/vendor/phaser.min.js';
 const STREAMED=/\.(mp4|webm|mp3)$/;
 // Install keeps only the first screen; the page warms the rest one file at a time when idle.
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL.map(url=>new Request(url,{cache:'reload'}))))));
@@ -12,6 +13,7 @@ async function warmNext(){
 }
 self.addEventListener('message',e=>{
  if(e.data==='skip-waiting')self.skipWaiting();
+ if(e.data==='save-scene-engine')e.waitUntil(caches.open(CACHE).then(async cache=>{if(!await cache.match(SCENE_ENGINE))await cache.add(SCENE_ENGINE);}).catch(()=>{}));
  if(e.data?.type==='warm'&&e.ports[0])e.waitUntil(warmNext().then(r=>e.ports[0].postMessage(r),()=>e.ports[0].postMessage({error:true})));
 });
 // <video> asks for byte ranges; Safari needs 206 answers even when the whole file is cached.
@@ -48,7 +50,10 @@ async function respond(request){
  try{
   if(range&&STREAMED.test(url.pathname))return await networkRange(cache,url.href,range);
   const response=await fetch(request);
-  if(response.status===200&&!range&&response.type==='basic')cache.put(request,response.clone()).catch(()=>{});
+  if(response.status===200&&!range&&response.type==='basic'){
+   const stored=cache.put(request,response.clone()).catch(()=>{});
+   if(url.pathname===SCENE_ENGINE)await stored;
+  }
   return response;
  }catch(error){
   const fallback=request.mode==='navigate'&&await cache.match('/');

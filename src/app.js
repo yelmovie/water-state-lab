@@ -12,9 +12,9 @@ import {bindObservation,observationPlaying,stopObservation} from './observation-
 import {guidedQuestion,handleGuidedAction} from './guided-flow.js';
 import {assistStep} from './stage-assist.js';
 import {inquiryNotebook,wipe,observationClockBusy} from './inquiry.js';
-import {mountPhaser,cleanupPhaser,focusExperiment} from './phaser-scenes.js';
+import {canvasTarget,loadSceneEngine} from './scene-loader.js';
 import {state,save,reset,setPreviewMode,getStorageStatus,captureResetToken} from './state.js';
-import {missions,screenNames,canEnter,previousRoute} from './domain.js';
+import {missions,screenNames,canEnter,currentTrialValid,previousRoute} from './domain.js';
 import {icon,btn,buddy,propArt,note,toast,modal,esc,celebrate} from './ui.js';
 import {journey,journeyView,mapEntryScreen,workshopProgress,mountMapCamera,cleanupMapCamera,travelIsland} from './journey.js';
 import {activityView,handleActivity,bindActivity,cleanupActivity,getActivityProgress} from './activities.js';
@@ -23,7 +23,7 @@ import {playClick,playCue,setMusicTheme,setSoundSettings} from './sound.js';
 import {openSettings,offlineText} from './settings.js';
 import {OFFLINE_BUILD} from './version.js';
 import {syncCoach,cleanupCoach,handleCoach,updateCoachMessage} from './coach.js';
-import {closeConcept,openConcept} from './concepts.js';
+import {closeConcept,openConcept,openCollectorLesson} from './concepts.js';
 import {activityReady,experimentActivities,sortCards} from './activity-model.js';
 
 import {fieldMissions,areaStages,experimentTitles} from './fieldwork-model.js';
@@ -45,7 +45,31 @@ function persist(){const ok=save();if(!ok)toast(getStorageStatus().message);retu
 function go(route){if(route==='home'||route==='map')state.dropReturn=false;if(route!==state.route)state.fieldwork.active=0;clearTimeout(travelTimer);clearInterval(endingTimer);clearTimeout(toast.timer);document.querySelector('#toast').classList.remove('show');document.querySelector('#toast').textContent='';if(typeof route==='number'&&!canEnter(route,state)){toast('앞 실험의 기록을 먼저 완성해 줘.');return;}if(route==='ending'&&!state.restored&&!state.settings.adminUnlock)return;if(route==='ending'&&!state.settings.adminUnlock&&remainingMapVillains(state)){state.finalePending=true;route='map';toast('남은 밸브 두더지를 모두 물리치면 엔딩 영상이 열려!');}state.route=route;if(typeof route==='number')state.lastScreen=route;persist();render();window.scrollTo(0,0);}
 const finishActions={'act-complete-1':2,'act-complete-2':4,'act-complete-3':6,'act-complete-4':8};
 function baseAction(action){if(!action)return;if(handleActivity(action,ctx))return;handleWorkshop(action,ctx);}
-function routeAction(action){if(handleGuidedAction(action,state)){persist();const host=document.getElementById('field-coldnight');if(action.startsWith('guide-night-fill-')&&host)host.dispatchEvent(new Event('cold-levels-change'));else render();return;}if(handleFieldwork(action,ctx))return;const n=finishActions[action];if([6,8].includes(n)&&activityReady(n,experimentActivities(n,state))){openConcept(n/2,{reduced:state.settings.reduced,continueLabel:state.settings.autoObservation===true?'지도로 돌아가기':'관찰 마치기',onContinue:()=>baseAction(action)});return;}if(n&&!hasFieldSeal(n)&&activityReady(n,experimentActivities(n,state))){startFieldwork(n,action,ctx);return;}baseAction(action);}
+function routeAction(action){
+ if(handleGuidedAction(action,state)){
+  persist();
+  const host=document.getElementById('field-coldnight');
+  if(action.startsWith('guide-night-fill-')&&host)host.dispatchEvent(new Event('cold-levels-change'));else render();
+  return;
+ }
+ if(handleFieldwork(action,ctx))return;
+ if(state.route===9&&(action==='workshop-collector'||action==='complete-5'&&currentTrialValid(state.lab.workshop))){
+  const complete=action==='complete-5';
+  openCollectorLesson({reduced:state.settings.reduced,continueLabel:complete?'이 장치로 출발':'공방으로 돌아가기',onContinue:complete?()=>{
+   if(state.route!==9)return;
+   baseAction(action);
+   if(state.route===10)openStageLetter(10);
+  }:undefined});
+  return;
+ }
+ const n=finishActions[action];
+ if([6,8].includes(n)&&activityReady(n,experimentActivities(n,state))){
+  openConcept(n/2,{reduced:state.settings.reduced,continueLabel:state.settings.autoObservation===true?'지도로 돌아가기':'관찰 마치기',onContinue:()=>baseAction(action)});
+  return;
+ }
+ if(n&&!hasFieldSeal(n)&&activityReady(n,experimentActivities(n,state))){startFieldwork(n,action,ctx);return;}
+ baseAction(action);
+}
 function showStory(kind,onFinish){if(kind==='final'&&!state.settings.adminUnlock&&(!state.restored||remainingMapVillains(state)))return;playStoryFilm(kind,{muted:!state.settings.sound,onFinish});if(kind==='final'&&state.route==='ending')setMusicTheme('ending',true);}
 function openEnding(){
  const play=state.finalePending;
@@ -68,6 +92,19 @@ function finishEnding(){
   pageDone(10);
  }
  state.dropReturn=false;
+ if(!f.preview&&first){
+  const toEnding=state.settings.autoObservation===true&&!remainingMapVillains(state);
+  stageEndTalk(10,{label:toEnding?'엔딩 보기':'지도 보기',action:'resident-close'});
+  const dialog=document.querySelector('#dialog');
+  const leave=()=>{
+   if(dialog.open)return;
+   dialog.removeEventListener('close',leave);
+   if(state.route!==10)return;
+   if(toEnding)openEnding();else go('map');
+  };
+  dialog.addEventListener('close',leave);
+  return;
+ }
  if(!f.preview&&state.settings.autoObservation!==true){go('map');return;}
  go('ending');
  if(state.route==='ending'&&(first||state.finalePending)){state.finalePending=false;persist();showStory('final');}
@@ -125,6 +162,45 @@ function discoveries(){
  const found=journey.filter((_,i)=>state.completed.includes(i+1)||(i===4&&state.restored));
  modal('우리의 발견과 도구',found.length?`<div class="discovery-collection">${found.map(j=>`<article>${propArt(j.prop)}<div><h3>${j.tool}</h3><p>${j.after}</p></div></article>`).join('')}</div>`:'<p>연구를 마치면 여기에서 발견과 도구를 다시 볼 수 있어.</p>');
 }
+let sceneModule,sceneImport,sceneRevision=0;
+function mountCanvas(route,regions,revision){
+ const target=canvasTarget(route,state,app);if(!target)return;
+ const current=()=>revision===sceneRevision&&target.anchor.isConnected;
+ const notice=document.createElement('aside');
+ notice.className='scene-load-notice';notice.hidden=true;
+ notice.innerHTML='<p role="status"></p><button type="button" class="btn secondary">다시 시도</button>';
+ const status=notice.querySelector('p'),retry=notice.querySelector('button');
+ app.firstElementChild.append(notice);
+ const failed=()=>{
+  if(!current())return;
+  notice.hidden=false;status.textContent='그림 무대를 열지 못했어. 화면의 조작 도구는 그대로 쓸 수 있어.';
+  retry.disabled=false;retry.textContent='다시 시도';
+ };
+ const ready=()=>{
+  if(!current())return;
+  const restoreFocus=notice.contains(document.activeElement);
+  notice.hidden=true;
+  const lens=app.querySelector('.scene-lens');if(lens)lens.hidden=false;
+  integrateWorkspaceControls();
+  if(restoreFocus)app.querySelector(route==='map'?'.journey-next button':'.building-guide-npc')?.focus({preventScroll:true});
+ };
+ const mount=()=>{if(current())sceneModule.mountPhaser(target,ctx,regions,{ready,failed});};
+ const load=(retryRequested=false)=>{
+  retry.disabled=true;retry.textContent='다시 여는 중…';
+  if(!notice.hidden)status.textContent='그림 무대를 다시 여는 중…';
+  if(sceneModule&&window.Phaser?.Game){mount();return;}
+  sceneImport??=import('./phaser-scenes.js').then(module=>sceneModule=module).catch(()=>null);
+  let limit;
+  const unavailable=()=>{if(!current())return;failed();retry.textContent='다시 열기';retry.onclick=()=>location.reload();};
+  const moduleReady=Promise.race([sceneImport,new Promise(resolve=>{limit=setTimeout(()=>resolve(null),10000);})]);
+  Promise.all([loadSceneEngine(retryRequested),moduleReady]).then(([,module])=>{
+   if(!current())return;
+   if(module)mount();else unavailable();
+  },failed).finally(()=>clearTimeout(limit));
+ };
+ retry.onclick=()=>load(true);
+ load();
+}
 function simplifyControls(route){
  if(typeof route!=='number')return;
  const scene=document.querySelector('.activity-scene');
@@ -144,7 +220,7 @@ function simplifyControls(route){
   if(extra.children.length>1)tools.append(extra);
 
  }
- if(scene&&state.completed.includes(1)&&route>=3&&route!==6){const zoom=document.createElement('button');zoom.className='scene-lens icon-btn';zoom.dataset.action='focus-experiment';zoom.setAttribute('aria-label','찾은 돋보기로 실험 확대');zoom.title='찾은 관찰 돋보기';zoom.innerHTML=icon('zoom');scene.append(zoom);}
+ if(scene&&state.completed.includes(1)&&route>=3&&route!==6){const zoom=document.createElement('button');zoom.className='scene-lens icon-btn';zoom.hidden=true;zoom.dataset.action='focus-experiment';zoom.setAttribute('aria-label','찾은 돋보기로 실험 확대');zoom.title='찾은 관찰 돋보기';zoom.innerHTML=icon('zoom');scene.append(zoom);}
  if(tools&&fieldMissions[route]){const prize=document.createElement('div');prize.className='quest-prize';prize.innerHTML=icon('star',22)+`<div><b>${fieldMissions[route].reward}</b><p>${fieldMissions[route].next}</p></div>`;tools.append(prize);}
  const guide=document.querySelector('.compact-guide');if(guide)guide.dataset.mission=String(Math.ceil(route/2));
 }
@@ -199,12 +275,15 @@ function bindCompactGuide(){
  const area=app.querySelector('.activity-area');if(!area)return;
  workspaceObserver=new ResizeObserver(integrateWorkspaceControls);
  for(const el of app.querySelectorAll('.building-guide,.workspace-controls'))workspaceObserver.observe(el);
+ const cold=area.querySelector('#field-coldnight');
+ if(cold){cold.addEventListener('cold-phase-change',integrateWorkspaceControls);integrateWorkspaceControls();return;}
  syncCompactGuide();integrateWorkspaceControls();
  clockObserver=new MutationObserver(()=>{syncCompactGuide();integrateWorkspaceControls();});clockObserver.observe(area,{subtree:true,childList:true,attributes:true,attributeFilter:['value','height','aria-busy','hidden','open']});
 }
 window.addEventListener('resize',()=>{if(typeof state.route==='number')integrateWorkspaceControls();});
 document.addEventListener('guided-question-change',()=>{if(typeof state.route==='number')render();});
 export function render(){
+ const revision=++sceneRevision;
  if(state.route==='ending'&&state.restored&&!state.settings.adminUnlock&&remainingMapVillains(state)){state.route='map';state.finalePending=true;persist();}
  const resumeFinale=state.settings.autoObservation===true&&state.route==='map'&&state.restored&&state.finalePending&&!state.settings.adminUnlock&&!remainingMapVillains(state);
  if(resumeFinale){state.route='ending';state.finalePending=false;persist();}
@@ -212,7 +291,7 @@ export function render(){
  clockObserver?.disconnect();clockObserver=null;
  workspaceObserver?.disconnect();workspaceObserver=null;
  cleanupCoach();closeConcept();cleanupMapCamera();cleanupDropAdventure();
- clearInterval(endingTimer);cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);currentTask=null;app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():route==='adventure'?dropAdventureView(state,header()):experimentShell(route);lastRenderedRoute=route;if(route==='adventure')mountDropAdventure();setMusicTheme(route==='ending'?'ending':'main');document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
+ clearInterval(endingTimer);sceneModule?.cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);currentTask=null;app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():route==='adventure'?dropAdventureView(state,header()):experimentShell(route);lastRenderedRoute=route;if(route==='adventure')mountDropAdventure();setMusicTheme(route==='ending'?'ending':'main');document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
  if(typeof route==='number'){const resident=residentForStage(route);if(!state.settings.adminUnlock&&!state.residentsMet.includes(resident.stage)){state.residentsMet.push(resident.stage);save();}if(state.fieldwork.active===route)bindFieldwork(route,ctx);else{if(route<=8)bindActivity(route,ctx);bindWorkshop(route,ctx);}}
  if(state.fieldwork.active!==route){
   if(route==='map')mountMapCamera(()=>{
@@ -226,7 +305,7 @@ export function render(){
     if(state.settings.autoObservation===true){state.finalePending=false;go('ending');showStory('final');}
    }
   });
-  mountPhaser(route,ctx,currentTask?.regions);simplifyControls(route);
+  simplifyControls(route);mountCanvas(route,currentTask?.regions,revision);
  }
  bindObservation(state,routeAction,state.route===10?finalContext():null,persist,manualToolsRoute===route);
  if(typeof route==='number'){syncCoach(route,route<=8?getActivityProgress(route):workshopProgress(route),state.fieldwork.active===route,hasFieldSeal(route),currentTask);bindCompactGuide();markStageControls(app,currentTask);pinQuestion(app);integrateWorkspaceControls();}
@@ -246,7 +325,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
  if(a==='map-hint'){const trigger=document.querySelector('.map-coach'),bubble=document.querySelector('#map-coach-help');if(bubble){bubble.hidden=!bubble.hidden;trigger.setAttribute('aria-expanded',String(!bubble.hidden));}return;}if(a==='home')return go('home');if(a==='map')return go('map');if(a==='ending')return openEnding();
  if(a==='start'){return go(state.restored?'ending':state.pages.length&&canEnter(state.lastScreen,state)?state.lastScreen:'map');}
  if(a==='title-start')return startAdventure();
- if(a==='final-replay'&&state.route==='ending')return showStory('final');if(a.startsWith('ability-')){state.fieldwork.ability=a.slice(8);persist();render();return;}if(a==='notebook')return notebook();if(a==='discoveries')return discoveries();if(a==='focus-experiment')return focusExperiment();if(a==='settings')return settings();if(a==='certificate')return certificate();if(a==='print-certificate')return window.print();
+ if(a==='final-replay'&&state.route==='ending')return showStory('final');if(a.startsWith('ability-')){state.fieldwork.ability=a.slice(8);persist();render();return;}if(a==='notebook')return notebook();if(a==='discoveries')return discoveries();if(a==='focus-experiment')return sceneModule?.focusExperiment();if(a==='settings')return settings();if(a==='certificate')return certificate();if(a==='print-certificate')return window.print();
  if(a==='classroom-making'){modal('교실에서 장치 만들기','<p>선생님과 차가운 용기·받침·모으는 컵으로 내 설계를 만들어 봐. 물이 모이는 곳과 새는 곳을 관찰하고 한 부분씩 고쳐 보자.</p><p>화면에서는 가상 설계를 시험했어. 실제 제작과 관찰 결과는 따로 남겨 줘.</p>');return;}
  if(a==='request-reset'){resetToken=captureResetToken();if(!resetToken){toast(getStorageStatus().message);return;}modal('연구 기록을 처음부터 만들까?',`<p>이 브라우저에 저장된 실험과 설계 기록이 지워져.</p>${btn('기록 지우고 새로 시작','reset','danger wide')}${btn('취소','cancel-reset','wide')}`);return;}
  if(a==='cancel-reset'){resetToken=null;document.querySelector('#dialog').close();return;}
@@ -324,4 +403,4 @@ if(OFFLINE_BUILD&&'serviceWorker' in navigator){
 }
 setPreviewMode(state.settings.adminUnlock);setSoundSettings(state.settings);
 render();
-window.bootStep?.('app');{const art=app.querySelector('.journey-art')||app.querySelector('img'),shown=()=>window.bootStep?.('screen');if(!art||art.complete)shown();else{art.addEventListener('load',shown,{once:true});art.addEventListener('error',shown,{once:true});}}
+window.bootReady?.();

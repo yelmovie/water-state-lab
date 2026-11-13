@@ -308,9 +308,14 @@
 .cold-goal .cold-gauge{height:8px}
 .cold-fill-line{stroke:#9c691f;stroke-width:2.4;stroke-dasharray:6 3;filter:drop-shadow(0 1px 0 #fff8d8)}
 .cold-name .cold-target{color:#79501d;font-weight:700}
-.cold-risk{display:none;color:#852e1b;font-size:.92em}
+.cold-risk{visibility:hidden;color:#852e1b;font-size:.92em}
 .cold-vessel[data-fill-risk] .cold-name{box-shadow:inset 0 0 0 2px #b6563f}
-.cold-vessel[data-fill-risk] .cold-risk{display:block}
+.cold-vessel[data-fill-risk] .cold-risk{visibility:visible}
+.cold-night [data-total],.cold-night [data-amount],.cold-night [data-amount-message]{font-variant-numeric:tabular-nums}
+.cold-night [data-total]{min-inline-size:3ch}
+.cold-night [data-amount]{min-inline-size:3ch;text-align:right}
+.cold-night [data-amount-message]{min-inline-size:min(100%,11em)}
+.cold-night .cold-stream{fill:none}
 .workspace-controls .cold-bubble{border:0;background:none;padding:0}
 .workspace-controls .cold-bubble img{display:none}
 .workspace-controls .cold-bubble p{font-size:16px}
@@ -920,3 +925,9 @@
 @media(min-width:1600px){
  #app .tray-cup>span,#app .tray-fill-goal,#app .process-steps li>span,#app .transform-progress li>span,#app .cold-night-watch>.btn{font-size:18px}
 }
+
+
+/* A scene error leaves the map and the experiment controls interactive. */
+.scene-load-notice{position:fixed;z-index:9;right:12px;top:calc(62px + env(safe-area-inset-top));display:flex;align-items:center;gap:8px;max-width:min(420px,calc(100% - 24px));padding:8px 12px;border:1px solid #9dbac4;border-radius:12px;background:#fffaed;color:#21485f;box-shadow:0 5px 16px #123e6026}
+.scene-load-notice[hidden],.scene-lens[hidden]{display:none!important}
+.scene-load-notice .btn{flex:none}

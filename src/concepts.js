@@ -5,11 +5,13 @@ import {setMusicQuiet,playCue} from './sound.js';
 
 let active=null;
 export function closeConcept(){active?.close();}
-export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으로 돌아가기',film=false}={}){
+export function openCollectorLesson({reduced=false,onContinue,continueLabel='공방으로 돌아가기'}={}){
+ closeConcept();
+ active=openCollectorConcept({reduced,onContinue,continueLabel,onClose:()=>{active=null;},onFilm:()=>openConcept(4,{reduced,onContinue,continueLabel})});
+}
+export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으로 돌아가기'}={}){
  const clip=concepts[n];if(!clip)return;
  closeConcept();
- // Area 4 opens the hands-on collector explanation first; its film is one button away in the same place.
- if(n===4&&!film){active=openCollectorConcept({reduced,onContinue,continueLabel,onClose:()=>{active=null;},onFilm:()=>openConcept(4,{reduced,onContinue,continueLabel,film:true})});return;}
  const opener=document.activeElement,d=document.createElement('dialog');
  d.className='concept-dialog';d.setAttribute('aria-labelledby','concept-title');
  d.innerHTML=`<div class="dialog-head"><div><span class="eyebrow">${n}번째 발견 · ${clip.seconds}초 개념 영상</span><h2 id="concept-title">${clip.title}</h2></div><button class="icon-btn" data-concept="close" aria-label="영상 닫기">${icon('close')}</button></div><div class="concept-body"><div class="concept-screen"><video muted playsinline preload="metadata" poster="/assets/concepts/zone-${n}.webp" aria-label="${esc(clip.title)} · 소리 없는 개념 영상"></video><img class="concept-end" src="/assets/concepts/zone-${n}.webp" alt="${esc(clip.title)} 마지막 장면" hidden><button class="btn primary concept-play" data-concept="play">영상 재생</button></div><div class="concept-caption">${buddy('point')}<p role="status" aria-live="polite">${esc(clip.cues[0].text)}</p></div><div class="concept-beats" aria-label="영상의 장면">${clip.cues.map((c,i)=>`<button data-cue="${i}" aria-label="${i+1}번째 설명 보기" aria-pressed="${i===0}">${i+1}</button>`).join('')}</div><ol class="concept-transcript" hidden>${clip.cues.map(c=>`<li>${esc(c.text)}</li>`).join('')}</ol></div><footer class="concept-footer"><button class="btn secondary" data-concept="replay">다시 보기</button>${btn(continueLabel,'','primary').replace('data-action=""','data-concept="continue"')}</footer>`;

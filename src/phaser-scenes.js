@@ -35,7 +35,7 @@ export function cleanupPhaser(){
 }
 export function focusExperiment(){activeScene?.focusObjects?.();}
 
-function makeScene(P,route,ctx,host,hidden,regions){
+function makeScene(P,route,ctx,host,hidden,regions,onReady,onFailure){
  const W=route==='map'?1000:720,H=route==='map'?563:330;
  return class ResearchScene extends P.Scene {
   preload(){
@@ -61,7 +61,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
    if(!host.isConnected)return;
    // Keep the DOM experiment visible when an image request fails. Phaser's
    // missing-texture square must never replace the learner's actual tools.
-   if(this.assetLoadFailed){host.remove();this.scene.stop();return;}
+   if(this.assetLoadFailed){onFailure();return;}
    activeScene=this;
    this.input.dragDistanceThreshold=16;
    if(route!=='map')this.cameras.main.setZoom(4).centerOn(360,165);
@@ -122,6 +122,7 @@ function makeScene(P,route,ctx,host,hidden,regions){
     if(!reduced())this.tweens.add({targets:cue,alpha:.35,duration:650,yoyo:true,repeat:2});
    }
    if(route!=='map')this.events.emit('learner-ready');
+   onReady();
   }
   text(x,y,text,size=20,color='#244c57'){const scale=Math.min(host.clientWidth/W,host.clientHeight/H);if(route!=='map')size=Math.max(size,Math.min(28,18/Math.max(.5,scale)));return this.add.text(x,y,text,{fontFamily:'NanumSquareNeo, Pretendard, system-ui, sans-serif',fontSize:size+'px',fontStyle:'normal',color,align:'center',stroke:color==='#fffbea'?'#34585d':'#fffaf0',strokeThickness:2,resolution:4}).setOrigin(.5).setDepth(6);}
   prop(x,y,index,size=110,type='equipment',drag=false){const obj=this.add.image(x,y,type,String(index)).setDisplaySize(size,size).setDepth(2);if(drag){obj.setInteractive({useHandCursor:true});this.input.setDraggable(obj);}return obj;}
@@ -403,19 +404,8 @@ function makeScene(P,route,ctx,host,hidden,regions){
  };
 }
 
-export function mountPhaser(route,ctx,regions=[]){
- const P=window.Phaser;if(!P)return;
- let hidden=[],anchor,mode=route;
- if(route==='home'||route===3)return;// The title screen is plain DOM art; only the map gets the island canvas.
- if(route==='map'){
-  mode='map';anchor=document.querySelector('.journey-world');hidden=[...anchor.querySelectorAll('.journey-paths')];
- }else{
-  const selectors={1:a().observe.step===0?'.pour-workspace':a().observe.step===1?'.activity-ice-play':'.activity-cloth',2:'.inquiry-cardbank,.sort-observation,.sort-choices',3:'.activity-freeze-rig',5:'.activity-drawing-pair',6:'.activity-heating-pair',7:'.activity-dew-pair',8:'.evidence-pictures,.bottle-observation',9:'#workbench',10:'#workbench'};
-  if(route===5&&q().drawMode==='record')return;
-  hidden=[...document.querySelectorAll(selectors[route]||'__none')];if(!hidden.length)return;
-  anchor=hidden[0].parentElement;
- }
- if(!anchor)return;
+export function mountPhaser({anchor,hidden,mode},ctx,regions=[],{ready,failed}){
+ const P=window.Phaser;
  const host=document.createElement('div');host.className='phaser-stage '+(mode==='map'?'phaser-island':'');host.setAttribute('role','img');host.setAttribute('aria-label',mode==='map'?'방울이가 길을 따라 걷는 연구섬 지도':'그림 속 도구를 직접 움직이는 실험 무대');
  if(mode==='map')anchor.insertBefore(host,anchor.firstChild.nextSibling);else anchor.insertBefore(host,hidden[0]);
  if(mode!=='map'){
@@ -426,10 +416,21 @@ export function mountPhaser(route,ctx,regions=[]){
    anchor.classList.add('has-observation-board');
   }
  }
- const token=generation;
- const start=()=>{if(token!==generation||!host.isConnected)return;game=new P.Game({type:P.CANVAS,parent:host,width:mode==='map'?2000:2880,height:mode==='map'?1126:1320,transparent:true,resolution:1,scale:{mode:P.Scale.FIT,autoCenter:P.Scale.CENTER_BOTH},input:{activePointers:1},loader:{imageLoadType:'HTMLImageElement'},audio:{noAudio:true},banner:false,fps:{target:30,forceSetTimeOut:true},scene:makeScene(P,mode,ctx,host,hidden,regions)});};
- // Canvas text is rasterised once, so wait briefly for the local display font.
- // Keep the existing DOM experiment usable if a font fails to arrive.
+ const token=generation,valid=()=>token===generation&&host.isConnected;
+ const failedScene=()=>queueMicrotask(()=>{
+  if(!valid())return;
+  clearTimeout(loadLimit);
+  cleanupPhaser();
+  host.remove();failed();
+ });
+ const loadLimit=setTimeout(failedScene,12000);
+ const start=()=>{
+  if(!valid()){clearTimeout(loadLimit);return;}
+  try{
+   game=new P.Game({type:P.CANVAS,parent:host,width:mode==='map'?2000:2880,height:mode==='map'?1126:1320,transparent:true,resolution:1,scale:{mode:P.Scale.FIT,autoCenter:P.Scale.CENTER_BOTH},input:{activePointers:1},loader:{imageLoadType:'HTMLImageElement'},audio:{noAudio:true},banner:false,fps:{target:30,forceSetTimeOut:true},scene:makeScene(P,mode,ctx,host,hidden,regions,()=>{clearTimeout(loadLimit);ready();},failedScene)});
+  }catch{failedScene();}
+ };
+ // Canvas text is rasterised once; give the local font a short head start.
  const fontReady=document.fonts?.load('20px NanumSquareNeo').catch(()=>{});
  Promise.race([fontReady||Promise.resolve(),new Promise(resolve=>setTimeout(resolve,1500))]).then(()=>requestAnimationFrame(start));
 }

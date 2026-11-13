@@ -127,21 +127,26 @@ test('the five area films share one timeline with the player',async()=>{
  }
 });
 
-test('area 4 keeps the hands-on explanation and opens its film from the same place',async t=>{
+test('the workshop explanation is separate from the dew garden film and can still open its video',async t=>{
  const previousDocument=globalThis.document,doc=mockDocument();globalThis.document=doc;
  t.after(()=>{globalThis.document=previousDocument;});
- const {openConcept}=await import('../src/concepts.js');
+ const {openConcept,openCollectorLesson}=await import('../src/concepts.js');
  let continued=0;
- openConcept(4,{reduced:true,continueLabel:'주민 만나기',onContinue:()=>continued++});
+ openConcept(4,{reduced:true});
+ const garden=doc.created.at(-1);
+ assert.doesNotMatch(garden.className,/collector-concept/);
+ assert.equal(garden.querySelector('video').src,'/assets/concepts/zone-4.mp4');
+ garden.close();
+ openCollectorLesson({reduced:true,continueLabel:'이 장치로 출발',onContinue:()=>continued++});
  const collector=doc.created.at(-1);
  assert.match(collector.className,/collector-concept/,'the interactive explanation still opens first');
  assert.match(collector.innerHTML,/data-collector-film/,'a film button sits next to replay');
  const button={dataset:{},hasAttribute:name=>name==='data-collector-film'};
  collector.events.get('click')({target:{closest:()=>button}});
- const film=doc.created.find(el=>el!==collector&&/concept-dialog/.test(el.className||''));
+ const film=doc.created.at(-1);
  assert.ok(film,'the film dialog opens');assert.doesNotMatch(film.className,/collector-concept/);
  assert.equal(film.open,true);assert.equal(film.querySelector('video').src,'/assets/concepts/zone-4.mp4');
- assert.match(film.innerHTML,/주민 만나기/,'the film keeps the same way forward');
+ assert.match(film.innerHTML,/이 장치로 출발/,'the film keeps the same way forward');
  film.close();assert.equal(continued,0,'closing the film does not skip ahead');
 });
 

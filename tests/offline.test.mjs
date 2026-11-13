@@ -19,7 +19,11 @@ test('the built precache list covers every asset the app references, without PNG
  const all=new Set([...shell,...later]);
  assert.ok(![...all].some(url=>url.includes('colorfigures')||url.includes('collector-figure-')),'retired 2D viewer stays out of the delivery');
  assert.equal(all.size,shell.length+later.length,'install and background lists do not overlap');
- for(const url of ['/','/manifest.webmanifest','/src/app.js','/src/style.css','/assets/vendor/phaser.min.js','/assets/fonts/jua-korean-400.woff2','/assets/icons/icon-192.png'])assert.ok(shell.includes(url),url);
+ const engine='/assets/vendor/phaser.min.js';
+ assert.ok(!all.has(engine),'the engine waits until a scene opens');
+ assert.ok(readFileSync(out+engine).length>0,'the on-demand engine is shipped');
+ all.add(engine);
+ for(const url of ['/','/manifest.webmanifest','/src/app.js','/src/style.css','/assets/fonts/jua-korean-400.woff2','/assets/icons/icon-192.png'])assert.ok(shell.includes(url),url);
  assert.ok(!later.some(u=>u.startsWith('/src/')),'code ships with the first screen so versions never mix');
  for(const url of all)assert.ok(!url.endsWith('.png')||url.startsWith('/assets/icons/'),`PNG original in precache: ${url}`);
  for(const film of ['/assets/story/intro.mp4','/assets/story/final.mp4'])assert.ok(later.includes(film)&&!shell.includes(film),'story films warm after install');

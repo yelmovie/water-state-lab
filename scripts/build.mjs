@@ -40,6 +40,8 @@ async function offlineLists(dir){
  const firstScreen=['assets/v2/title-island.webp','assets/v2/title-logo.webp','assets/v2/bangul-title.webp','assets/v2/research-island-v4.webp','assets/v2/buddy-poses-clean.webp','assets/v2/bangul-walk.webp','assets/v2/story-repair.webp'];
  const url=f=>f==='index.html'?'/':'/'+f,shell=[],later=[];
  for(const f of files){
+  // Phaser is fetched and cached on demand; neither installation nor idle warm-up requests it.
+  if(f==='assets/vendor/phaser.min.js')continue;
   const deferred=f.endsWith('.mp4')||/^assets\/(v2|stages|village|learning|concepts|models|story|npc-expressions|audio\/(music|briefings)|vendor\/(?:three|colorfigures))\//.test(f);
   (deferred&&!firstScreen.includes(f)?later:shell).push(url(f));
  }

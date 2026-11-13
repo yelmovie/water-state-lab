@@ -10,8 +10,17 @@ const context=await browser.newContext({viewport:{width:1280,height:800},deviceS
 const page=await context.newPage(),errors=[],checks=[],layouts=[];
 page.on('pageerror',e=>errors.push(String(e)));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
 page.setDefaultTimeout(10000);
+// Capture engines that load after the first screen as well as engines loaded on resume.
+await page.addInitScript(()=>{
+ let engine;
+ Object.defineProperty(window,'Phaser',{configurable:true,get:()=>engine,set:value=>{
+  engine=value;
+  if(!value?.Game||value.Game.__qaWrapped)return;
+  const Base=value.Game;
+  value.Game=class extends Base{static __qaWrapped=true;constructor(...args){super(...args);window.__qaGame=this;}};
+ }});
+});
 await page.goto(process.env.QA_URL||'http://127.0.0.1:4316/',{waitUntil:'networkidle'});
-async function hook(){await page.evaluate(()=>{if(Phaser.Game.__qaWrapped)return;const Base=Phaser.Game;Phaser.Game=class extends Base{static __qaWrapped=true;constructor(...args){super(...args);window.__qaGame=this;}};});}await hook();
 const get=()=>page.evaluate(async()=>(await import('/src/state.js')).state);
 async function setup(n,field=false,reduced=true,reset=true){
  await page.evaluate(async({n,field,reduced,reset})=>{
@@ -83,7 +92,7 @@ try{
   await click('act-complete-2');await stays('field-4-entry',4,4);
   await setup(5);await ready(5);const a=await world(60,110),b=await world(290,200);await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:35});await page.mouse.up();await page.waitForTimeout(180);
   assert.ok((await get()).activities.draw.strokes[0].length>=3);await click('ix-draw-predict-thin');await scrub(5);await click('ix-draw-answer-thin');await click('ix-draw-where-air');await complete(5);
-  const strokes=(await get()).activities.draw.strokes;await page.reload({waitUntil:'networkidle'});await hook();await ready(5);assert.deepEqual((await get()).activities.draw.strokes,strokes);checks.push('drawing-reload');await click('act-next-5');assert.equal((await get()).route,6);
+  const strokes=(await get()).activities.draw.strokes;await page.reload({waitUntil:'networkidle'});await ready(5);assert.deepEqual((await get()).activities.draw.strokes,strokes);checks.push('drawing-reload');await click('act-next-5');assert.equal((await get()).route,6);
   await setup(6);await ready(6);await click('ix-heat-on');let h=(await get()).activities.compare;assert.equal(h.records[0].time,0);assert.equal(h.records[0].room,h.records[0].heated);await scrub(6);await click('ix-heat-where-air');await complete(6);
   await click('act-complete-3');await page.locator('dialog.concept-dialog[open]').waitFor();await stays('lab-6-concept',6);await page.locator('[data-concept="close"]').click();
   await setup(7);await click('ix-dew-predict-air');await click('ix-wipe-cups');if(!(await get()).activities.dew.sealed)await click('act-dew-seal');await scrub(7);assert.equal((await get()).activities.dew.rewiped,false);await complete(7);
@@ -91,11 +100,14 @@ try{
   await click('act-cup-summary');await ready(8);
   assert.equal(await page.evaluate(()=>window.__qaGame.scene.getScenes(true)[0].children.list.filter(o=>o.texture?.key==='drink-bottle').length),2,'cup summary opens both bottle illustrations');
   await click('ix-transfer-predict-cold');await click('ix-bottle-start');await scrub(8);await complete(8);
-  await click('act-complete-4');await page.locator('dialog.concept-dialog[open]').waitFor();await stays('lab-8-concept',8);await page.locator('[data-collector-close]').click();
+  await click('act-complete-4');await page.locator('dialog.concept-dialog[open]').waitFor();await stays('lab-8-concept',8);assert.equal(await page.locator('.collector-concept[open]').count(),0);await page.locator('[data-concept=close]').click();
   await setup(9);await ready(9);await click('toggle-cold');await click('ramp-tilt');await click('funnel-fix');
   await click('test-workshop');
   assert.equal((await get()).lab.workshop.trials.at(-1).ok,true);await stays('lab-9-done',9);await layout('flow-lab-9-done');checks.push('lab-9');
-  await click('complete-5');if(await page.locator('dialog[open] #close-dialog').count())await page.locator('#close-dialog').click();await ready(10);
+  await click('complete-5');await page.locator('.collector-concept[open] [data-collector-continue]').click();
+  const neuti=page.locator('dialog.water-stage-dialog[open]');
+  await neuti.waitFor();assert.equal(await neuti.locator('.water-speaker strong').innerText(),'느티');
+  await click('field-help-close');await ready(10);
   const fault=(await get()).lab.final.diagnosis.fault;
   if(!(await get()).lab.final.diagnosis.tests.length)await click('diagnosis-test');
   await click('diagnose-'+fault);await click(fault==='cooling'?'core-cooling':'core-funnel');await click('diagnosis-test');
@@ -110,6 +122,9 @@ try{
   await stays('field-10-done',10,10);
   await click('field-finish');await page.locator('dialog.concept-dialog[open]').waitFor();assert.equal((await get()).restored,false);
   await page.locator('[data-concept="continue"]').click();
+  await neuti.waitFor();assert.equal(await neuti.locator('.water-speaker strong').innerText(),'느티');
+  assert.equal((await get()).restored,true);assert.equal((await get()).route,10);
+  await click('resident-ask-10');await click('resident-close');
   await page.locator('.journey-main').waitFor();assert.equal(await page.locator('.story-film[open]').count(),0);
   assert.equal(await page.locator('.journey-next [data-action="ending"]').isDisabled(),true);
   await page.locator('[data-map-mode="overview"]').click();await page.waitForTimeout(250);
@@ -117,7 +132,7 @@ try{
   await stays('last-villain-defeated', 'map');
   assert.equal(await page.locator('.mv-target:visible').count(),0,'defeated enemies must not cover the villagers');
   assert.equal(await page.locator('.mv-label').count(),0,'no permanent clean-up labels should sit on the map');
-  await page.reload({waitUntil:'networkidle'});await hook();await stays('finale-map-reloaded','map');
+  await page.reload({waitUntil:'networkidle'});await stays('finale-map-reloaded','map');
   assert.equal(await page.locator('.mv-target').count(),0,'the clean map survives a reload');
   await page.locator('[data-map-mode="overview"]').click();
   await page.locator('.island-resident').first().click();
@@ -127,7 +142,7 @@ try{
   await click('ending');
   await page.locator('.story-film[open]').waitFor();await page.locator('[data-film="skip"]').click();
   await page.locator('.ending-main').waitFor();assert.equal(await page.locator('.ending-stats').count(),0);await shot('ending-without-stat-boxes');assert.equal((await get()).restored,true);checks.push('core-to-field10-concept-villains-ending');
-  await page.reload({waitUntil:'networkidle'});await hook();assert.equal((await get()).route,'ending');assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push('ending-reload');
+  await page.reload({waitUntil:'networkidle'});assert.equal((await get()).route,'ending');assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push('ending-reload');
   await setup(2,true);for(const step of ['fill','load','wait','take','compare'])await page.locator(step==='wait'?'[data-time-magic]':`[data-tray-action="${step}"]`).click();await page.locator('[data-transform-next]').click();
   for(const [kind,steps] of Object.entries({melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']})){for(const step of steps)await page.locator(step==='wait'?'[data-time-magic]':`[data-process-action="${step}"]`).click();await page.locator('[data-transform-next]').click();}
   assert.equal((await get()).fieldwork.chapters[2].done,true);await stays('field-2-done',2,2);checks.push('field-2');await layout('flow-field-2-done');
@@ -186,7 +201,7 @@ try{
     await layout(`${label}-${width}x${height}`);
    };
    await click('settings');await page.locator('#settings-x').click();await reachable('greenhouse-settings');
-   await page.reload({waitUntil:'networkidle'});await hook();await reachable('greenhouse-reload');
+   await page.reload({waitUntil:'networkidle'});await reachable('greenhouse-reload');
    await cycle('wait');await cycle('collect');await cycle('compare');
    assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push(`greenhouse-resume-${width}x${height}`);
   }
@@ -213,7 +228,7 @@ try{
  }else if(process.argv[2]==='motion'){
   await setup(3,false,false);await measure('measure');await click('act-freeze-guess-66');await measure('load');await measure('wait');await page.waitForTimeout(850);
   let f=(await get()).activities.freeze;assert.ok(f.processTime>0&&f.processTime<100);await click('stage-letter');await page.waitForTimeout(120);const paused=(await get()).activities.freeze.processTime;await page.waitForTimeout(500);assert.equal((await get()).activities.freeze.processTime,paused);await page.locator('#close-dialog').click();
-  await page.reload({waitUntil:'networkidle'});await hook();assert.equal((await get()).activities.freeze.processTime,paused);assert.equal((await get()).activities.freeze.processStage,'cooling');
+  await page.reload({waitUntil:'networkidle'});assert.equal((await get()).activities.freeze.processTime,paused);assert.equal((await get()).activities.freeze.processStage,'cooling');
   await measure('wait');await page.locator('[data-measure-action="take"]').waitFor();await measure('take');await measure('measure-ice');checks.push('measure-motion-modal-pause-reload');
   await setup(10,true,false);await cycle('prepare');await cycle('wait');await page.waitForTimeout(800);let c=(await get()).fieldwork.chapters[10];assert.ok(+c.moves.cycleTime>0&&+c.moves.cycleTime<100);await click('field-help');await page.waitForTimeout(120);const t=(await get()).fieldwork.chapters[10].moves.cycleTime;await page.waitForTimeout(500);assert.equal((await get()).fieldwork.chapters[10].moves.cycleTime,t);await page.locator('#close-dialog').click();
   await page.reload({waitUntil:'networkidle'});assert.equal((await get()).fieldwork.chapters[10].moves.cycleTime,t);await cycle('wait');await page.locator('[data-cycle-action="observe"]').waitFor();
