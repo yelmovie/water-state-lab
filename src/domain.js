@@ -37,6 +37,13 @@ export function canFinishCollector(trials){return trials.length>=2&&trials.at(-1
 export function currentTrialValid(workshop){const last=workshop.trials.at(-1);return !!last&&canFinishCollector(workshop.trials)&&last.signature===testCollector(workshop.parts,workshop.cold,workshop.angle).signature;}
 export function confirmedWorkshop(evidence){if(!evidence?.parts||!evidence.result)return null;return {parts:evidence.parts,cold:evidence.cold,angle:evidence.angle,trials:[evidence.result],selected:''};}
 export function canEnter(screen,state){if(!Number.isInteger(screen)||screen<1||screen>10)return false;if(state.settings?.adminUnlock)return true;const m=Math.ceil(screen/2);if(m>1&&!state.completed.includes(m-1))return false;if(screen%2===0&&!state.pages.includes(screen-1))return false;return true;}
+// Inquiry records are saved before page completion (including the first 100 mL pour).
+export function waterResumeRoute(state){
+ if(state.restored)return 'ending';
+ const recorded=state.inquiry.records.some(r=>Number.isInteger(r?.scene)&&r.scene>=1&&r.scene<=10)||state.activities.observe.pours.length>0;
+ if(!recorded&&!state.pages.length&&!state.completed.length)return null;
+ return canEnter(state.lastScreen,state)?state.lastScreen:'map';
+}
 export function researchStyle(state){const counts={ '끈질긴 실험가':(state.activities?.pipe.trials.length||state.lab.pipe.trials.length),'창의적 설계자':state.lab.workshop.trials.length*2,'꼼꼼한 관찰자':(state.activities?.compare.pins.length||state.lab.compare.pins.length)+(state.activities?.dew.records.length||state.lab.condensation.snapshots.length)};return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];}
 
 export function previousRoute(route){return route==='home'?null:route==='map'?'home':route==='adventure'?'map':route==='ending'?10:route===1?'map':route-1;}
