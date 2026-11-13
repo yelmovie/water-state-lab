@@ -20,18 +20,7 @@ export function observationStep(n, state, final=null, visited=[]) {
   return null;
  }
  switch (n) {
-  case 1: {
-   const o = a.observe;
-   if (o.step === 0) {
-    const target = ['tall', 'wide'].find(key => !o.pours.includes(key));
-    if (!target) return 'act-observe-step-1';
-    return q.pourTarget === target ? 'ix-pour-auto' : 'ix-pour-target-' + target;
-   }
-   if (o.step === 1) return o.iceMoved ? 'act-observe-step-2' : 'act-drop-ice-dish';
-   if (!o.clothWet) return 'act-wet-cloth';
-   if (o.time < 100) return 'ix-forward';
-   return activityReady(1,a) ? null : 'ix-record';
-  }
+  case 1: return null; // The learner pours, moves the ice, and decides when to move on.
   case 2: {const card=sortCards.find(c=>!visited.includes(c.id));return card?'ix-sort-card-'+card.id:null;}
   case 3: {
    const f=a.freeze,{stage}=measureStatus(f);
@@ -117,11 +106,11 @@ export function observationPauseMessage(n,state){
  if(n===10&&!state.lab.final.tested)return '고장 원인을 먼저 골라 줘. 그다음 자동으로 관찰할 수 있어.';
  return '관찰을 마쳤어. 결과를 비교하고 직접 선택해 봐.';
 }
-export function bindObservation(state, perform, final=null,onPreferenceChange=()=>{}) {
+export function bindObservation(state, perform, final=null,onPreferenceChange=()=>{},manual=false) {
  clearTimeout(timer);
  let binding=++revision;
  let awaitedMotion=false;
- const guided=state.settings.autoplay!==false;
+ const guided=state.settings.autoObservation===true&&!manual;
  const speedControl=document.getElementById('observation-speed');
  if(speedControl)speedControl.onchange=()=>{state.settings.observationPace=observationSpeed({observationPace:Number(speedControl.value)});onPreferenceChange();if(playingStage!==null)bindObservation(state,perform,final,onPreferenceChange);};
  if(typeof state.route!=='number'||!guided){stopObservation('','transition');scope=null;return;}

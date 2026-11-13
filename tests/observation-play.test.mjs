@@ -4,6 +4,18 @@ import {initialState} from '../src/state.js';
 import {measureAction} from '../src/freeze-measure.js';
 globalThis.document??={addEventListener(){}};
 const {observationStep,bindObservation,stopObservation,observationPlaying}=await import('../src/observation-play.js');
+const {guidedRoutineAction}=await import('../src/guided-flow.js');
+
+test('automatic observation leaves pouring, moving ice, and advancing the first lesson to the learner',()=>{
+ const s=initialState(),o=s.activities.observe;s.route=1;s.settings.autoObservation=true;
+ assert.equal(observationStep(1,s),null);
+ o.pours=['tall','wide'];assert.equal(observationStep(1,s),null);
+ o.step=1;assert.equal(observationStep(1,s),null);
+ o.iceMoved=true;assert.equal(observationStep(1,s),null);
+ o.step=2;assert.equal(observationStep(1,s),null);
+ o.clothWet=true;o.time=100;o.records=[{kind:'cloth',time:100}];
+ assert.equal(observationStep(1,s),null);assert.equal(guidedRoutineAction(1,s),null);
+});
 
 test('measurement playback stops for a prediction and then uses every existing observation step',()=>{
  const s=initialState(),f=s.activities.freeze;
@@ -33,14 +45,14 @@ test('field playback uses its own process controls and never chooses an answer',
 test('teacher-enabled playback pauses for a question and resumes after its answer without a student toggle',async()=>{
  const original=globalThis.document,main={dataset:{questionId:'sort-ice'}};
  globalThis.document={hidden:false,getElementById:()=>null,querySelector:s=>s==='.experiment-main'?main:null,dispatchEvent(){},addEventListener(){}};
- const s=initialState();s.settings.autoplay=true;s.settings.observationPace=2;s.route=2;s.inquiry.sortProof='ice';const actions=[];
+ const s=initialState();s.settings.autoObservation=true;s.settings.observationPace=2;s.route=2;s.inquiry.sortProof='ice';const actions=[];
  try{
   bindObservation(s,a=>actions.push(a));assert.equal(observationPlaying(),false);
   await new Promise(r=>setTimeout(r,350));assert.deepEqual(actions,[]);
   s.activities.sort.placed.ice='solid';s.inquiry.sortProof='';main.dataset.questionId='';
   bindObservation(s,a=>actions.push(a));assert.equal(observationPlaying(),true);
   await new Promise(r=>setTimeout(r,350));assert.equal(actions[0],'ix-sort-card-water');
-  s.settings.autoplay=false;bindObservation(s,a=>actions.push(a));const count=actions.length;
+  s.settings.autoObservation=false;bindObservation(s,a=>actions.push(a));const count=actions.length;
   await new Promise(r=>setTimeout(r,350));assert.equal(actions.length,count);assert.equal(observationPlaying(),false);
  }finally{stopObservation();globalThis.document=original;}
 });
@@ -48,10 +60,10 @@ test('teacher-enabled playback pauses for a question and resumes after its answe
 test('teacher-disabled playback never starts automatically or advances a stage',async()=>{
  const original=globalThis.document;
  globalThis.document={hidden:false,getElementById:()=>null,querySelector:()=>null,dispatchEvent(){},addEventListener(){}};
- const s=initialState();s.settings.autoplay=false;s.route=3;const actions=[];
+ const s=initialState();s.route=3;const actions=[];
  try{
   bindObservation(s,a=>actions.push(a));await new Promise(r=>setTimeout(r,350));
   assert.equal(observationPlaying(),false);assert.deepEqual(actions,[]);
-  s.settings.autoplay=true;bindObservation(s,a=>actions.push(a));assert.equal(observationPlaying(),true);
+  s.settings.autoObservation=true;bindObservation(s,a=>actions.push(a));assert.equal(observationPlaying(),true);
  }finally{stopObservation();globalThis.document=original;}
 });

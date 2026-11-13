@@ -68,7 +68,7 @@ export function guidedRoutineAction(n,state,final=null){
  if(n===7&&a.dew.rewiped&&!a.dew.again||n===8&&cupSummarySeen(a.explain)&&!a.explain.transfer)return null;
  if(n===9&&currentTrialValid(state.lab.workshop))return 'complete-5';
  if(n===10&&final?.progress?.tested&&final.progress.diagnosis?.resolved&&coreTransfer(final.progress,final.progress.diagnosis.working).canFlow)return 'core-activate';
- const next={1:'act-next-1',4:'act-complete-2',5:'act-next-5',6:'act-complete-3',7:'act-next-7',8:'act-complete-4'};
+ const next={4:'act-complete-2',5:'act-next-5',6:'act-complete-3',7:'act-next-7',8:'act-complete-4'};
  return next[n]&&activityReady(n,a)?next[n]:null;
 }
 

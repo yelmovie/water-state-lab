@@ -26,7 +26,7 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  const learning=details('실험별 배움',`<ol class="settings-learning">${STAGE_LEARNING.map(stage=>`<li><strong>${stage.stage}장 · ${esc(stage.title)}</strong><p>${esc(stage.objective)}</p><small>성취기준 [${esc(stage.standard)}]</small></li>`).join('')}</ol>`);
  const cache=offline(),teacher=`<h3>${esc(C.teacher.standardsTitle)}</h3><ul class="settings-standards">${STANDARDS.map(s=>`<li><strong>[${esc(s.code)}]</strong> ${esc(s.text)}</li>`).join('')}</ul>${learning}`;
  const offlineStatus=cache?`<p id="settings-offline" class="settings-muted" role="status">${esc(offlineText(cache))}</p>`:'';
- const teacherTools=`<section class="settings-unlock-card" aria-label="교사 시연"><h3>교사용 설정</h3>${switchButton('settings-autoplay','자동으로 보기',settings.autoplay!==false)}<p class="settings-muted">켜면 준비와 시간 관찰을 자동으로 진행해요. 예상과 답은 학생이 직접 골라요. 끄면 학생이 도구와 시계를 눌러 진행해요.</p>${switchButton('settings-unlock',C.teacher.toolsTitle,!!settings.adminUnlock)}<p id="settings-preview-notice" class="settings-muted" role="status">${esc(settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff)}</p></section>`;
+ const teacherTools=`<section class="settings-unlock-card" aria-label="교사 시연"><h3>교사용 설정</h3>${switchButton('settings-autoplay','자동 관찰',settings.autoObservation===true)}<p class="settings-muted">켜면 일부 준비와 시간 관찰을 자동으로 진행해요. 첫 실험의 물 붓기와 다음 단계 선택은 학생이 직접 해요.</p>${switchButton('settings-unlock',C.teacher.toolsTitle,!!settings.adminUnlock)}<p id="settings-preview-notice" class="settings-muted" role="status">${esc(settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff)}</p></section>`;
  const credits=`${paragraphs(C.credits.lines)}${details(C.credits.sourcesTitle,`<p>${esc(C.credits.sourcesIntro)}</p>${C.credits.sources.map(([title,text])=>`<p><strong>${esc(title)}</strong><br>${esc(text)}</p>`).join('')}`)}<p>${esc(C.credits.copyright)}</p><p>${esc(C.credits.own)}</p><p>${esc(C.credits.external)}</p><p>${esc(C.credits.references)}</p>`;
  const clips=()=>concepts.slice(1).map(clip=>{
   const unlocked=conceptUnlocked(clip.id);
@@ -55,7 +55,7 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  dialog.querySelector('#settings-bgm').onclick=()=>{settings.bgm=!settings.bgm;updateSwitch('#settings-bgm',settings.bgm);dialog.querySelector('#settings-bgm-volume').disabled=!settings.bgm;syncSound();};
  dialog.querySelector('#settings-sfx').onclick=()=>{settings.sfx=settings.sfx===false;updateSwitch('#settings-sfx',settings.sfx);syncSound();if(settings.sfx)void playClick();};
  dialog.querySelector('#settings-bgm-volume').oninput=e=>{settings.bgmVolume=Number(e.target.value);e.target.setAttribute('aria-valuetext',`${settings.bgmVolume}%`);dialog.querySelector('#settings-volume-output').textContent=`${settings.bgmVolume}%`;syncSound();};
- dialog.querySelector('#settings-autoplay').onclick=()=>{settings.autoplay=settings.autoplay===false;updateSwitch('#settings-autoplay',settings.autoplay);persist();render();};
+ dialog.querySelector('#settings-autoplay').onclick=()=>{settings.autoObservation=settings.autoObservation!==true;updateSwitch('#settings-autoplay',settings.autoObservation);persist();render();};
  dialog.querySelector('#settings-unlock').onclick=()=>{
   settings.adminUnlock=!settings.adminUnlock;
   persist(); // Ending a preview restores the student snapshot before any unlocks are refreshed.

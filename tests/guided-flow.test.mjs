@@ -7,9 +7,13 @@ import {fieldAction,chapterState,fieldReady} from '../src/fieldwork-model.js';
 import {newDiagnosis} from '../src/collector-model.js';
 import {targetParts,testCollector} from '../src/domain.js';
 
-test('guided observation defaults on, including saves from before the preference existed',()=>{
- const old=initialState();assert.equal(old.settings.autoplay,true);delete old.settings.autoplay;
- const restored=readState({getItem:()=>JSON.stringify(old)});assert.equal(restored.settings.autoplay,true);
+test('automatic observation requires a new teacher opt-in without resetting saved progress',()=>{
+ const old=initialState();assert.equal(old.settings.autoObservation,false);delete old.settings.autoObservation;
+ old.settings.autoplay=true;old.route=1;old.activities.observe.pours=['tall'];old.inquiry.pours.tall=100;
+ const restore=()=>readState({getItem:()=>JSON.stringify(old)});
+ const restored=restore();assert.equal(restored.settings.autoObservation,false);
+ assert.deepEqual(restored.activities.observe.pours,['tall']);assert.equal(restored.inquiry.pours.tall,100);
+ old.settings.autoObservation=true;assert.equal(restore().settings.autoObservation,true);
 });
 test('classification presents each unanswered picture and never fills a student answer',()=>{
  const s=initialState();assert.equal(guidedRoutineAction(2,s),'ix-sort-card-ice');

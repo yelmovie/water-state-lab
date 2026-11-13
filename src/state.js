@@ -5,7 +5,7 @@ import {defaultParts,canEnter} from './domain.js';
 import {initialFieldwork,cleanFieldwork,migrateFieldwork} from './fieldwork-model.js';
 import {restoreDrawingMetadata} from './drawing-records.js';
 export const KEY='water-drop-lab:v1';
-export function initialState(){return {mapRunId:globalThis.crypto?.randomUUID?.()||`run-${Date.now()}-${Math.random().toString(36).slice(2)}`,schemaVersion:2,finalePending:false,dropAdventure:null,dropReturn:false,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,autoplay:true,observationPace:1,adminUnlock:false},lab:{
+export function initialState(){return {mapRunId:globalThis.crypto?.randomUUID?.()||`run-${Date.now()}-${Math.random().toString(36).slice(2)}`,schemaVersion:2,finalePending:false,dropAdventure:null,dropReturn:false,fieldwork:initialFieldwork(),inquiry:initialInquiry(),activities:initialActivities(),route:'home',lastScreen:1,completed:[],pages:[],residentsMet:[],villageArrivals:[],evidence:{},restored:false,settings:{reduced:false,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,autoObservation:false,observationPace:1,adminUnlock:false},lab:{
   observe:{selected:0,seen:[],pour:0,ice:false,cloth:0,wipe:0,canTime:0},
   classify:{current:0,records:[],type:'',proof:false},
   freeze:{initial:false,tare:false,prediction:65,phase:'water',measured:false,melted:false,compared:false},
@@ -44,6 +44,8 @@ function loadState(storage){
   raw.fieldwork=migrateFieldwork(raw.fieldwork);s.schemaVersion=2;s.inquiry=sanitizeInquiry(raw.inquiry);s.fieldwork=cleanFieldwork(raw.fieldwork);
   // Sanitized data can be shown, but rejected observations must not replace their source.
   if(raw.inquiry!==undefined&&!preservesSource(raw.inquiry,s.inquiry)||raw.fieldwork!==undefined&&!preservesSource(raw.fieldwork,s.fieldwork,true))repaired=true;
+  // Older saves included autoplay even when nobody selected it. Require a fresh opt-in.
+  s.settings.autoObservation=raw.settings?.autoObservation===true;delete s.settings.autoplay;
   s.settings.observationPace=observationSpeed(s.settings);delete s.settings.observationSpeed; // old scale is not carried over
   s.settings.sfx=typeof raw.settings?.sfx==='boolean'?raw.settings.sfx:s.settings.sound;
   // The old synthesized score defaulted to off; saves from that time hear the real themes once, then their choice sticks.
