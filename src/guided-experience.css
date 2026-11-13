@@ -902,7 +902,7 @@
 #app .building-guide .hint-button{min-width:48px}
 @media(min-width:1600px){
  #app .workspace-controls .activity-status{font-size:18px!important}
- #app .guided-question-note,#app .trial-result,#app .mv-label,#dialog .certificate-form>p{font-size:18px}
+ #app .guided-question-note,#app .trial-result,#dialog .certificate-form>p{font-size:18px}
 }
 @media screen and (min-width:1024px){
  .dialog-body .cert-sheet .cert-ribbon small,.dialog-body .cert-sheet .cert-foot p{font-size:max(14px,calc(var(--u)*1.7))}

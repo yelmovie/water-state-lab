@@ -86,15 +86,14 @@ export function mountMapVillains(world, options) {
 
  options.stages.forEach((stage,index)=>{
   if(!stage.ready)return;
-  const token=stage.token||'pending';const cleared=stage.ready&&(stored[index]===token||sessionClears.has(index+':'+token));
-  const b=document.createElement('button');b.type='button';b.className='mv-target';b.style.left=stage.x+'%';b.style.top=stage.y+'%';b.dataset.stage=String(index);b.dataset.state=cleared?'cleared':stage.ready?'ready':'locked';
-  b.innerHTML='<span class="mv-murk" aria-hidden="true"><i></i><i></i><i></i></span><span class="mv-wave" aria-hidden="true"></span><span class="mv-say" aria-hidden="true"><b></b><small></small></span><span class="mv-creature" aria-hidden="true"><span class="mv-sprite"></span></span><span class="mv-label"></span><span class="mv-meter" aria-hidden="true">● ● ●</span>';
-  const label=b.querySelector('.mv-label'),meter=b.querySelector('.mv-meter'),creature=b.querySelector('.mv-creature'),sprite=b.querySelector('.mv-sprite');
+  const token=stage.token||'pending';if(stored[index]===token||sessionClears.has(index+':'+token))return;
+  const b=document.createElement('button');b.type='button';b.className='mv-target';b.style.left=stage.x+'%';b.style.top=stage.y+'%';b.dataset.stage=String(index);b.dataset.state='ready';
+  b.innerHTML='<span class="mv-murk" aria-hidden="true"><i></i><i></i><i></i></span><span class="mv-wave" aria-hidden="true"></span><span class="mv-say" aria-hidden="true"><b></b><small></small></span><span class="mv-creature" aria-hidden="true"><span class="mv-sprite"></span></span><span class="mv-meter" aria-hidden="true">● ● ●</span>';
+  const meter=b.querySelector('.mv-meter'),creature=b.querySelector('.mv-creature'),sprite=b.querySelector('.mv-sprite');
   const say=b.querySelector('.mv-say'),sayText=say.querySelector('b'),sayHint=say.querySelector('small');
   let hits=0,busy=false,dx=0,dy=0,facingRight=false,roamTimer=0,sayTimer=0,wasNear=false,lastSaid=-1e9;
   const hint=()=>stage.ready?(touch?'공격 버튼을 눌러 봐!':'공격 버튼 · 스페이스!'):'이 구역 탐구를 마치면 물리칠 수 있어';
-  b.setAttribute('aria-label',stage.name+' 물길을 막는 밸브 두더지 · '+(cleared?'퇴치 완료':stage.ready?'물방울 파동으로 세 번 공격':'이 구역 탐구를 마치면 공격할 수 있어요'));
-  if(cleared){b.disabled=true;label.textContent='물길 정화 완료';meter.textContent='✓';}
+  b.setAttribute('aria-label',stage.name+' 물길을 막는 밸브 두더지 · 물방울 파동으로 세 번 공격');
 
   const face=right=>{facingRight=right;creature.style.scale=right?'-1 1':'';};
   const speak=(text,withHint=true,ms=2800)=>{
@@ -137,6 +136,7 @@ export function mountMapVillains(world, options) {
 
   // Speak when Bangul walks past.
   const watch=()=>{
+   if(b.dataset.state==='cleared')return;
    if(b.dataset.state==='locked'||b.dataset.state==='ready'){
     const at=fighter?.at?.();
     if(at&&!busy){
@@ -202,8 +202,9 @@ export function mountMapVillains(world, options) {
   };
   const finish=reduced=>{
    const saved=options.preview||recordMapVillainClear(index,token,undefined,options.key);
-   b.dataset.state='cleared';b.classList.remove('mv-hit','mv-cleaning');delete b.dataset.busy;label.textContent='물길 정화 완료';meter.textContent='✓';say.classList.remove('show');
-   b.setAttribute('aria-label',stage.name+' 밸브 두더지 퇴치 완료');b.setAttribute('aria-disabled','true');
+   if(document.activeElement===b)world.closest('.map-viewport')?.focus({preventScroll:true});
+   b.dataset.state='cleared';b.hidden=true;b.disabled=true;delete b.dataset.busy;
+   cancel(sayTimer);options.notify?.(stage.name+' · 물길 정화 완료!');
    status.textContent=stage.name+' 밸브 두더지가 사라지고 물길이 맑아졌어요. '+(options.preview?'시연 기록은 저장하지 않아요.':saved?'퇴치 기록을 저장했어요.':'저장하지 못했어요. 이 창에서만 유지돼요.');
    if(!reduced)options.sound?.('success');
    later(()=>{fighter?.pose?.(null);fighting=null;options.onCleared?.();},reduced?0:300);
@@ -212,7 +213,7 @@ export function mountMapVillains(world, options) {
   b.addEventListener('keydown',e=>{if(e.repeat&&(e.key==='Enter'||e.key===' '))e.preventDefault();},{signal:abort.signal});
   b.addEventListener('click',e=>{e.stopPropagation();attack();},{signal:abort.signal});
   world.append(b);nodes.push(b);targets.push({stage,b,creature,attack,where});
-  if(!cleared){roamTimer=later(roam,300+index*450);later(watch,600);}
+  roamTimer=later(roam,300+index*450);later(watch,600);
  });
 
  const cleanup=()=>{abort.abort();timers.forEach(clearTimeout);nodes.forEach(n=>n.remove());world.querySelectorAll('.mv-shot,.mv-particle').forEach(n=>n.remove());style.remove();status.remove();fighter?.pose?.(null);};
@@ -262,24 +263,18 @@ const STYLES=`
 .mv-murk i{position:absolute;bottom:40%;width:9px;height:9px;border-radius:50%;background:#6f4d7fd9;box-shadow:inset -2px -2px #2c173a;animation:mv-bubble 1.8s ease-in infinite}
 .mv-murk i:nth-child(1){left:30%}.mv-murk i:nth-child(2){left:52%;animation-delay:.6s}.mv-murk i:nth-child(3){left:68%;animation-delay:1.2s}
 .mv-cleaning .mv-murk{filter:hue-rotate(160deg) saturate(2) brightness(1.8);opacity:0}
-.mv-target[data-state=cleared] .mv-murk{display:block;opacity:1;background:radial-gradient(ellipse,#bff4ffcc 0 30%,#6fd2f080 55%,#6fd2f000 72%);animation:none}
-.mv-target[data-state=cleared] .mv-murk i{display:none}
+.mv-target[hidden]{display:none}
 .mv-say{position:absolute;bottom:calc(100% - 18px);left:50%;transform:translate(-50%,6px) scale(.85);min-width:190px;max-width:240px;padding:7px 12px;border:3px solid #5a2a7a;border-radius:16px;background:#fff;color:#3a1752;font:17px/1.25 var(--font-display);text-align:center;word-break:keep-all;box-shadow:0 4px 0 #3a175244;opacity:0;pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.56,.64,1);z-index:2}
 .mv-say:after{content:'';position:absolute;left:50%;top:100%;width:14px;height:14px;background:#fff;border:3px solid #5a2a7a;border-top:0;border-left:0;transform:translate(-50%,-7px) rotate(45deg)}
 .mv-say b{display:block;font-weight:400}
 .mv-say small{display:block;margin-top:3px;font-size:16px;color:#b2421c}
 .mv-say.show{opacity:1;transform:translate(-50%,0) scale(1)}
 .mv-sfx{position:absolute;left:50%;top:6px;z-index:3;font:20px/1 var(--font-display);color:#ffe066;-webkit-text-stroke:4px #4a1d63;paint-order:stroke fill;pointer-events:none;white-space:nowrap}
-.mv-label{display:none;background:#236754;border:2px solid #b8f2d8;border-radius:12px;padding:3px 8px;white-space:nowrap;box-shadow:0 2px 0 #12303266}
 .mv-meter{display:none;font-size:16px;letter-spacing:1px;color:#ff6b5b;-webkit-text-stroke:3px #3a1752;paint-order:stroke fill}
 .mv-target[data-state=ready] .mv-meter,.mv-target[data-state=leaving] .mv-meter{display:block}
 .mv-wave{position:absolute;top:44px;width:40px;height:40px;border:5px solid #9effea;border-radius:50%;opacity:0;pointer-events:none}
 .mv-target[data-state=ready] .mv-wave{animation:mv-ready 1.6s ease-out infinite}
 .mv-hit .mv-wave{animation:mv-burst .45s ease-out}
-.mv-target[data-state=cleared]{min-height:48px;cursor:default}
-.mv-target[data-state=cleared] .mv-creature,.mv-target[data-state=cleared] .mv-wave,.mv-target[data-state=cleared] .mv-say{display:none}
-.mv-target[data-state=cleared] .mv-label{display:block}
-.mv-target[data-state=cleared] .mv-murk{top:2px}
 .mv-shot{position:absolute;z-index:16;width:22px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 35% 30%,#fff 0 18%,#9fe7ff 30%,#2f9fd8 75%);box-shadow:0 0 10px #8fe3ff,0 0 0 3px #d9f7ff88;pointer-events:none}
 .mv-particle{position:absolute;z-index:16;pointer-events:none;border-radius:50%}
 .mv-drop{width:9px;height:9px;background:radial-gradient(circle at 35% 30%,#fff,#5cc4f0 60%,#2f8fc8)}

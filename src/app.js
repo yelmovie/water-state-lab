@@ -47,6 +47,11 @@ const finishActions={'act-complete-1':2,'act-complete-2':4,'act-complete-3':6,'a
 function baseAction(action){if(!action)return;if(handleActivity(action,ctx))return;handleWorkshop(action,ctx);}
 function routeAction(action){if(handleGuidedAction(action,state)){persist();const host=document.getElementById('field-coldnight');if(action.startsWith('guide-night-fill-')&&host)host.dispatchEvent(new Event('cold-levels-change'));else render();return;}if(handleFieldwork(action,ctx))return;const n=finishActions[action];if([6,8].includes(n)&&activityReady(n,experimentActivities(n,state))){openConcept(n/2,{reduced:state.settings.reduced,continueLabel:state.settings.autoObservation===true?'지도로 돌아가기':'관찰 마치기',onContinue:()=>baseAction(action)});return;}if(n&&!hasFieldSeal(n)&&activityReady(n,experimentActivities(n,state))){startFieldwork(n,action,ctx);return;}baseAction(action);}
 function showStory(kind,onFinish){if(kind==='final'&&!state.settings.adminUnlock&&(!state.restored||remainingMapVillains(state)))return;playStoryFilm(kind,{muted:!state.settings.sound,onFinish});if(kind==='final'&&state.route==='ending')setMusicTheme('ending',true);}
+function openEnding(){
+ const play=state.finalePending;
+ go('ending');
+ if(state.route==='ending'&&play){state.finalePending=false;persist();showStory('final');}
+}
 function startAdventure(){
  if(state.fieldwork.introSeen)return go('map');
  showStory('intro',()=>{state.fieldwork.introSeen=true;go('map');});
@@ -63,6 +68,7 @@ function finishEnding(){
   pageDone(10);
  }
  state.dropReturn=false;
+ if(!f.preview&&state.settings.autoObservation!==true){go('map');return;}
  go('ending');
  if(state.route==='ending'&&(first||state.finalePending)){state.finalePending=false;persist();showStory('final');}
 }
@@ -200,7 +206,7 @@ window.addEventListener('resize',()=>{if(typeof state.route==='number')integrate
 document.addEventListener('guided-question-change',()=>{if(typeof state.route==='number')render();});
 export function render(){
  if(state.route==='ending'&&state.restored&&!state.settings.adminUnlock&&remainingMapVillains(state)){state.route='map';state.finalePending=true;persist();}
- const resumeFinale=state.route==='map'&&state.restored&&state.finalePending&&!state.settings.adminUnlock&&!remainingMapVillains(state);
+ const resumeFinale=state.settings.autoObservation===true&&state.route==='map'&&state.restored&&state.finalePending&&!state.settings.adminUnlock&&!remainingMapVillains(state);
  if(resumeFinale){state.route='ending';state.finalePending=false;persist();}
  if(state.route===5&&state.fieldwork.active!==5&&prepareDrawingComparison(state.activities.draw))save();
  clockObserver?.disconnect();clockObserver=null;
@@ -213,8 +219,12 @@ export function render(){
    if(!state.restored||state.settings.adminUnlock)return;
    const remaining=remainingMapVillains(state);
    const status=document.querySelector('.map-finale-status');
-   if(status)status.textContent=`남은 밸브 두더지 ${remaining}마리 · 모두 물리치면 엔딩 영상이 열려!`;
-   if(!remaining){state.finalePending=false;go('ending');showStory('final');}
+   if(status)status.textContent=remaining?`남은 밸브 두더지 ${remaining}마리 · 모두 물리치면 엔딩 영상이 열려!`:'물길을 모두 되살렸어!';
+   if(!remaining){
+    const button=document.querySelector('.journey-next [data-action="ending"]');
+    if(button){button.disabled=false;button.textContent=state.finalePending?'엔딩 보기':'우리의 발견 보기';}
+    if(state.settings.autoObservation===true){state.finalePending=false;go('ending');showStory('final');}
+   }
   });
   mountPhaser(route,ctx,currentTask?.regions);simplifyControls(route);
  }
@@ -233,7 +243,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
  if(a.startsWith('building-part-')){const n=Number(a.slice(14));if(canEnter(n,state)){manualToolsRoute=null;state.fieldwork.active=0;go(n);}return;}
  if(handleCoach(a))return;
  if(a==='sound')return changeSound(!state.settings.sound);if(a==='previous'){const route=previousRoute(state.route);if(route!==null)go(route);return;}
- if(a==='map-hint'){const trigger=document.querySelector('.map-coach'),bubble=document.querySelector('#map-coach-help');if(bubble){bubble.hidden=!bubble.hidden;trigger.setAttribute('aria-expanded',String(!bubble.hidden));}return;}if(a==='home')return go('home');if(a==='map')return go('map');if(a==='ending')return go('ending');
+ if(a==='map-hint'){const trigger=document.querySelector('.map-coach'),bubble=document.querySelector('#map-coach-help');if(bubble){bubble.hidden=!bubble.hidden;trigger.setAttribute('aria-expanded',String(!bubble.hidden));}return;}if(a==='home')return go('home');if(a==='map')return go('map');if(a==='ending')return openEnding();
  if(a==='start'){return go(state.restored?'ending':state.pages.length&&canEnter(state.lastScreen,state)?state.lastScreen:'map');}
  if(a==='title-start')return startAdventure();
  if(a==='final-replay'&&state.route==='ending')return showStory('final');if(a.startsWith('ability-')){state.fieldwork.ability=a.slice(8);persist();render();return;}if(a==='notebook')return notebook();if(a==='discoveries')return discoveries();if(a==='focus-experiment')return focusExperiment();if(a==='settings')return settings();if(a==='certificate')return certificate();if(a==='print-certificate')return window.print();
