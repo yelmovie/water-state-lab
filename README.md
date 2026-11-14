@@ -19,6 +19,8 @@ wrangler pages deploy dist --project-name water-state-lab --branch main
 
 배포 설정은 `wrangler.jsonc`에 보관한다. GitHub 푸시와 운영 배포는 각각 실행하며, 자동 배포 연동은 설정하지 않는다.
 
+연결된 상태에서 다시 열면 HTML, 실행 코드, 글꼴을 운영 주소에서 먼저 확인한다. 다운로드가 실패하면 설치가 끝난 오프라인 자료를 쓴다. 새 오프라인 자료가 준비돼도 열린 활동을 강제로 새로고침하지 않는다.
+
 ## 실행
 
 Node.js 20 이상에서 설치 없이 실행:

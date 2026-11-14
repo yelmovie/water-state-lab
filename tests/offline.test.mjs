@@ -50,7 +50,7 @@ test('the built precache list covers every asset the app references, without PNG
 
 test('the service worker parses, warms every file, and answers byte ranges from cache',async()=>{
  const source=readFileSync('public/sw.js','utf8');
- const added=[],cached=new Set(['/']),ctx=swContext({caches:{open:async()=>({match:async u=>cached.has(u)?new Response('x'):undefined,add:async u=>{added.push(u);cached.add(u);}})}});
+ const added=[],cached=new Set(['/']),ctx=swContext({caches:{keys:async()=>[],open:async()=>({match:async u=>cached.has(u)?new Response('x'):undefined,add:async u=>{added.push(u);cached.add(u);}})}});
  vm.runInContext(source.replace("SHELL=[],LATER=[]","SHELL=['/','/src/app.js'],LATER=['/assets/a.webp','/assets/concepts/zone-1.mp4','/assets/story/intro.mp4','/assets/story/final.mp4']"),ctx);
  assert.deepEqual({...await ctx.warmNext()},{done:2,total:6});
  assert.deepEqual(added,['/src/app.js']);
@@ -87,4 +87,21 @@ test('an uncached video answers byte ranges from one download when the host igno
  assert.ok(stored.has('http://lab.test/assets/story/final.mp4'));
  assert.equal((await ctx.respond(ask('/assets/audio/music/main-theme.mp3','bytes=0-'))).status,206,'music streams like video, which Safari needs');
  assert.equal((await ctx.respond(ask('/assets/a.webp','bytes=0-1'))).status,200,'only streamed media needs cut ranges');
+});
+
+test('online HTML and code revalidate while the offline snapshot stays intact',async()=>{
+ const saved=new Map([['/','cached page'],['/src/app.js','cached code']]),requests=[];
+ let network=true;
+ const ctx=swContext({AbortController,setTimeout,clearTimeout,Headers,
+  caches:{open:async()=>({match:async p=>saved.has(p)?new Response(saved.get(p)):undefined,put:()=>assert.fail('offline snapshot overwritten')})},
+  fetch:async(r,options)=>{requests.push(options.cache);if(!network)throw Error('offline');return new Response('latest '+new URL(r.url).pathname);}
+ });
+ vm.runInContext(readFileSync('public/sw.js','utf8'),ctx);
+ const get=(path,mode)=>ctx.respond({url:'http://lab.test'+path,mode,headers:new Headers()});
+ assert.equal(await (await get('/?class=1','navigate')).text(),'latest /');
+ assert.equal(await (await get('/src/app.js','cors')).text(),'latest /src/app.js');
+ assert.deepEqual(requests,['no-cache','no-cache']);
+ network=false;
+ assert.equal(await (await get('/?class=1','navigate')).text(),'cached page');
+ assert.equal(await (await get('/src/app.js','cors')).text(),'cached code');
 });

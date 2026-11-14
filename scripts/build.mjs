@@ -33,9 +33,9 @@ for(const entry of await readdir(output,{recursive:true,withFileTypes:true}))if(
 console.log(`Built standalone site in dist/; editable PNG originals stay in public/assets/v2. Offline cache ${offline.cache}: ${offline.shell.length} first-screen + ${offline.later.length} background files.`);
 
 /** Precache lists come from the real dist files; the cache name is their content hash. */
-async function offlineLists(dir){
+async function offlineLists(dir,source){
  const files=(await readdir(dir,{recursive:true,withFileTypes:true})).filter(e=>e.isFile()).map(e=>path.relative(dir,path.join(e.parentPath??e.path,e.name)).split(path.sep).join('/')).filter(f=>!f.split('/').some(p=>p.startsWith('.'))).filter(f=>!['sw.js','build-info.json'].includes(f)&&!/\.(md|txt)$/.test(f)).sort();
- const hash=createHash('sha256');for(const f of files)hash.update(f+'\0').update(await readFile(path.join(dir,f)));
+ const hash=createHash('sha256').update(source);for(const f of files)hash.update(f+'\0').update(await readFile(path.join(dir,f)));
  // Images of the title, opening map and story screen stay in the install set; other art waits for the idle warm-up.
  const firstScreen=['assets/v2/title-island.webp','assets/v2/title-logo.webp','assets/v2/bangul-title.webp','assets/v2/research-island-v4.webp','assets/v2/buddy-poses-clean.webp','assets/v2/bangul-walk.webp','assets/v2/story-repair.webp'];
  const url=f=>f==='index.html'?'/':'/'+f,shell=[],later=[];
@@ -49,7 +49,7 @@ async function offlineLists(dir){
  return {cache:'water-'+hash.digest('hex').slice(0,12),shell,later};
 }
 async function writeServiceWorker(){
- const lists=await offlineLists(output),source=await readFile(path.join(root,'public/sw.js'),'utf8'),marker="const CACHE='water-dev',SHELL=[],LATER=[];";
+ const source=await readFile(path.join(root,'public/sw.js'),'utf8'),lists=await offlineLists(output,source),marker="const CACHE='water-dev',SHELL=[],LATER=[];";
  if(!source.includes(marker))throw new Error('public/sw.js lost its build marker');
  await writeFile(path.join(output,'sw.js'),source.replace(marker,`const CACHE=${JSON.stringify(lists.cache)},SHELL=${JSON.stringify(lists.shell)},LATER=${JSON.stringify(lists.later)};`));
  return lists;

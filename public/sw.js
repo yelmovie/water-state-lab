@@ -3,12 +3,19 @@ const CACHE='water-dev',SHELL=[],LATER=[];
 const SCENE_ENGINE='/assets/vendor/phaser.min.js';
 const STREAMED=/\.(mp4|webm|mp3)$/;
 // Install keeps only the first screen; the page warms the rest one file at a time when idle.
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL.map(url=>new Request(url,{cache:'reload'}))))));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('water-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('install',e=>e.waitUntil((async()=>{
+ const cache=await caches.open(CACHE);
+ try{await cache.addAll(SHELL.map(url=>new Request(url,{cache:'reload'})));}
+ catch(error){await caches.delete(CACHE);throw error;}
+ await self.skipWaiting();
+})()));
+async function oldCaches(){return (await caches.keys()).filter(k=>/^water-[0-9a-f]{12}$/.test(k)&&k!==CACHE).reverse();}
+self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
 async function warmNext(){
  const cache=await caches.open(CACHE),list=[...SHELL,...LATER];
  let done=0,missing;for(const url of list){if(await cache.match(url))done++;else missing??=url;}
  if(missing){await cache.add(missing);done++;}
+ if(done===list.length)for(const name of await oldCaches())await caches.delete(name);
  return {done,total:list.length};
 }
 self.addEventListener('message',e=>{
@@ -42,9 +49,16 @@ async function networkRange(cache,url,range){
  return partial(whole,range);
 }
 async function respond(request){
- if(new URL(request.url).pathname==='/update.html')return fetch(request);
+ if(new URL(request.url).pathname==='/update.html')return fetch(request,{cache:'no-cache'});
  const cache=await caches.open(CACHE),url=new URL(request.url),range=request.headers.get('range');
  const page=request.mode==='navigate'&&/^\/(index\.html)?$/.test(url.pathname);
+ // Revalidate HTML and code together. Do not overwrite the offline snapshot with online responses.
+ if(page||url.pathname.startsWith('/src/')||url.pathname.startsWith('/assets/fonts/')){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),4500);
+  try{const response=await fetch(request,{cache:'no-cache',signal:controller.signal});if(response.ok||response.status<500)return response;}
+  catch{}finally{clearTimeout(timer);}
+  return await cache.match(page?'/':url.pathname,{ignoreVary:true})||Response.error();
+ }
  const hit=await cache.match(page?'/':request);
  if(hit)return range?partial(hit,range):hit;
  try{
@@ -58,6 +72,10 @@ async function respond(request){
  }catch(error){
   const fallback=request.mode==='navigate'&&await cache.match('/');
   if(fallback)return fallback;
+  if(url.pathname.startsWith('/assets/'))for(const name of await oldCaches()){
+   const old=await (await caches.open(name)).match(request,{ignoreVary:true});
+   if(old)return range?partial(old,range):old;
+  }
   throw error;
  }
 }
