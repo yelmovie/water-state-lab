@@ -156,7 +156,7 @@ export function mountMapVillains(world, options) {
     b.classList.remove('mv-crank');
     if(fighting||document.hidden||document.querySelector('dialog[open]')){roamTimer=later(roam,700);return;}
     // 2) walk to a new spot around home
-    let nx,ny;do{const a=Math.random()*Math.PI*2;nx=Math.cos(a)*(20+Math.random()*34);ny=Math.sin(a)*(6+Math.random()*12);}while(Math.hypot(nx-dx,ny-dy)<18);
+    let nx,ny;do{const a=Math.random()*Math.PI*2;nx=Math.cos(a)*(15+Math.random()*17);ny=Math.sin(a)*(6+Math.random()*8);}while(Math.hypot(nx-dx,ny-dy)<18);
     const dur=Math.round(Math.max(430,Math.hypot(nx-dx,ny-dy)/49*1000));
     face(nx>dx);b.classList.add('mv-walking');
     b.style.transition=`translate ${dur}ms linear`;b.style.translate=`${nx}px ${ny}px`;dx=nx;dy=ny;
