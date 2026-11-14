@@ -1,3 +1,4 @@
+import {dockMapAttack} from './map-attack-control.js';
 import {bindMapZoom} from './map-gestures.js';
 import {bindDirectionPad,mapKeyDirection,MAP_VECTORS} from './map-controls.js';
 import { mountMapVillains,MAP_VILLAINS_KEY,mapVillainToken,remainingMapVillains } from './map-villains.js';
@@ -52,7 +53,7 @@ export function journeyView(){
  ${villageLights(returned,fresh,villageFriend(state),!state.settings.reduced&&!matchMedia('(prefers-reduced-motion: reduce)').matches)}
  ${missions.map((m,i)=>{const finished=state.completed.includes(m.id),locked=!canEnter(m.screens[0],state),[x,y]=islandStops[i];return `<button class="journey-node ${finished?'finished':''} ${next.id===m.id&&!finished?'current':''}" style="left:${x/10}%;top:${Math.max(9,y/5.63-10)}%" data-action="mission-${m.id}" ${locked?'disabled':''} aria-label="${m.id}. ${names[i]}, 담당 ${residentForStage(m.screens[0]).name}. ${finished?'다시 탐험':locked?'잠김':'길 따라 출발'}"><b>${locked?icon('lock',18):finished?icon('check',18):`<em>${m.id}</em>`}${names[i]}</b>${!locked&&finished?'<span class="node-state">연결 완료</span>':''}</button>`;}).join('')}
  <div class="journey-traveler" role="img" aria-label="탐험 중인 방울이"><span class="map-walk-sprite"></span></div></div><div class="map-nearby" role="group" aria-label="가까이에서 할 수 있는 행동" hidden></div><span class="sr-only map-nearby-status" role="status"></span><div class="map-hand-hint" aria-hidden="true">${icon('hand',40)}<span>지역을 눌러 이동하고, 엔터로 들어가 봐!</span></div></div>
- <div class="journey-bottom"><div class="map-pad" role="group" aria-label="지도 조작"><div class="map-arrows" role="group" aria-label="방울이 이동"><span class="map-arrow-label" aria-hidden="true">방울이<br>이동</span>${[['up','위'],['left','왼쪽'],['down','아래'],['right','오른쪽']].map(([d,label])=>`<button type="button" class="map-arrow map-arrow-${d}" data-map-move="${d}" aria-label="방울이 ${label}${d==='left'||d==='right'?'으':''}로 이동">${icon('arrow',24)}</button>`).join('')}</div><div class="map-modes"><button type="button" class="map-mode" data-map-mode="hand" aria-label="손으로 지도 이동" title="손으로 지도 이동" aria-pressed="false">${icon('hand',28)}</button><button type="button" class="map-mode" data-map-mode="overview" aria-label="지도 전체 보기" title="지도 전체 보기" aria-pressed="false">${icon('expand',28)}</button></div></div><div class="journey-companion"><button class="map-coach" data-action="map-hint" aria-label="방울이의 다음 탐험 안내" aria-expanded="false" aria-controls="map-coach-help">${buddy(state.restored?'celebrate':'wave')}<span class="coach-trigger-badge">…</span><span class="coach-trigger-label">방울이 힌트</span></button><div id="map-coach-help" class="map-coach-help" hidden><b>방울이의 부탁</b><p>${state.restored?'네가 만든 물길이 섬을 살렸어! 우리의 발견을 보러 갈까?':done?journey[next.id-1].story:'물길이 끊겨 연구실이 멈췄어. 나랑 첫 샘터부터 살펴보자!'}</p></div></div><div class="map-actions"><button type="button" class="map-attack" data-map-attack aria-label="물방울 공격. 가까운 밸브 두더지에게 물방울 파동 쏘기">${icon('drop',32)}<b>공격</b></button><div class="journey-next"><small>${state.restored?'물길 복구 완료':`이번 발견으로 얻을 것 · ${journey[next.id-1].tool}`}</small>${btn(state.restored?'우리의 발견 보기':done===5?'마지막 코어 연결':`${names[next.id-1]}${[0,1].includes(next.id-1)?'로':'으로'}${entry%2===0?'':' 출발'} ${icon('arrow')}`,state.restored?'ending':done===5?'screen-10':`mission-${next.id}`,'primary')}</div></div></div></main>`;
+ <div class="journey-bottom"><div class="map-pad" role="group" aria-label="지도 조작"><div class="map-arrows" role="group" aria-label="방울이 이동"><span class="map-arrow-label" aria-hidden="true">방울이<br>이동</span>${[['up','위'],['left','왼쪽'],['down','아래'],['right','오른쪽']].map(([d,label])=>`<button type="button" class="map-arrow map-arrow-${d}" data-map-move="${d}" aria-label="방울이 ${label}${d==='left'||d==='right'?'으':''}로 이동">${icon('arrow',24)}</button>`).join('')}</div></div><div class="journey-companion"><button class="map-coach" data-action="map-hint" aria-label="방울이의 다음 탐험 안내" aria-expanded="false" aria-controls="map-coach-help">${buddy(state.restored?'celebrate':'wave')}<span class="coach-trigger-badge">…</span><span class="coach-trigger-label">방울이 힌트</span></button><div id="map-coach-help" class="map-coach-help" hidden><b>방울이의 부탁</b><p>${state.restored?'네가 만든 물길이 섬을 살렸어! 우리의 발견을 보러 갈까?':done?journey[next.id-1].story:'물길이 끊겨 연구실이 멈췄어. 나랑 첫 샘터부터 살펴보자!'}</p></div></div><div class="map-actions"><div class="map-modes"><button type="button" class="map-mode" data-map-mode="overview" aria-label="지도 전체 보기" title="지도 전체 보기" aria-pressed="false">${icon('expand',28)}</button><button type="button" class="map-mode" data-map-mode="hand" aria-label="손으로 지도 이동" title="손으로 지도 이동" aria-pressed="false">${icon('hand',28)}</button><button type="button" class="map-attack" data-map-attack hidden aria-keyshortcuts="Space" aria-label="물방울 공격. 가까운 밸브 두더지에게 물방울 파동 쏘기">${icon('drop',32)}<b>공격</b></button></div><div class="journey-next"><small>${state.restored?'물길 복구 완료':`이번 발견으로 얻을 것 · ${journey[next.id-1].tool}`}</small>${btn(state.restored?'우리의 발견 보기':done===5?'마지막 코어 연결':`${names[next.id-1]}${[0,1].includes(next.id-1)?'로':'으로'}${entry%2===0?'':' 출발'} ${icon('arrow')}`,state.restored?'ending':done===5?'screen-10':`mission-${next.id}`,'primary')}</div></div></div></main>`;
 }
 
 // Normal camera covers the screen and follows Bangul; overview fits the entire island between the controls.
@@ -75,6 +76,8 @@ export function mountMapCamera(onVillainCleared){
  }});
  const done=state.completed.length,actor=world.querySelector('.journey-traveler'),sprite=actor.querySelector('.map-walk-sprite');
  const nextButton=root.querySelector('.journey-next .btn'),attackButton=root.querySelector('[data-map-attack]');
+ const syncAttackDock=attackButton?dockMapAttack(attackButton,()=>root.querySelector('[data-map-mode=hand]')):()=>false;
+ syncAttackDock();
  const labels=[...world.querySelectorAll('.journey-node')];
  const nearby=view.querySelector('.map-nearby'),announcement=view.querySelector('.map-nearby-status');
  const targets=missions.filter(m=>canEnter(m.screens[0],state)).map(m=>({feet:islandStops[m.id-1],name:islandNames[m.id-1],verb:'들어가기',action:'mission-'+m.id}));
@@ -242,9 +245,22 @@ export function mountMapCamera(onVillainCleared){
   press:d=>{const v=MAP_VECTORS[d];release('pad');press('pad',[v.x,v.y]);},release:()=>release('pad'),
   tap:d=>{cancelTravel();resumeFollow();const v=MAP_VECTORS[d];step(v.x,v.y,8);paintPose();}
  });
+ const updateAttackButton=()=>{
+  if(!attackButton)return;
+  const focused=document.activeElement===attackButton;
+  attackButton.hidden=!(syncAttackDock()&&!blocked()&&!departing&&!document.hidden&&!mapView.overview&&!mapView.hand&&removeVillains.canAttack());
+  if(attackButton.hidden&&focused&&!blocked())view.focus({preventScroll:true});
+ };
+ if(attackButton){
+  updateAttackButton();
+  const attackPoll=setInterval(updateAttackButton,100);
+  signal.addEventListener('abort',()=>clearInterval(attackPoll),{once:true});
+ }
  const attack=()=>{
-  if(blocked()||departing||document.hidden)return;
+  updateAttackButton();
+  if(attackButton.hidden)return;
   removeVillains.attackNearest();
+  updateAttackButton();
  };
  attackButton?.addEventListener('click',attack,{signal});
  world.addEventListener('click',e=>{if(e.target.closest('.island-resident'))cancelTravel();},{signal});
@@ -255,7 +271,7 @@ export function mountMapCamera(onVillainCleared){
   if(e.key==='Enter'&&!nearby.hidden&&(e.target===view||e.target===document.body)){
    e.preventDefault();if(!e.repeat){stopWalking();nearby.querySelector('button')?.click();}return;
   }
-  if(e.key===' '&&!attackButton?.hidden&&(e.target===view||e.target===document.body||e.target.closest?.('.map-pad'))){
+  if((e.code==='Space'||e.key===' ')&&!e.defaultPrevented&&!e.isComposing&&attackButton&&!attackButton.hidden&&(e.target===attackButton||!e.target.closest?.('button,a,summary,[role=button]'))){
    e.preventDefault();if(!e.repeat){view.focus({preventScroll:true});attack();}return;
   }
   const dir=mapKeyDirection(e);if(!dir)return;

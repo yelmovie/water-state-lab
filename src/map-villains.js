@@ -63,6 +63,36 @@ export function mountMapVillains(world, options) {
 
  const frameAt=(el,f)=>{el.style.backgroundPosition=f==null?'':`${(f%4)*100/3}% ${Math.floor(f/4)*100}%`;el.closest('.mv-target')?.classList.toggle('mv-acting',f!=null);};
  const pointPx=(x,y)=>[x/100*world.offsetWidth,y/100*world.offsetHeight];
+ const distanceTo=(position,at=fighter?.at?.())=>at?Math.hypot(position.x-at.x,(position.y-at.y)*(world.offsetHeight/world.offsetWidth||1)):Infinity;
+ function arrangeSpeech(){
+  const visible=targets.filter(t=>t.say.classList.contains('show')&&t.b.dataset.state!=='cleared');
+  const viewport=world.parentElement?.getBoundingClientRect();
+  if(!viewport||!visible.length)return;
+  const limit={left:Math.max(4,viewport.left+4),right:Math.min(innerWidth-4,viewport.right-4),top:Math.max(4,viewport.top+4),bottom:Math.min(innerHeight-4,viewport.bottom-4)};
+  const width=limit.right-limit.left,height=limit.bottom-limit.top;
+  if(width<120||height<120)return;
+  const obstacles=[...document.querySelectorAll('.journey-main button,.journey-main .map-modes,.journey-main .journey-heading,.journey-shell>.topbar,.mv-creature')].filter(el=>!el.matches('.mv-target')&&!el.closest('[hidden]')&&getComputedStyle(el).visibility==='visible').map(el=>el.getBoundingClientRect()).filter(r=>r.width&&r.height);
+  const clip=(value,min,max)=>Math.max(min,Math.min(max,value));
+  for(const {b,creature,say} of visible){
+   const ew=say.offsetWidth,eh=say.offsetHeight;if(!ew||!eh)continue;
+   const base=b.getBoundingClientRect(),anchor=creature.getBoundingClientRect(),x=anchor.left+(anchor.width-ew)/2,y=anchor.top-eh-9;
+   const opts=[[x,y],[anchor.right+10,y],[anchor.left-ew-10,y],[x,anchor.bottom+10]];
+   for(let row=0;row<7;row++)for(let col=0;col<7;col++)opts.push([limit.left+col*(width-ew)/6,limit.top+row*(height-eh)/6]);
+   let best=null,score=Infinity;
+   for(const [px,py] of opts){
+    const left=clip(px,limit.left,limit.right-ew),top=clip(py,limit.top,limit.bottom-eh),right=left+ew,bottom=top+eh;
+    const overlap=obstacles.reduce((sum,r)=>sum+Math.max(0,Math.min(right+4,r.right)-Math.max(left-4,r.left))*Math.max(0,Math.min(bottom+4,r.bottom)-Math.max(top-4,r.top)),0);
+    const next=overlap*500+Math.hypot(left-x,top-y);
+    if(next<score){score=next;best={left,top,right,bottom};}
+   }
+   const side=best.top+eh<anchor.top?'above':best.top>anchor.bottom?'below':'side';
+   const position={top:`${Math.round(best.top-base.top)}px`,left:`${Math.round(best.left-base.left)}px`};
+   if(say.style.top!==position.top)say.style.top=position.top;
+   if(say.style.left!==position.left)say.style.left=position.left;
+   say.dataset.placed=side;
+   obstacles.push(best);
+  }
+ }
  const burst=(x,y,kind,count)=>{
   for(let i=0;i<count;i++){
    const p=document.createElement('span');p.className='mv-particle mv-'+kind;p.style.left=x+'px';p.style.top=y+'px';world.append(p);
@@ -98,7 +128,7 @@ export function mountMapVillains(world, options) {
   const face=right=>{facingRight=right;creature.style.scale=right?'-1 1':'';};
   const speak=(text,withHint=true,ms=2800)=>{
    sayText.textContent=text;sayHint.textContent=withHint?hint():'';sayHint.hidden=!withHint;
-   say.classList.remove('show');void say.offsetWidth;say.classList.add('show');lastSaid=performance.now();
+   say.classList.remove('show');void say.offsetWidth;say.classList.add('show');arrangeSpeech();lastSaid=performance.now();
    cancel(sayTimer);sayTimer=later(()=>say.classList.remove('show'),ms);
   };
   const where=()=>{const offset=getComputedStyle(b).translate.match(/-?[\d.]+/g)?.map(Number)||[dx,dy];return {x:stage.x+offset[0]/(world.offsetWidth||1)*100,y:stage.y+(offset[1]||0)/(world.offsetHeight||1)*100};};
@@ -115,8 +145,8 @@ export function mountMapVillains(world, options) {
   // Roaming: wander near the home spot, then stop and wreck the waterway.
   const roam=()=>{
    roamTimer=0;
-   if(reducedNow()||busy||fighting||b.dataset.state!=='locked'&&b.dataset.state!=='ready')return;
-   if(document.hidden){roamTimer=later(roam,1500);return;}
+   if(reducedNow()||busy||b.dataset.state!=='locked'&&b.dataset.state!=='ready')return;
+   if(fighting||document.hidden||document.querySelector('dialog[open]')){roamTimer=later(roam,1000);return;}
    // 1) mischief at the current spot
    b.classList.remove('mv-walking');b.classList.add('mv-crank');
    const [hx,hy]=pointPx(stage.x,stage.y);
@@ -124,13 +154,14 @@ export function mountMapVillains(world, options) {
    later(()=>{if(b.classList.contains('mv-crank'))sfx(pick(SFX));},1100);
    roamTimer=later(()=>{
     b.classList.remove('mv-crank');
+    if(fighting||document.hidden||document.querySelector('dialog[open]')){roamTimer=later(roam,700);return;}
     // 2) walk to a new spot around home
     let nx,ny;do{const a=Math.random()*Math.PI*2;nx=Math.cos(a)*(20+Math.random()*34);ny=Math.sin(a)*(6+Math.random()*12);}while(Math.hypot(nx-dx,ny-dy)<18);
-    const dur=Math.round(Math.hypot(nx-dx,ny-dy)/30*1000);
+    const dur=Math.round(Math.max(430,Math.hypot(nx-dx,ny-dy)/49*1000));
     face(nx>dx);b.classList.add('mv-walking');
     b.style.transition=`translate ${dur}ms linear`;b.style.translate=`${nx}px ${ny}px`;dx=nx;dy=ny;
     roamTimer=later(()=>{b.classList.remove('mv-walking');roamTimer=later(roam,400+Math.random()*700);},dur);
-   },1700+Math.random()*700);
+   },1150+Math.random()*450);
   };
   const resume=(ms=1200)=>{if(!roamTimer)roamTimer=later(roam,ms);};
 
@@ -153,7 +184,8 @@ export function mountMapVillains(world, options) {
   const attack=()=>{
    if(busy||b.dataset.state==='cleared'||b.dataset.state==='leaving')return;
    if(!stage.ready){speak('아직은 날 못 이겨! 흐흐');status.textContent=stage.name+' 탐구를 먼저 마치고 과학의 힘을 모아 주세요.';return;}
-   if(fighting&&fighting!==b)return;
+   if(fighting||document.hidden||document.querySelector('dialog[open]'))return;
+   if(distanceTo(where())>RANGE){tell(stage.name+' 밸브 두더지에게 가까이 가 보자!');return;}
    busy=true;fighting=b;b.dataset.busy='';hits++;const hit=hits,reduced=reducedNow();
    freeze();b.classList.toggle('mv-reduced',reduced);
    meter.textContent='● '.repeat(3-hit)+'○ '.repeat(hit);
@@ -210,7 +242,7 @@ export function mountMapVillains(world, options) {
   b.addEventListener('pointerdown',e=>e.stopPropagation(),{signal:abort.signal});
   b.addEventListener('keydown',e=>{if(e.repeat&&(e.key==='Enter'||e.key===' '))e.preventDefault();},{signal:abort.signal});
   b.addEventListener('click',e=>{e.stopPropagation();attack();},{signal:abort.signal});
-  world.append(b);nodes.push(b);targets.push({stage,b,creature,attack,where});
+  world.append(b);nodes.push(b);targets.push({stage,b,creature,say,attack,where});
   if(!cleared){roamTimer=later(roam,300+index*450);later(watch,600);}
  });
 
@@ -222,16 +254,18 @@ export function mountMapVillains(world, options) {
   const target=targets.find(t=>['locked','ready'].includes(t.b.dataset.state)&&getComputedStyle(t.b).visibility!=='hidden'&&spritesTouch(bounds,t.creature.getBoundingClientRect()));
   if(target)hitFighter(target.where());
  };
- const watchContact=()=>{cleanup.checkContact();later(watchContact,100);};
+ const watchContact=()=>{cleanup.checkContact();if(!document.hidden)arrangeSpeech();later(watchContact,100);};
  later(watchContact,100);
  /** Touch button and Space key share the same reach and combat rules. */
+ cleanup.canAttack=()=>{
+  return Boolean(world.offsetWidth&&targets.some(t=>t.b.dataset.state==='ready'&&distanceTo(t.where())<=RANGE));
+ };
  cleanup.attackNearest=()=>{
   const at=fighter?.at?.();
   if(fighting)return;
   const live=targets.filter(t=>t.b.dataset.state==='ready');
   if(!live.length){tell(targets.some(t=>t.b.dataset.state==='locked')?'탐구를 마치면 밸브 두더지를 물리칠 힘이 생겨요.':'모든 밸브 두더지를 물리쳤어요!');return;}
-  const ratio=world.offsetHeight/world.offsetWidth||1;
-  const dist=t=>{if(!at)return Infinity;const p=t.where();return Math.hypot(p.x-at.x,(p.y-at.y)*ratio);};
+  const dist=t=>distanceTo(t.where(),at);
   const near=live.reduce((a,t)=>dist(t)<dist(a)?t:a);
   if(dist(near)>RANGE){tell(near.stage.name+' 밸브 두더지 가까이 걸어가서 공격 버튼을 눌러요.');return;}
   near.attack();
@@ -260,6 +294,9 @@ const STYLES=`
 .mv-say b{display:block;font-weight:400}
 .mv-say small{display:block;margin-top:3px;font-size:16px;color:#b2421c}
 .mv-say.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.mv-say[data-placed]{bottom:auto;transform:none;transition:opacity .18s}
+.mv-say[data-placed=below]:after{top:auto;bottom:calc(100% - 7px);transform:translateX(-50%) rotate(225deg)}
+.mv-say[data-placed=side]:after{display:none}
 .mv-sfx{position:absolute;left:50%;top:6px;z-index:3;font:20px/1 var(--font-display);color:#ffe066;-webkit-text-stroke:4px #4a1d63;paint-order:stroke fill;pointer-events:none;white-space:nowrap}
 .mv-label{display:none;background:#236754;border:2px solid #b8f2d8;border-radius:12px;padding:3px 8px;white-space:nowrap;box-shadow:0 2px 0 #12303266}
 .mv-meter{display:none;font-size:16px;letter-spacing:1px;color:#ff6b5b;-webkit-text-stroke:3px #3a1752;paint-order:stroke fill}

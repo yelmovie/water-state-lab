@@ -1486,3 +1486,8 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
  html:not(.reduce-motion) .village-facade.is-waking{animation:village-facade-clears .95s ease-out both}
 }
 @keyframes village-facade-clears{from{opacity:1}to{opacity:0}}
+
+/* Map camera controls share one row on the right, above the next destination. */
+.journey-shell .map-actions{display:grid;justify-items:end;gap:8px}
+.journey-shell .map-actions .map-modes{display:flex;flex-direction:row;align-items:center;justify-content:end;min-height:56px;gap:8px;pointer-events:auto}
+.journey-shell .map-actions .journey-next{width:100%}
