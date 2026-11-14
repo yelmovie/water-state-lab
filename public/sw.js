@@ -10,7 +10,34 @@ self.addEventListener('install',e=>e.waitUntil((async()=>{
  await self.skipWaiting();
 })()));
 async function oldCaches(){return (await caches.keys()).filter(k=>/^water-[0-9a-f]{12}$/.test(k)&&k!==CACHE).reverse();}
-self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+self.addEventListener('activate',e=>e.waitUntil(recoverLegacyHome()));
+async function recoverLegacyHome(){
+ // The former cache-first worker may already have delivered the returning tab.
+ // A cache with the online-first document needs no migration.
+ let legacy=false;
+ for(const name of await oldCaches()){
+  const old=await caches.open(name);
+  const page=await old.match('/',{ignoreVary:true});
+  if(!page)continue;
+  legacy=!(await page.text()).includes('name="classroom-update"');
+  break;
+ }
+ await self.clients.claim();
+ if(!legacy)return;
+ const windows=await self.clients.matchAll({type:'window'});
+ const candidates=windows.filter(client=>{
+  const url=new URL(client.url);
+  return url.origin===self.location.origin&&/^\/(?:index\.html)?$/.test(url.pathname)&&
+   (!url.hash||url.hash==='#home')&&client.frameType!=='nested'&&client.visibilityState==='visible';
+ });
+ const client=candidates.find(c=>c.focused)??(candidates.length===1?candidates[0]:null);
+ // Navigation can need this worker's fetch handler. Do not hold activation open waiting for it.
+ if(client){
+  const next=new URL(client.url);
+  next.searchParams.set('_classroom-update',CACHE);
+  void client.navigate(next.href).catch(()=>{});
+ }
+}
 async function warmNext(){
  const cache=await caches.open(CACHE),list=[...SHELL,...LATER];
  let done=0,missing;for(const url of list){if(await cache.match(url))done++;else missing??=url;}

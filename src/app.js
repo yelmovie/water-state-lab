@@ -389,5 +389,10 @@ if(OFFLINE_BUILD&&'serviceWorker' in navigator){
  });
 }
 setPreviewMode(state.settings.adminUnlock);setSoundSettings(state.settings);
+const appURL=new URL(location.href);
+if(appURL.searchParams.has('_classroom-update')){
+ appURL.searchParams.delete('_classroom-update');
+ history.replaceState(history.state,'',appURL);
+}
 render();
 window.bootReady?.();
