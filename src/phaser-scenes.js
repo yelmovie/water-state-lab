@@ -124,7 +124,7 @@ function makeScene(P,route,ctx,host,hidden,regions,onReady,onFailure){
    if(route!=='map')this.events.emit('learner-ready');
    onReady();
   }
-  text(x,y,text,size=20,color='#244c57'){const scale=Math.min(host.clientWidth/W,host.clientHeight/H);if(route!=='map')size=Math.max(size,Math.min(28,18/Math.max(.5,scale)));return this.add.text(x,y,text,{fontFamily:'NanumSquareNeo, Pretendard, system-ui, sans-serif',fontSize:size+'px',fontStyle:'normal',color,align:'center',stroke:color==='#fffbea'?'#34585d':'#fffaf0',strokeThickness:2,resolution:4}).setOrigin(.5).setDepth(6);}
+  text(x,y,text,size=20,color='#244c57'){const scale=Math.min(host.clientWidth/W,host.clientHeight/H);if(route!=='map')size=Math.max(size,Math.min(28,18/Math.max(.5,scale)));return this.add.text(x,y,text,{fontFamily:'NanumSquareNeo, system-ui, sans-serif',fontSize:size+'px',fontStyle:'normal',color,align:'center',stroke:color==='#fffbea'?'#34585d':'#fffaf0',strokeThickness:2,resolution:4}).setOrigin(.5).setDepth(6);}
   prop(x,y,index,size=110,type='equipment',drag=false){const obj=this.add.image(x,y,type,String(index)).setDisplaySize(size,size).setDepth(2);if(drag){obj.setInteractive({useHandCursor:true});this.input.setDraggable(obj);}return obj;}
   learningSprite(key,x,y,width,height,depth=3){return this.textures.exists(key)?this.add.image(x,y,key).setDisplaySize(width,height).setDepth(depth):null;}
   zone(x,y,w,h,handler){const z=this.add.zone(x,y,w,h).setInteractive({useHandCursor:true});z.on('pointerdown',handler);return z;}

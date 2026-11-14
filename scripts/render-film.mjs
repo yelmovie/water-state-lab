@@ -1,4 +1,4 @@
-// Renders the intro/final story films from assets/source-media: grades the source clip, burns in Jua captions and
+// Renders the intro/final story films from assets/source-media: grades the source clip, burns in NanumSquare Neo captions and
 // motion graphics drawn frame by frame in headless Chrome, mixes the project's themes and effects, and writes public/assets/story/.
 // Usage: PW_PATH=<path to playwright-core> node scripts/render-film.mjs [intro|final]   (FFMPEG_PATH overrides the ffmpeg binary)
 import {spawn,spawnSync} from 'node:child_process';
@@ -63,7 +63,7 @@ function overlayProgram(name,cues,total,freezeAt){
  const out=v=>1-Math.pow(1-v,3);
  const back=v=>{const c=1.70158;return 1+(c+1)*Math.pow(v-1,3)+c*Math.pow(v-1,2);};
  const rand=seed=>()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
- const font=size=>`${size}px Jua,"Malgun Gothic",sans-serif`;
+ const font=size=>`700 ${size}px NanumSquareNeo,"Malgun Gothic",sans-serif`;
  const bars=h=>{if(h<=0)return;g.fillStyle='#000';g.fillRect(0,0,W,h);g.fillRect(0,H-h,W,h);};
  function caption(t,a,b,text,y=H-BAR/2,size=50){
   const alpha=Math.min(span(t,a,a+.25),1-span(t,b-.25,b));if(alpha<=0)return;
@@ -185,13 +185,16 @@ async function render(name){
  const film=films[name];mkdirSync(OUT,{recursive:true});
  const extra=film.total-film.srcEnd,frames=Math.round(film.total*FPS);
  const html=`<!doctype html><style>
- @font-face{font-family:Jua;src:url(${dataUrl('public/assets/fonts/jua-korean-400.woff2','font/woff2')}) format('woff2');unicode-range:U+1100-11FF,U+3130-318F,U+A960-A97F,U+AC00-D7AF,U+D7B0-D7FF}
- @font-face{font-family:Jua;src:url(${dataUrl('public/assets/fonts/jua-latin-400.woff2','font/woff2')}) format('woff2');unicode-range:U+0000-00FF,U+2000-206F}
+ @font-face{font-family:NanumSquareNeo;src:url(${dataUrl('public/assets/fonts/NanumSquareNeoTTF-cBd.woff2','font/woff2')}) format('woff2');font-weight:700;font-style:normal}
  img{display:none}</style><canvas width="1920" height="1080"></canvas>
  <img id="logo" src="${dataUrl('public/assets/v2/title-logo.webp','image/webp')}">`;
- const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-crash-reporter','--disable-breakpad','--use-mock-keychain']});const page=await browser.newPage();
+ const executablePath=process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+ const browser=await chromium.launch({...(executablePath?{executablePath}:{channel:'chrome'}),headless:true,args:['--disable-crash-reporter','--disable-breakpad','--use-mock-keychain']});const page=await browser.newPage();
  await page.setContent(html,{waitUntil:'load'});
- await page.evaluate(async()=>{await Promise.all([document.fonts.load('50px Jua','물길 1/5'),...[...document.images].map(i=>i.decode())]);});
+ await page.evaluate(async()=>{
+  const [fonts]=await Promise.all([document.fonts.load('700 50px NanumSquareNeo','물길 1/5'),...[...document.images].map(i=>i.decode())]);
+  if(!fonts.length||fonts.some(face=>face.status!=='loaded'))throw Error('NanumSquare Neo did not load');
+ });
  await page.evaluate(`(${overlayProgram})(${JSON.stringify(name)},${JSON.stringify(film.cues)},${film.total},${film.srcEnd})`);
 
  // The hold is one fixed picture dissolved in here: a moving photo would change every pixel of every frame and triple the file size.

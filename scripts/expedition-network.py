@@ -32,7 +32,7 @@ with sync_playwright() as p:
       const regs=await navigator.serviceWorker.getRegistrations();
       return {resources,navigation:{transfer:nav.transferSize,body:nav.decodedBodySize,dcl:nav.domContentLoadedEventEnd,load:nav.loadEventEnd},
         title:document.querySelector('.start-tagline').innerText,
-        fonts:{hangul:document.fonts.check('20px Jua','물방울 연구실'),latin:document.fonts.check('20px Jua')},
+        fonts:{hangul:(await document.fonts.load('20px NanumSquareNeo','물방울 연구실')).length>0,latin:(await document.fonts.load('20px NanumSquareNeo','mL 123')).length>0},
         storageKeys:Object.keys(localStorage),storageBytes:new TextEncoder().encode(JSON.stringify({...localStorage})).length,
         manifest:document.querySelectorAll('link[rel=manifest]').length,serviceWorkers:regs.length,cacheKeys:await caches.keys()};
     }''')

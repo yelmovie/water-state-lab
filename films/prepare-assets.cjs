@@ -28,7 +28,7 @@ const copy=(src,out)=>{fs.mkdirSync(path.dirname(out),{recursive:true});fs.copyF
  };
  for(let n=1;n<=5;n++){
   const out=film(n);
-  for(const f of ['jua-korean-400.woff2','jua-latin-400.woff2'])copy(A+'fonts/'+f,path.join(out,'fonts',f));
+  for(const f of ['NanumSquareNeoTTF-cBd.woff2','NanumSquareNeo-OFL.txt'])copy(A+'fonts/'+f,path.join(out,'fonts',f));
   for(const [name,i] of Object.entries(poses)){const p=path.join(out,'img',`bangul-${name}.webp`);if(n===1||!fs.existsSync(p))await cut(A+'v2/buddy-poses-clean.webp',{left:(i%4)*362,top:Math.floor(i/4)*272,width:362,height:272},p);}
   for(const [name,src,box] of props[n]){if(name==='greenhouse'){fs.mkdirSync(path.join(out,'img'),{recursive:true});await sharp(path.join(root,src)).resize(1200).webp({quality:86}).toFile(path.join(out,'img/greenhouse.webp'));continue;}await cut(src,box,path.join(out,'img',name+'.webp'));}
   for(const f of ['kit.css','kit.js'])copy('films/kit/'+f,path.join(out,f));

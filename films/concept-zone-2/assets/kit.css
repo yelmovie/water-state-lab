@@ -1,10 +1,9 @@
 /* 「방울이의 실험 노트」 공통 모습 (films/SPEC.md 공통). prepare-assets.cjs가 각 편 assets/로 복사한다. */
-@font-face{font-family:'Jua';src:url('fonts/jua-korean-400.woff2') format('woff2');font-weight:400}
-@font-face{font-family:'Jua';src:url('fonts/jua-latin-400.woff2') format('woff2');font-weight:400;unicode-range:U+0000-00FF}
+@font-face{font-family:'NanumSquareNeo';src:url('fonts/NanumSquareNeoTTF-cBd.woff2') format('woff2');font-weight:700;font-style:normal}
 :root{--paper:#FBF6E6;--grid:#D7E9E3;--ink:#1F4A4D;--amber:#E0A52A;--water:#5CC4D6;--vapor:#7FB8C4;--shadow:0 10px 18px rgba(31,74,77,.18)}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper)}
-#root{position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'Jua',sans-serif;color:var(--ink);letter-spacing:0}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'NanumSquareNeo',sans-serif;font-weight:700;color:var(--ink);letter-spacing:0}
 .paper{position:absolute;inset:0;background:var(--paper)}
 .paper::before{content:'';position:absolute;inset:0;opacity:.6;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:48px 48px}
 .table{position:absolute;left:0;right:0;height:6px;background:#c9b98f;border-radius:3px;opacity:.55}
@@ -28,7 +27,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper)}
 .tag.hot .lead{background:var(--amber)}
 .big{position:absolute;left:0;right:0;text-align:center;font-size:72px;line-height:1.2;white-space:nowrap}
 .big .w{display:inline-block;opacity:0}
-.big b{font-weight:400;color:#9A6408}
+.big b{font-weight:700;color:#9A6408}
 .dash-amber{position:absolute;height:0;border-top:6px dashed var(--amber)}
 .vapor{position:absolute;width:0;border-left:6px dotted var(--vapor)}
 .arrow{position:absolute;font-size:72px;color:var(--ink);opacity:0}
