@@ -6,6 +6,7 @@ import {concepts} from './concept-data.js';
 import {openConcept} from './concepts.js';
 import {fieldReady,experimentTitles} from './fieldwork-model.js';
 import {captureResetToken,getStorageStatus} from './state.js';
+import {remainingMapVillains} from './map-villains.js';
 
 const paragraphs=lines=>lines.map(line=>`<p>${esc(line)}</p>`).join('');
 const details=(title,body)=>`<details class="settings-section"><summary>${esc(title)}</summary><div>${body}</div></details>`;
@@ -18,9 +19,10 @@ export const offlineText=({done,total})=>total&&done>=total?C.teacher.offlineDon
 export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()=>{},showStory=()=>{},certificate=()=>{},notebook,discoveries,onSoundChange=()=>{},onReset,getResetToken=captureResetToken,storageStatus=getStorageStatus,offline=()=>null}){
  if(activeDialog?.open){activeDialog.querySelector('#settings-x').focus();return activeDialog;}
  const opener=document.activeElement,dialog=document.createElement('dialog');
- dialog.className='settings-dialog';dialog.setAttribute('aria-labelledby','settings-title');
+ dialog.className='settings-dialog';dialog.setAttribute('data-science-settings','');dialog.setAttribute('aria-labelledby','settings-title');
  const settings=state.settings;
  const earnedCertificate=()=>!settings.adminUnlock&&state.restored===true&&[1,2,3,4,5].every(id=>state.completed.includes(id));
+ const endingUnlocked=()=>settings.adminUnlock||earnedCertificate()&&remainingMapVillains(state)===0;
  const conceptUnlocked=n=>settings.adminUnlock||([3,4].includes(n)&&state.completed.includes(n))||fieldReady(n*2,state.fieldwork?.chapters?.[n*2]);
  const done=earnedCertificate();
  const learning=details('실험별 배움',`<ol class="settings-learning">${STAGE_LEARNING.map(stage=>`<li><strong>${stage.stage}장 · ${esc(stage.title)}</strong><p>${esc(stage.objective)}</p><small>성취기준 [${esc(stage.standard)}]</small></li>`).join('')}</ol>`);
@@ -32,11 +34,12 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
   const unlocked=conceptUnlocked(clip.id);
   return `<button type="button" class="settings-concept-card" data-settings-concept="${clip.id}" ${unlocked?'':'disabled'}><img src="/assets/concepts/zone-${clip.id}.webp" alt="" loading="lazy"><span><strong>${clip.id}. ${esc(unlocked?clip.title:experimentTitles[clip.id])}</strong><small>${unlocked?(settings.adminUnlock?`교사 시연 · ${clip.seconds}초`:C.replay.conceptReady):esc(C.replay.conceptLocked.replace('{n}',clip.id))}</small></span>${unlocked?'':icon('lock',20)}</button>`;
  }).join('');
- const records=`<div class="settings-records">${notebook?`<button type="button" id="settings-notebook" class="btn secondary">${icon('book')}${esc(C.app.notebook)}</button>`:''}${discoveries?`<button type="button" id="settings-discoveries" class="btn secondary">${icon('flask')}${esc(C.app.discoveries)}</button>`:''}</div>`;
- const audio=`${switchButton('settings-bgm',C.sound.bgm,settings.bgm===true)}${switchButton('settings-sfx',C.sound.sfx,settings.sfx!==false)}<div class="settings-volume"><label for="settings-bgm-volume">${esc(C.sound.volume)} <output id="settings-volume-output" for="settings-bgm-volume">${settings.bgmVolume??35}%</output></label><input type="range" id="settings-bgm-volume" min="0" max="100" step="5" value="${settings.bgmVolume??35}" aria-valuetext="${settings.bgmVolume??35}%" ${settings.bgm?'':'disabled'}></div>${switchButton('settings-reduced',C.sound.reduced,settings.reduced===true)}`;
- const videos=`<div class="settings-replays"><button type="button" id="settings-ending" class="btn secondary wide" ${done||settings.adminUnlock?'':'disabled aria-describedby="settings-replay-locked"'}>${esc(C.replay.ending)}</button><button type="button" id="settings-certificate" class="btn secondary wide" ${done?'':'disabled aria-describedby="settings-replay-locked"'}>${esc(C.replay.certificate)}</button><p id="settings-replay-locked" class="settings-muted" ${done?'hidden':''}>${esc(C.replay.locked)}</p></div>${details(C.replay.concepts,`<div id="settings-concept-list" class="settings-concept-list">${clips()}</div>`)}`;
- const guides=details(C.student.title,paragraphs(C.student.lines))+details(C.teacher.title,teacher)+details(C.app.title,C.app.rows.map(([label,text])=>`<p><strong>${esc(label)}</strong><br>${esc(text)}</p>`).join('')+records+offlineStatus+`<p id="storage-diagnostics" class="settings-muted"></p><p class="settings-signature">${esc(C.app.name)} v${esc(APP_VERSION)} · ${esc(C.app.maker)}</p>`)+details(C.credits.title,credits);
- dialog.innerHTML=`<div class="settings-head"><h2 id="settings-title">${esc(C.title)}</h2><button type="button" id="settings-x" class="icon-btn" aria-label="${esc(C.close)}">${icon('close')}</button></div><p id="settings-save-notice" class="settings-notice" role="alert" hidden></p><div class="settings-scroll">${teacherTools}${details('소리 · 화면',audio)}<button type="button" id="settings-intro" class="btn secondary wide">${esc(C.replay.intro)}</button>${details('영상·인증서',videos)}${details('가이드 · 앱 정보',guides)}</div><footer class="settings-footer"><button type="button" id="settings-reset" class="btn secondary" ${settings.adminUnlock?'disabled aria-describedby="settings-preview-notice"':''}>${esc(C.reset.button)}</button><button type="button" id="settings-close" class="btn primary">${esc(C.close)}</button></footer>`;
+ const records=`${notebook?`<button type="button" id="settings-notebook" class="btn secondary">${icon('book')}${esc(C.app.notebook)}</button>`:''}${discoveries?`<button type="button" id="settings-discoveries" class="btn secondary">${icon('flask')}${esc(C.app.discoveries)}</button>` : ''}`;
+ const audio=`${switchButton('settings-bgm',C.sound.bgm,settings.bgm===true)}${switchButton('settings-sfx',C.sound.sfx,settings.sfx!==false)}<div class="settings-volume"><label for="settings-bgm-volume">${esc(C.sound.volume)} <output id="settings-volume-output" for="settings-bgm-volume">${settings.bgmVolume??35}%</output></label><input type="range" id="settings-bgm-volume" min="0" max="100" step="5" value="${settings.bgmVolume??35}" aria-valuetext="${settings.bgmVolume??35}%" ${settings.bgm?'':'disabled'}></div>`;
+ const accessibility=switchButton('settings-reduced',C.sound.reduced,settings.reduced===true);
+ const videos=`<section aria-labelledby="settings-quick-heading"><h3 class="science-settings-label" id="settings-quick-heading">영상과 기록</h3><div class="settings-replays science-settings-actions"><button type="button" id="settings-intro" class="btn secondary">${esc(C.replay.intro)}</button><button type="button" id="settings-ending" class="btn secondary" ${endingUnlocked()?'':'disabled aria-describedby="settings-replay-locked"'}>${esc(C.replay.ending)}</button><button type="button" id="settings-certificate" class="btn secondary" ${done?'':'disabled aria-describedby="settings-replay-locked"'}>${esc(C.replay.certificate)}</button>${records}</div><p id="settings-replay-locked" class="settings-muted" ${done&&endingUnlocked()?'hidden':''}>${esc(done?'아직 남은 밸브 두더지를 모두 물리치면 엔딩 영상이 열려요.':C.replay.locked)}</p></section>`;
+ const guides=details(C.app.title,C.app.rows.map(([label,text])=>`<p><strong>${esc(label)}</strong><br>${esc(text)}</p>`).join('')+offlineStatus+`<p id="storage-diagnostics" class="settings-muted"></p><p class="settings-signature">${esc(C.app.name)} v${esc(APP_VERSION)} · ${esc(C.app.maker)}</p>`)+details(C.student.title,paragraphs(C.student.lines))+details(C.teacher.title,teacher)+details(C.credits.title,credits);
+ dialog.innerHTML=`<div class="settings-head"><h2 id="settings-title">${esc(C.title)}</h2><button type="button" id="settings-x" class="icon-btn" aria-label="${esc(C.close)}">${icon('close')}</button></div><p id="settings-save-notice" class="settings-notice" role="alert" hidden></p><div class="settings-scroll science-settings-body"><section class="science-settings-audio" aria-labelledby="settings-sound-heading"><h3 class="science-settings-label" id="settings-sound-heading">소리</h3>${audio}</section>${videos}${details(C.replay.concepts,`<div id="settings-concept-list" class="settings-concept-list">${clips()}</div>`)}${guides}${accessibility}${teacherTools}</div><footer class="settings-footer science-settings-footer"><button type="button" id="settings-reset" class="btn secondary" ${settings.adminUnlock?'disabled aria-describedby="settings-preview-notice"':''}>${esc(C.reset.button)}</button><button type="button" id="settings-close" class="btn primary">${esc(C.close)}</button></footer>`;
  document.body.append(dialog);activeDialog=dialog;
  let confirmation;
  dialog.addEventListener('close',()=>{
@@ -63,15 +66,15 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
   const unlocked=earnedCertificate();
   dialog.querySelector('#settings-preview-notice').textContent=settings.adminUnlock?C.teacher.toolsOn:C.teacher.toolsOff;
   dialog.querySelector('#settings-reset').disabled=settings.adminUnlock;
-  dialog.querySelector('#settings-ending').disabled=!unlocked&&!settings.adminUnlock;
+  dialog.querySelector('#settings-ending').disabled=!endingUnlocked();
   dialog.querySelector('#settings-certificate').disabled=!unlocked;
-  dialog.querySelector('#settings-replay-locked').hidden=unlocked;
+  dialog.querySelector('#settings-replay-locked').hidden=unlocked&&endingUnlocked();
   dialog.querySelector('#settings-concept-list').innerHTML=clips();
   render();
  };
  dialog.querySelector('#settings-reduced').onclick=()=>{settings.reduced=!settings.reduced;updateSwitch('#settings-reduced',settings.reduced);document.documentElement.classList.toggle('reduce-motion',settings.reduced);persist();};
  dialog.querySelector('#settings-intro').onclick=()=>showStory('intro');
- dialog.querySelector('#settings-ending').onclick=()=>{if(earnedCertificate()||settings.adminUnlock)showStory('final');};
+ dialog.querySelector('#settings-ending').onclick=()=>{if(endingUnlocked())showStory('final');};
  dialog.querySelector('#settings-certificate').onclick=()=>{if(earnedCertificate()){close();certificate();}};
  if(notebook)dialog.querySelector('#settings-notebook').onclick=()=>{close();notebook();};
  if(discoveries)dialog.querySelector('#settings-discoveries').onclick=()=>{close();discoveries();};

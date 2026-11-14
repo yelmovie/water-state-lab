@@ -1,7 +1,8 @@
+import {dockMapAttack} from './map-attack-control.js';
 import {bindMapZoom} from './map-gestures.js';
 import {bindDirectionPad,mapKeyDirection,MAP_VECTORS} from './map-controls.js';
 import { mountMapVillains,MAP_VILLAINS_KEY,mapVillainToken,remainingMapVillains } from './map-villains.js';
-import {residentForStage,returnedResidents,residentMarkers,villageFriend} from './island-residents.js';
+import {residentForStage,returnedResidents,nextGreeting,villageFriend} from './island-residents.js';
 import {finalContext} from './workshop.js';
 import {state,save} from './state.js';
 import {playCue} from './sound.js';
@@ -43,20 +44,23 @@ export function workshopProgress(n){const s=state.lab.workshop;if(n===9){const o
 
 const islandNames=['물모양 샘터','얼음 다리','햇살 마당','이슬 정원','물길 공방'];
 export function journeyView(){
- const next=nextMission(),done=state.completed.length;
+ const next=nextMission(),done=state.completed.length,entry=mapEntryScreen(next.id);
  const names=islandNames,returned=returnedResidents(state),fresh=state.villageArrivals;
- const remaining=state.restored&&!state.settings.adminUnlock?remainingMapVillains(state):0;
- return `<main class="journey-main"><h1 class="sr-only">방울이의 물길 탐험 지도</h1>
- <div class="map-viewport" tabindex="0" aria-label="연구섬 지도. 화면 화살표나 방향키로 걸을 수 있어."><div class="journey-world"><img class="journey-art" src="/assets/v2/research-island-v4.webp" draggable="false" alt="샘터, 얼음 다리, 햇살 마당, 이슬 정원과 물길 공방이 오솔길로 이어진 연구섬">
- ${villageLights(returned,fresh,villageFriend(state),!state.settings.reduced&&!matchMedia('(prefers-reduced-motion: reduce)').matches)}${residentMarkers(state)}
- ${missions.map((m,i)=>{const finished=state.completed.includes(m.id),locked=!canEnter(m.screens[0],state),[x,y]=islandStops[i];return `<button class="journey-node ${finished?'finished':''} ${next.id===m.id&&!finished?'current':''}" style="left:${x/10}%;top:${Math.max(9,y/5.63-10)}%" data-action="mission-${m.id}" ${locked?'disabled':''} aria-label="${m.id}. ${names[i]}, 담당 ${residentForStage(m.screens[0]).name}. ${finished?'다시 탐험':locked?'잠김':'길 따라 출발'}"><b><svg class="map-lock-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="${!locked?'M8 11V7a4 4 0 0 1 7.5-2':'M8 11V7a4 4 0 0 1 8 0v4'}"/></svg>${names[i]}</b></button>`;}).join('')}
- <div class="journey-traveler" role="img" aria-label="탐험 중인 방울이"><span class="map-walk-sprite"></span></div><div class="map-hint-anchor"><button class="map-coach" data-action="map-hint" aria-label="방울이의 다음 탐험 안내" aria-expanded="false" aria-controls="map-coach-help"><span aria-hidden="true">…</span></button><div id="map-coach-help" class="map-coach-help" hidden><b>방울이의 부탁</b><p>${state.restored?'네가 만든 물길이 섬을 살렸어! 우리의 발견을 보러 갈까?':done?journey[next.id-1].story:'물길이 끊겨 연구실이 멈췄어. 나랑 첫 샘터부터 살펴보자!'}</p></div></div></div><div class="map-nearby" role="group" aria-label="가까이에서 할 수 있는 행동" hidden></div><span class="sr-only map-nearby-status" role="status"></span></div>
- <div class="journey-bottom"><div class="map-pad" role="group" aria-label="지도 조작"><div class="map-arrows" role="group" aria-label="방울이 이동">${[['up','위'],['left','왼쪽'],['down','아래'],['right','오른쪽']].map(([d,label])=>`<button type="button" class="map-arrow map-arrow-${d}" data-map-move="${d}" aria-label="방울이 ${label}${d==='left'||d==='right'?'으':''}로 이동">${icon('arrow',24)}</button>`).join('')}</div></div><div class="map-actions">${remaining?`<p class="map-finale-status" role="status">남은 밸브 두더지 ${remaining}마리 · 모두 물리치면 엔딩 영상이 열려!</p>`:''}<button type="button" class="map-attack" data-map-attack hidden aria-label="물방울 공격. 가까운 밸브 두더지에게 물방울 파동 쏘기">${icon('drop',32)}<b>공격</b></button><div class="map-modes"><button type="button" class="map-mode" data-map-mode="hand" aria-label="손으로 지도 이동" title="손으로 지도 이동" aria-pressed="false">${icon('hand',28)}</button><button type="button" class="map-mode" data-map-mode="overview" aria-label="지도 전체 보기" title="지도 전체 보기" aria-pressed="false">${icon('expand',28)}</button></div><div class="journey-next">${btn(state.restored?(state.finalePending?'엔딩 보기':'우리의 발견 보기'):done===5?`마지막 코어 연결 ${icon('arrow')}`:`${names[next.id-1]}${[0,1].includes(next.id-1)?'로':'으로'} 가기 ${icon('arrow')}`,state.restored?'ending':done===5?'screen-10':`mission-${next.id}`,state.restored||state.settings.reduced?'primary':'primary map-next-cue',remaining>0)}</div></div></div></main>`;
+ const latest=returned.find(r=>r.stage===residentForStage(fresh.at(-1))?.stage&&r===nextGreeting(state));
+ const arrival=!state.restored&&latest?`<button class="village-welcome" data-action="mission-${latest.stage/2}"><img src="/assets/v2/resident-${latest.stage}.webp" alt=""><span><small>${latest.spot} 복구</small><strong>${latest.news}</strong></span><em>${latest.name}의 실험실 ›</em></button>`:'';
+ return `<main class="journey-main"><div class="journey-heading"><div class="${arrival?'has-village-news':''}"><span class="eyebrow">물방울 연구실</span><h1${arrival?' class="sr-only"':''}>방울이의 물길 탐험</h1>${arrival}${state.restored&&remainingMapVillains(state)?`<p class="map-finale-status" role="status">남은 밸브 두더지 ${remainingMapVillains(state)}마리 · 모두 물리치면 엔딩 영상이 열려!</p>`:''}</div></div>
+ <div class="map-viewport" tabindex="0" aria-label="연구섬 지도. 화면 화살표나 방향키로 걷고, 공격 버튼으로 가까운 밸브 두더지에게 물방울을 쏠 수 있어."><div class="journey-world"><img class="journey-art" src="/assets/v2/research-island-v4.webp" draggable="false" alt="샘터, 얼음 다리, 햇살 마당, 이슬 정원과 물길 공방이 오솔길로 이어진 연구섬">
+ ${villageLights(returned,fresh,villageFriend(state),!state.settings.reduced&&!matchMedia('(prefers-reduced-motion: reduce)').matches)}
+ ${missions.map((m,i)=>{const finished=state.completed.includes(m.id),locked=!canEnter(m.screens[0],state),[x,y]=islandStops[i];return `<button class="journey-node ${finished?'finished':''} ${next.id===m.id&&!finished?'current':''}" style="left:${x/10}%;top:${Math.max(9,y/5.63-10)}%" data-action="mission-${m.id}" ${locked?'disabled':''} aria-label="${m.id}. ${names[i]}, 담당 ${residentForStage(m.screens[0]).name}. ${finished?'다시 탐험':locked?'잠김':'길 따라 출발'}"><b>${locked?icon('lock',18):finished?icon('check',18):`<em>${m.id}</em>`}${names[i]}</b>${!locked&&finished?'<span class="node-state">연결 완료</span>':''}</button>`;}).join('')}
+ <div class="journey-traveler" role="img" aria-label="탐험 중인 방울이"><span class="map-walk-sprite"></span></div></div><div class="map-nearby" role="group" aria-label="가까이에서 할 수 있는 행동" hidden></div><span class="sr-only map-nearby-status" role="status"></span><div class="map-hand-hint" aria-hidden="true">${icon('hand',40)}<span>지역을 눌러 이동하고, 엔터로 들어가 봐!</span></div></div>
+ <div class="journey-bottom"><div class="map-pad" role="group" aria-label="지도 조작"><div class="map-arrows" role="group" aria-label="방울이 이동"><span class="map-arrow-label" aria-hidden="true">방울이<br>이동</span>${[['up','위'],['left','왼쪽'],['down','아래'],['right','오른쪽']].map(([d,label])=>`<button type="button" class="map-arrow map-arrow-${d}" data-map-move="${d}" aria-label="방울이 ${label}${d==='left'||d==='right'?'으':''}로 이동">${icon('arrow',24)}</button>`).join('')}</div></div><div class="journey-companion"><button class="map-coach" data-action="map-hint" aria-label="방울이의 다음 탐험 안내" aria-expanded="false" aria-controls="map-coach-help">${buddy(state.restored?'celebrate':'wave')}<span class="coach-trigger-badge">…</span><span class="coach-trigger-label">방울이 힌트</span></button><div id="map-coach-help" class="map-coach-help" hidden><b>방울이의 부탁</b><p>${state.restored?'네가 만든 물길이 섬을 살렸어! 우리의 발견을 보러 갈까?':done?journey[next.id-1].story:'물길이 끊겨 연구실이 멈췄어. 나랑 첫 샘터부터 살펴보자!'}</p></div></div><div class="map-actions"><div class="map-modes"><button type="button" class="map-mode" data-map-mode="overview" aria-label="지도 전체 보기" title="지도 전체 보기" aria-pressed="false">${icon('expand',28)}</button><button type="button" class="map-mode" data-map-mode="hand" aria-label="손으로 지도 이동" title="손으로 지도 이동" aria-pressed="false">${icon('hand',28)}</button><button type="button" class="map-attack" data-map-attack hidden aria-keyshortcuts="Space" aria-label="물방울 공격. 가까운 밸브 두더지에게 물방울 파동 쏘기">${icon('drop',32)}<b>공격</b></button></div><div class="journey-next"><small>${state.restored?'물길 복구 완료':`이번 발견으로 얻을 것 · ${journey[next.id-1].tool}`}</small>${btn(state.restored?'우리의 발견 보기':done===5?'마지막 코어 연결':`${names[next.id-1]}${[0,1].includes(next.id-1)?'로':'으로'}${entry%2===0?'':' 출발'} ${icon('arrow')}`,state.restored?'ending':done===5?'screen-10':`mission-${next.id}`,'primary')}</div></div></div></main>`;
 }
 
 // Normal camera covers the screen and follows Bangul; overview fits the entire island between the controls.
 // Drag pans the view. Directional controls move the traveler in island coordinates.
 const MAP_W=1000,MAP_H=563,MAP_ZOOM=1.3;
+// Trouble spots occupy the routes near each lab, away from residents and entrances.
+const villainStops=[[203,350],[386,162],[517,323],[636,151],[770,375]];
 const directions={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
 let mapCamera=null;
 export function cleanupMapCamera(){mapCamera?.destroy();mapCamera=null;}
@@ -66,7 +70,7 @@ export function mountMapCamera(onVillainCleared){
  const view=document.querySelector('.map-viewport'),world=view?.querySelector('.journey-world');if(!world)return;
  const mapView={overview:false,hand:false};
  const root=view.closest('.journey-main'),controller=new AbortController(),{signal}=controller;
- const removeVillains=mountMapVillains(world,{key:MAP_VILLAINS_KEY,onCleared:onVillainCleared,onProximity:syncAttack,power:'물방울 파동',reduced:state.settings.reduced,preview:state.settings.adminUnlock,stages:missions.map((m,i)=>({name:islandNames[i],x:islandStops[i][0]/10+5,y:islandStops[i][1]/5.63-1,ready:state.completed.includes(m.id),token:mapVillainToken(state,m.id)})),sound:kind=>playCue(kind),notify:toast,fighter:{
+ const removeVillains=mountMapVillains(world,{key:MAP_VILLAINS_KEY,onCleared:onVillainCleared,power:'물방울 파동',reduced:state.settings.reduced,preview:state.settings.adminUnlock,stages:missions.map((m,i)=>({name:islandNames[i],x:villainStops[i][0]/MAP_W*100,y:villainStops[i][1]/MAP_H*100,ready:state.completed.includes(m.id),token:mapVillainToken(state,m.id)})),sound:kind=>playCue(kind),notify:toast,fighter:{
   at:()=>({x:position[0]/MAP_W*100,y:position[1]/MAP_H*100}),
   pose:(frame,flip=false)=>{const on=frame!=null;if(on)stopWalking();actor.classList.toggle('in-combat',on);if(!on){sprite.style.transform='';paintPose();return;}sprite.style.transform=flip?'scaleX(-1)':'';sprite.style.backgroundPosition=`${frame*100/3}% 0`;},
   bounds:()=>departing?null:sprite.getBoundingClientRect(),
@@ -74,10 +78,9 @@ export function mountMapCamera(onVillainCleared){
  }});
  const done=state.completed.length,actor=world.querySelector('.journey-traveler'),sprite=actor.querySelector('.map-walk-sprite');
  const nextButton=root.querySelector('.journey-next .btn'),attackButton=root.querySelector('[data-map-attack]');
- const hintAnchor=world.querySelector('.map-hint-anchor'), hintButton=hintAnchor.querySelector('.map-coach'), hintBox=hintAnchor.querySelector('.map-coach-help');
- function closeHint(restore=false){if(hintBox.hidden)return;hintBox.hidden=true;hintButton.setAttribute('aria-expanded','false');if(restore)hintButton.focus({preventScroll:true});}
+ const syncAttackDock=attackButton?dockMapAttack(attackButton,()=>root.querySelector('[data-map-mode=hand]')):()=>false;
+ syncAttackDock();
  const labels=[...world.querySelectorAll('.journey-node')];
- const residents=[...world.querySelectorAll('.island-resident')].map(marker=>({marker,feet:residentForStage(Number(marker.dataset.action.split('-').at(-1)))?.feet}));
  const nearby=view.querySelector('.map-nearby'),announcement=view.querySelector('.map-nearby-status');
  const targets=missions.filter(m=>canEnter(m.screens[0],state)).map(m=>({feet:islandStops[m.id-1],name:islandNames[m.id-1],verb:'들어가기',action:'mission-'+m.id}));
  const arrival=returnedResidents(state).find(r=>r.stage===residentForStage(state.villageArrivals.at(-1))?.stage);
@@ -140,16 +143,13 @@ export function mountMapCamera(onVillainCleared){
   if(dx||dy){facing=Math.abs(dx)>Math.abs(dy)?(dx<0?1:2):(dy<0?3:0);stride+=Math.hypot(dx,dy);}
   position=next;
   actor.style.left=position[0]/MAP_W*100+'%';actor.style.top=position[1]/MAP_H*100+'%';
-  hintAnchor.style.left=actor.style.left;hintAnchor.style.top=actor.style.top;
-  if(dx||dy)closeHint();
-  residents.forEach(({marker,feet})=>marker.classList.toggle('is-near',!!feet&&Math.hypot(position[0]-feet[0],position[1]-feet[1])<80));
-  paintPose(!!(dx||dy));showNearby();syncAttack();removeVillains.checkContact();
+  paintPose(!!(dx||dy));showNearby();removeVillains.checkContact();
  }
  function draw(glide=false,follow=false,at=performance.now()){
   const w=view.clientWidth,h=view.clientHeight;if(!w||!h)return;
   const box=view.getBoundingClientRect();
   // Keep Bangul clear of the corner tools and the bottom controls.
-  const top=Math.max(box.top,...[...document.querySelectorAll('.journey-shell>.topbar')].map(el=>el.getBoundingClientRect().bottom));
+  const top=Math.max(box.top,...[...document.querySelectorAll('.journey-shell>.topbar')].map(el=>el.getBoundingClientRect().bottom),root.querySelector('.journey-heading')?.getBoundingClientRect().bottom??box.top);
   const low=root.querySelector('.journey-bottom')?.getBoundingClientRect().top??box.bottom;
   const cy=low-top>120?(top+low)/2-box.top:h*.55;
   const fitTop=low-top>120?clamp(top-box.top+12,0,h):12,fitBottom=low-top>120?clamp(low-box.top-12,fitTop+1,h):h-12;
@@ -180,10 +180,6 @@ export function mountMapCamera(onVillainCleared){
   }
   world.classList.toggle('glide',glide&&!state.settings.reduced);
   world.style.width=ww+'px';world.style.height=wh+'px';world.style.transform=`translate3d(${ox}px,${oy}px,0)`;
-  const hintX=position[0]*scale+ox,hintY=position[1]*scale+oy-ww*.052;
-  hintAnchor.style.setProperty('--hint-shift',clamp(hintX,26,w-26)-hintX+'px');
-  hintAnchor.toggleAttribute('data-hint-below',hintY<top-box.top+128);
-  if(hintX<0||hintX>w||hintY<-20||hintY>h){closeHint();hintAnchor.hidden=true;}else hintAnchor.hidden=false;
   // Keep visible names inside the viewport when their building is near an edge.
   const hudBottom=top-box.top;
   const labelSizes=labels.map(node=>[node.offsetWidth,node.offsetHeight]);
@@ -212,10 +208,9 @@ export function mountMapCamera(onVillainCleared){
  }
  function stopWalking(){held.clear();cancelAnimationFrame(frame);frame=0;paintPose();}
  function setGuidedBusy(busy){nextButton?.setAttribute('aria-busy',String(busy));nextButton?.setAttribute('aria-disabled',String(busy));}
- function syncAttack(){if(attackButton)attackButton.hidden=departing||!removeVillains.hasNearbyTarget();}
  function cancelTravel(){
   if(!departing)return;
-  cancelAnimationFrame(arrivalFrame);arrivalFrame=0;departing=false;setGuidedBusy(false);showNearby();syncAttack();
+  cancelAnimationFrame(arrivalFrame);arrivalFrame=0;departing=false;setGuidedBusy(false);showNearby();
  }
  function release(source){
   if(held.delete(source)&&!held.size)stopWalking();
@@ -236,7 +231,7 @@ export function mountMapCamera(onVillainCleared){
   onZoom:(start,end,ratio)=>{const point={x:(start.x-ox)/scale,y:(start.y-oy)/scale};
    zoom=clamp(zoom*ratio,.78,1.7);free={x:end.x-point.x*cover(),y:end.y-point.y*cover()};draw();}
  });
- view.addEventListener('pointerdown',e=>{if(e.button>0||!e.isPrimary||blocked()||mapView.overview||e.target.closest('.map-nearby,.map-hint-anchor'))return;grab={id:e.pointerId,x:e.clientX,y:e.clientY,ox,oy};dragged=false;},{signal});
+ view.addEventListener('pointerdown',e=>{if(e.button>0||!e.isPrimary||blocked()||mapView.overview||e.target.closest('.map-nearby'))return;grab={id:e.pointerId,x:e.clientX,y:e.clientY,ox,oy};dragged=false;},{signal});
  addEventListener('pointermove',e=>{
   if(grab?.id!==e.pointerId)return;const dx=e.clientX-grab.x,dy=e.clientY-grab.y;
   if(!dragged&&Math.hypot(dx,dy)<8)return;
@@ -247,26 +242,38 @@ export function mountMapCamera(onVillainCleared){
  const letGo=e=>{if(grab?.id!==e.pointerId)return;grab=null;view.classList.remove('grabbing');if(dragged)view.dataset.dragEnd=String(performance.now());delete view.dataset.drag;};
  addEventListener('pointerup',letGo,{signal});addEventListener('pointercancel',letGo,{signal});
  // A drag, or any tap while the hand is on, never opens a place.
- view.addEventListener('click',e=>{if(e.detail===0||e.target.closest('.map-nearby,.map-hint-anchor')||(!dragged&&!mapView.hand))return;dragged=false;e.preventDefault();e.stopPropagation();},{signal,capture:true});
+ view.addEventListener('click',e=>{if(e.detail===0||e.target.closest('.map-nearby')||(!dragged&&!mapView.hand))return;dragged=false;e.preventDefault();e.stopPropagation();},{signal,capture:true});
  bindDirectionPad(root,'[data-map-move]',b=>b.dataset.mapMove,{signal,blocked:()=>!!blocked()||document.hidden,
   press:d=>{const v=MAP_VECTORS[d];release('pad');press('pad',[v.x,v.y]);},release:()=>release('pad'),
   tap:d=>{cancelTravel();resumeFollow();const v=MAP_VECTORS[d];step(v.x,v.y,8);paintPose();}
  });
+ const updateAttackButton=()=>{
+  if(!attackButton)return;
+  const focused=document.activeElement===attackButton;
+  attackButton.hidden=!(syncAttackDock()&&!blocked()&&!departing&&!document.hidden&&!mapView.overview&&!mapView.hand&&removeVillains.canAttack());
+  if(attackButton.hidden&&focused&&!blocked())view.focus({preventScroll:true});
+ };
+ if(attackButton){
+  updateAttackButton();
+  const attackPoll=setInterval(updateAttackButton,100);
+  signal.addEventListener('abort',()=>clearInterval(attackPoll),{once:true});
+ }
  const attack=()=>{
-  if(blocked()||departing||document.hidden)return;
+  updateAttackButton();
+  if(attackButton.hidden)return;
   removeVillains.attackNearest();
+  updateAttackButton();
  };
  attackButton?.addEventListener('click',attack,{signal});
  world.addEventListener('click',e=>{if(e.target.closest('.island-resident'))cancelTravel();},{signal});
  root.querySelector('[data-map-mode="hand"]')?.addEventListener('click',()=>{cancelTravel();stopWalking();if(mapView.overview)toggleOverview(false);if(mapView.hand){resumeFollow();draw(false,true);}else{mapView.hand=true;free={x:ox,y:oy};draw();}},{signal});
  root.querySelector('[data-map-mode="overview"]')?.addEventListener('click',()=>{cancelTravel();stopWalking();toggleOverview(!mapView.overview);},{signal});
  document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&!hintBox.hidden){e.preventDefault();closeHint(true);return;}
   if(blocked()||e.target.closest?.('input,textarea,select,[contenteditable="true"]')||e.altKey||e.ctrlKey||e.metaKey)return;
   if(e.key==='Enter'&&!nearby.hidden&&(e.target===view||e.target===document.body)){
    e.preventDefault();if(!e.repeat){stopWalking();nearby.querySelector('button')?.click();}return;
   }
-  if(e.key===' '&&!attackButton?.hidden&&(e.target===view||e.target===document.body||e.target.closest?.('.map-pad'))){
+  if((e.code==='Space'||e.key===' ')&&!e.defaultPrevented&&!e.isComposing&&attackButton&&!attackButton.hidden&&(e.target===attackButton||!e.target.closest?.('button,a,summary,[role=button]'))){
    e.preventDefault();if(!e.repeat){view.focus({preventScroll:true});attack();}return;
   }
   const dir=mapKeyDirection(e);if(!dir)return;
@@ -296,7 +303,7 @@ export function mountMapCamera(onVillainCleared){
   travel(to,arrive,guided=false){
    if(departing)return;
    if(guided)resumeFollow();
-   departing=true;setGuidedBusy(guided);stopWalking();showNearby();syncAttack();
+   departing=true;setGuidedBusy(guided);stopWalking();showNearby();
    const path=islandWalkTo(position,to),distance=routeDistance(path);
    const finish=()=>{arrivalFrame=0;departing=false;setGuidedBusy(false);placeTraveler(pointOnRoute(path,1));focus=position;draw(false,true);paintPose();view.focus({preventScroll:true});arrive();};
    if(reduceMotion()||distance<2){finish();return;}

@@ -65,14 +65,14 @@ test('independent sound controls gate autoplay, coalesce effects, and pause musi
 test('settings use the common order, lock rewards until completion, and preserve audio through confirmed reset',async t=>{
  const previousDocument=globalThis.document;const doc=mockDocument();globalThis.document=doc;t.after(()=>{globalThis.document=previousDocument;});
  const {openSettings}=await import('../src/settings.js');
- const state={settings:{sound:true,bgm:false,sfx:true,bgmVolume:35,reduced:false,adminUnlock:false},completed:[],restored:false};
+ const state={mapRunId:'settings-test',evidence:{},settings:{sound:true,bgm:false,sfx:true,bgmVolume:35,reduced:false,adminUnlock:false},completed:[],restored:false};
  let resets=0,savedAudio,rendered=0;
  const opener=doc.activeElement;
  doc.querySelector=selector=>selector==='dialog[open]'?doc.created.find(el=>el.open):null;
  const token={raw:'test'};
  let dialog=openSettings({state,render:()=>rendered++,getResetToken:()=>token,storageStatus:()=>({}),onReset:(audio,received)=>{assert.equal(received,token);resets++;savedAudio=audio;}});
  const html=dialog.innerHTML;
- const requiredOrder=['settings-unlock','settings-bgm-label','settings-sfx-label','settings-bgm-volume','settings-intro','학생용 가이드','교사용 가이드','성취기준','앱 정보 · 배움과 보상','이미지·소리·저작권 고지','settings-footer'];
+ const requiredOrder=['settings-bgm-label','settings-sfx-label','settings-bgm-volume','settings-intro','앱 정보 · 배움과 보상','학생용 가이드','교사용 가이드','성취기준','이미지·소리·저작권 고지','settings-unlock','settings-footer'];
  requiredOrder.forEach((token,index)=>{assert.ok(html.includes(token));if(index)assert.ok(html.indexOf(token)>html.indexOf(requiredOrder[index-1]));});
  assert.match(html,/id="settings-ending"[^>]*disabled/);assert.match(html,/id="settings-certificate"[^>]*disabled/);
  assert.match(html,/id="settings-bgm-volume"[^>]*disabled/);assert.doesNotMatch(html,/<details[^>]*\sopen(?:\s|>)/);
@@ -87,7 +87,8 @@ test('settings use the common order, lock rewards until completion, and preserve
  dialog.querySelector('#settings-reset').onclick();confirm=doc.created.at(-1);confirm.querySelector('#settings-confirm-reset').onclick();
  assert.equal(resets,1);assert.deepEqual(savedAudio,{sound:true,bgm:false,sfx:true,bgmVolume:35});assert.equal(doc.activeElement,opener);
  state.restored=true;state.completed=[1,2,3,4,5];dialog=openSettings({state});
- assert.doesNotMatch(dialog.innerHTML,/id="settings-certificate"[^>]*disabled/);dialog.close();
+ assert.doesNotMatch(dialog.innerHTML,/id="settings-certificate"[^>]*disabled/);
+ assert.match(dialog.innerHTML,/id="settings-ending"[^>]*disabled/);dialog.close();
 });
 
 test('settings include all three original standards, local saving policy, and separate original and external rights',()=>{
