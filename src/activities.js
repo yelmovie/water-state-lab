@@ -136,8 +136,8 @@ export function getActivityProgress(n){const a=experimentActivities(n,state),s=(
  if(n===1){pairs=[['두 그릇에 물 붓기',s.pours.length===2],['얼음 옮겨 비교',s.iceMoved],['물자국 변화 기록',activityReady(1,a)]];instruction=
   s.step===0?(s.pours.length===2?'두 그릇의 물높이를 비교한 뒤 ‘얼음도 옮겨 보기’를 눌러 봐.'
    :s.pours.length===1?(s.pours.includes('tall')?'넓은'
-   :'길쭉한')+' 그릇 위에 주전자를 놓아 봐.'
-   :'왼쪽 주전자를 그릇 하나로 끌어 물을 부어 봐.'):s.step===1?(s.iceMoved?'‘사라지는 물을 찾아보자’를 눌러 봐.'
+   :'길쭉한')+' 그릇에도 ‘100mL 붓기’를 눌러 물을 담아 봐.'
+   :'100mL 붓기를 눌러 물을 부어 봐. 왼쪽 주전자를 끌어도 돼.'):s.step===1?(s.iceMoved?'‘사라지는 물을 찾아보자’를 눌러 봐.'
    :'얼음을 넓은 그릇으로 끌어 놓아 봐.') : !s.clothWet?'주전자를 천 위로 끌거나 ‘천에 물 붓기’를 눌러 봐.'
    :'시계를 톡 누르면 시간이 흐르고 마른 모습이 기록돼.';hint='물과 얼음은 옮겼을 때 모양이 같을까?';}
  if(n===2){pairs=[['고체 찾기',sortCards.some(c=>c.type==='solid'&&s.placed[c.id]===c.type)],['액체 찾기',sortCards.some(c=>c.type==='liquid'&&s.placed[c.id]===c.type)],['기체 찾기',sortCards.some(c=>c.type==='gas'&&s.placed[c.id]===c.type)]];instruction=

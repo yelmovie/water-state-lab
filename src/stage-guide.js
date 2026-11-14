@@ -37,7 +37,7 @@ export function experimentMove(n,state,final){
   if(s.step===0){
    if(s.pours.length===2)return move('compare','두 그릇의 물높이를 비교해 봐','둘 다 100mL인데 어느 쪽이 더 높이 찼어? 다 봤으면 얼음도 옮겨 봐.',actions('act-observe-step-1'));
    const tall=!s.pours.includes('tall');
-   return move('pour',`${tall?'길쭉한':'넓은'} 그릇에 물 100mL를 담아 봐`,'주전자를 그릇 위로 옮기면 100mL 점선까지만 물이 담겨.',board,s.pours.length?[]:[[117,162,190,230]]);
+   return move('pour',`${tall?'길쭉한':'넓은'} 그릇에 물 100mL를 담아 봐`,'100mL 붓기를 눌러. 그릇 위로 주전자를 끌어도 돼.',actions('ix-pour-next')+','+board,s.pours.length?[]:[[117,162,190,230]]);
   }
   if(s.step===1)return s.iceMoved?move('compare','물과 얼음을 나란히 비교해 봐','물은 그릇마다 모양이 달랐는데 얼음은 어때? 다 봤으면 물자국을 보러 가자.',actions('act-observe-step-2')):move('drag','얼음을 넓은 그릇으로 옮겨 봐','물을 담았던 것과 같은 두 그릇이야. 얼음도 모양이 바뀔까?',board,[[iceSeat('wide').x,158,166,176],[iceSeat('tall').x,158,106,176]]);
   if(!s.clothWet)return move('pour','천에 물을 부어 봐','주전자를 천 위로 끌거나 ‘천에 물 붓기’를 눌러 봐.',board+','+actions('act-wet-cloth'));
