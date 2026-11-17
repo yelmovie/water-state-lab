@@ -256,4 +256,4 @@
 - Cloudflare Pages `water-state-lab` 운영 배포 `8ecbddbd`(main, 8272213), 465개 파일 중 20개 새로 올림. 직전 운영본은 `d14a562d`(9603468).
 - 운영 주소에서 `src/` 전체, `index.html`, `sw.js`, `build-info.json`, `assets/run-stage/`, `assets/vendor/three/`, `assets/learning/adventure-20261111/` 118개 파일의 SHA-256이 커밋본 빌드와 같았다. 오프라인 캐시 이름 `water-63059196fb6f`.
 - 같은 헤드리스 검사 52개 항목이 운영 주소에서 통과했다.
-- 내장 임시 원본: 원경은 정리했다. 나머지 6장은 `tmp/run3d-qa/clean.sh`가 잠금 순서를 기다리며 지우는 중이었다. `gpt-image.sh -l`에 이 프로젝트 경로가 남아 있으면 같은 스크립트를 다시 실행한다.
+- 내장 임시 원본: 7장 모두 정리했다. `gpt-image.sh -l`에 이 프로젝트 경로가 남지 않은 것을 확인했다.

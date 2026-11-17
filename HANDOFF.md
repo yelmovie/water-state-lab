@@ -49,7 +49,6 @@
 
 | 등급 | 문제 | 재현·확인 방법 | 막힌 지점 |
 |---|---|---|---|
-| 해야 함 | 내장 임시 원본 4장이 남아 있을 수 있다(`plates`, `water-run`, `ice-run`, `pier-tile`). 이 문서를 쓸 때 정리 스크립트가 잠금 순서를 기다리고 있었다 | `"/Volumes/T7 Shield/AI-Skills/custom/gpt-imagegen/scripts/gpt-image.sh" -l`에 `6 waterchange` 경로가 보이면 남은 것 | 다른 세션들이 이미지 잠금을 계속 쓰고 있었다. `tmp/run3d-qa/clean.sh`를 다시 실행하면 된다 |
 | 확인 필요 | 실제 태블릿에서 두 손가락 동시 누름(방향판+점프), 프레임 수 | 운영 주소를 태블릿에서 열어 탐험 1~5 | 기기 없음 |
 | 확인 필요 | 좁은 다리(탐험 2·5)와 수증기 구간이 4학년에게 어렵지 않은지 | 아이가 직접 | 사람 필요. 어렵다면 `src/run-stage-model.js`의 `PLAN`에서 `bridge`를 `gap`으로 바꾸면 된다 |
 | 작음 | 물 방울이 달리기 그림이 기존 2D의 물 그림(`water.webp`)과 생김새가 조금 다르다(참고 그림을 붙이면 생성이 `Bad Request`로 끝나 글로만 묘사해 만들었다) | 3D와 2D 화면을 번갈아 보기 | 맞추려면 참고 그림 첨부가 되는지 다시 시도 |
@@ -57,7 +56,7 @@
 
 ## 다음에 할 일
 
-1. 내장 임시 원본 정리 확인(위 표 첫 줄). 남았으면 `tmp/run3d-qa/clean.sh` 실행.
+1. (끝남) 생성 그림 7장의 내장 임시 원본은 모두 지웠다. `gpt-image.sh -l`에 이 프로젝트 경로가 없는 것을 확인했다.
 2. 사용자가 화면을 보고 주는 수정 요청 반영. 고친 뒤 순서: `npm run check` → `npm test` → 4336 미리보기(`.claude/launch.json`의 `water-run3d`)에 `qa.mjs` → 커밋·푸시 → `git archive` 빌드 → `pages deploy dist --project-name water-state-lab --branch main --commit-hash <해시>` → 운영 주소에 `qa.mjs`.
 3. 계획 목록 중 안 만든 그림: 변신 순간, 기뻐하기, 밸브 소품, 시작 카드. 지금은 코드 연출과 기본 도형이다. 필요하다는 요청이 있을 때만.
 4. 실기기 확인 결과가 오면 계획 문서의 「확인하지 못한 것」을 갱신.
@@ -75,7 +74,6 @@
 06번 「방울이의 물길 탐험」(/Volumes/T7 Shield/iscreammedia_sc34/6 waterchange) 변신 모험 3D 달리기 스테이지를 이어서 작업해 줘.
 먼저 HANDOFF.md 맨 위 「작업 기록 — 2026-11-17」과 docs/RUN-STAGE-3D-PLAN-20261117.md 끝의 「계획 확정」「구현 결과」「화면 고도화」를 읽어.
 현재 운영은 커밋 8272213, Cloudflare Pages 8ecbddbd야. 판정(adventureMove)과 저장(dropAdventure)은 건드리지 마.
-시작할 때 gpt-image.sh -l 로 이 프로젝트의 내장 임시 원본이 남았는지 보고, 남았으면 tmp/run3d-qa/clean.sh 로 정리해 줘.
 그다음 할 일: (여기에 요청을 적는다)
 ```
 
