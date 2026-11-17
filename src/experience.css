@@ -1,5 +1,5 @@
 /* Classroom pass: larger reading text, compact content, a stable bottom action. */
-:root{--font-size-body:clamp(20px,1.45vw,27px);--font-size-title:clamp(28px,2.3vw,42px);--modal-max-width:960px;--control-width:300px;--guide-height:96px}
+:root{--modal-max-width:960px;--control-width:300px;--guide-height:96px}
 body{line-break:strict}h1,h2,h3{text-wrap:balance}button{word-break:keep-all;line-height:1.25}
 .experiment-heading .quest-brief>.eyebrow{display:none}.experiment-heading h1{padding:4px 0}
 .activity-progress li{font-size:clamp(16px,1.2vw,21px)}.activity-progress li.next{border-width:2px;background:#ffe6a0;font-weight:700}

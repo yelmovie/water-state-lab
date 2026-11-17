@@ -11,7 +11,7 @@
   --shadow-soft:0 4px 12px #224b3e16; --shadow-card:0 5px 0 #4b62472b,0 10px 24px #2c4f4214;
   --shadow-button:0 4px 0 var(--color-primary-edge),inset 0 1px #ffffff55; --shadow-popover:0 24px 70px #183f4059;
   --button-height-md:48px; --button-height-lg:56px; --button-gap:var(--space-sm);
-  --font-size-caption:16px; --font-size-body:18px; --font-size-title:clamp(26px,2.3vw,34px);
+  --font-size-caption:18px; --font-size-body:clamp(20px,1.45vw,27px); --font-size-title:clamp(28px,2.3vw,42px);
   --header-height:56px; --panel-padding:16px; --control-width:268px; --guide-height:88px;
   --content-max-width:1700px; --modal-max-width:820px;
   /* Compatibility aliases for existing science widgets. */
