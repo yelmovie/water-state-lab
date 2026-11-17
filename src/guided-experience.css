@@ -468,6 +468,8 @@
 .stage-answer-group :is(button,.btn){min-height:52px;padding:8px 18px;font-size:clamp(18px,1.4vw,24px)}
 @media(max-height:520px){.stage-question-pop{max-width:42vw;font-size:16px;padding:4px 10px 4px 6px}.stage-answer-group :is(button,.btn){min-height:44px;padding:4px 10px;font-size:16px}}
 .guided-shell .manual-tools .guided-question-panel.show-in-manual{display:block!important}
+/* 3-second rule: the title bar already shows the question, so the answer card keeps only the choices and the clue. */
+#app .guided-shell .guided-question-panel>h2{position:absolute;width:1px;height:1px;margin:0;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .prediction-chosen{display:flex;align-items:center;gap:10px;padding:6px 10px;border:2px dashed #2f7f73;border-radius:12px;background:#f2fbf6;font:clamp(17px,1.3vw,21px)/1.2 var(--font-display);color:#24433f}
 .prediction-chosen b{font-weight:400;color:#9a5a00}
 .prediction-chosen .btn{min-height:44px;padding:4px 12px;font-size:16px}
@@ -592,7 +594,7 @@
 }
 
 /* The greenhouse uses the available height for observing water and its collection. */
-#field-greenhouse .cycle-scene{grid-template-columns:minmax(0,1fr) minmax(140px,20%) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:8px}
+#field-greenhouse .cycle-scene{grid-template-columns:minmax(0,1fr) 4px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:8px}
 #field-greenhouse .cycle-source-panel{grid-column:1;grid-row:1}
 #field-greenhouse .cycle-collector-panel{grid-column:3;grid-row:1}
 #field-greenhouse .cycle-scene article{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:4px;padding:12px 12px 8px;border:1px solid #b9cdc5;border-radius:14px;background:#fffef7;justify-content:stretch;align-items:stretch}
@@ -614,7 +616,7 @@
 #field-greenhouse[aria-busy="true"] .cycle-collector-panel{border-color:#6c9d96}
 #field-greenhouse .btn:focus-visible{outline:3px solid #366e68;outline-offset:3px}
 @media(max-width:900px){
- #field-greenhouse .cycle-scene{grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);gap:6px}
+ #field-greenhouse .cycle-scene{grid-template-columns:minmax(0,1fr) 4px minmax(0,1fr);gap:6px}
  #field-greenhouse .cycle-scene article{padding:8px 6px}
  #field-greenhouse .cycle-scene h3{font-size:19px}
  #field-greenhouse .cycle-scene article>b{font-size:22px}

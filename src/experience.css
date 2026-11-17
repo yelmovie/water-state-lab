@@ -846,7 +846,7 @@ button.village-slot{cursor:pointer}
 .fieldwork-activity .activity-stage-caption:has(.field-help-btn){display:flex!important}
 
 /* A single transformation with a visible before and after, followed by the next task. */
-.field-transform{display:grid;gap:clamp(8px,1.3vh,16px);align-content:start;height:100%;overflow:auto;overscroll-behavior:contain;padding:clamp(12px,2vw,24px);border:2px solid #cbb682;border-radius:var(--radius-md);background:#fff9eaf5;box-shadow:var(--shadow-card);color:#244f51}
+.field-transform{display:grid;gap:clamp(8px,1.3vh,16px);align-content:start;height:100%;overflow:auto;overscroll-behavior:contain;padding:clamp(12px,2vw,24px);border:2px solid #cbb682;border-radius:var(--radius-md);background:#fff9ea99;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:var(--shadow-card);color:#244f51}
 .transform-top,.transform-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .transform-top .field-help-btn{min-height:44px}
 .transform-progress{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0;padding:0;list-style:none;color:#3c6258;font-size:clamp(13px,1.5vw,17px)}

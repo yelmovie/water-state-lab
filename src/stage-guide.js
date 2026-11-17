@@ -163,7 +163,6 @@ export function pinQuestion(root){
  while(group&&!answers.every(b=>group.contains(b)))group=group.parentElement;
  // A canvas stage draws over its first row, leaving an empty frame; the title bar already shows this question.
  if(!group||group===main||group.matches('.phaser-stage,.workspace-stage,.workspace-controls,.time-magic'))return;
- // The question becomes the first row of the answer group, so it sits on top of the answers in any layout.
- group.classList.add('stage-answer-group');group.classList.toggle('qa-wrap',getComputedStyle(group).display.includes('flex'));
- group.insertAdjacentHTML('afterbegin',`<div class="stage-question-pop" role="note"><b>❓ 문제</b><span>${esc(text)}</span></div>`);
+ // The title bar is the one place for the question; the answer group is only marked, never given a second copy.
+ group.classList.add('stage-answer-group');
 }

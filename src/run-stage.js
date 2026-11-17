@@ -22,14 +22,13 @@ export function runStageView(state,header,{phaseDescriptions}){
   <div class="run-labels" aria-hidden="true"></div>
   <header class="run-top"><div class="run-title"><small>자유 탐험 · 변신 모험 ${s.chapter+1} / ${expeditions.length}</small><h1>${esc(mission.title)}</h1></div>
    <div class="run-status"><span class="drop-phase-label phase-${s.phase}" data-run-phase>${phaseName[s.phase]} <span>${phaseDescriptions[s.phase]}</span></span><span class="drop-progress" data-run-progress>${s.gate} / ${mission.gates.length} 통과</span></div></header>
-  <div class="run-links">${btn('다시 도전','drop-retry','secondary')}${btn('기존 방식으로 하기','drop-mode-2d','secondary')}</div>
-  <details class="run-science drop-science"><summary>게임과 실제 과학</summary><p>${SCIENCE}</p></details>
+  <details class="run-more"><summary>더 보기</summary><div class="run-links">${btn('다시 도전','drop-retry','secondary')}${btn('기존 방식으로 하기','drop-mode-2d','secondary')}</div><div class="run-science"><b>게임과 실제 과학</b><p>${SCIENCE}</p></div></details>
   <p class="run-message" role="status" aria-live="polite" data-run-message>${esc(s.message)}</p>
   <div class="run-pad" role="group" aria-label="방울이 이동">${arrow('up','안쪽으로 이동','▲')}${arrow('left','왼쪽으로 이동','◀')}${arrow('right','오른쪽으로 달리기','▶')}${arrow('down','앞쪽으로 이동','▼')}</div>
   <div class="run-actions"><div class="run-energy"><span>열 빼앗기</span><meter min="-2" max="2" value="${s.heat}" aria-label="열 조절 단계" data-run-heat></meter><span>열 주기</span></div>
    <button type="button" class="run-act" data-run-act disabled aria-label="열판이나 냉각판 위에 서면 쓸 수 있어">열 조절</button>
    <button type="button" class="run-jump" data-run-jump aria-label="점프">점프</button></div>
-  <section class="run-card" data-run-card aria-live="polite"><h2>${esc(mission.title)}</h2><p data-run-loading>3D 물길을 여는 중…</p></section>
+  <section class="run-card" data-run-card aria-live="polite" aria-label="조작 방법"><p data-run-loading>3D 물길을 여는 중…</p></section>
   <section class="run-hint" data-run-hint hidden></section>
   <section class="run-done" data-run-done hidden></section>
  </main></div>`;
@@ -226,7 +225,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   hud.hint.querySelector('[data-run-continue]').focus({preventScroll:true});
  }
  function ready(){
-  hud.card.innerHTML=`<h2>${esc(mission.title)}</h2><ul><li>방향 버튼이나 방향키·WASD로 달리고, 점프 버튼이나 스페이스로 턱과 틈을 넘어.</li><li>주황색 열판이나 파란 냉각판 위에 서서 버튼을 두 번 누르면 방울이의 모습이 바뀌어.</li><li>모습이 맞으면 장치를 타고 다음 길로 건너가. 떨어져도 바로 앞에서 다시 시작해.</li></ul><button type="button" class="btn primary" data-run-go>출발!</button>`;
+  hud.card.innerHTML=`<ul><li>방향 버튼이나 방향키·WASD로 달리고, 점프 버튼이나 스페이스로 턱과 틈을 넘어.</li><li>주황색 열판이나 파란 냉각판 위에 서서 버튼을 두 번 누르면 방울이의 모습이 바뀌어.</li><li>모습이 맞으면 장치를 타고 다음 길로 건너가. 떨어져도 바로 앞에서 다시 시작해.</li></ul><button type="button" class="btn primary" data-run-go>출발!</button>`;
   hud.card.querySelector('[data-run-go]').focus({preventScroll:true});
  }
  function go(){waiting=false;hud.card.hidden=true;}
