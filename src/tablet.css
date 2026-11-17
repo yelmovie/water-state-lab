@@ -20,6 +20,8 @@
   --muted:var(--color-text-sub); --line:var(--color-border-soft);
   --inquiry-surface:var(--color-surface); --inquiry-ink:var(--color-text-main);
 }
+/* Popup scrim: one value for every dialog (concept films keep their own darker film backdrop). */
+:root,::backdrop{--scrim:#153c3a47}
 html{color-scheme:light}
 body{margin:0;color:var(--color-text-main);font:var(--font-size-body)/1.5 var(--font-body);background:var(--color-bg);word-break:keep-all;overflow-wrap:break-word}
 button,input,select{font:inherit}button{touch-action:manipulation}
@@ -124,7 +126,7 @@ select,input[type='text']{min-height:48px;border:2px solid #b6bba2;border-radius
 .design-comparison{flex:1;min-height:0}.design-comparison svg{height:200px}
 /* Evidence and earned tools remain after the celebration. */
 dialog{width:min(var(--modal-max-width),94vw);max-height:90dvh;padding:var(--space-lg);border:2px solid #b9a16a;border-radius:var(--radius-lg);background:var(--color-panel);color:var(--color-text-main);box-shadow:var(--shadow-popover)}
-dialog::backdrop{background:#143a3bb8;backdrop-filter:blur(4px)}.dialog-head{border-bottom:1px solid var(--color-border-soft);margin-bottom:var(--space-md);padding-bottom:var(--space-md)}.dialog-head h2{font-size:28px;line-height:1.2;margin:0}.dialog-head .icon-btn{min-height:48px;min-width:48px}
+dialog::backdrop{background:var(--scrim);backdrop-filter:blur(4px)}.dialog-head{border-bottom:1px solid var(--color-border-soft);margin-bottom:var(--space-md);padding-bottom:var(--space-md)}.dialog-head h2{font-size:28px;line-height:1.2;margin:0}.dialog-head .icon-btn{min-height:48px;min-width:48px}
 .reward-modal{text-align:center;padding:0}.reward-modal h3{font-size:32px;margin:8px 0;color:#275f4c}.reward-modal p{font-size:18px;line-height:1.5}.reward-modal .btn{min-height:56px;font-size:21px}
 .reward-reveal{position:relative;padding:var(--space-md);text-align:center;border:2px solid #c2a159;border-radius:var(--radius-md);background:#fff3c7;animation:reward-stamp 420ms cubic-bezier(.2,.9,.3,1.15) both}.reward-reveal>img{width:min(100%,240px);height:190px;object-fit:contain;filter:drop-shadow(0 7px 6px #73512b26)}.reward-reveal .prop-art{width:148px;height:148px}.reward-reveal h3{font-size:30px;margin:8px 0}.reward-reveal p{font-size:18px}
 .ending-main{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);max-width:1280px;margin:auto;padding:28px 32px;gap:36px;align-items:center}.ending-illustration{display:grid;gap:16px;min-height:0;padding:0;overflow:visible}.ending-illustration .ending-art-card{margin:0;background:#fff8dfcc}.ending-illustration .ending-art-card>img{width:min(100%,430px);height:390px;object-fit:contain}.ending-art-card figcaption{font-size:20px;color:var(--color-ink);padding:8px}.ending-copy h1{font-size:34px;line-height:1.3;margin:12px 0}.ending-copy>p{font-size:18px}.ending-statement{display:grid;gap:8px;margin-top:20px}.ending-statement h3{font-size:22px}.ending-statement .btn{width:100%;font-size:18px}.ending-copy .home-actions{margin-top:16px;gap:8px}.ending-stats{margin-top:0}.ending-stats strong{font-size:26px}.classroom-making{margin-top:16px}

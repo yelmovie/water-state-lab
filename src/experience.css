@@ -25,7 +25,7 @@ body{line-break:strict}h1,h2,h3{text-wrap:balance}button{word-break:keep-all;lin
 .fieldwork-activity .challenge-status{display:block}.fieldwork-activity .activity-science{font-size:16px}.fieldwork-activity .activity-tools .eyebrow{display:none}.fieldwork-activity .activity-tools h3{font-size:25px}.fieldwork-activity .challenge-goal{padding:4px 0;margin:0}
 .expedition-choices label,.expedition-choices select{font-size:20px}.expedition-choices .btn{margin:4px 0}
 dialog{position:fixed;inset:0;margin:auto;max-height:calc(100dvh - 48px);box-sizing:border-box;line-height:1.5}
-dialog::backdrop{background:#153c3ab3;backdrop-filter:none}
+dialog::backdrop{background:var(--scrim);backdrop-filter:none}
 .app-dialog{padding:0;width:min(var(--modal-max-width),calc(100vw - 48px));overflow:hidden}
 .app-dialog[open]{display:flex;flex-direction:column}.dialog-head{flex:none;padding:20px 24px;margin:0;gap:16px;background:#f5ecd5}.dialog-head h2{font-size:clamp(28px,2vw,36px);line-height:1.2}.dialog-head .icon-btn{flex:none;width:52px;height:52px}
 .dialog-body{overflow:auto;overscroll-behavior:contain;min-height:0;padding:24px;scrollbar-width:thin}.dialog-body p,.dialog-body li{font-size:22px;line-height:1.5}.dialog-body h3{font-size:28px}.dialog-body small{font-size:17px}.dialog-body .btn{font-size:22px;min-height:56px}.dialog-body .reward-proof{font-size:20px}
