@@ -65,13 +65,12 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
  const waterY=course.minY-2.4;
 
  // Path: plain boxes with a repeating stone top. Piers reach down into the water so nothing floats.
- const paving=(base,line,dark)=>tiled(painted(128,128,(g,w,h)=>{g.fillStyle=base;g.fillRect(0,0,w,h);g.fillStyle=dark;for(let i=0;i<26;i++)g.fillRect((i*53)%w,(i*31)%h,5,3);g.strokeStyle=line;g.lineWidth=4;g.strokeRect(2,2,w-4,h-4);g.beginPath();g.moveTo(w/2,2);g.lineTo(w/2,h/2);g.moveTo(2,h/2);g.lineTo(w-2,h/2);g.moveTo(w/4,h/2);g.lineTo(w/4,h-2);g.moveTo(w*3/4,h/2);g.lineTo(w*3/4,h-2);g.stroke();}));
- const stoneTop=paving('#e8e2cf','#b9b29a','#d9d2bb'),stoneSide=paving('#c9c4b4','#9a957f','#b8b3a1');
- const topMat=new THREE.MeshLambertMaterial({map:stoneTop}),sideMat=new THREE.MeshLambertMaterial({map:stoneSide}),stepMat=new THREE.MeshLambertMaterial({map:stoneTop,color:0xe9d9b4}),bridgeMat=new THREE.MeshLambertMaterial({map:stoneSide,color:0xd9b98a});
+ const stoneTop=tiled(picture('/assets/run-stage/path-tile.webp')),stoneSide=tiled(picture('/assets/run-stage/pier-tile.webp'));
+ const topMat=new THREE.MeshLambertMaterial({map:stoneTop}),sideMat=new THREE.MeshLambertMaterial({map:stoneSide}),stepMat=new THREE.MeshLambertMaterial({map:stoneTop,color:0xf3d7a8}),bridgeMat=new THREE.MeshLambertMaterial({map:stoneTop,color:0xc9965f});
  function block(x0,x1,y0,y1,z0,z1,top=topMat,side=sideMat){
   const w=x1-x0,h=y1-y0,d=z1-z0,geo=new THREE.BoxGeometry(w,h,d),uv=geo.attributes.uv;
-  // Face order: +x,-x,+y,-y,+z,-z. Repeat the tile every two units instead of stretching it.
-  for(let i=0;i<24;i++){const face=i>>2,u=face<2?d:w,v=face===2||face===3?d:h;uv.setXY(i,uv.getX(i)*u/2,uv.getY(i)*v/2);}
+  // Face order: +x,-x,+y,-y,+z,-z. Repeat the tile every three units instead of stretching it.
+  for(let i=0;i<24;i++){const face=i>>2,u=face<2?d:w,v=face===2||face===3?d:h;uv.setXY(i,uv.getX(i)*u/3,uv.getY(i)*v/3);}
   const mesh=new THREE.Mesh(geo,[side,side,top,side,side,side]);mesh.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);scene.add(mesh);return mesh;
  }
  for(const b of course.boxes){
@@ -89,26 +88,20 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
  backdrop.position.set(0,waterY+8.8,-78);scene.add(backdrop);
 
  // Labels are HTML placed over the 3D points, so Korean text and names stay crisp.
- const labels=[],point=new THREE.Vector3();
+ const labels=[],point=new THREE.Vector3(),vaporAt={x:-999,y:-999,w:0,h:0};
  function label(html,x,y,z,cls=''){const el=document.createElement('div');el.className='run-label '+cls;el.innerHTML=html;labelLayer.append(el);const item={el,pos:new THREE.Vector3(x,y,z)};labels.push(item);return item;}
  function standing(url,w,h,x,y,z){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:picture(url),transparent:true,alphaTest:.08}));mesh.position.set(x,y,z);scene.add(mesh);return mesh;}
 
  // Plates and valve: drawn in code so the warm and cold colours stay consistent.
- const plate=(base,line,cold)=>painted(256,256,(g,w,h)=>{
-  g.fillStyle=base;g.fillRect(0,0,w,h);g.strokeStyle=line;g.lineWidth=14;g.strokeRect(14,14,w-28,h-28);g.lineWidth=9;g.lineCap='round';
-  if(cold){g.translate(w/2,h/2);for(let i=0;i<6;i++){g.rotate(Math.PI/3);g.beginPath();g.moveTo(0,0);g.lineTo(0,-78);g.moveTo(0,-48);g.lineTo(-18,-66);g.moveTo(0,-48);g.lineTo(18,-66);g.stroke();}}
-  else for(let i=0;i<3;i++){const x=78+i*50;g.beginPath();g.moveTo(x,196);g.bezierCurveTo(x-34,150,x+34,112,x,62);g.stroke();}
- });
- const plateMats={heat:new THREE.MeshLambertMaterial({map:plate('#ffb45e','#b4501c',false),emissive:0xff7a1a,emissiveIntensity:.12}),cool:new THREE.MeshLambertMaterial({map:plate('#9fdcf8','#2a6f9c',true),emissive:0x38b6ff,emissiveIntensity:.12})};
- const plateGeo=new THREE.BoxGeometry(RUN.padHalf*2,.12,RUN.padHalf*2),parts=[];
+ const plateMats={heat:new THREE.MeshLambertMaterial({map:picture('/assets/run-stage/heat-plate.webp'),transparent:true,alphaTest:.4,emissive:0xff7a1a,emissiveIntensity:.1}),cool:new THREE.MeshLambertMaterial({map:picture('/assets/run-stage/cool-plate.webp'),transparent:true,alphaTest:.4,emissive:0x38b6ff,emissiveIntensity:.1})};
+ const plateGeo=new THREE.PlaneGeometry(RUN.padHalf*2,RUN.padHalf*2).rotateX(-Math.PI/2),parts=[];
  const brass=new THREE.MeshLambertMaterial({color:0xc6a35a}),red=new THREE.MeshLambertMaterial({color:0xd8503c}),glass=new THREE.MeshLambertMaterial({color:0xdaf3f7,transparent:true,opacity:.45,depthWrite:false}),pipeWater=new THREE.MeshLambertMaterial({color:0x2f9ed6});
- const curtainColours={channel:0x3fb7d6,cooling:0x8fd6f2,air:0xf2c36b,condenser:0x9fb9c9};
  for(const seg of course.segments){
   const gate=seg.gate,device=devices[gate.scene],mid=seg.gateX+RUN.deviceSpan/2,part={seg};parts.push(part);
   for(const kind of ['heat','cool']){
    const p=seg.pads[kind],mesh=new THREE.Mesh(plateGeo,plateMats[kind].clone());mesh.material.map=plateMats[kind].map;
-   mesh.position.set(p.x,seg.level+.06,p.z);scene.add(mesh);part[kind]=mesh;
-   label(kind==='heat'?'열판':'냉각판',p.x,seg.level+.25,p.z+(kind==='heat'?-1.25:1.2),'run-label-'+kind);
+   mesh.position.set(p.x,seg.level+.03,p.z);scene.add(mesh);part[kind]=mesh;
+   part[kind+'Label']=label(kind==='heat'?'열판':'냉각판',p.x,seg.level+.25,p.z+(kind==='heat'?-1.25:1.2),'run-label-'+kind);
   }
   if(seg.valve){
    const v=seg.valve,post=new THREE.Mesh(new THREE.CylinderGeometry(.11,.15,1.1,10),brass);post.position.set(v.x,seg.level+.55,v.z);
@@ -120,34 +113,75 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
    part.valveLabel=label('',v.x+.4,seg.level+1.75,v.z,'run-label-valve');
   }
   // The device stands in the break of the path. Reaching it asks the model; the ride across is the game's picture of passing.
-  const curtain=new THREE.Mesh(new THREE.BoxGeometry(.5,2.4,RUN.halfZ*2),new THREE.MeshLambertMaterial({color:curtainColours[gate.scene],transparent:true,opacity:.42,depthWrite:false}));
-  curtain.position.set(seg.gateX+.25,seg.level+1.2,0);scene.add(curtain);part.curtain=curtain;
-  const span=RUN.deviceSpan,low=Math.min(seg.level,seg.exit.y);
-  if(gate.scene==='channel')standing(art+device.image+'.webp',span+1,(span+1)/3,mid,seg.level-.42,-.35);
-  if(gate.scene==='cooling')standing(art+device.image+'.webp',4.6,4.6,mid,seg.level+.35,-.35);
-  if(gate.scene==='air'){
-   standing(art+device.image+'.webp',3.3,2.2,seg.gateX+1.9,seg.level+.35,-.35);
-   const dot=new THREE.SphereGeometry(.09,8,6),dotMat=new THREE.MeshBasicMaterial({color:0x5c8f97});
-   for(let i=1;i<12;i++){const p=transitPoint(seg,{x:seg.gateX-.4,y:seg.level,z:0},i/12),m=new THREE.Mesh(dot,dotMat);m.position.set(p.x,p.y+.7,p.z);scene.add(m);}
+  // A closed gate is a brass railing at the end of the path; it opens when the model lets the runner through.
+  const fence=new THREE.Group(),postGeo=new THREE.CylinderGeometry(.09,.11,.95,10),railGeo=new THREE.BoxGeometry(.09,.09,RUN.halfZ*2-.3);
+  for(const z of [-RUN.halfZ+.15,0,RUN.halfZ-.15]){const post=new THREE.Mesh(postGeo,brass);post.position.set(0,.475,z);fence.add(post);}
+  for(const y of [.45,.85]){const rail=new THREE.Mesh(railGeo,brass);rail.position.set(0,y,0);fence.add(rail);}
+  fence.position.set(seg.gateX-.08,seg.level,0);scene.add(fence);part.fence=fence;
+  // Each device stands on its own pier in the break of the path. The numbers come from where the feet are in each picture.
+  const span=RUN.deviceSpan,low=Math.min(seg.level,seg.exit.y),url=art+device.image+'.webp';
+  let pier=low-.45;
+  if(gate.scene==='channel'){
+   // Water line of the trough meets the path; the front wall is drawn again in front so the water form lies inside.
+   const w=span+1,h=w/3,y=seg.level-.27;pier=seg.level-1.07;
+   standing(url,w,h,mid,y,-.35);
+   const stream=new THREE.Mesh(new THREE.PlaneGeometry(w*.93,h*.1),new THREE.MeshBasicMaterial({color:0x6fdcec,transparent:true,opacity:.6}));stream.position.set(mid,y+h*.07,-.3);scene.add(stream);
+   const front=new THREE.Mesh(new THREE.PlaneGeometry(w,h*.5),new THREE.MeshBasicMaterial({map:picture(url),transparent:true,alphaTest:.08}));
+   front.material.map.repeat.set(1,.5);front.position.set(mid,y-h*.25,.3);scene.add(front);
   }
-  if(gate.scene==='condenser')standing(art+device.image+'.webp',4.4,4.02,mid+.2,low+1.6,-.35);
-  block(seg.gateX+.6,seg.gateX+span-.6,waterY-.6,low-(gate.scene==='channel'?1.1:gate.scene==='cooling'?1.35:.4),-1.2,1.2,sideMat,sideMat);
-  part.gateLabel=label('',mid,Math.max(seg.level,seg.exit.y)+(gate.scene==='cooling'?3.1:gate.scene==='condenser'?3.9:2.5),0,'run-label-gate');
+  if(gate.scene==='cooling'){pier=seg.level-.92;standing(url,4.6,4.6,mid,seg.level+.34,-.35);}
+  if(gate.scene==='air'){
+   standing(url,2.7,1.8,seg.gateX+1.75,seg.level+.35,-.35);
+   const dot=new THREE.SphereGeometry(.09,8,6),dotMat=new THREE.MeshBasicMaterial({color:0x5c8f97});
+   for(let i=2;i<12;i++){const p=transitPoint(seg,{x:seg.gateX-RUN.halfW,y:seg.level,z:0},i/12),m=new THREE.Mesh(dot,dotMat);m.position.set(p.x,p.y+.7,-.2);scene.add(m);}
+  }
+  if(gate.scene==='condenser'){pier=low-.25;standing(url,4.4,4.02,mid+.15,low+1.41,-.35);}
+  block(seg.gateX+.5,seg.gateX+span-.5,waterY-.6,pier,-1.3,1.3,sideMat,sideMat);
+  part.gateLabel=label('',mid,Math.max(seg.level,seg.exit.y)+(gate.scene==='cooling'?3.1:gate.scene==='condenser'?3.9:2.5),0,'run-label-gate');part.gateLabel.gate=true;
  }
- const pool=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.7,.3,24),new THREE.MeshLambertMaterial({color:0x3aa7a0}));pool.position.set(course.finish.x+4.6,course.finish.y+.15,0);
- const poolWater=new THREE.Mesh(new THREE.CylinderGeometry(1.25,1.25,.06,24),new THREE.MeshLambertMaterial({color:0x58c9ea,emissive:0x1f8fb3,emissiveIntensity:.3}));poolWater.position.set(course.finish.x+4.6,course.finish.y+.31,0);
- scene.add(pool,poolWater);label('물길 도착',course.finish.x+4.6,course.finish.y+1.5,0,'run-label-goal');
+ // Decoration: small standing pictures. They sit behind the walking lanes or out on the sea, never in the runner's way.
+ const decorMaps={},decorSize={bush:[1.2,1],reeds:[1.55,1.78],lantern:[.62,1.5],fountain:[2.5,2.4],planter:[.75,1.1],islet:[5.6,5.8],boat:[2.5,2.65],buoy:[1.25,1.7],lilies:[2.6,1.7]},floating=[];
+ function decor(name,x,y,z,{scale=1,flat=false,bob=0,drift=0}={}){
+  const map=decorMaps[name]??=picture(`/assets/run-stage/decor-${name}.webp`),[w,h]=decorSize[name];
+  const geo=new THREE.PlaneGeometry(w*scale,h*scale);if(flat)geo.rotateX(-Math.PI/2);else geo.translate(0,h*scale/2,0);
+  const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map,transparent:true,alphaTest:.35}));mesh.position.set(x,y,z);scene.add(mesh);
+  if(bob||drift)floating.push({mesh,x,y,bob,drift,phase:x*.7});
+  return mesh;
+ }
+ const lamps=[];
+ for(const seg of course.segments){lamps.push({x:seg.checkpoint.x-.95,mesh:decor('lantern',seg.checkpoint.x-.95,seg.level,-2.72)});}
+ lamps.push({x:course.finish.x-.95,mesh:decor('lantern',course.finish.x-.95,course.finish.y,-2.72)});
+ const busy=x=>lamps.some(l=>Math.abs(x-l.x)<1.1)||course.segments.some(g=>Math.abs(x-g.pads.heat.x)<2.1||g.valve&&Math.abs(x-g.valve.x)<2.3||x>g.gateX-2.2&&x<g.gateX+.2)||course.boxes.some(b=>(b.kind==='step')&&x>b.x0-.7&&x<b.x1+.7)||course.moles.some(m=>Math.abs(x-m.x)<1.2);
+ let planted=0;
+ for(const b of course.boxes){
+  if(b.kind!=='floor')continue;
+  for(let x=b.x0+1.1;x<b.x1-.9;x+=2.9){if(busy(x)||Math.abs(x-(course.finish.x+4.6))<2.2)continue;decor(planted++%3===1?'planter':'bush',x,b.y1,-2.68,{scale:planted%2?.95:1.1});}
+  if(b.x1-b.x0>4)decor('reeds',b.x0+(b.x1-b.x0)*.35,waterY-.12,-3.55,{bob:.03});
+ }
+ decor('fountain',course.finish.x+4.6,course.finish.y,-1.5);
+ for(let x=-14,i=0;x<course.length+30;x+=17,i++){
+  // Nothing floats right behind a device, where it would look as if it sat on it.
+  const clear=at=>!course.segments.some(g=>at>g.gateX-2.5&&at<g.gateX+RUN.deviceSpan+2.5);
+  if(clear(x+5))decor('lilies',x+5,waterY+.04,-9-(i%3)*2.5,{flat:true,bob:.02});
+  if(i%2===0&&clear(x+9))decor('buoy',x+9,waterY-.18,-18,{bob:.14});
+  if(i%3===1)decor('boat',x,waterY-.2,-24,{bob:.1,drift:1.6});
+  if(i%2===1)decor('islet',x+3,waterY-.5,-30-(i%4)*5,{scale:1.25});
+ }
+ label('물길 도착',course.finish.x+4.6,course.finish.y+2.75,-1.5,'run-label-goal');
 
  // Runner: an upright picture for ice and water. Vapour is invisible, so only a dashed position ring is shown.
  const ringTexture=painted(256,256,(g,w,h)=>{g.setLineDash([22,16]);g.lineWidth=9;g.strokeStyle='#2f5f6b';g.fillStyle='rgba(249,255,255,.28)';g.beginPath();g.ellipse(w/2,h/2,112,98,0,0,Math.PI*2);g.fill();g.stroke();});
- const sheets={ice:{map:picture(art+'ice.webp'),frames:1},water:{map:picture(art+'water.webp'),frames:1}};
+ // Six frames per form, bottoms on one line: the run cycle on the ground, one held frame in the air.
+ const sheets={ice:{map:picture('/assets/run-stage/ice-run.webp'),frames:6,air:3,rest:5},water:{map:picture('/assets/run-stage/water-run.webp'),frames:6,air:2,rest:5}};
  const forms={ice:new THREE.SpriteMaterial({map:sheets.ice.map,transparent:true,alphaTest:.05}),water:new THREE.SpriteMaterial({map:sheets.water.map,transparent:true,alphaTest:.05}),vapor:new THREE.SpriteMaterial({map:ringTexture,transparent:true,depthWrite:false})};
  disposers.push(()=>{for(const form of Object.values(forms)){form.map?.dispose();form.dispose();}});
- const body=new THREE.Sprite(forms[adventure.phase]);body.center.set(.5,.06);body.renderOrder=3;scene.add(body);
+ const body=new THREE.Sprite(forms[adventure.phase]);body.center.set(.5,.03);body.renderOrder=3;scene.add(body);
  const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:painted(128,128,(g,w,h)=>{const r=g.createRadialGradient(w/2,h/2,8,w/2,h/2,62);r.addColorStop(0,'rgba(255,255,255,.9)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,w,h);}),transparent:true,depthWrite:false}));
  glow.renderOrder=2;glow.visible=false;scene.add(glow);
  const shadow=new THREE.Mesh(new THREE.CircleGeometry(.55,20),new THREE.MeshBasicMaterial({map:painted(64,64,(g,w,h)=>{const r=g.createRadialGradient(w/2,h/2,2,w/2,h/2,30);r.addColorStop(0,'rgba(20,60,70,.5)');r.addColorStop(1,'rgba(20,60,70,0)');g.fillStyle=r;g.fillRect(0,0,w,h);}),transparent:true,depthWrite:false}));
  shadow.rotation.x=-Math.PI/2;shadow.renderOrder=1;scene.add(shadow);
+ const splash=new THREE.Mesh(new THREE.RingGeometry(.35,.55,24),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,depthWrite:false}));
+ splash.rotation.x=-Math.PI/2;splash.visible=false;scene.add(splash);let splashT=0,wasY=runner.y;
  const vaporLabel=label('방울이는 지금<br>수증기 상태야',0,0,0,'run-label-vapor');
  const moleSheet='/assets/v2/map-villain-mole.webp',moles=course.moles.map(mole=>{const map=picture(moleSheet);map.repeat.set(.25,.5);map.offset.set(0,.5);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map,transparent:true,alphaTest:.05}));sprite.scale.set(1.7,1.7,1);sprite.center.set(.5,.08);scene.add(sprite);return {mole,sprite,map};});
 
@@ -162,7 +196,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   body.material=forms[adventure.phase];
   for(const part of parts){
    const i=part.seg.index,gate=part.seg.gate,passed=i<adventure.gate,current=i===adventure.gate&&!adventure.done;
-   part.curtain.visible=!passed;
+   part.fence.visible=!passed;
    part.gateLabel.el.innerHTML=`<small>${passed?'✓ 통과':current?'지금 가야 할 곳':`${i+1}번째 길`}</small><b>${esc(gate.name)}</b><span>${esc(devices[gate.scene].description)}</span>`;
    part.gateLabel.el.classList.toggle('is-passed',passed);part.gateLabel.el.classList.toggle('is-current',current);
    if(part.valveLabel){part.valveLabel.el.innerHTML=adventure.space?'밸브 · 얼 자리를 남겼어':'밸브 · 배관에 물이 꽉 찼어';part.pipeWater.scale.y=adventure.space?.72:1;part.pipeWater.position.y=part.seg.level+(adventure.space?.36:.5);}
@@ -253,10 +287,11 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   if(event.type==='arrived'){falls=0;if(adventure.done)showDone();}
  }
 
- let width=0,height=0,frame=0,last=performance.now(),camX=runner.x+1.2,camY=runner.y,step=0;
+ let width=0,height=0,topSafe=130,frame=0,last=performance.now(),camX=runner.x+1.2,camY=runner.y,step=0;
  function resize(){
   width=host.clientWidth;height=host.clientHeight;if(!width||!height)return;
   renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
+  topSafe=Math.max(hud.message.getBoundingClientRect().bottom,root.querySelector('.run-top').getBoundingClientRect().bottom)-root.getBoundingClientRect().top+10;
  }
  const observer=new ResizeObserver(resize);observer.observe(host);disposers.push(()=>observer.disconnect());resize();
  function draw(dt,time){
@@ -270,16 +305,21 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   if(moving)step+=dt*11;
   const vapor=adventure.phase==='vapor';
   pop=Math.max(0,pop-dt);flash=Math.max(0,flash-dt);flinch=Math.max(0,flinch-dt);
-  const stretch=runner.transit?1:runner.grounded?1:1+Math.max(-.12,Math.min(.16,runner.vy*.012)),size=(vapor?1.75:1.5)*(1+Math.sin(pop*Math.PI*4)*.12*(pop>0?1:0));
-  // A single picture gets its run from a small hop and squash drawn here, the same for every form.
-  const hop=moving?Math.abs(Math.sin(step*.5)):0,squash=moving?1+(hop-.5)*.1:1;
-  body.position.set(runner.x,runner.y+(vapor?.25:0)+hop*.16,runner.z);body.scale.set(size/stretch/squash,size*stretch*squash*(vapor?.86:1),1);
+  const riding=runner.transit?course.segments[runner.transit.segment].gate.scene:'',flat=riding==='channel'?Math.min(1,runner.transit.t*5,(runner.transit.dur-runner.transit.t)*5):0;
+  const stretch=(runner.transit?1:runner.grounded?1:1+Math.max(-.12,Math.min(.16,runner.vy*.012)))*(1-flat*.42),size=(vapor?1.75:1.5)*(1+Math.sin(pop*Math.PI*4)*.12*(pop>0?1:0));
+  // The pictures share one baseline, so the little lift of each stride is added here, the same for every form.
+  const stride=moving?(step%6)/6:0,hop=moving?Math.max(0,Math.sin(stride*Math.PI*2-.9)):0;
+  body.position.set(runner.x,runner.y+(vapor?.25:0)+hop*.2,runner.z);body.scale.set(size/stretch,size*stretch*(vapor?.86:1),1);
   if(!vapor){
-   // A strip plays its run cycle on the ground and holds one frame in the air; a single picture just turns round.
-   const {map,frames}=sheets[adventure.phase],index=frames<2?0:runner.transit||!runner.grounded?2:moving?Math.floor(step)%frames:0,left=runner.facing<0;
+   const {map,frames,air,rest}=sheets[adventure.phase],index=flat?0:runner.transit||!runner.grounded?air:moving?Math.floor(step)%frames:rest,left=runner.facing<0;
    map.repeat.x=(left?-1:1)/frames;map.offset.x=(index+(left?1:0))/frames;
   }
   body.material.opacity=flinch>0&&Math.floor(time*16)%2?.45:1;
+  // Falling into the sea leaves a ring on the surface before the runner is put back.
+  if(wasY>waterY&&runner.y<=waterY&&!runner.transit){splash.position.set(runner.x,waterY+.03,runner.z);splashT=.6;}
+  wasY=runner.y;splashT=Math.max(0,splashT-dt);splash.visible=splashT>0;
+  if(splash.visible){splash.scale.setScalar(1+(.6-splashT)*5);splash.material.opacity=splashT/.6;}
+  body.visible=runner.y>waterY-.4||!!runner.transit;
   const ground=groundBelow(course,runner.x,runner.z,runner.y);
   shadow.visible=ground>-Infinity&&!runner.transit;
   if(shadow.visible){const lift=Math.min(1,(runner.y-ground)/3);shadow.position.set(runner.x,ground+.02,runner.z);shadow.scale.setScalar(1-lift*.45);shadow.material.opacity=1-lift*.5;}
@@ -288,10 +328,10 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   vaporLabel.el.hidden=!vapor;vaporLabel.pos.set(runner.x,runner.y+1.95,runner.z);
   const zone=paused()?null:runZone(course,runner);syncAction(zone);
   for(const part of parts){
-   for(const kind of ['heat','cool'])part[kind].material.emissiveIntensity=zone?.kind===kind&&zone.segment===part.seg.index?.55+Math.sin(time*7)*.2:.12;
+   for(const kind of ['heat','cool']){const on=zone?.kind===kind&&zone.segment===part.seg.index;part[kind].material.emissiveIntensity=on?.5+Math.sin(time*7)*.2:.1;part[kind+'Label'].el.classList.toggle('is-under',on);}
    if(part.wheel)part.wheel.rotation.z=adventure.space?1.2:0;
-   if(part.curtain.visible)part.curtain.material.opacity=.34+Math.sin(time*2.4+part.seg.index)*.08;
   }
+  for(const f of floating){f.mesh.position.y=f.y+Math.sin(time*1.3+f.phase)*f.bob;if(f.drift)f.mesh.position.x=f.x+Math.sin(time*.12+f.phase)*f.drift;}
   for(const {mole,sprite,map} of moles){const z=moleDepth(mole,runner.time),toward=Math.cos(runner.time*mole.speed/mole.range+mole.phase)>0;sprite.position.set(mole.x,mole.y,z);map.offset.x=(Math.floor(runner.time*5)%2)*.25;map.repeat.x=toward?.25:-.25;if(!toward)map.offset.x+=.25;}
   renderer.render(scene,camera);
   for(const item of labels){
@@ -299,7 +339,19 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
    point.copy(item.pos).project(camera);
    const visible=point.z<1&&Math.abs(point.x)<1.2&&Math.abs(point.y)<1.3;
    item.el.style.visibility=visible?'visible':'hidden';
-   if(visible)item.el.style.transform=`translate(${((point.x*.5+.5)*width).toFixed(1)}px,${((-point.y*.5+.5)*height).toFixed(1)}px) translate(-50%,-100%)`;
+   if(!visible)continue;
+   let x=(point.x*.5+.5)*width,y=(-point.y*.5+.5)*height;
+   // Gate names stay below the top bar and inside the screen while their device is in view.
+   if(item.gate){
+    const w=item.el.offsetWidth,h=item.el.offsetHeight;
+    // The gate ahead keeps its name below the top bar and inside the screen. A passed gate's name simply leaves with its device,
+    // and no gate name is drawn under the vapour marker's own label.
+    if(item.el.classList.contains('is-current')){x=Math.max(w/2+8,Math.min(width-w/2-8,x));y=Math.max(topSafe+h,y);}
+    const under=y-h<topSafe||vapor&&Math.abs(x-vaporAt.x)<(w+vaporAt.w)/2&&y>vaporAt.y-vaporAt.h&&y-h<vaporAt.y;
+    item.el.classList.toggle('is-under',under);
+   }
+   if(item===vaporLabel){vaporAt.x=x;vaporAt.y=y;vaporAt.w=item.el.offsetWidth;vaporAt.h=item.el.offsetHeight;}
+   item.el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-100%)`;
   }
   root.dataset.ready='true';
  }

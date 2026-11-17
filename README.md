@@ -206,6 +206,6 @@ python scripts/expedition-qa.py
 | src/run-stage-model.js | 규칙 연결(`runMove`), 코스 생성, 달리기·점프·충돌, 힌트와 화면 선택 규칙. DOM 없이 테스트한다 |
 | src/run-stage.js / run-stage.css | Three.js 무대, 세운 그림 캐릭터, 입력, 화면 겹침(안내·버튼·이름표) |
 | tests/run-stage.test.mjs | 판정 대응, 코스 구성, 물리로 탐험 5개 완주, 저장 필드 유지 |
-| public/assets/run-stage | 달리기 화면 전용 그림. 원본과 프롬프트는 `assets/source-media/run-stage-20261117/` |
+| public/assets/run-stage | 달리기 화면 전용 그림(원경, 길·벽 무늬, 열판·냉각판, 물·얼음 달리기 띠, 소품 9종). 원본은 `assets/source-media/run-stage-20261117/`, 프롬프트와 가공 방법은 계획·구현 결과 문서 |
 
 실제 태블릿 터치와 학교 기기 성능, 아이 대상 난이도는 확인하지 않았다.

@@ -80,3 +80,4 @@
  .run-hint{grid-template-columns:72px minmax(0,1fr)}.run-hint img{width:72px;height:72px}
 }
 .run-message:empty{display:none}
+.run-label.is-under{opacity:0}

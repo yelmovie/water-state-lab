@@ -166,9 +166,7 @@
 |---|---|---|---|
 | 원경 | Wide painterly background for a children's science game, soft storybook illustration: a calm turquoise sea under a bright pastel sky with gentle clouds, a distant green research island with a glass greenhouse, a wooden water wheel and small stone buildings on the horizon line, a few tiny islets far away. The lower third is only open calm sea so it can sit behind foreground platforms. Horizontal 3:2 image, low detail, hazy distance, no characters, no text, no letters, no logo. | `assets/source-media/run-stage-20261117/backdrop.png` (1536×1024, git 제외) | 수평선 둘레 1536×512를 잘라 `public/assets/run-stage/backdrop.webp` |
 
-- 만든 그림은 이 한 장이다. 직접 열어 글자·로고·인물이 없는 것을 봤고, 1280×800·1024×768·1920×1080·915×412·390×844 캡처에서 수평선이 3D 바다 끝과 맞는 것을 봤다.
-- 물 방울이 달리기 띠는 두 번 시도해 얻지 못했다. 첫 번째는 기존 그림을 참고로 붙였더니 생성 도구가 `Bad Request`로 끝났고, 두 번째는 다른 세션들이 생성 순서를 쓰고 있어 9분을 기다린 뒤 실행되지 못했다(끝 코드 75). 그래서 캐릭터는 기존 그림 `adventure-20261111/water.webp`·`ice.webp` 한 장씩에 통통 뛰는 움직임을 코드로 넣었다.
-- 계획 목록의 나머지(점프·변신·기뻐하기 띠, 열판·냉각판·밸브 소품, 바닥·배관 무늬, 온실 소품, 시작 카드)는 만들지 않았다. 열판·냉각판·밸브·바닥은 코드로 그렸고, 장치는 기존 그림 4종을 세웠다.
+- 이 첫 배포(9603468) 때 만든 그림은 원경 한 장이었고, 캐릭터는 기존 그림 한 장씩에 코드로 움직임을 넣었다. 같은 날 뒤이은 고도화에서 그림 6장을 더 만들어 입혔다. 아래 「화면 고도화」에 적었다.
 
 ### 검증
 
@@ -197,8 +195,7 @@
 
 - 실제 태블릿 터치(두 손가락 동시 누름 포함), 학교 태블릿의 프레임 수, iPad Safari
 - 아이가 직접 했을 때의 난이도와 수증기 구간 조작감
-- 성능 목표의 실측. 구성으로 보면 메시 약 60개(삼각형 수천), 픽셀 비율 1.5 상한, 그림자는 발밑 원 하나, 후처리 없음. 추가 내려받기는 `run-stage` 그림 76KB와 코드 약 45KB이고, Three.js 본체는 9·10장 3D 보기와 같은 파일을 쓴다
-- 캐릭터 달리기 띠 그림(위 「이미지」 참고)
+- 성능 목표의 실측. 구성으로 보면 메시 약 60개(삼각형 수천), 픽셀 비율 1.5 상한, 그림자는 발밑 원 하나, 후처리 없음. 추가 내려받기는 `run-stage` 그림(첫 배포 76KB, 고도화 뒤 약 560KB)과 코드 약 50KB이고, Three.js 본체는 9·10장 3D 보기와 같은 파일을 쓴다
 
 ### 커밋과 배포
 
@@ -208,3 +205,47 @@
 - 운영 주소 https://water-state-lab.pages.dev/ 에서 `src/` 전체, `index.html`, `sw.js`, `build-info.json`, `assets/run-stage/`, `assets/vendor/three/`, `assets/learning/adventure-20261111/` 103개 파일의 SHA-256이 커밋본 빌드와 같았다. 오프라인 캐시 이름은 `water-0efd64608a77`.
 - 같은 헤드리스 검사를 운영 주소에 돌려 52개 항목이 통과했다(3D로 열림, 탐험 5개 완주와 기록 저장, 대체 화면 전환 포함).
 - 이미 설치된 기기는 HTML과 코드를 온라인에서 먼저 확인하므로 연결된 상태로 다시 열면 새 화면이 뜬다. 원경 그림과 Three.js는 한가할 때 받는 목록에 있어, 다 받기 전에 인터넷이 끊기면 기존 화면으로 이어진다.
+
+## 화면 고도화 · 2026-11-17 (사용자 요청: 생성 이미지로 화면을 아기자기하게, 겹침·잘림·어색한 물리 표현 점검)
+
+### 새로 만든 그림 6장
+
+모두 `gpt-imagegen`으로 참고 그림 없이 만들었다. 원본은 `assets/source-media/run-stage-20261117/`(git 제외), 실행 파일은 `public/assets/run-stage/`다. 공통 화풍 문장은 "Soft painterly storybook illustration for a cute children's science game set on a sunny research island, pastel colours, rounded friendly shapes, gentle shading, clean edges."이고 아래 표에서는 [화풍]으로 줄였다. 전체 프롬프트는 `tmp/run3d-qa/gen.sh`에도 있다(git 제외).
+
+| 원본 | 프롬프트 | 실행 파일과 가공 |
+|---|---|---|
+| `path-tile.png` 1254² | [화풍] Seamless tileable top-down texture of warm cream sandstone paving slabs for a garden path, irregular rounded rectangular stones with thin grout lines, a few tiny moss tufts and one or two small pastel pebbles, even flat lighting with no cast shadows, no perspective, edges continue seamlessly on all four sides. Square image filled edge to edge. No text, no letters, no logo. | `path-tile.webp` 512². 채도 0.62로 낮춰 크림색으로 맞춤 |
+| `pier-tile.png` 1254² | [화풍] Seamless tileable texture of a stone quay wall seen straight on, rows of soft grey-beige stone blocks with rounded corners and thin grout lines, small patches of green moss and tiny hanging vines, even flat lighting with no cast shadows, no perspective, edges continue seamlessly on all four sides. Square image filled edge to edge. No text, no letters, no logo. | `pier-tile.webp` 512² |
+| `plates.png` 2172×724 | [화풍] Two separate square floor plates side by side seen exactly from straight above (top-down, flat, no perspective), with wide empty space between them: on the left a warm copper and orange heating plate with a glowing spiral coil and a rounded brass rim; on the right a pale blue frosty cooling plate with a white snowflake pattern and a rounded silver rim. Both plates the same size, perfectly square with rounded corners. Fully transparent background. No shadows, no text, no letters, no logo. | 좌우로 나눠 `heat-plate.webp`, `cool-plate.webp` 256² |
+| `decor-sheet.png` 1254² | [화풍] A sheet of 9 separate small game props arranged in a tidy 3 by 3 grid, each prop centred in its own cell with wide empty space around it, nothing touching or crossing into another cell, every prop seen from the side at eye level and complete from top to bottom: (1) a round green bush with pink flowers, (2) a cluster of tall reeds and cattails, (3) a small glass lantern on a short wooden post, (4) a little stone fountain with a splash of water, (5) a wooden barrel planter with a green seedling, (6) a tiny grassy rock islet with one small tree, (7) a small wooden sailboat with a white sail, (8) a red and white striped buoy with a seagull sitting on it, (9) a patch of lily pads with one pink water lily. Fully transparent background. No ground, no cast shadows, no text, no letters, no numbers, no logo, no grid lines. | 9칸으로 나눠 `decor-bush·reeds·lantern·fountain·planter·islet·boat·buoy·lilies.webp`(긴 변 320) |
+| `water-run.png` 2172×724 | Sprite sheet for a 2D children's game, glossy painterly illustration style. A cute translucent cyan water droplet slime character: soft mound-shaped body with a small curled tip on top leaning right, a shallow puddle base, two big round dark-blue eyes with white highlights, small open smiling mouth, pale blue cheek blush, a few tiny bubbles inside, white glossy highlights. One horizontal row of exactly 6 evenly spaced frames of a bouncy hop-run cycle moving to the right: squash low, stretch up, lift off, airborne, land squash, recover. The same character and same body volume in every frame, face visible and looking right-forward, bottoms resting on one shared baseline, wide equal gaps between frames, nothing overlapping or cut off. Wide 3:1 image. Fully transparent background. No ground, no shadow, no water trail, no text, no letters, no numbers, no logo, no frame borders. | `water-run.webp` 1536×256. 6칸을 찾아 같은 배율로 줄이고 발을 한 줄에 맞춤 |
+| `ice-run.png` 2172×724 | Sprite sheet for a 2D children's game, glossy painterly illustration style. A cute translucent pale-cyan ice cube character: a solid cube with slightly bevelled edges seen at a three-quarter angle, faceted icy texture, two big round dark-blue eyes with white highlights and a small open smiling mouth on the front face, a few tiny bubbles inside, white glossy highlights. One horizontal row of exactly 6 evenly spaced frames of a hopping slide cycle moving to the right: crouch tilt, push off, small hop up, airborne tilted forward, land, settle. The same rigid cube with the same size and shape in every frame (it never melts or bends), face visible, bottoms resting on one shared baseline, wide equal gaps between frames, nothing overlapping or cut off. Wide 3:1 image. Fully transparent background. No ground, no shadow, no text, no letters, no numbers, no logo, no frame borders. | `ice-run.webp` 1536×256. 위와 같음 |
+
+- 검수: 여섯 장을 직접 열어 글자·로고가 없고 소품이 칸을 넘지 않으며 프레임이 여섯 개인 것을 봤다. 투명 배경에 남은 색 부스러기는 가공에서 지웠다(흐린 픽셀, 작은 조각, 가장자리 한 줄). 바다색 바탕에 올려 테두리를 확인했다.
+- 과학 표현: 얼음은 여섯 프레임 모두 같은 크기의 단단한 육면체다. 수증기는 여전히 그림 없이 점선 원과 글자다. 열판·냉각판의 무늬는 장식이고 판정은 모형이 한다.
+- 가공 스크립트는 `tmp/run3d-qa/process.mjs`(git 제외, 5번 프로젝트의 sharp 사용). `run-stage` 폴더는 16개 파일 약 560KB다.
+
+### 화면에 입힌 것
+
+- 길 윗면과 벽면에 돌 무늬(3단위마다 반복), 열판·냉각판 그림, 물·얼음 달리기 여섯 프레임(땅에서는 달리기, 공중에서는 한 프레임, 서 있을 때 마지막 프레임).
+- 체크포인트마다 등불, 길 안쪽 가장자리에 꽃덤불과 새싹 화분, 도착 자리에 돌 분수, 받침 옆 물가에 부들, 바다에 수련·부표·돛단배·작은 섬. 소품은 걷는 줄 뒤(z −2.7)나 바다에만 두어 길을 막지 않고, 열판·밸브·턱·두더지·관문 근처와 장치 뒤 물 위는 비웠다.
+
+### 겹침·잘림·어색한 표현을 고친 것
+
+| 문제 | 고친 내용 |
+|---|---|
+| 냉각 장치와 응결판이 받침에서 떠 있고 증발 수반은 받침에 묻힘 | 그림에서 발 위치를 재서(수로 86.5%, 냉각 77.3%, 수반 94.4%, 응결판 91.3%) 받침 윗면에 정확히 올림 |
+| 관문이 반투명 벽이라 무엇인지 알기 어려움 | 길 끝의 놋쇠 난간으로 바꿈. 통과하면 사라짐 |
+| 장치를 지날 때 모두 같은 포물선으로 넘어감 | 수로는 물이 낮게 누워 흐르고 앞벽이 캐릭터를 가림, 얼음은 수조 턱을 넘어 안에 앉았다 나옴, 수증기는 올라가고, 물방울은 찬 판을 타고 컵 높이까지 내려온 뒤 건너감 |
+| 턱에 붙으면 캐릭터 옆이 턱에 잘림 | 몸 폭을 그림 폭에 맞춤(반폭 0.42 → 0.68) |
+| 바다에 빠지면 물속으로 한참 가라앉음 | 수면 바로 아래에서 되돌리고(떨어짐 깊이 7 → 3.4) 수면에 물결 고리를 남김 |
+| 판 위에 서면 판 이름표가 캐릭터와 겹침 | 그 판 위에 서 있는 동안 이름표를 숨김 |
+| 관문 이름표가 위쪽 표시줄·버튼 밑에 깔리거나 수증기 표시와 겹침 | 가야 할 관문 이름표는 표시줄 아래·화면 안에 머물고, 지난 관문 이름표는 위쪽 띠에 닿으면 숨김. 수증기 표시와 겹치면 관문 이름표를 숨김 |
+| 큰 화면(1920×1080)에서 「다시 도전」이 홈 버튼과 겹침, 세로 화면에서 위쪽 표시가 서로 겹침 | 표시줄 크기 변수를 따라 배치하고 좁은 화면은 한 줄씩 쌓음(첫 배포 전에 고친 것) |
+| 좁은 화면에서 바다 평면 끝이 보임 | 바다 평면을 넓힘 |
+
+### 검증
+
+- `npm run check` 통과, `npm test` 318개 통과(몸 폭과 궤적이 바뀐 뒤에도 탐험 5개 자동 완주 포함).
+- 헤드리스 Chrome 52개 항목을 개발 서버에서 다시 돌려 모두 통과.
+- 관문 네 종류의 통과 장면을 다섯 시점씩 찍어(`tmp/run3d-qa/gates/`) 장치와 받침, 캐릭터의 위치를 눈으로 확인했다. 1280×800 기준이며 사람이 손으로 플레이한 것은 아니다.

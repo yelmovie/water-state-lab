@@ -4,7 +4,7 @@
 import {expeditions,restoreAdventure,adventureMove} from './drop-adventure-model.js';
 
 /** Ice, water and vapour all run and jump with these same numbers. Only the gates tell the forms apart. */
-export const RUN={speed:5.6,depthSpeed:4.2,accel:40,airAccel:26,gravity:26,jump:9.6,halfW:.42,height:1.1,coyote:.1,buffer:.14,substeps:5,maxDt:.05,halfZ:3,fallDepth:7,level:3,deviceSpan:5.6,padHalf:1.1,valveReach:1.4};
+export const RUN={speed:5.6,depthSpeed:4.2,accel:40,airAccel:26,gravity:26,jump:9.6,halfW:.68,height:1.1,coyote:.1,buffer:.14,substeps:5,maxDt:.05,halfZ:3,fallDepth:3.4,level:3,deviceSpan:5.6,padHalf:1.1,valveReach:1.4};
 export const RUN_ACTIONS={heat:'warm',cool:'cool',valve:'space',gate:'move'};
 const FLOOR=1.2,EDGE=1e-4;
 
@@ -99,17 +99,20 @@ export function runZone(course,r){
  return null;
 }
 
-/** The ride through a device is a game picture of the passage the model already allowed. */
+/** The ride through a device is a game picture of the passage the model already allowed:
+ * water lies low along the channel, ice hops into the tank and out, vapour rises, drops run down the cold plate. */
 export function transitPoint(seg,from,k){
- const e=k*k*(3-2*k),to=seg.exit,scene=seg.gate.scene;
- const x=from.x+(to.x-from.x)*e,z=from.z+(to.z-from.z)*Math.min(1,e*2);
- let y=from.y+(to.y-from.y)*e+Math.sin(Math.PI*e)*.5;
- if(scene==='air')y=from.y+(to.y-from.y)*Math.min(1,e*1.7)+Math.sin(Math.PI*e)*1.1;
- if(scene==='condenser')y=from.y+(to.y-from.y)*Math.max(0,(e-.25)/.75)+Math.sin(Math.PI*e)*.4;
+ const e=k*k*(3-2*k),to=seg.exit,scene=seg.gate.scene,part=(a,b)=>Math.max(0,Math.min(1,(e-a)/(b-a))),hump=t=>Math.sin(Math.PI*t);
+ const x=from.x+(to.x-from.x)*e,z=from.z+(to.z-from.z)*Math.min(1,e*3);
+ let y=from.y+(to.y-from.y)*e;
+ if(scene==='channel')y=from.y-.1*Math.min(1,e*6,(1-e)*6);
+ if(scene==='cooling')y=e<.32?from.y-.3*part(0,.32)+1.9*hump(part(0,.32)):e<.6?from.y-.3:from.y-.3*(1-part(.6,1))+1.9*hump(part(.6,1));
+ if(scene==='air')y=from.y+(to.y-from.y)*Math.min(1,e*1.7)+hump(e)*1.1;
+ if(scene==='condenser'){const cup=to.y+1.3;y=e<.65?from.y+(cup-from.y)*part(.1,.65):cup+(to.y-cup)*part(.65,1)+.5*hump(part(.65,1));}
  return {x,y,z};
 }
 export function beginTransit(r,seg){
- r.transit={segment:seg.index,t:0,dur:rise(seg.gate)?2:1.5,from:{x:r.x,y:r.y,z:r.z}};
+ r.transit={segment:seg.index,t:0,dur:{channel:1.5,cooling:2.1,air:2,condenser:2}[seg.gate.scene],from:{x:r.x,y:r.y,z:r.z}};
  r.vx=r.vy=r.vz=0;r.grounded=false;r.stun=0;
 }
 /** Stopped at a gate: a small hop back, no penalty. */
