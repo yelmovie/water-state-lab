@@ -357,3 +357,15 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 - `npc-expressions/resident-{2,4,6,8,10}-{neutral,think,happy}.webp`는 기존 주민을 참조해 Codex image_gen으로 생성한 640×640 투명 반신 초상이다. 대사 의미에 따라 단일 이미지의 표정을 전환한다.
 - 생성 원본과 적용 검수는 외장 프로젝트 `output/npc-dialogue-expanded-20261112/`에 보관한다.
 - `audio/npc-elevenlabs/`의 23개 한국어 발화는 ElevenLabs v4의 한국어 라이브러리 음성으로 생성했다. 캐릭터별 voice ID와 원문, 생성 ID는 같은 폴더의 manifest.json에 기록했다.
+
+## 지도 두더지 등장·퇴장·모두 퇴치 효과음 · 2026-11-17
+
+과학34 공용 효과음 라이브러리(`_shared/sfx-library-20261117`, 2026-11-17 라이선스 재확인)에서 복사했다. 새로 내려받지 않았다. 세 파일 모두 원본 게시 페이지에 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)로 표시되어 있다. 라이브러리에서 앞뒤 무음 제거·페이드·음량 맞춤(목표 -18 LUFS)·모노 MP3 변환만 했고 피치·속도는 바꾸지 않았다.
+
+| 쓰임 | 배포 파일 | 원본 제목 · 제작자 · 배포처 |
+|---|---|---|
+| 공격할 수 있게 된 두더지가 처음 나타날 때(탭마다 한 번) | `audio/bubble-03.mp3` | bubble low.wav · pinto0lucas · https://freesound.org/people/pinto0lucas/sounds/422811 |
+| 3타 뒤 두더지가 물방울로 사라질 때 | `audio/bubble-01.mp3` | bubbles-03.aif · kijjaz · https://freesound.org/people/kijjaz/sounds/16738 |
+| 마지막 두더지까지 모두 물리쳤을 때(엔딩 영상이 바로 열리는 자동 관찰에서는 재생 안 함) | `audio/victory-jingle-04.mp3` | game-win.mp3 · mickleness · https://freesound.org/people/mickleness/sounds/269198 |
+
+이 날 기존 지도 효과음(물총 `splash_09.ogg`, 1·2타 `impactMetal_medium_000.ogg`, 3타 `impactPunch_heavy_000.ogg`, 반격·부딪힘 `impactSoft_heavy_000.ogg`)의 파일·빌드 포함·라이선스 기록을 다시 확인했고 바꾸지 않았다. `splash_09.ogg`는 위 '실험 효과음 · 2026-11-02' 표대로 rubberduck의 CC0 묶음 파일이다(2026-11-09 표의 'Kenney' 표기는 잘못 적은 것).

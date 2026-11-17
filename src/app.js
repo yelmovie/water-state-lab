@@ -303,6 +303,8 @@ export function render(){
     const button=document.querySelector('.journey-next [data-action="ending"]');
     if(button){button.disabled=false;button.textContent=state.finalePending?'엔딩 보기':'우리의 발견 보기';}
     if(state.settings.autoObservation===true){state.finalePending=false;go('ending');showStory('final');}
+    // The jingle follows the clear chime; skipped when the ending film and theme start right away.
+    else setTimeout(()=>{if(state.route==='map')void playCue('victory');},350);
    }
   });
   simplifyControls(route);mountCanvas(route,currentTask?.regions,revision);

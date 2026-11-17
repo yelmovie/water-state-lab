@@ -2,6 +2,8 @@ import {missions} from './domain.js';
 
 export const MAP_VILLAINS_KEY='water-state-lab:map-villains:v1';
 const sessionClears=new Set();
+// Ready villains already announced with the appear sound in this tab; map re-entry stays quiet.
+const announcedVillains=new Set();
 export const mapVillainToken=(state,id)=>state.mapRunId+JSON.stringify(state.evidence[id]||null);
 function readVillainRecord(storage,key=MAP_VILLAINS_KEY){
  try{
@@ -224,7 +226,7 @@ export function mountMapVillains(world, options) {
     later(settle,1150);
    }else{
     later(()=>{
-     burst(vx,vy-6,'steam',6);burst(vx,vy,'drop',9);b.classList.add('mv-cleaning');
+     burst(vx,vy-6,'steam',6);burst(vx,vy,'drop',9);b.classList.add('mv-cleaning');options.sound?.('exit');
      creature.animate([{transform:'scale(1)',opacity:1,filter:'brightness(1)'},{transform:'scale(1.12)',opacity:.9,filter:'brightness(1.8)',offset:.25},{transform:'translateY(-14px) scale(.15)',opacity:0,filter:'brightness(2)'}],{duration:520,easing:'ease-in',fill:'forwards'});
      fighter?.pose?.(BANGUL.relief,bangulRight);
     },900);
@@ -245,6 +247,15 @@ export function mountMapVillains(world, options) {
   world.append(b);nodes.push(b);targets.push({stage,b,creature,say,attack,where});
   if(!cleared){roamTimer=later(roam,300+index*450);later(watch,600);}
  });
+
+ // A newly attackable villain gets one quiet appear cue; returning to the map does not repeat it.
+ const fresh=targets.filter(t=>t.b.dataset.state==='ready').map(t=>t.b.dataset.stage+':'+(t.stage.token||'pending')).filter(id=>!announcedVillains.has(id));
+ const announce=()=>{
+  if(abort.signal.aborted)return;
+  if(fighting||document.hidden||document.querySelector('dialog[open]')){later(announce,1000);return;}
+  fresh.forEach(id=>announcedVillains.add(id));options.sound?.('appear');
+ };
+ if(fresh.length)later(announce,700);
 
  const cleanup=()=>{abort.abort();timers.forEach(clearTimeout);nodes.forEach(n=>n.remove());world.querySelectorAll('.mv-shot,.mv-particle').forEach(n=>n.remove());style.remove();status.remove();fighter?.pose?.(null);};
  cleanup.checkContact=()=>{

@@ -40,5 +40,37 @@
       "download": "https://opengameart.org/sites/default/files/bubbles-single2.wav",
       "edit": "single2 sample, fade, mono 44.1 kHz MP3 96 kbps"
     }
+  ],
+  "mapVillainSounds20261117": [
+    {
+      "file": "bubble-03.mp3",
+      "use": "villain appear",
+      "title": "bubble low.wav",
+      "creator": "pinto0lucas",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/pinto0lucas/sounds/422811",
+      "via": "_shared/sfx-library-20261117/sfx/bubble-03.mp3",
+      "sha256": "c50107f766cb308c787cffb1d29962a8e2dacd84e48ceacdeaf37c212f155aad"
+    },
+    {
+      "file": "bubble-01.mp3",
+      "use": "villain exit",
+      "title": "bubbles-03.aif",
+      "creator": "kijjaz",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/kijjaz/sounds/16738",
+      "via": "_shared/sfx-library-20261117/sfx/bubble-01.mp3",
+      "sha256": "d7f08fb20cc44f411849ebb56415b2a37f2c8350a8104457867d3549f2e252d3"
+    },
+    {
+      "file": "victory-jingle-04.mp3",
+      "use": "all villains cleared",
+      "title": "game-win.mp3",
+      "creator": "mickleness",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/mickleness/sounds/269198",
+      "via": "_shared/sfx-library-20261117/sfx/victory-jingle-04.mp3",
+      "sha256": "fba6037a9bb193063f21eb6b054d824a7989b3407fd061bcbd1c9541d3cf80a5"
+    }
   ]
 }
