@@ -1,5 +1,7 @@
 import {expeditions,phaseName,restoreAdventure,adventureMove} from './drop-adventure-model.js';
-import {esc,btn,icon} from './ui.js';
+import {esc,btn,icon,toast} from './ui.js';
+import {adventureMode} from './run-stage-model.js';
+import {runStageView,mountRunStage,cleanupRunStage} from './run-stage.js';
 
 const art='/assets/learning/adventure-20261111/';
 const devices={
@@ -9,6 +11,20 @@ const devices={
  condenser:{image:'condenser',description:'수증기가 물방울로 맺히는 차가운 판'}
 };
 const phaseDescriptions={ice:'단단한 모양의 얼음',water:'모양을 바꾸며 흐르는 물',vapor:'눈에 보이지 않는 수증기'};
+
+// The 3D run stage opens first; this 2D screen stays as the fallback (no WebGL, reduced motion, a failed download,
+// the learner's own choice) and as the teacher-preview default. The choice lasts for the visit and is not saved.
+const companion={name:'파랑',role:'소식꾼 물총새',image:'/assets/v2/parang-think.webp'};
+let modeChoice=null,stageFailed=false,webglReady;
+function hasWebGL(){
+ if(typeof document==='undefined')return false;
+ if(webglReady===undefined){try{const c=document.createElement('canvas');webglReady=!!(globalThis.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')));}catch{webglReady=false;}}
+ return webglReady;
+}
+function stageMode(state,choice=modeChoice){
+ const reduced=!!state.settings.reduced||!!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ return adventureMode({webgl:hasWebGL(),reduced,admin:!!state.settings.adminUnlock,choice,failed:stageFailed});
+}
 
 function waterForm(phase){
  if(phase==='vapor')return '<span class="drop-vapor-marker"><span>방울이는 지금<br>수증기 상태야</span></span>';
@@ -52,6 +68,7 @@ function scene(s,mission){
  </section>`;
 }
 export function dropAdventureView(state,header){
+ if(stageMode(state)==='3d')return runStageView(state,header,{phaseDescriptions});
  const s=restoreAdventure(state.dropAdventure),mission=expeditions[s.chapter],gate=mission.gates[s.gate];
  let controls;
  if(s.done){
@@ -61,7 +78,7 @@ export function dropAdventureView(state,header){
    <div class="drop-energy"><span>열을 빼앗기</span><meter min="-2" max="2" value="${s.heat}" aria-label="열 조절 단계"></meter><span>열을 주기</span></div>`;
  }
  return `<div class="drop-adventure">${header}<main class="drop-adventure-main">
-  <header class="drop-mission"><div><small>자유 탐험 · 변신 모험 ${s.chapter+1} / ${expeditions.length}</small><h1>${mission.title}</h1></div><div class="drop-links">${btn('실험 지도','map','secondary')}${btn('다시 도전','drop-retry','secondary')}</div></header>
+  <header class="drop-mission"><div><small>자유 탐험 · 변신 모험 ${s.chapter+1} / ${expeditions.length}</small><h1>${mission.title}</h1></div><div class="drop-links">${stageMode(state,'3d')==='3d'?btn('3D 달리기로 하기','drop-mode-3d','secondary'):''}${btn('실험 지도','map','secondary')}${btn('다시 도전','drop-retry','secondary')}</div></header>
   ${scene(s,mission)}
   <section class="drop-dock"><p class="drop-feedback" role="status" aria-live="polite">${esc(s.message)}</p>${controls}
    <details class="drop-science"><summary>게임과 실제 과학</summary><p>얼음은 단단한 모양을 유지하고, 물은 모양을 바꾸며 흘러. 수증기는 눈에 보이지 않아 점선으로 위치만 표시했어. 얼굴·장치 사이 이동·버튼 횟수는 게임의 표현이며 실제 변화 시간이나 크기를 나타내지 않아. 실제 뜨거운 물은 어른과 함께 다뤄.</p></details>
@@ -69,7 +86,7 @@ export function dropAdventureView(state,header){
 }
 
 let flowObserver;
-export function cleanupDropAdventure(){flowObserver?.disconnect();flowObserver=null;}
+export function cleanupDropAdventure(){flowObserver?.disconnect();flowObserver=null;cleanupRunStage();}
 function alignWaterway(){
  const scene=document.querySelector('.drop-scene');
  if(!scene)return;
@@ -88,8 +105,12 @@ function alignWaterway(){
  }
  for(const path of svg.querySelectorAll('path'))path.setAttribute('d',paths.join(' '));
 }
-export function mountDropAdventure(){
+export function mountDropAdventure(state,ctx){
  cleanupDropAdventure();
+ if(document.querySelector('.run-stage')){
+  mountRunStage(state,ctx,{devices,phaseDescriptions,art,companion,onFail(){stageFailed=true;ctx.render();toast('3D 물길을 열지 못했어. 기존 화면으로 이어서 할 수 있어.');}});
+  return;
+ }
  alignWaterway();
  const scene=document.querySelector('.drop-scene');
  if(scene){flowObserver=new ResizeObserver(alignWaterway);flowObserver.observe(scene);}
@@ -134,6 +155,7 @@ export function handleDropAdventure(action,state,ctx){
   return true;
  }
  if(!action.startsWith('drop-')||state.route!=='adventure')return false;
+ if(action==='drop-mode-2d'||action==='drop-mode-3d'){modeChoice=action.slice(10);ctx.render();return true;}
  const before=restoreAdventure(state.dropAdventure);
  if(action==='drop-lab'){state.dropReturn=false;ctx.go('map');return true;}
  const reduced=state.settings.reduced||globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;

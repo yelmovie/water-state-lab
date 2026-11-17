@@ -18,7 +18,7 @@ await cp(path.join(root,'src'),path.join(output,'src'),copyTree);
 await writeFile(path.join(output,'src/version.js'),versionModule(true));
 await cp(path.join(root,'public/assets/vendor'),path.join(output,'assets/vendor'),copyTree);
 await cp(path.join(root,'public/assets/fonts'),path.join(output,'assets/fonts'),copyTree);
-for(const folder of ['audio','story','concepts','learning','stages','village','icons','models','npc-expressions'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),copyTree);
+for(const folder of ['audio','story','concepts','learning','stages','village','icons','models','npc-expressions','run-stage'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),copyTree);
 for(const file of await readdir(path.join(root,'public/assets/v2'))){
  if(!file.startsWith('.')&&file.endsWith('.webp'))await copyFile(path.join(root,'public/assets/v2',file),path.join(output,'assets/v2',file));
 }
@@ -42,7 +42,7 @@ async function offlineLists(dir,source){
  for(const f of files){
   // Phaser is fetched and cached on demand; neither installation nor idle warm-up requests it.
   if(f==='assets/vendor/phaser.min.js')continue;
-  const deferred=f.endsWith('.mp4')||/^assets\/(v2|stages|village|learning|concepts|models|story|npc-expressions|audio\/(music|briefings)|vendor\/(?:three|colorfigures))\//.test(f);
+  const deferred=f.endsWith('.mp4')||/^assets\/(v2|stages|village|learning|concepts|models|story|npc-expressions|run-stage|audio\/(music|briefings)|vendor\/(?:three|colorfigures))\//.test(f);
   (deferred&&!firstScreen.includes(f)?later:shell).push(url(f));
  }
  later.sort((a,b)=>/\.(mp4|webm)$/.test(a)-/\.(mp4|webm)$/.test(b));
