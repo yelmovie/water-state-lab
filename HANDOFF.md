@@ -1,10 +1,83 @@
-# 최신 확인 · 2026-11-17 (변신 모험 3D 달리기)
+# 작업 기록 — 2026-11-17 (변신 모험 3D 달리기 · 새 창에서 이어가기)
 
-현재 실행 배포는 `8272213`, Cloudflare Pages `8ecbddbd`다. 직전 운영본 `d14a562d`(9603468, 되돌릴 때 사용). 홈의 「방울이 변신 모험」이 3D 달리기 스테이지로 먼저 열리고 기존 2D 화면은 대체 화면으로 남았다. 판정(`adventureMove`)과 저장(`dropAdventure`)은 그대로다. 결정·검증·남은 것은 `docs/RUN-STAGE-3D-PLAN-20261117.md` 끝의 「계획 확정」「구현 결과」에 있다.
+새 창에서는 이 절과 `docs/RUN-STAGE-3D-PLAN-20261117.md` 끝의 「계획 확정」「구현 결과」「화면 고도화」만 읽으면 이어서 할 수 있다. 공통 규칙은 `../_shared/RUN-STAGE-3D-IMPLEMENT-GUIDE-20261117.md`.
 
-- 미확인: 실제 태블릿 터치와 프레임 수, iPad Safari, 아이 대상 난이도.
-- 같은 날 화면 고도화: 생성 그림 6장(길·벽 무늬, 판, 달리기 띠, 소품)을 입히고 장치 받침·관문 난간·통과 궤적·이름표 겹침을 고쳤다. 배포 버전은 계획 문서 끝에 적는다.
-- 브라우저 검사는 `tmp/run3d-qa/qa.mjs`(git 제외, 5번 프로젝트의 playwright-core와 로컬 Chrome 사용). `QA_URL`로 대상을 바꾼다.
+## 완료한 작업
+
+- 홈의 「방울이 변신 모험」(선택 모드, 탐험 5개·관문 11개)이 3D 달리기 스테이지로 먼저 열린다. 기존 2D 화면은 대체 화면으로 남았다(WebGL 없음, 3D 내려받기 실패, 움직임 줄이기, 「기존 방식으로 하기」, 교사 시연 기본).
+- 판정은 `adventureMove()` 그대로, 저장은 `water-drop-lab:v1`의 `dropAdventure` 그대로(키 10개 변동 없음).
+- 생성 그림 7장을 입혔다: 원경, 길·벽 무늬, 열판·냉각판, 물·얼음 달리기 6프레임, 소품 9종.
+- 장치 받침 위치, 관문 난간, 장치별 통과 연출, 턱에서 잘림, 물에 빠질 때 표현, 이름표 겹침을 고쳤다.
+- 운영 배포: 커밋 `8272213` → Cloudflare Pages `8ecbddbd`. 직전 운영본 `d14a562d`(9603468), 그 전 `06da9ac7`(00f99cc). `main`의 마지막 커밋은 문서만 바꾼 것이라 실행 파일은 `8272213`과 같다.
+
+## 수정한 파일 (`git diff --stat 00f99cc HEAD` 기준, 문서 제외)
+
+| 파일 | 변경 내용 | 이유 |
+|---|---|---|
+| `src/run-stage-model.js` (새 파일, 161줄) | `runMove`·`runHint`·`adventureMode`, 코스 생성, 달리기·점프·상자 충돌, 장치 통과 궤적 | 판정 연결과 물리를 DOM 없이 테스트하려고 |
+| `src/run-stage.js` (새 파일, 377줄) | Three.js 무대, 세운 그림, 입력, 이름표, 소품 배치 | 3D 화면 |
+| `src/run-stage.css` (새 파일, 83줄) | 방향판·버튼·안내 배치 | 3D 화면 |
+| `tests/run-stage.test.mjs` (새 파일, 179줄) | 테스트 12개 | 판정 대응, 코스, 완주, 저장 필드 |
+| `src/drop-adventure.js` (+30) | 화면 선택, 무대 연결, 전환 버튼, 실패 시 2D | 대체 화면 |
+| `src/app.js` (1줄) | `mountDropAdventure(state,{go,render,save})` | 무대가 저장을 부르려고 |
+| `index.html` (1줄), `scripts/build.mjs` (2줄) | CSS 링크, `run-stage` 복사·지연 캐시 | 빌드 포함 |
+| `public/assets/run-stage/` 16개 | 실행용 WebP 약 560KB | 그림 |
+
+## 테스트·빌드 결과
+
+| 명령 | 결과 |
+|---|---|
+| `npm run check` | 통과 |
+| `npm test` | 318개 통과 |
+| `npm run build` | 통과 |
+| `QA_URL=<주소> node tmp/run3d-qa/qa.mjs` | 개발 서버 52/52, 운영 주소 52/52 (마지막 코드 `8272213` 기준). 빌드본(4337) 52/52는 첫 배포 `9603468` 때만 돌렸다 |
+| 운영 파일 해시 | 118개 일치 |
+| 실제 태블릿·iPad Safari·아이 대상 | 미실행 — 기기와 사람이 필요 |
+
+`tmp/run3d-qa/`는 git 제외다: `qa.mjs`(전체 검사), `bot.js`(자동 주행), `gates.mjs`(관문 통과 장면 캡처), `shot.mjs`(한 장 캡처), `process.mjs`(그림 가공), `gen.sh`(생성 대기열), `clean.sh`(내장 원본 정리). Playwright·sharp는 `../5magnet/node_modules`의 것을 읽어 쓴다. `TMPDIR`은 프로젝트 `.tmp/` 아래로 준다.
+
+## 확정된 결정
+
+- 카메라는 옆에서 따라가는 고정 시점이다. 기존 장치 그림이 모두 옆모습이고 방향판이 한 번에 한 방향만 받는다.
+- 충돌은 직접 쓴 상자 겹침 계산이다. 물리 엔진, `Octree`, 외부 3D 모형은 쓰지 않는다.
+- 얼음·물·수증기의 속도와 점프는 같다. 수증기는 그림 없이 점선 원과 글자다.
+- 힌트 동료는 파랑(`/assets/v2/parang-think.webp`). 세 번 막히거나 세 번 떨어지면 나온다.
+- 화면 선택(2D/3D)은 저장하지 않는다.
+- 배포는 `git archive`로 꺼낸 커밋본을 빌드해 올린다(작업 폴더는 줄바꿈이 달라 캐시 이름이 달라진다).
+
+## 남은 문제
+
+| 등급 | 문제 | 재현·확인 방법 | 막힌 지점 |
+|---|---|---|---|
+| 해야 함 | 내장 임시 원본 4장이 남아 있을 수 있다(`plates`, `water-run`, `ice-run`, `pier-tile`). 이 문서를 쓸 때 정리 스크립트가 잠금 순서를 기다리고 있었다 | `"/Volumes/T7 Shield/AI-Skills/custom/gpt-imagegen/scripts/gpt-image.sh" -l`에 `6 waterchange` 경로가 보이면 남은 것 | 다른 세션들이 이미지 잠금을 계속 쓰고 있었다. `tmp/run3d-qa/clean.sh`를 다시 실행하면 된다 |
+| 확인 필요 | 실제 태블릿에서 두 손가락 동시 누름(방향판+점프), 프레임 수 | 운영 주소를 태블릿에서 열어 탐험 1~5 | 기기 없음 |
+| 확인 필요 | 좁은 다리(탐험 2·5)와 수증기 구간이 4학년에게 어렵지 않은지 | 아이가 직접 | 사람 필요. 어렵다면 `src/run-stage-model.js`의 `PLAN`에서 `bridge`를 `gap`으로 바꾸면 된다 |
+| 작음 | 물 방울이 달리기 그림이 기존 2D의 물 그림(`water.webp`)과 생김새가 조금 다르다(참고 그림을 붙이면 생성이 `Bad Request`로 끝나 글로만 묘사해 만들었다) | 3D와 2D 화면을 번갈아 보기 | 맞추려면 참고 그림 첨부가 되는지 다시 시도 |
+| 작음 | 앱 안 브라우저 창이 숨겨져 있으면 3D가 거의 그려지지 않는다 | 창이 가려진 채 미리보기 | 헤드리스 검사로 대신했다 |
+
+## 다음에 할 일
+
+1. 내장 임시 원본 정리 확인(위 표 첫 줄). 남았으면 `tmp/run3d-qa/clean.sh` 실행.
+2. 사용자가 화면을 보고 주는 수정 요청 반영. 고친 뒤 순서: `npm run check` → `npm test` → 4336 미리보기(`.claude/launch.json`의 `water-run3d`)에 `qa.mjs` → 커밋·푸시 → `git archive` 빌드 → `pages deploy dist --project-name water-state-lab --branch main --commit-hash <해시>` → 운영 주소에 `qa.mjs`.
+3. 계획 목록 중 안 만든 그림: 변신 순간, 기뻐하기, 밸브 소품, 시작 카드. 지금은 코드 연출과 기본 도형이다. 필요하다는 요청이 있을 때만.
+4. 실기기 확인 결과가 오면 계획 문서의 「확인하지 못한 것」을 갱신.
+
+## 건드리면 안 되는 것
+
+- `src/drop-adventure-model.js`, `src/state.js`의 저장 형식: 판정과 기록은 그대로 둔다는 것이 이번 작업의 전제다.
+- `src/journey.js`, `src/map-villains.js`, 1~10장 실험: 이번 범위 밖이다. 두더지는 그림만 다시 썼다.
+- `localhost:4316`의 저장 기록: 기존 진행 기록이 있다. 검사는 4336(개발)·4337(빌드본)을 쓴다.
+- `assets/source-media/run-stage-20261117/`의 PNG 원본: 다시 가공할 때 쓴다(git 제외, SSD에만 있음).
+
+## 새 창에 붙여 넣을 시작 문장
+
+```
+06번 「방울이의 물길 탐험」(/Volumes/T7 Shield/iscreammedia_sc34/6 waterchange) 변신 모험 3D 달리기 스테이지를 이어서 작업해 줘.
+먼저 HANDOFF.md 맨 위 「작업 기록 — 2026-11-17」과 docs/RUN-STAGE-3D-PLAN-20261117.md 끝의 「계획 확정」「구현 결과」「화면 고도화」를 읽어.
+현재 운영은 커밋 8272213, Cloudflare Pages 8ecbddbd야. 판정(adventureMove)과 저장(dropAdventure)은 건드리지 마.
+시작할 때 gpt-image.sh -l 로 이 프로젝트의 내장 임시 원본이 남았는지 보고, 남았으면 tmp/run3d-qa/clean.sh 로 정리해 줘.
+그다음 할 일: (여기에 요청을 적는다)
+```
 
 # 최신 확인 · 2026-11-12
 
