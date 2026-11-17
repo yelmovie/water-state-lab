@@ -221,7 +221,7 @@ export function mountMapVillains(world, options) {
    later(shoot,140);
    if(hit<3){
     // The villain answers back once; it never changes progress.
-    later(()=>{frameAt(sprite,MOLE.lunge);lunge(bangulRight?-1:1);sfx('쾅!');options.sound?.('thud');},760);
+    later(()=>{frameAt(sprite,MOLE.lunge);lunge(bangulRight?-1:1);sfx('쾅!');},760);
     later(()=>hitFighter(me),860);
     later(settle,1150);
    }else{
