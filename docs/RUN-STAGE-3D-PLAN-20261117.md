@@ -257,3 +257,30 @@
 - 운영 주소에서 `src/` 전체, `index.html`, `sw.js`, `build-info.json`, `assets/run-stage/`, `assets/vendor/three/`, `assets/learning/adventure-20261111/` 118개 파일의 SHA-256이 커밋본 빌드와 같았다. 오프라인 캐시 이름 `water-63059196fb6f`.
 - 같은 헤드리스 검사 52개 항목이 운영 주소에서 통과했다.
 - 내장 임시 원본: 7장 모두 정리했다. `gpt-image.sh -l`에 이 프로젝트 경로가 남지 않은 것을 확인했다.
+
+## 물 그림 맞추기 · 2026-11-17 오후 (이어받기 세션)
+
+### 바꾼 것
+
+- 물 달리기 그림(`public/assets/run-stage/water-run.webp`)을 다시 만들었다. 기존 그림은 글로만 묘사해 꼭지가 말려 있고 얼굴이 오른쪽으로 치우쳐 2D 물 그림(`assets/learning/adventure-20261111/water.webp`)과 생김새가 달랐다.
+- 2D 그림을 384×384 PNG로 줄여(`.tmp/refimg/water-ref-384.png`, git 제외) `-i`로 붙이니 첫 시도에 생성됐다. 지난번 `Bad Request`는 원인을 확정하지 못했지만, 작은 PNG로 바꾼 뒤에는 나지 않았다.
+- 새 그림은 끝이 둥근 꼭지, 넓게 퍼진 웅덩이 바닥, 몸 가운데 얼굴과 벌린 입이 2D 그림과 같다. 6프레임, 투명 배경, 글자 없음을 직접 열어 확인했다. 지금 그림보다 2D와 더 닮아서 바꿨다.
+- 원본 `assets/source-media/run-stage-20261117/water-run-ref1.png`(2172×724, git 제외). 가공은 `tmp/run3d-qa/process-water.mjs`(기존 `process.mjs`의 달리기 띠 가공을 물 그림 한 장에만 적용, 1536×256, 75KB). 이전 실행 파일은 `.tmp/refimg/water-run-old.webp`에 남겨 두었다.
+- 프롬프트: Sprite sheet for a 2D children's game. Draw exactly the same character as the attached reference image, matching its glossy painterly style, colours and shape: a translucent cyan water slime with a tall leaning cone-shaped body whose peak tilts to the upper right and ends in a small round bulb tip, a wide flat puddle base that spreads out at the bottom, two big round dark-blue eyes with white highlights set in the middle of the body, a wide open smiling mouth, soft blue cheek blush, a few tiny bubbles inside, white glossy highlights. One horizontal row of exactly 6 evenly spaced frames of a bouncy hop-run cycle moving to the right: squash low, stretch up, lift off, airborne, land squash, recover. The same character and same body volume in every frame, face visible and looking right-forward, bottoms resting on one shared baseline, wide equal gaps between frames, nothing overlapping or cut off. Wide 3:1 image. Fully transparent background. No ground, no shadow, no water trail, no text, no letters, no numbers, no logo, no frame borders.
+- 코드, 몸 크기(`RUN.halfW`), 판정, 저장은 바꾸지 않았다. 얼음·물·수증기의 속도와 점프도 그대로다.
+
+### 다시 훑어본 것
+
+- 헤드리스 검사 52개 항목(탐험 1~5 두 크기 완주 포함)을 개발 서버에서 다시 돌려 모두 통과했다. 탐험별 달리는 장면, 시작 카드, 관문 통과 장면(`gates.mjs`, 7개 관문 × 다섯 시점)을 눈으로 봤다.
+- 새 그림은 턱 앞에서 잘리지 않고, 물길에서 납작하게 누워 흐르고, 찬 판을 타고 내려오는 장면에서도 자연스럽다.
+- 남겨 둔 것: 두더지에 닿는 순간 두더지 그림이 방울이 앞에 겹쳐 보이는 것과, 물길 장치에 들어가는 순간 물이 길 뒤쪽 가장자리에 납작하게 눕는 것은 부딪힘·흘러 들어감 연출이라 고치지 않았다.
+- 좁은 다리(탐험 2·5)와 수증기 구간 난이도는 아이가 직접 해 봐야 안다. 추측으로 `bridge`를 `gap`으로 바꾸지 않았다.
+- 실제 태블릿·iPad Safari 확인은 이 맥에서 하지 못했다.
+
+### 검증과 배포
+
+- `npm run check` 통과, `npm test` 318개 통과, 개발 서버(4336) `qa.mjs` 52/52.
+- 커밋 `70893f4`를 `main`에 푸시했다. `git archive`로 꺼낸 커밋본(`tmp/deploy-70893f4`)을 빌드해 Cloudflare Pages `water-state-lab` 운영 배포 `d214ad1a`(main, 70893f4)로 올렸다(465개 중 3개 새로 올림). 직전 운영본은 `8ecbddbd`(8272213).
+- 운영 주소 https://water-state-lab.pages.dev/ 에서 `src/` 전체, `index.html`(`/`로 대조), `sw.js`, `build-info.json`, `assets/run-stage/`, `assets/vendor/three/`, `assets/learning/adventure-20261111/` 118개 파일의 SHA-256이 커밋본 빌드와 같았다. 오프라인 캐시 이름 `water-1eb814058dd4`.
+- 운영 주소에 `qa.mjs` 52/52 통과, 운영 화면 캡처에서 새 물 그림이 보이는 것을 확인했다.
+- 내장 임시 원본은 `-c`로 지웠고 `gpt-image.sh -l`에 이 프로젝트 경로가 남지 않았다.
