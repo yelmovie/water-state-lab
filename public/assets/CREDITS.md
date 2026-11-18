@@ -9,7 +9,7 @@
 | Phaser 3.90.0 | `vendor/phaser.min.js`. 지도·실험 Canvas. 배포 포함 | MIT. 전문 `vendor/PHASER-LICENSE.md`(Copyright (c) 2024 Richard Davey, Phaser Studio Inc.) 동봉, 빌드에 함께 복사. 버전은 파일 안 `VERSION:"3.90.0"`으로 확인 | PASS | 설정 > 자료 출처의 저작권자 표기(Photon Storm)를 라이선스 파일 표기와 맞추면 좋다 |
 | 나눔스퀘어 네오 | 화면과 실험 캔버스, 도입·엔딩·개념 영상의 글자. 화면용 Regular·Bold를 배포 | NAVER, SIL OFL 1.1. `fonts/NanumSquareNeo-OFL.txt` 전문 및 `fonts/NanumSquareNeo-SOURCE.json` 출처·해시 동봉 | PASS | 별도 조치 없음 |
 | Kenney Interface Sounds 7종 | `audio/*.ogg`. 효과음. 배포 포함 | CC0 1.0. `audio/Kenney-LICENSE.txt` 원문(개인·교육·상업 프로젝트 사용 가능, 크레딧 선택)과 `audio/sources.json`(출처·다운로드 주소·파일 대응) 동봉 | PASS | 없음 |
-| 배경 음악 2곡 | `audio/music/main-theme.mp3`(「섬의 탐험」), `ending-theme.mp3`(「물바퀴의 노래」). 원본 `assets/source-media/audio/` | 기획자가 Suno로 생성해 제공(파일 메타데이터 `made with suno`, 2026-11-01). 프롬프트 `docs/audio/SUNO-PROMPTS.md`. 재인코딩 없이 표지 그림과 메타데이터를 빼고, 메인은 끝 무음 1초를 잘랐다 | PASS | 2026-11-04 기획자가 생성 계정의 상업적 이용 가능을 확인했다. 요금제 이름은 알면 이 칸에 보강 |
+| 배경 음악 2곡 | `audio/music/main-theme.mp3`(「섬의 탐험」), `ending-theme.mp3`(「물바퀴의 노래」). 원본 `assets/source-media/audio/` | 기획자가 Suno로 생성해 제공(파일 메타데이터 `made with suno`, 2026-11-01). 프롬프트 `docs/audio/SUNO-PROMPTS.md`. 재인코딩 없이 표지 그림과 메타데이터를 빼고, 메인은 끝 무음 1초를 잘랐다 | PASS | 2026-11-04 기획자가 생성 계정의 상업적 이용 가능을 확인했다. 요금제는 Suno Premier(2026-11-18 사용자 확인) |
 | 대체 효과음 | `src/sound.js` | 프로젝트 코드의 Web Audio 합성. 내려받은 음원 없음 | PASS | 없음 |
 | 도입·엔딩 영상 | `story/intro.*`, `final.*`(MP4·VTT·WebP). 원본 `assets/source-media/video/` | 기획자 제공 영상에 `scripts/render-film.mjs`로 색 보정, 나눔스퀘어 네오 자막, 캔버스 연출, 위 배경 음악, CC0 효과음을 입혀 H.264/AAC로 인코딩 | 확인 필요 | 원본 영상의 제작 도구와 권리는 기록에 없다. 알면 이 칸에 보강 |
 | 개념 영상 렌더 도구 | `scripts/concept-clips/render.mjs`, `scenes.mjs` → `concepts/stage-1~10` MP4·WebM·WebP | 자체 SVG 장면을 sharp로 RGBA 변환해 FFmpeg(libx264, libvpx-vp9)로 인코딩. import는 Node 내장 모듈·`src/concept-data.js`·`scenes.mjs`·sharp뿐. 저장소의 package.json 2개(루트, `files/` 보관 사본)에 의존성 없음. Remotion·Highcharts·ag-Grid·Handsontable·Spine·유료 아이콘 패키지 검색 0건 | PASS | sharp·FFmpeg는 개발 도구로만 실행하고 배포 번들에 넣지 않는다 |
@@ -356,7 +356,7 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 
 - `npc-expressions/resident-{2,4,6,8,10}-{neutral,think,happy}.webp`는 기존 주민을 참조해 Codex image_gen으로 생성한 640×640 투명 반신 초상이다. 대사 의미에 따라 단일 이미지의 표정을 전환한다.
 - 생성 원본과 적용 검수는 외장 프로젝트 `output/npc-dialogue-expanded-20261112/`에 보관한다.
-- `audio/npc-elevenlabs/`의 23개 한국어 발화는 ElevenLabs v4의 한국어 라이브러리 음성으로 생성했다. 캐릭터별 voice ID와 원문, 생성 ID는 같은 폴더의 manifest.json에 기록했다.
+- `audio/npc-elevenlabs/`의 23개 한국어 발화는 ElevenLabs v4의 한국어 라이브러리 음성으로 생성했다. 캐릭터별 voice ID와 원문, 생성 ID는 같은 폴더의 manifest.json에 기록했다. 생성 당시 ElevenLabs Starter 유료 요금제를 구독 중이었다(상업 이용 가능, 2026-11-18 사용자 확인).
 
 ## 지도 두더지 등장·퇴장·모두 퇴치 효과음 · 2026-11-17
 
