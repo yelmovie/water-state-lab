@@ -1,4 +1,5 @@
 import {setMusicQuiet} from './sound.js';
+import {speakLine,stopVoiceLine} from './voice-lines.js';
 
 const films = {
  intro: {src:'/assets/story/intro.mp4', captions:'/assets/story/intro.vtt', title:'방울이의 부탁', poster:'/assets/story/intro.webp',
@@ -51,6 +52,10 @@ export function playStoryFilm(kind,{muted=false,onFinish}={}) {
  video.addEventListener('playing',()=>message(''));
  video.addEventListener('error',()=>{if(!closed)message('영상을 불러오지 못했어. 다시 보거나 건너뛸 수 있어.');});
  document.addEventListener('visibilitychange',onVisibility);
+ // The films stay silent of speech; Bangul's recorded line plays as each burned-in caption appears.
+ const track=video.textTracks[0];
+ if(track){track.mode='hidden';track.addEventListener('cuechange',()=>{const cue=track.activeCues?.[0];if(cue&&!video.muted&&!video.paused)speakLine(cue.text,dialog,{queue:true});});}
+ video.addEventListener('pause',()=>{if(!video.ended)stopVoiceLine();});
  setMusicQuiet(true);video.muted=muted;video.src=film.src;
  dialog.showModal();dialog.querySelector('[data-film="skip"]').focus({preventScroll:true});start();
 }

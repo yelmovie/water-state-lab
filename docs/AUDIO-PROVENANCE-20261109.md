@@ -1,6 +1,6 @@
 # 효과음·NPC 음성 변경과 권리 범위
 
-기존 물 붓기·기포·노트·닦기·장치 CC0 효과음을 유지했다. 코덱 실패 시 붓기(하강), 기포(상승), 연결·종이·닦기별 짧은 자체 합성음으로 구분한다. 효과음 또는 전체 소리를 끄면 현재 NPC도 즉시 멈춘다. 현재 src/npc-audio.js의 23개 음성은 직접 생성한 Qwen3-TTS Sohee이며, 모델 revision 0c0e3051f131929182e2c023b9537f8b1c68adfe와 WAV·보정·MP3 해시 기록은 assets/source-media/npc-qwen-sohee-20261108에 있다. CC0 소리의 원본과 고지는 public/assets/CREDITS.md 및 audio의 라이선스/출처 파일을 따른다.
+기존 물 붓기·기포·노트·닦기·장치 CC0 효과음을 유지했다. 코덱 실패 시 붓기(하강), 기포(상승), 연결·종이·닦기별 짧은 자체 합성음으로 구분한다. 효과음 또는 전체 소리를 끄면 현재 NPC도 즉시 멈춘다. (2026-11-18 갱신) 현재 src/npc-audio.js의 23개 주민 음성은 ElevenLabs v4(public/assets/audio/npc-elevenlabs/)이고, 방울이·밸브 두더지와 개념·힌트 팝업 음성 116개도 ElevenLabs v4(public/assets/story/voice/, 출처 docs/VOICE-FILL-20261118.json)다. 아래 Qwen3-TTS Sohee 기록(assets/source-media/npc-qwen-sohee-20261108)은 이전 버전의 제작 기록이다. CC0 소리의 원본과 고지는 public/assets/CREDITS.md 및 audio의 라이선스/출처 파일을 따른다.
 
 ## 라이선스 구분
 

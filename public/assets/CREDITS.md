@@ -369,3 +369,10 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 | 마지막 두더지까지 모두 물리쳤을 때(엔딩 영상이 바로 열리는 자동 관찰에서는 재생 안 함) | `audio/victory-jingle-04.mp3` | game-win.mp3 · mickleness · https://freesound.org/people/mickleness/sounds/269198 |
 
 이 날 기존 지도 효과음(물총 `splash_09.ogg`, 1·2타 `impactMetal_medium_000.ogg`, 3타 `impactPunch_heavy_000.ogg`, 반격·부딪힘 `impactSoft_heavy_000.ogg`)의 파일·빌드 포함·라이선스 기록을 다시 확인했고 바꾸지 않았다. `splash_09.ogg`는 위 '실험 효과음 · 2026-11-02' 표대로 rubberduck의 CC0 묶음 파일이다(2026-11-09 표의 'Kenney' 표기는 잘못 적은 것).
+
+## 방울이·밸브 두더지 목소리와 팝업 음성 · 2026-11-18
+
+- `story/voice/`의 MP3 116개는 ElevenLabs v4(`eleven_v4`)의 한국어 라이브러리 음성으로 만들었다. 생성 당시 ElevenLabs 유료 요금제(Creator)를 구독 중이었다(상업 이용 가능).
+- 방울이: Aria – Bright & Youthful Korean(`O2KReOFLpoR65nz6C9Se`). 도입·엔딩 영상 자막, 첫 화면·엔딩 문구, 개념 영상·물 모으기 설명, 지도·실험 힌트, 변신 모험 안내를 읽는다. 도입·엔딩 영상은 다시 렌더링하지 않고 자막 큐에 맞춰 재생한다.
+- 밸브 두더지: Harry - Character(`wMrz30qBeYiSkAtnZGtn`). 주민의 '오늘 알게 된 것'은 각 주민의 기존 ElevenLabs 목소리(파랑·뚝딱·보리·송이·느티)로 읽는다.
+- 줄마다 목소리 ID·생성 ID·원문·받아쓰기 검수·음량·SHA-256은 `docs/VOICE-FILL-20261118.json`에 기록했다. 실존 인물 음성 복제를 사용하지 않았다.

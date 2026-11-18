@@ -2,10 +2,11 @@ import {state} from './state.js';
 import {setMusicQuiet} from './sound.js';
 import {icon} from './ui.js';
 import {npcAudio} from './npc-audio.js';
+import {stopVoiceLine} from './voice-lines.js';
 let stopCurrent;
 export function stopNpcVoice(){stopCurrent?.();}
 export function attachNpcVoice(dialog,key){
- stopNpcVoice();const src=npcAudio[key];if(!src)return;
+ stopNpcVoice();stopVoiceLine();const src=npcAudio[key];if(!src)return;
  const box=document.createElement('div');box.className='npc-voice-control';
  box.innerHTML=`<button type="button" class="btn secondary npc-listen">${icon('speaker',20)}<span>목소리 듣기</span></button><span class="npc-voice-status" role="status"></span><audio preload="metadata" src="${src}"></audio>`;
  dialog.append(box);const audio=box.querySelector('audio'),button=box.querySelector('button'),label=button.querySelector('span'),status=box.querySelector('.npc-voice-status');
