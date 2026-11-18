@@ -730,11 +730,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .film-status{padding:0 16px 10px;color:#683f19}
 @media(max-height:460px){.story-film{width:min(800px,calc(100vw - 12px),calc((100dvh - 110px) * 1.7778))}.film-heading{padding:4px 10px}.film-summary{font-size:15px}}
 
-.story-film--full[open]{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr;width:100%;height:100dvh;max-width:none;max-height:none;margin:0;overflow:hidden;border:0;border-radius:0;background:#10242c;box-shadow:none}
-.story-film--full::before{content:"";position:absolute;inset:0;background:var(--film-poster) center/cover no-repeat;filter:blur(24px) brightness(.5);transform:scale(1.1)}
-.story-film--full video{position:absolute;inset:0;height:100%;aspect-ratio:auto;background:transparent}
-/* Keep the captions at the bottom and the story cues at the top in the frame. */
-@media(min-aspect-ratio:4/3) and (max-aspect-ratio:16/9){.story-film--full video{object-fit:cover}}
+.story-film--full[open]{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr;width:100dvw;height:100dvh;max-width:none;max-height:none;margin:0;overflow:hidden;border:0;border-radius:0;background:#000;box-shadow:none}
+/* The whole film fills the screen uncropped (contain): the captions are burned into its bottom, so nothing is laid over the lower part of the picture. */
+.story-film--full video{position:absolute;inset:0;width:100dvw;height:100dvh;aspect-ratio:auto;object-fit:contain;background:#000}
 .story-film--full .film-heading{position:relative;z-index:1;align-self:start;flex-wrap:wrap;gap:8px;color:#fff9e9;background:linear-gradient(#10242ce6,#10242c00);padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) 12px max(8px,env(safe-area-inset-left));pointer-events:none}
 .story-film--full .film-actions{display:flex;gap:6px;margin-left:auto;pointer-events:auto}
 .story-film--full .btn{min-height:44px;padding:6px 10px;font-size:clamp(16px,2vw,18px);background:#fff9e9}
