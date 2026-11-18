@@ -149,7 +149,7 @@ function lifeScene(scene,s,reduced){
  }
  scene.text(360,34,'얼기 전 · 물이 꽉 찬 배관',19);
  scene.learningSprite('pipe-water',360,92,290,106,3);
- scene.text(360,160,'얼은 뒤 · 얼음이 커질 자리가 없어',19);
+ scene.text(360,160,'언 뒤 · 얼음이 커질 자리가 없어',19);
  const burst=scene.learningSprite('pipe-burst',360,232,290,106,3);
  const arrows=scene.add.graphics().setDepth(5);arrows.fillStyle(0xc2581c);
  for(const x of [260,460]){arrows.fillRect(x-3,190,6,14);arrows.fillTriangle(x,178,x-10,192,x+10,192);arrows.fillRect(x-3,258,6,14);arrows.fillTriangle(x,284,x-10,270,x+10,270);}

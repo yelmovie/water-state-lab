@@ -212,7 +212,7 @@ export function fieldAction(n,current,action,payload={}){
  if(action==='test'){
   if(n===6){c.tested.push({spread:c.spread.length,ok:c.spread.length>=12});c.message=c.spread.length>=12?'같은 양을 넓게 편 B의 물자국이 더 많이 옅어졌어. 물은 보이지 않는 수증기가 되어 공기 중으로 갔어.':'B의 물자국이 아직 좁아. 손가락을 움직여 더 넓게 펴 보자.';}
   if(n===7){if(!['A','B'].includes(c.selected)){c.message='먼저 냉각팩을 한 컵에 붙여 줘.';return c;}c.tested.push({cold:c.selected==='A'?0:1,amount:20,ok:true});c.message=`닦아 준비한 같은 시간 비교: ${c.selected}컵 바깥에 물방울이 생겼어. 냉각팩을 다른 컵으로 옮겨 봐.`;}
-   if(n===8){if(c.moves.tray!=='under'){c.message='두 조건을 비교하려면 물 받이를 먼저 판 아래에 놓아 줘.';return c;}if(!coolingBaseline(c)&&c.moves.cold==='plate'){c.message='아직 냉각 전 기록이 없어. 냉각팩을 떼고 받이는 그대로 둔 채 먼저 시험해 줘.';return c;}const ok=c.moves.cold==='plate';c.tested.push({cold:ok?1:0,amount:ok?20:0,ok});c.message=ok?'받이는 같은 자리야. 판을 차갑게 하자 물방울이 받이에 모였어.':'냉각 전에는 받이가 있어도 새 물방울이 모이지 않았어. 이번에는 냉각팩을 붙여 봐.';}
+   if(n===8){if(c.moves.tray!=='under'){c.message='두 조건을 비교하려면 물받이를 먼저 판 아래에 놓아 줘.';return c;}if(!coolingBaseline(c)&&c.moves.cold==='plate'){c.message='아직 냉각 전 기록이 없어. 냉각팩을 떼고 받이는 그대로 둔 채 먼저 시험해 줘.';return c;}const ok=c.moves.cold==='plate';c.tested.push({cold:ok?1:0,amount:ok?20:0,ok});c.message=ok?'받이는 같은 자리야. 판을 차갑게 하자 물방울이 받이에 모였어.':'냉각 전에는 받이가 있어도 새 물방울이 모이지 않았어. 이번에는 냉각팩을 붙여 봐.';}
   if(n===5)c.message=fieldReady(6,c)?'두 물 모두 눈에 보이지 않는 수증기로 변했어. 끓는 물속에서는 기포도 보였지.':'줄어든 두 물의 행방을 각각 연결해 줘.';
   if(n===3){if(photosInOrder(c)){c.marks=[...new Set([...c.marks,'order'])];c.message='순서를 찾았어! 높이는 달라졌네. 그럼 무게도 달라졌을까?';}else c.message=photoOrderClue(c);}
  }

@@ -6,7 +6,7 @@ import {playCue} from './sound.js';
 import {experimentMove,markStageControls} from './stage-guide.js';
 
 const TOP=36,BOTTOM=236,VIEW_TOP=-14,VIEW_HEIGHT=264,SHELF=3,FLY_MS=650,DOOR_MS=250,FREEZE_MS=900,EXIT_MS=650;
-const results={높음:{label:'마개가 튀어 나갔어',line:'퐁! 얼음이 커지면서 마개를 밀어냈어. 이번엔 물을 덜 담아 보자.'},보통:{label:'남은 공간이 빠듯해',line:'얼음이 입구에 거의 닿았어. 물을 더 덜 담아, 위쪽에 물을 채우지 않은 공간을 넉넉히 남겨 보자.'},낮음:{label:'남은 공간이 넉넉해',line:'물을 덜 담았더니 얼음 위에도 공간이 남았어! 앞 시험관과 비교해 봐.'}};
+const results={높음:{label:'마개가 튀어나갔어',line:'퐁! 얼음이 커지면서 마개를 밀어냈어. 이번엔 물을 덜 담아 보자.'},보통:{label:'남은 공간이 빠듯해',line:'얼음이 입구에 거의 닿았어. 물을 더 덜 담아, 위쪽에 물을 채우지 않은 공간을 넉넉히 남겨 보자.'},낮음:{label:'남은 공간이 넉넉해',line:'물을 덜 담았더니 얼음 위에도 공간이 남았어! 앞 시험관과 비교해 봐.'}};
 const motionOff=()=>state.settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
 const levelY=amount=>BOTTOM-(BOTTOM-TOP)*amount/100;
 let justFrozen=false;

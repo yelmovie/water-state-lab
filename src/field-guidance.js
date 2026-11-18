@@ -43,7 +43,7 @@ export function fieldTask(n,c){
   }else{step=move('tap','두 번의 실험에서 같았던 조건을 골라 봐','컵 이름과 표면의 차가움 중 무엇이 물방울과 관련 있는지 생각해 봐.','[data-action^="field-condition-"]');items=['condition'];targets=['identity','cold'];}
  }
  if(n===8){
-  if(c.moves.tray!=='under'){step=move('drag','물 받이를 금속판 아래에 놓아 봐','물이 떨어지는 자리 바로 아래에 받이를 옮겨 봐.',canvas);items=['tray'];targets=['under'];}
+  if(c.moves.tray!=='under'){step=move('drag','물받이를 금속판 아래에 놓아 봐','물이 떨어지는 자리 바로 아래에 받이를 옮겨 봐.',canvas);items=['tray'];targets=['under'];}
   else if(!before&&c.moves.cold==='plate')step=move('tap','냉각팩을 잠깐 떼어 봐','받이는 그대로 두고 먼저 냉각하지 않은 상태부터 살펴봐.','[data-action="field-remove-cold"]');
   else if(!before)step=move('test','판을 차갑게 하지 않고 시험해 봐','받이에 물이 모이는지 먼저 살펴봐.',test);
   else if(c.moves.cold!=='plate'){step=move('drag','금속판에 냉각팩을 붙여 봐','받이 자리는 그대로 두고 판만 차갑게 만들어 봐.',canvas);items=['cold'];targets=['plate'];}

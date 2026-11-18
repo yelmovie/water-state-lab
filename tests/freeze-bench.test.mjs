@@ -19,7 +19,7 @@ test('each result shows its own outcome and the two measured lines',()=>{
  const html=benchMarkup(pipe(95,90,70),false);
  assert.match(html,/물 95 → 얼음 103\.6/);assert.match(html,/물 70 → 얼음 76\.3/);
  assert.match(html,/data-risk="높음"/);assert.match(html,/data-risk="보통"/);assert.match(html,/data-risk="낮음"/);
- assert.match(html,/마개가 튀어 나갔어/);assert.match(html,/빠듯해/);assert.match(html,/넉넉해/);
+ assert.match(html,/마개가 튀어나갔어/);assert.match(html,/빠듯해/);assert.match(html,/넉넉해/);
 });
 test('pointing at the space opens only after both kinds of tube were seen',()=>{
  assert.equal(canMark(pipe(95).trials),false);

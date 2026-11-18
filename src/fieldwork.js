@@ -20,7 +20,7 @@ export function cleanupFieldwork(){cleanups.splice(0).forEach(fn=>fn());}
 export function fieldChapter(n){return state.fieldwork.chapters[n]??=chapterState(n);}
 export function hasFieldSeal(n){return [6,8].includes(n)?state.completed.includes(n/2):fieldReady(n,state.fieldwork.chapters[n]);}
 export function startFieldwork(n,pending,ctx){if(!fieldMissions[n])return;state.fieldwork.active=n;state.fieldwork.pending=pending;const c=fieldChapter(n);if(n===4)seedColdNight(c,state.activities.pipe);save();ctx.render();}
-const names={water:'물',ice:'얼음',warm:'따뜻한 받침',time:'잠깐 기다리기',cold:'냉각팩',condition:'찾은 조건',weight:'100 g 추',melt:'녹인 뒤 사진',pack:'냉각팩',tray:'물 받이',destination:'줄어든 물',A:'A의 줄어든 물',B:'B의 줄어든 물',lens:'돋보기'};
+const names={water:'물',ice:'얼음',warm:'따뜻한 받침',time:'잠깐 기다리기',cold:'냉각팩',condition:'찾은 조건',weight:'100 g 추',melt:'녹인 뒤 사진',pack:'냉각팩',tray:'물받이',destination:'줄어든 물',A:'A의 줄어든 물',B:'B의 줄어든 물',lens:'돋보기'};
 const destinations={tall:'길쭉한 그릇',wide:'넓은 그릇',freeze:'물 → 얼음',melt:'얼음 → 물',evaporate:'물 → 수증기',condense:'수증기 → 물',first:'① 냉각팩을 대기 전',middle:'② 냉각팩을 댄 뒤',last:'③ 따뜻하게 한 뒤',balance:'저울',air:'공기 중',surface:'A 표면',inside:'B 물속',level:'두 수위',A:'A컵',B:'B컵',plate:'금속판',under:'판 아래'};
 const weighingOpen=c=>c.marks.includes('order')||c.done;
 function setup(n){
@@ -40,7 +40,7 @@ function setup(n){
 
  if(n===5){item('A',130,320,0);item('B',345,320,0);target('air',590,345,'공기 중의 수증기',190,65);}
  if(n===7){item('pack',105,170,5);target('A',320,195,'A컵',160,210);target('B',550,195,'B컵',160,210);if([0,1].every(k=>fieldChapter(7).tested.some(t=>t.cold===k))){item('condition',105,320,7);target('identity',320,355,'컵 이름',180,60);target('cold',550,355,'차가운 표면',180,60);}}
- if(n===8){item('cold',100,105,5);item('tray',100,285,9,'물 받이');target('plate',475,110,'금속판',240,75);target('under',475,315,'판 아래',240,80);}
+ if(n===8){item('cold',100,105,5);item('tray',100,285,9,'물받이');target('plate',475,110,'금속판',240,75);target('under',475,315,'판 아래',240,80);}
  return {items,targets};
 }
 function alternatives(n){
