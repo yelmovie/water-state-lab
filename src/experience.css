@@ -77,6 +77,8 @@ dialog::backdrop{background:var(--scrim);backdrop-filter:none}
 }
 .topbar .icon-btn:hover:not(:disabled){background:#fff0bd;border-color:#6e683e}
 .topbar .icon-btn:active:not(:disabled){box-shadow:none}
+/* Achievement card slots (reward-cards.css is a shared file copied unchanged): the empty-slot mark uses the app font. */
+.topbar .rc-slot{font-family:inherit}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{
  outline-color:var(--focus-ring);outline-offset:4px;
 }

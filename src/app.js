@@ -1,4 +1,5 @@
 import {remainingMapVillains} from './map-villains.js';
+import {rewardSlotsHtml,revealRewardCard} from './map-rewards.js';
 import {dropAdventureView,handleDropAdventure,mountDropAdventure,cleanupDropAdventure} from './drop-adventure.js';
 import {prepareDrawingComparison} from './drawing-records.js';
 import {mountTimeTools} from './time-dial.js';
@@ -19,7 +20,7 @@ import {icon,btn,buddy,propArt,note,toast,modal,esc,celebrate} from './ui.js';
 import {journey,journeyView,mapEntryScreen,workshopProgress,mountMapCamera,cleanupMapCamera,travelIsland} from './journey.js';
 import {activityView,handleActivity,bindActivity,cleanupActivity,getActivityProgress} from './activities.js';
 import {workshopView,finalView,handleWorkshop,bindWorkshop,cleanupWorkshop,resetFinalPreview,finalContext} from './workshop.js';
-import {playClick,playCue,setMusicTheme,setSoundSettings} from './sound.js';
+import {playClick,playCue,stopCue,setMusicTheme,setSoundSettings} from './sound.js';
 import {openSettings,offlineText} from './settings.js';
 import {OFFLINE_BUILD} from './version.js';
 import {syncCoach,cleanupCoach,handleCoach,updateCoachMessage} from './coach.js';
@@ -117,7 +118,7 @@ function pageDone(n){
 }
 function complete(m,record){const first=!state.completed.includes(m);state.evidence[m]=record;if(first)state.completed.push(m);const greeted=pageDone(m*2,false);persist();state.dropReturn=false;if(state.settings.autoObservation===true){go('map');toast(`${residentForStage(m*2).spot}의 발견을 남겼어! 다음 건물로 가 보자.`);return;}render();playCue('success');const j=journey[m-1];if(first&&greeted){stageEndTalk(m*2,{label:'지도 보기',action:'reward-map'},j.tool);return celebrate(document.querySelector('#dialog'));}modal(first?'새로운 물길을 연결했어!':'연구 기록을 새로 남겼어',`<div class="reward-modal">${first?residentReward(m*2):`<div class="reward-character">${buddy('celebrate')}${propArt(j.prop)}</div>`}<span class="eyebrow">${m}번째 발견</span><h3>${j.tool}</h3><p>${j.after}</p><div class="reward-proof">${m===1?'직접 옮기고 부어 본 관찰':m===2?`${record.trials.length}개 조건을 비교한 배관 기록`:m===3?'같은 조건과 다른 조건을 나란히 비교한 기록':'두 컵을 비교하고 다시 닦아 확인한 증거'}</div>${btn('지도 보기 '+icon('arrow'),'reward-map','primary wide')}</div>`);}
 function soundButton(){return `${icon(state.settings.sound?'speaker':'speakerOff')}`;}
-function header(home=false){return `<header class="topbar" aria-label="화면 도구"><div class="topbar-left">${state.settings.adminUnlock?'<button type="button" class="btn teacher-stage-launch" data-action="teacher-stages">시연할 장</button>':''}${home?'':`<nav class="page-nav" aria-label="페이지 이동"><button class="icon-btn" data-action="home" aria-label="홈으로 가기" title="홈으로 가기">${icon('home')}</button><button class="icon-btn" data-action="previous" aria-label="이전 페이지로 가기" title="이전 페이지로 가기" ${previousRoute(state.route)===null?'disabled':''}>${icon('back')}</button></nav>`}</div><div class="topbar-right"><button class="icon-btn" data-action="sound" aria-label="소리 ${state.settings.sound?'끄기':'켜기'}" aria-pressed="${state.settings.sound}" title="소리 ${state.settings.sound?'끄기':'켜기'}">${soundButton()}</button><button class="icon-btn ${state.settings.adminUnlock?'admin-active':''}" data-action="settings" aria-label="설정" title="설정${state.settings.adminUnlock?' · 교사 시연 중':''}">${icon('settings')}</button></div></header>`;}
+function header(home=false){return `<header class="topbar" aria-label="화면 도구"><div class="topbar-left">${state.settings.adminUnlock?'<button type="button" class="btn teacher-stage-launch" data-action="teacher-stages">시연할 장</button>':''}${home?'':`<nav class="page-nav" aria-label="페이지 이동"><button class="icon-btn" data-action="home" aria-label="홈으로 가기" title="홈으로 가기">${icon('home')}</button><button class="icon-btn" data-action="previous" aria-label="이전 페이지로 가기" title="이전 페이지로 가기" ${previousRoute(state.route)===null?'disabled':''}>${icon('back')}</button></nav>`}</div><div class="topbar-right">${state.route==='map'?rewardSlotsHtml(state):''}<button class="icon-btn" data-action="sound" aria-label="소리 ${state.settings.sound?'끄기':'켜기'}" aria-pressed="${state.settings.sound}" title="소리 ${state.settings.sound?'끄기':'켜기'}">${soundButton()}</button><button class="icon-btn ${state.settings.adminUnlock?'admin-active':''}" data-action="settings" aria-label="설정" title="설정${state.settings.adminUnlock?' · 교사 시연 중':''}">${icon('settings')}</button></div></header>`;}
 
 // Title screen: logo, Bangul and one next step. With saved progress, "continue" leads and the map is the second choice.
 function homeView(){const started=waterResumeRoute(state)!==null;return `<div class="start-screen">${header(true)}<main class="start-main"><img class="start-bg" src="/assets/v2/title-island.webp" width="1344" height="752" alt=""><div class="start-bubbles" aria-hidden="true">${'<i></i>'.repeat(9)}</div><div class="start-copy"><span class="start-kicker">${icon('drop',20)}방울이와 함께하는 물의 상태 변화 탐험</span><h1 class="start-title"><img src="/assets/v2/title-logo.webp" width="927" height="532" alt="방울이의 물길 탐험"></h1><p class="start-tagline">얼고, 마르고, 다시 맺히는 물의 비밀로<br>멈춘 물길을 다시 흐르게 해 줘!</p><div class="start-actions">${btn('방울이 변신 모험','drop-start','start-second')}${started?btn(`${state.restored?'완성한 물길 보기':'이어서 탐험하기'} ${icon('arrow')}`,'start','primary start-cta')+btn('탐험 지도 보기','map','start-second'):btn(`실험부터 시작 ${icon('arrow')}`,'title-start','primary start-cta')}</div><small class="start-save">내 탐험 기록은 이 기기에 저장돼요</small></div><img class="start-bangul" src="/assets/v2/bangul-title.webp" width="774" height="1015" alt="돋보기를 들고 손을 흔드는 물방울 연구원 방울이"></main></div>`;}
@@ -294,19 +295,21 @@ export function render(){
  clearInterval(endingTimer);sceneModule?.cleanupPhaser();cleanupFieldwork();cleanupActivity();cleanupWorkshop();document.documentElement.classList.toggle('reduce-motion',state.settings.reduced);const route=state.route;const fieldSelections=lastRenderedRoute===route?[...app.querySelectorAll('select[id^=field-]')].map(el=>[el.id,el.value]):[];const active=document.activeElement;const focusKey=lastRenderedRoute===route&&app.contains(active)?{id:active.id,action:active.dataset.action,scroll:active.closest('aside')?.scrollTop}:null;const panelKey=d=>d.className+'|'+d.querySelector(':scope > summary')?.textContent;const openPanels=new Map(lastRenderedRoute===route?[...app.querySelectorAll('details')].map(d=>[panelKey(d),d.open]):[]);currentTask=null;app.innerHTML=route==='home'?homeView():route==='map'?mapView():route==='ending'?endingView():route==='adventure'?dropAdventureView(state,header()):experimentShell(route);lastRenderedRoute=route;if(route==='adventure')mountDropAdventure(state,{go,render,save:persist});setMusicTheme(route==='ending'?'ending':'main');document.title=(typeof route==='number'?screenNames[route]+' · ':'')+'방울이의 물길 탐험';
  if(typeof route==='number'){const resident=residentForStage(route);if(!state.settings.adminUnlock&&!state.residentsMet.includes(resident.stage)){state.residentsMet.push(resident.stage);save();}if(state.fieldwork.active===route)bindFieldwork(route,ctx);else{if(route<=8)bindActivity(route,ctx);bindWorkshop(route,ctx);}}
  if(state.fieldwork.active!==route){
-  if(route==='map')mountMapCamera(()=>{
-   if(!state.restored||state.settings.adminUnlock)return;
+  // The achievement card of the cleared villain comes first; while it is open #app is inert and the map waits (journey.js blocked()),
+  // so the all-villains status, jingle and ending film below start only after the card is put away.
+  if(route==='map')mountMapCamera(index=>void revealRewardCard(index,state).then(()=>{
+   if(state.route!=='map'||!state.restored||state.settings.adminUnlock)return;
    const remaining=remainingMapVillains(state);
    const status=document.querySelector('.map-finale-status');
    if(status)status.textContent=remaining?`남은 밸브 두더지 ${remaining}마리 · 모두 물리치면 엔딩 영상이 열려!`:'물길을 모두 되살렸어!';
    if(!remaining){
     const button=document.querySelector('.journey-next [data-action="ending"]');
     if(button){button.disabled=false;button.textContent=state.finalePending?'엔딩 보기':'우리의 발견 보기';}
-    if(state.settings.autoObservation===true){state.finalePending=false;go('ending');showStory('final');}
+    if(state.settings.autoObservation===true){state.finalePending=false;stopCue();go('ending');showStory('final');}
     // The jingle follows the clear chime; skipped when the ending film and theme start right away.
     else setTimeout(()=>{if(state.route==='map')void playCue('victory');},350);
    }
-  });
+  }));
   simplifyControls(route);mountCanvas(route,currentTask?.regions,revision);
  }
  bindObservation(state,routeAction,state.route===10?finalContext():null,persist,manualToolsRoute===route);

@@ -106,7 +106,8 @@ export function mountMapCamera(onVillainCleared){
   if(savedView){zoom=savedView.zoom;mapView.hand=savedView.hand;free=mapView.hand?poseAt(savedView.center):null;ox=poseAt(savedView.center).x;oy=poseAt(savedView.center).y;}
   draw(false,!mapView.hand);
  }
- const blocked=()=>document.querySelector('dialog[open]');
+ // An open achievement card (reward-cards.js) holds the map like a dialog does.
+ const blocked=()=>document.querySelector('dialog[open],.rc-layer');
  const held=new Map();
  let frame=0,lastTime=0,departing=false,arrivalFrame=0,facing=0,stride=0,nearKey='';
  let hurtTimer=0,hurtUntil=0,hurtAnimation=null;

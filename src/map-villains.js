@@ -12,13 +12,15 @@ function readVillainRecord(storage,key=MAP_VILLAINS_KEY){
  }catch{}
  return {};
 }
-export function remainingMapVillains(state,storage){
+/** Per island, in mission order: its villain is cleared for the current completed run. The achievement cards read this. */
+export function clearedMapVillains(state,storage){
  const record=readVillainRecord(storage);
- return missions.filter((mission,index)=>{
+ return missions.map((mission,index)=>{
   const token=mapVillainToken(state,mission.id);
-  return !state.completed.includes(mission.id)||(record[index]!==token&&!sessionClears.has(index+':'+token));
- }).length;
+  return state.completed.includes(mission.id)&&(record[index]===token||sessionClears.has(index+':'+token));
+ });
 }
+export const remainingMapVillains=(state,storage)=>clearedMapVillains(state,storage).filter(cleared=>!cleared).length;
 export function recordMapVillainClear(index,token,storage,key=MAP_VILLAINS_KEY){
  sessionClears.add(index+':'+token);
  const record=readVillainRecord(storage,key);record[index]=token;
@@ -46,6 +48,8 @@ const TAUNTS={
  ready:['뭐? 과학의 힘을 모았다고?!','그 물방울 파동… 설마 나한테?','덤벼 봐라, 꼬마 물방울!']
 };
 const SFX=['끼익!','쾅!','꽉!','뿌직!'];
+// Villains wait while a dialog or an achievement card layer (reward-cards.js) is open.
+const paused=()=>document.querySelector('dialog[open],.rc-layer');
 
 export function mountMapVillains(world, options) {
  const abort=new AbortController(), timers=new Set(), nodes=[], targets=[];
@@ -108,7 +112,7 @@ export function mountMapVillains(world, options) {
 
  const hitFighter=from=>{
   const now=performance.now();
-  if(abort.signal.aborted||document.hidden||document.querySelector('dialog[open]')||now<nextHurtAt)return;
+  if(abort.signal.aborted||document.hidden||paused()||now<nextHurtAt)return;
   nextHurtAt=now+1300;
   const at=fighter?.at?.();
   fighter?.hurt?.(from);options.sound?.('thud');
@@ -148,7 +152,7 @@ export function mountMapVillains(world, options) {
   const roam=()=>{
    roamTimer=0;
    if(reducedNow()||busy||b.dataset.state!=='locked'&&b.dataset.state!=='ready')return;
-   if(fighting||document.hidden||document.querySelector('dialog[open]')){roamTimer=later(roam,1000);return;}
+   if(fighting||document.hidden||paused()){roamTimer=later(roam,1000);return;}
    // 1) mischief at the current spot
    b.classList.remove('mv-walking');b.classList.add('mv-crank');
    const [hx,hy]=pointPx(stage.x,stage.y);
@@ -156,7 +160,7 @@ export function mountMapVillains(world, options) {
    later(()=>{if(b.classList.contains('mv-crank'))sfx(pick(SFX));},1100);
    roamTimer=later(()=>{
     b.classList.remove('mv-crank');
-    if(fighting||document.hidden||document.querySelector('dialog[open]')){roamTimer=later(roam,700);return;}
+    if(fighting||document.hidden||paused()){roamTimer=later(roam,700);return;}
     // 2) walk to a new spot around home
     let nx,ny;do{const a=Math.random()*Math.PI*2;nx=Math.cos(a)*(15+Math.random()*17);ny=Math.sin(a)*(6+Math.random()*8);}while(Math.hypot(nx-dx,ny-dy)<18);
     const dur=Math.round(Math.max(430,Math.hypot(nx-dx,ny-dy)/49*1000));
@@ -186,7 +190,7 @@ export function mountMapVillains(world, options) {
   const attack=()=>{
    if(busy||b.dataset.state==='cleared'||b.dataset.state==='leaving')return;
    if(!stage.ready){speak('아직은 날 못 이겨! 흐흐');status.textContent=stage.name+' 탐구를 먼저 마치고 과학의 힘을 모아 주세요.';return;}
-   if(fighting||document.hidden||document.querySelector('dialog[open]'))return;
+   if(fighting||document.hidden||paused())return;
    if(distanceTo(where())>RANGE){tell(stage.name+' 밸브 두더지에게 가까이 가 보자!');return;}
    busy=true;fighting=b;b.dataset.busy='';hits++;const hit=hits,reduced=reducedNow();
    freeze();b.classList.toggle('mv-reduced',reduced);
@@ -239,7 +243,7 @@ export function mountMapVillains(world, options) {
    b.setAttribute('aria-label',stage.name+' 밸브 두더지 퇴치 완료');b.setAttribute('aria-disabled','true');
    status.textContent=stage.name+' 밸브 두더지가 사라지고 물길이 맑아졌어요. '+(options.preview?'시연 기록은 저장하지 않아요.':saved?'퇴치 기록을 저장했어요.':'저장하지 못했어요. 이 창에서만 유지돼요.');
    if(!reduced)options.sound?.('success');
-   later(()=>{fighter?.pose?.(null);fighting=null;options.onCleared?.();},reduced?0:300);
+   later(()=>{fighter?.pose?.(null);fighting=null;options.onCleared?.(index);},reduced?0:300);
   };
   b.addEventListener('pointerdown',e=>e.stopPropagation(),{signal:abort.signal});
   b.addEventListener('keydown',e=>{if(e.repeat&&(e.key==='Enter'||e.key===' '))e.preventDefault();},{signal:abort.signal});
@@ -252,14 +256,14 @@ export function mountMapVillains(world, options) {
  const fresh=targets.filter(t=>t.b.dataset.state==='ready').map(t=>t.b.dataset.stage+':'+(t.stage.token||'pending')).filter(id=>!announcedVillains.has(id));
  const announce=()=>{
   if(abort.signal.aborted)return;
-  if(fighting||document.hidden||document.querySelector('dialog[open]')){later(announce,1000);return;}
+  if(fighting||document.hidden||paused()){later(announce,1000);return;}
   fresh.forEach(id=>announcedVillains.add(id));options.sound?.('appear');
  };
  if(fresh.length)later(announce,700);
 
  const cleanup=()=>{abort.abort();timers.forEach(clearTimeout);nodes.forEach(n=>n.remove());world.querySelectorAll('.mv-shot,.mv-particle').forEach(n=>n.remove());style.remove();status.remove();fighter?.pose?.(null);};
  cleanup.checkContact=()=>{
-  if(abort.signal.aborted||fighting||document.hidden||performance.now()<nextHurtAt||document.querySelector('dialog[open]'))return;
+  if(abort.signal.aborted||fighting||document.hidden||performance.now()<nextHurtAt||paused())return;
   const bounds=fighter?.bounds?.();
   if(!bounds)return;
   const target=targets.find(t=>['locked','ready'].includes(t.b.dataset.state)&&getComputedStyle(t.b).visibility!=='hidden'&&spritesTouch(bounds,t.creature.getBoundingClientRect()));

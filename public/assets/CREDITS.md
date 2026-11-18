@@ -370,6 +370,22 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 
 이 날 기존 지도 효과음(물총 `splash_09.ogg`, 1·2타 `impactMetal_medium_000.ogg`, 3타 `impactPunch_heavy_000.ogg`, 반격·부딪힘 `impactSoft_heavy_000.ogg`)의 파일·빌드 포함·라이선스 기록을 다시 확인했고 바꾸지 않았다. `splash_09.ogg`는 위 '실험 효과음 · 2026-11-02' 표대로 rubberduck의 CC0 묶음 파일이다(2026-11-09 표의 'Kenney' 표기는 잘못 적은 것).
 
+## 성취 카드 그림과 효과음 · 2026-11-18
+
+지도 밸브 두더지를 물리치면 받는 성취 카드 5장(`src/map-rewards.js`)에 쓴다.
+
+- `reward-cards/card-{1..5}-{1..5}.webp`(640×960)와 `reward-cards/thumb-{1..5}-{1..5}.webp`(96×144)는 2026-11-18 ChatGPT 앱의 Codex 내장 이미지 도구(GPT 이미지)로 생성한 그림을 변환한 것이다. 방울이 전신·자세 그림, 파랑 표정 그림과 각 장소 배경을 화풍 참고로 붙였다. 글자 없이 생성하고 테두리·별·이름은 코드로 올린다. 프로젝트를 위해 생성한 이미지다.
+- 생성 원본 PNG는 외장 SSD의 `/Volumes/T7 Shield/iscreammedia_sc34/_scratch/reward-cards-20261118/gen/06/`에 보관한다.
+- 효과음 다섯 개는 과학34 공용 효과음 라이브러리(`_shared/sfx-library-20261117`, 2026-11-17 라이선스 재확인)에서 복사했다. 새로 내려받지 않았다. 모두 원본 게시 페이지에 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)로 표시되어 있다. 라이브러리에서 앞뒤 무음 제거·페이드·음량 맞춤·모노 MP3 변환만 했고 피치·속도는 바꾸지 않았다.
+
+| 쓰임 | 배포 파일 | 원본 제목 · 제작자 · 배포처 |
+|---|---|---|
+| 카드가 날아올 때, 칸으로 날아갈 때 | `audio/wind-whoosh-03.mp3` | Slow Swosh 40 · qubodup · https://freesound.org/people/qubodup/sounds/60027 |
+| 카드 공개(브론즈·실버·골드) | `audio/reward-01.mp3` | Fantasy_ui_Button_3.wav · ZenithInfinitiveStudios · https://freesound.org/people/ZenithInfinitiveStudios/sounds/376745 |
+| 카드 공개(홀로·레전드) | `audio/reward-03.mp3` | Achievement Happy Beeps Jingle · CogFireStudios · https://freesound.org/people/CogFireStudios/sounds/619838 |
+| 카드가 칸에 들어갈 때 | `audio/pickup-01.mp3` | item-pickup-v1.wav · DeltaCode · https://freesound.org/people/DeltaCode/sounds/678384 |
+| 카드 5장을 모두 모았을 때 | `audio/victory-jingle-01.mp3` | Game Success Fanfare Short · el_boss · https://freesound.org/people/el_boss/sounds/677858 |
+
 ## 방울이·밸브 두더지 목소리와 팝업 음성 · 2026-11-18
 
 - `story/voice/`의 MP3 116개는 ElevenLabs v4(`eleven_v4`)의 한국어 라이브러리 음성으로 만들었다. 생성 당시 ElevenLabs 유료 요금제(Creator)를 구독 중이었다(상업 이용 가능).
