@@ -1491,3 +1491,35 @@ svg .guided-control,[data-bench-tube].guided-control{filter:drop-shadow(0 0 8px 
 .journey-shell .map-actions{display:grid;justify-items:end;gap:8px}
 .journey-shell .map-actions .map-modes{display:flex;flex-direction:row;align-items:center;justify-content:end;min-height:56px;gap:8px;pointer-events:auto}
 .journey-shell .map-actions .journey-next{width:100%}
+
+/* Concept films play full screen like the story films (2026-11-18): black, uncropped (contain), captions burned into the
+   picture's bottom (docs/concept-captions-20261118). Every control rides the top bar so nothing covers the caption area. */
+.concept-film[open]{position:fixed;inset:0;display:block;width:100dvw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:#000;box-shadow:none;overflow:hidden}
+.concept-film .concept-bar{position:absolute;inset:0 0 auto;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 18px max(12px,env(safe-area-inset-left));color:#fff9e9;background:linear-gradient(#10242ce6,#10242c00);pointer-events:none}
+.concept-film .concept-bar>*{pointer-events:auto}
+.concept-film .concept-heading{flex:1 1 240px;min-width:0}
+.concept-film .concept-heading .eyebrow{display:block;color:#ffe6a0;font-size:15px;letter-spacing:.5px}
+.concept-film .concept-heading h2{margin:0;color:#fff9e9;font-size:clamp(20px,2.2vw,30px);line-height:1.25;text-shadow:0 2px 6px #000a}
+.concept-film .concept-beats{display:flex;gap:8px;padding:0}
+.concept-film .concept-beats[hidden]{display:none}
+.concept-film .concept-beats button{width:44px;height:44px}
+.concept-film .concept-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.concept-film .concept-actions .btn{min-height:44px;padding:6px 12px;font-size:clamp(16px,1.6vw,20px)}
+.concept-film .concept-actions .btn[hidden]{display:none}
+.concept-film .concept-actions .icon-btn{flex:none;width:48px;height:48px;min-height:48px;background:#fff9e9}
+.concept-film .concept-body{position:absolute;inset:0;display:block;padding:0;overflow:hidden;scrollbar-gutter:auto}
+.concept-film .concept-screen{position:absolute;inset:0;width:100%;height:100%;max-width:none;aspect-ratio:auto;margin:0;border:0;border-radius:0;background:#000}
+.concept-film .concept-screen video,.concept-film .concept-end{width:100%;height:100%;object-fit:contain;background:#000}
+/* Poster, last frame, autoplay blocked: no burned caption on screen, so the DOM caption shows at the bottom. */
+.concept-film .concept-caption{position:absolute;left:50%;bottom:max(16px,env(safe-area-inset-bottom));z-index:1;transform:translateX(-50%);display:flex;flex-direction:row;align-items:center;gap:12px;width:min(900px,calc(100% - 32px));min-height:0;margin:0;padding:10px 20px;border:2px solid #c8b47e;border-radius:20px;background:#fff9e9f2}
+.concept-film .concept-caption .buddy-pose{flex:none;align-self:center;width:72px;height:72px}
+.concept-film .concept-caption p{font-size:clamp(19px,2vw,28px);line-height:1.4}
+/* The film's own frame is on screen: hide the DOM caption visually only (screen readers and the voice watcher still read it). */
+.concept-film.film-on .concept-caption{width:1px;height:1px;padding:0;border:0;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap}
+/* No film (error): the last frame, the caption and the scene list scroll in one column under the bar. */
+.concept-film.film-failed .concept-body{overflow:auto;overscroll-behavior:contain;padding:max(110px,16dvh) 16px 24px;background:#10242c}
+.concept-film.film-failed .concept-screen{position:relative;width:min(100%,calc((100dvh - 200px)*1.7778));height:auto;aspect-ratio:16/9;margin:0 auto}
+.concept-film.film-failed .concept-end{position:absolute;inset:0}
+.concept-film.film-failed .concept-caption{position:static;transform:none;margin:12px auto 0}
+.concept-film.film-failed .concept-transcript{max-width:900px;margin:12px auto 0;color:#fff9e9}
+@media(max-height:500px){.concept-film .concept-heading .eyebrow{display:none}.concept-film .concept-bar{padding-bottom:12px}.concept-film .concept-caption .buddy-pose{width:52px;height:52px}.concept-film .concept-caption{padding:6px 14px}}

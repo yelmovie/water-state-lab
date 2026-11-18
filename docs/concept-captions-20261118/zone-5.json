@@ -1,0 +1,28 @@
+{
+ "src": "../../../_scratch/caption-motion-20261118/concepts/06/padded/zone-5.mp4",
+ "out": "../../public/assets/concepts/zone-5.mp4",
+ "theme": {
+  "box": "#163d37",
+  "accent": "#ffd35c",
+  "hot": "#ffd35c"
+ },
+ "bottom": 30,
+ "sweep": false,
+ "cues": [
+  {
+   "s": 0,
+   "e": 7.9,
+   "text": "온실의 물이 증발해 공기 중 수증기가 돼."
+  },
+  {
+   "s": 8,
+   "e": 14.4,
+   "text": "차가운 판에서 응결해 다시 물방울이 돼."
+  },
+  {
+   "s": 14.5,
+   "e": 24.5,
+   "text": "모은 물을 아래로 이어 보내면 온실의 물길이 다시 움직여."
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+{
+ "src": "../../../_scratch/caption-motion-20261118/concepts/06/padded/zone-4.mp4",
+ "out": "../../public/assets/concepts/zone-4.mp4",
+ "theme": {
+  "box": "#163d37",
+  "accent": "#ffd35c",
+  "hot": "#ffd35c"
+ },
+ "bottom": 30,
+ "sweep": false,
+ "cues": [
+  {
+   "s": 0,
+   "e": 8.4,
+   "text": "입구를 막았는데도 차가운 컵 바깥에 물방울이 생겼어."
+  },
+  {
+   "s": 8.5,
+   "e": 14.9,
+   "text": "공기 중 수증기가 차가운 표면에서 물방울로 변한 거야. 이것이 응결이야."
+  },
+  {
+   "s": 15,
+   "e": 22.516,
+   "text": "차가운 판 아래에 받이를 놓으면 떨어지는 물방울을 모을 수 있어."
+  }
+ ]
+}
