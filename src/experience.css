@@ -126,7 +126,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .essential-controls{flex:none}.essential-controls>summary{font-weight:bold}.essential-controls .btn{min-height:48px}.essential-controls select{min-height:48px;width:100%;font-size:19px}
 .workshop-keyboard .part-arrows{display:grid;grid-template-columns:1fr 1fr;gap:6px}.workshop-keyboard label{display:block;margin:5px 0}
 .part.active .part-grip{stroke:#bd8b2b;stroke-width:5px}.part svg{pointer-events:none}
-.learning-save-notice{position:fixed;left:12px;right:12px;bottom:8px;z-index:80;display:flex;gap:10px;align-items:center;justify-content:center;padding:8px 12px;border:2px solid #b77e38;border-radius:10px;background:#fff2d3;color:#583e24;font-size:16px;line-height:1.35;box-shadow:0 3px 10px #0002}
+.learning-save-notice{position:fixed;left:12px;right:12px;bottom:8px;z-index:80;display:flex;gap:10px;align-items:center;justify-content:center;padding:8px 12px;border:2px solid #b77e38;border-radius:10px;background:#fff2d3;color:#583e24;font-size:18px;line-height:1.35;box-shadow:0 3px 10px #0002}
 .learning-save-notice[hidden]{display:none}.learning-save-notice button{flex:none;min-height:44px;border:1px solid #91682c;border-radius:7px;background:#fffdf2;padding:5px 12px;color:inherit;font:inherit}
 .save-warning-visible .experiment-main{padding-bottom:70px}
 @media(min-width:801px){.scene-4 .activity:not(.fieldwork-activity)>.activity-scene,.scene-8 .activity:not(.fieldwork-activity)>.activity-scene{padding-bottom:100px}}

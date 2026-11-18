@@ -237,6 +237,7 @@ export function createDewScene(scene,wipe){
   }
   texture.refresh();
  };
- scene.text(360,310,d.sealed?'랩과 고무줄로 두 컵 입구를 막았어. 겉면을 닦고 비교해 봐.':'수건으로 두 컵의 겉면을 닦고, 입구를 막아 봐.',16);
+ // While the prediction question is open, the title bar is the only instruction; the next step appears after the answer.
+ if(q.dewHypothesis)scene.text(360,310,d.sealed?'랩과 고무줄로 두 컵 입구를 막았어. 겉면을 닦고 비교해 봐.':'수건으로 두 컵의 겉면을 닦고, 입구를 막아 봐.',16);
 }
 
