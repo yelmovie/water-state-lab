@@ -1,3 +1,18 @@
+# 성취 카드(지도 두더지 퇴치 보상) · 2026-11-18
+
+운영 배포: 커밋 `924df16` → Cloudflare Pages `748761fa`(https://water-state-lab.pages.dev/). 직전 커밋 `a07d960`(방울이·두더지 음성, 썸네일)까지 함께 올라갔다. 운영 주소의 카드 그림 10장·효과음 5개·`src/app.js` 등 25개 파일 SHA-256이 커밋본 빌드와 일치. 빌드는 `_scratch/deploy-20261118/wt/06`(git archive 커밋본), 명령은 `deploy.sh 06 "6 waterchange" pages water-state-lab`.
+
+- 지도 밸브 두더지를 3타로 물리치면 퇴장 뒤 카드가 돌며 나타나고, 「카드 보관함에 넣기」를 누르면 소리 버튼 앞 5칸(`header()`의 `.topbar-right`, 지도 화면만)으로 들어간다. 5장이면 「컬렉션 완성!」, 칸을 누르면 보관함.
+- 연결 파일은 `src/map-rewards.js`(카드 설정·보유 계산·등장). 공통 모듈 `src/reward-cards.js`·`reward-cards.css`는 `../_shared/reward-cards`의 복사본이라 고치지 않는다. 빈 칸 글꼴만 `experience.css`의 `.topbar .rc-slot`에서 덮어쓴다.
+- 보유는 새로 저장하지 않는다. `map-villains.js`의 `clearedMapVillains(state)`(= 기존 `water-state-lab:map-villains:v1` 기록 + 이번 탭 기록)를 그대로 읽는다. 그래서 탐구를 다시 해서 증거가 바뀌어 두더지가 다시 나타나면 그 카드 칸도 비고, 다시 물리치면 카드가 또 나온다. 교사 시연은 기록을 남기지 않으므로 카드도 없다.
+- `map-villains.js` 변경은 세 가지뿐: `clearedMapVillains` 추가(`remainingMapVillains`는 이것을 센다), `onCleared(index)`로 섬 번호 전달, 일시정지 조건 `paused()`에 `.rc-layer` 추가. `journey.js`의 `blocked()`에도 `.rc-layer`를 더해 카드가 열린 동안 이동·공격·두더지 배회·접촉 피격이 멈춘다.
+- 모두 퇴치 안내·`victory` 징글·엔딩 영상(`app.js`의 `mountMapCamera` 콜백)은 카드를 닫은 뒤 실행된다. 자동 관찰로 엔딩 영상이 바로 열릴 때는 `stopCue()`로 카드 징글을 먼저 끊는다.
+- 효과음은 `sound.js`의 `playCue`(`cardWhoosh`·`cardReveal`·`cardEpic`·`cardSlot`·`cardComplete`)로 낸다. 파일·그림 출처는 `public/assets/CREDITS.md` 끝 절.
+- 카드 그림은 `public/assets/reward-cards/`(빌드 복사 목록과 오프라인 지연 캐시에 추가). 원본 PNG는 `../_scratch/reward-cards-20261118/gen/06/`. 다시 변환: `node ../_shared/reward-cards/convert.cjs "<sharp 있는 프로젝트>" "<gen/06>" public/assets/reward-cards`.
+- 확인: `npm run check` 통과, `npm test` 325개 통과, 빌드 통과. 헤드리스 Chrome(`.tmp/reward-cards/qa.mjs`, 개발 서버와 배포본 빌드 둘 다 13단계·콘솔 오류 0): 1·2타와 반격, 3타 뒤 카드, 카드 중 지도 멈춤, 칸 채움, 새로고침 뒤 유지·재등장 없음, 보관함, 소리 버튼, 5/5 축하 뒤 안내·징글 순서, 자동 관찰의 엔딩 영상 순서, 1024×768 헤더 한 줄, 움직임 줄이기, 교사 시연. 스크린샷은 `.tmp/reward-cards/`.
+- 확인 못 한 것: 실제 태블릿 터치와 실제 스피커 소리(재생 호출 순서만 확인), iPad Safari.
+- 그림 메모: 4번 카드(이슬 정원)에서 파랑의 날개 손이 셋으로 보인다(판 위, 수건, 오른쪽 날개). 글자·다른 캐릭터·잘림은 없다.
+
 # 3초 규칙 디자인 고도화 · 2026-11-18
 
 운영 배포: 커밋 `35f1ff1`(디자인 `525a2b4`·`957b56d`·`e7adefa` + 두더지 반격음 수정 포함) → Cloudflare Pages `492a2e48`. 공개 파일 468개 SHA-256 일치. 직전 운영본 `8ad7aa4c`(8fb2275). 빌드는 `.tmp/deploy-35f1ff1`(git archive 커밋본).
