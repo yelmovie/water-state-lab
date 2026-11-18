@@ -6,7 +6,7 @@ let releaseCurrent=()=>{};
 export function residentStage(resident,{lines,actions,context='',portrait,voice}){
  releaseCurrent();
  const text=lines.join(' ');
- const dialog=modal(`${resident.name}의 이야기`,`<div class="water-conversation"><div class="water-character">${portrait}</div><section class="water-paper"><div class="water-speaker"><strong>${esc(resident.name)}</strong><span>${esc(resident.role)}</span></div>${context?`<div class="water-context">${context}</div>`:''}<p class="water-speech" role="button" tabindex="0" aria-label="대사 모두 보기"><span class="water-layout" aria-hidden="true">${esc(text)}</span><span class="water-visual" aria-hidden="true"></span></p><span class="water-readable" role="status">${esc(text)}</span><div class="water-controls"><div class="water-actions">${actions}</div></div></section></div>`);
+ const dialog=modal(`${resident.name}의 이야기`,`<div class="water-conversation"><div class="water-character">${portrait}</div><section class="water-paper"><div class="water-speaker"><strong>${esc(resident.name)}</strong><span>${esc(resident.role)}</span></div>${context?`<div class="water-context">${context}</div>`:''}<p class="water-speech" role="button" tabindex="0" aria-label="대사 모두 보기"><span class="water-layout" aria-hidden="true">${esc(text)}</span><span class="water-visual" aria-hidden="true"></span></p><span class="water-readable" role="status">${esc(text)}</span><div class="water-controls"><div class="water-actions">${actions}</div></div></section></div>`,{scene:true});
  dialog.className='water-stage-dialog';
  const scene=dialog.querySelector('.water-conversation'),visual=dialog.querySelector('.water-visual');
  const events=new AbortController(),motion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -20,6 +20,8 @@ export function residentStage(resident,{lines,actions,context='',portrait,voice}
  const speech=dialog.querySelector('.water-speech');
  speech.addEventListener('click',finish,{signal:events.signal});
  speech.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();finish();}},{signal:events.signal});
+ // A scene card has no modal Escape, so close it here like the old dialog did.
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&dialog.open&&!dialog.matches(':modal')){event.preventDefault();dialog.close();}},{signal:events.signal});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();},{signal:events.signal});
  motion.addEventListener('change',()=>{if(motion.matches)stop();},{signal:events.signal});
  if(motion.matches||state.settings.reduced||document.hidden)finish();

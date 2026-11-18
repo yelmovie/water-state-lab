@@ -56,7 +56,8 @@ export function celebrate(host,delay=0){
 export function toast(message){const el=document.querySelector('#toast');el.textContent=message;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),3800);}
 let modalOpener;
 const modalDialogs=new WeakSet();
-export function modal(title,body){
+// scene:true opens the dialog without a backdrop so the scene behind stays visible (resident talk cards).
+export function modal(title,body,{scene=false}={}){
  const d=document.querySelector('#dialog'),wasOpen=d.open;
  if(!wasOpen&&!d.contains(document.activeElement))modalOpener=document.activeElement;
  if(!modalDialogs.has(d)){
@@ -71,7 +72,8 @@ export function modal(title,body){
  d.className='app-dialog'+(story?' story-dialog':'')+(body.includes('reward-modal')?' reward-dialog':'');
  d.innerHTML=`<div class="dialog-head"><h2 id="dialog-title" tabindex="-1">${esc(title)}</h2><button type="button" class="icon-btn" id="close-dialog" aria-label="닫기">${icon('close')}</button></div><div class="dialog-body">${body}</div>`;
  d.querySelector('#close-dialog').onclick=()=>d.close();
- if(!wasOpen)d.showModal();
+ if(wasOpen&&d.matches(':modal')===scene)d.close();
+ if(!d.open)scene?d.show():d.showModal();
  d.querySelector('.dialog-body').scrollTop=0;d.scrollTop=0;
  (story?d.querySelector('.story-actions button'):d.querySelector('#dialog-title'))?.focus({preventScroll:true});
  return d;

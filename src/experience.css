@@ -603,7 +603,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .map-pad{justify-self:start;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:20px;background:#fff9e9f2;border:2px solid #c9b57c;box-shadow:var(--shadow-card);pointer-events:auto}
 .map-arrows{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:4px}
 .map-arrow{display:grid;place-items:center;width:48px;height:48px;padding:0;border:2px solid #b9a36a;border-radius:12px;background:#fffdf5;color:#355647;box-shadow:0 3px 0 #c9b57c;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
-.map-arrow-label{grid-area:1/1;align-self:center;text-align:center;font:16px/1.1 var(--font-display);color:#355647}
+.map-arrow-label{grid-area:1/1;align-self:center;justify-self:center;text-align:center;white-space:nowrap;font:16px/1.1 var(--font-display);color:#355647}
 .map-arrow svg{pointer-events:none}
 .map-arrow-up{grid-area:1/2}.map-arrow-left{grid-area:2/1}.map-arrow-down{grid-area:2/2}.map-arrow-right{grid-area:2/3}
 .map-arrow-up svg{transform:rotate(-90deg)}.map-arrow-left svg{transform:rotate(180deg)}.map-arrow-down svg{transform:rotate(90deg)}
