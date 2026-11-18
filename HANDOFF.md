@@ -9,6 +9,7 @@
 - 팝업 배경: `--scrim`(#153c3a47, 0.28) 토큰 하나(tablet.css, `:root,::backdrop`). 개념 영상만 예외.
 - 글자: `--font-size-*`는 tablet.css에서만 정의, caption 16→18px. 학생이 읽는 12~17px 글자(속도·힌트 라벨, 단계 칩, 문제 단서, 기록 카드, 3D HUD·이름표 등)를 18px로.
 - (이어서 `12e2974` → Pages `b91bc216`, 공개 파일 468개 일치) 실험 7은 예상 문제를 고르기 전 캔버스의 다음 단계 안내를 숨긴다. 엔딩·지도 이름표·두더지 말풍선·주민 대화 이름줄과 주제·저장 경고를 18px로 올렸다.
+- (이어서 `e41413c` → Pages `412f55e6`, 공개 파일 468개 일치) 주민·부탁 대화를 모달 대신 장면 카드로 연다(`modal(...,{scene:true})` → `dialog.show()`, 배경 어둡게 없음, 아래쪽 카드만 클릭을 받음, 닫기 버튼은 카드 안, Esc로 닫힘). 모달 ↔ 카드 전환은 `modal()`이 닫았다 다시 연다. 지도 방향판 「방울이 이동」 줄바꿈 수정. `check:experience`는 `stage-N.mp4`(지금은 `zone-N.mp4`)를, `chapter-process-qa.mjs flow`는 없어진 `ix-pour-auto`를 찾아 이전 커밋에서도 실패한다 — 스크립트 갱신 필요.
 - 남은 18px 미만: 교사 전용 「시연할 장」(14px), 힌트 버튼 장식 「…」, 실험 캔버스 뒤에 숨은 접근성용 이름표, 높이 680px 이하 화면의 축소 글자.
 - 확인 못 한 것: 실제 태블릿 터치, 학생 반응, `npm run check:experience`(이 맥에 파이썬 playwright 없음).
 - 스크린샷: `.tmp/design-3sec-20261117/before`(운영 8ad7aa4c 이전 코드) · `after`(로컬), 측정값 `audit.json`.
