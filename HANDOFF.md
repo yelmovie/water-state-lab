@@ -4,6 +4,8 @@
 
 공통 모듈 보강본 배포: 커밋 `ceeb8dd` → Cloudflare Pages `a7ec3f72`(같은 주소, 같은 명령). `src/reward-cards.js`·`reward-cards.css`만 공통 원본 최신본으로 바꿨다(연출 중 오류가 나도 화면이 멈추지 않음, `inert` 속성 병행). `npm run check`, `npm test` 325개, `qa.mjs` 개발 서버 13단계·오류 0. 운영 주소의 `src/reward-cards.js`·`src/reward-cards.css`·`src/app.js`·`sw.js` 등 7개 파일 SHA-256이 빌드와 일치하고, 운영 주소에서도 `qa.mjs` 13단계 통과·콘솔 오류 0(음성 mp3 2개는 화면 전환 중 요청이 중단된 것이고 파일은 200으로 내려온다). 글꼴 테스트의 `system-ui` 예외와 `experience.css` 덮어쓰기는 그대로 뒀다.
 
+공통 모듈 최종본 배포: 커밋 `66662b3` → Cloudflare Pages `a55d51dc`(같은 주소, 같은 명령). `src/reward-cards.js`·`reward-cards.css`만 공통 원본 최종본으로 바꿨다(카드 버튼 글꼴이 얇게 나오던 `font:` 줄임 표기 수정, 보관함 확대 카드를 닫으면 닫기 버튼으로 포커스 복귀, 완성 부채꼴 간격). `npm run check`, `npm test` 325개. 운영 주소의 `src/reward-cards.js`·`src/reward-cards.css`·`src/app.js`·`sw.js` 등 6개 파일 SHA-256이 빌드와 일치하고, 운영 주소에서 `qa.mjs` 13단계 통과·콘솔 오류 0(음성 mp3 2개 요청 중단은 전과 같고 파일은 200). 글꼴 테스트의 `system-ui` 예외와 `experience.css` 덮어쓰기는 그대로 뒀다.
+
 - 지도 밸브 두더지를 3타로 물리치면 퇴장 뒤 카드가 돌며 나타나고, 「카드 보관함에 넣기」를 누르면 소리 버튼 앞 5칸(`header()`의 `.topbar-right`, 지도 화면만)으로 들어간다. 5장이면 「컬렉션 완성!」, 칸을 누르면 보관함.
 - 연결 파일은 `src/map-rewards.js`(카드 설정·보유 계산·등장). 공통 모듈 `src/reward-cards.js`·`reward-cards.css`는 `../_shared/reward-cards`의 복사본이라 고치지 않는다. 빈 칸 글꼴만 `experience.css`의 `.topbar .rc-slot`에서 덮어쓴다.
 - 보유는 새로 저장하지 않는다. `map-villains.js`의 `clearedMapVillains(state)`(= 기존 `water-state-lab:map-villains:v1` 기록 + 이번 탭 기록)를 그대로 읽는다. 그래서 탐구를 다시 해서 증거가 바뀌어 두더지가 다시 나타나면 그 카드 칸도 비고, 다시 물리치면 카드가 또 나온다. 교사 시연은 기록을 남기지 않으므로 카드도 없다.
