@@ -1,0 +1,19 @@
+/* 2026-11-18 놀이 화면 비율·중복 조작 정리 (docs/LAYOUT-BALANCE-20261118.md).
+   Loaded last so it only adjusts sizes and button weight; learning text and logic stay as they are. */
+
+/* Ending: the art card and the action column used the action column's height, so the result sat in a short band in the
+   middle of the screen (36~47% of the height). Both columns now fill the space under the top bar. */
+@media(min-width:701px){
+ .ending-shell .ending-main{grid-template-rows:minmax(0,1fr);align-content:stretch;max-width:min(1680px,100%)}
+ .ending-shell .ending-illustration{contain:none;height:auto;min-height:0}
+ .ending-shell .ending-copy{justify-content:center}
+}
+
+/* Ending: one main button (the certificate). Replays and the classroom idea step down to text buttons so seven
+   same-looking buttons no longer compete. Each keeps a 44px touch height. */
+#app .ending-shell .ending-replay-actions .btn,#app .ending-shell .btn.classroom-making{min-height:44px;background:transparent;border-color:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;color:#245a55;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+#app .ending-shell .ending-replay-actions .btn:hover,#app .ending-shell .btn.classroom-making:hover{background:#fffdf3a8}
+
+/* Map: the current island label also drew "→" like a go button, next to the real "○○로 출발 →" button at the bottom right.
+   The label keeps its highlight and stays tappable (walk there); only the bottom button reads as the go button now. */
+.journey-node.current>b::after{content:none}
