@@ -1,3 +1,13 @@
+# 결과 화면 주 버튼·현장 2·4 화면·설정 창 닫기 · 2026-11-19
+
+운영 배포: 커밋 `2a21c23` → Cloudflare Pages `1650ff81`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `src/app.js`·`src/settings.js`·`src/layout-balance.css`·`sw.js`·index SHA-256이 빌드와 일치(MATCH).
+
+- 결과 화면: 버튼 순서를 [처음부터 다시 하기, 탐구 노트, 연구섬, 인증서]로 바꾸고(`app.js` `endingView`) 묶음을 열 아래에 붙여 주 버튼(인증서)이 오른쪽 아래에 온다. 다시 보기 글자 버튼·교실 장치는 그 위.
+- 현장 4 첫째 밤(통 1개, 1024px·높이 600px 이상): 「수도꼭지 열기·빼기」는 수도꼭지 왼쪽, 이름표는 물통 오른쪽 아래. 물통 그림 높이 1920 610→741px, 1280 335→465px. 통 아래 「담은 물·권장」은 위 목표판과 같은 숫자라 통 1개일 때만 숨김(`:has([data-amount])`).
+- 현장 2(1600px 이상): 얼음틀 칸 1.2→1.4, 얼음틀·물컵을 가운데로.
+- 설정 창: 위 X 제거, 아래 「닫기」 하나, 열면 「닫기」에 초점(16개 공통 기준 `SETTINGS-CLOSE-RULE-20261119`). Esc·기록 초기화·저장은 그대로.
+- 확인: `npm run check`, `npm test` 325개, 빌드 통과, 개발 서버에서 세 뷰포트 요소 크기·스크린샷(`.tmp/layout-balance-20261118/probe1/`). 사용자 요청으로 브라우저 잠금을 기다리지 않고 먼저 배포했다. 클릭 확인(`verify4.mjs`: 설정 창 X 0개·닫기·Esc, 현장 4 물 붓기, 인증서 열기)은 잠금이 풀리면 이어서 돈다.
+
 # 놀이 화면 비율·중복 조작 정리 · 2026-11-18
 
 운영 배포: 커밋 `94df39f` → Cloudflare Pages `1354a0ad`(https://water-state-lab.pages.dev/, `_scratch/deploy-20261118/deploy.sh 06 "6 waterchange" pages water-state-lab`). 같은 배포에 앞선 다른 세션 커밋 `d07a578`·`63e42dd`(영상 전체 화면·자막)도 함께 올라갔다. 운영 `/`·`src/app.js`·`src/layout-balance.css`·`src/guided-experience.css`·`sw.js` SHA-256이 빌드와 일치.
