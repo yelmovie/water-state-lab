@@ -72,7 +72,8 @@ export function dropAdventureView(state,header){
  const s=restoreAdventure(state.dropAdventure),mission=expeditions[s.chapter],gate=mission.gates[s.gate];
  let controls;
  if(s.done){
-  controls=`<div class="drop-discovery"><h2>내가 만든 물의 변화</h2><ul>${s.log.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div class="drop-controls">${btn(s.chapter===4?'처음 길 다시 탐험':'다음 모험으로','drop-next','primary')}${btn('연구섬 지도','map','secondary')}</div>`;
+  const last=s.chapter===expeditions.length-1;
+  controls=`<div class="drop-discovery"><p class="run-done-count">변신 모험 ${last?`${expeditions.length} / ${expeditions.length} 모두 완료`:`${s.chapter+1} / ${expeditions.length} 완료`}</p><h2>${last?'모든 물길을 통과했어!':'내가 만든 물의 변화'}</h2><ul>${s.log.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${last?'<p class="run-finale-next">이제 연구섬 지도로 가서 섬마다 실험하고, 멈춘 물길을 되살려 봐!</p>':''}</div><div class="drop-controls">${last?btn(`연구섬 지도 탐험하러 가기 ${icon('arrow',20)}`,'map','primary')+btn('처음 길 다시 탐험','drop-next','secondary'):btn('다음 모험으로','drop-next','primary')+btn('연구섬 지도','map','secondary')}</div>`;
  }else{
   controls=`<div class="drop-controls">${btn('열 주기','drop-warm','warm')}${btn('열 빼앗기','drop-cool','cool')}${gate.space?btn(s.space?'✓ 여유 공간 남겼어':'물을 덜어 공간 남기기','drop-space',s.space?'selected':'secondary'):''}${btn('길 따라 이동 '+icon('arrow',20),'drop-move','primary')}</div>
    <div class="drop-energy"><span>열을 빼앗기</span><meter min="-2" max="2" value="${s.heat}" aria-label="열 조절 단계"></meter><span>열을 주기</span></div>`;

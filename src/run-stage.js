@@ -4,7 +4,7 @@
 import {expeditions,phaseName,restoreAdventure} from './drop-adventure-model.js';
 import {RUN,runMove,runHint,buildCourse,createRunner,stepRunner,runZone,groundBelow,beginTransit,bounce,moleDepth,transitPoint} from './run-stage-model.js';
 import {bindDirectionPad,mapKeyDirection} from './map-controls.js';
-import {esc,btn} from './ui.js';
+import {esc,btn,icon} from './ui.js';
 import {playCue} from './sound.js';
 
 const SCIENCE='얼음은 단단한 모양을 유지하고, 물은 모양을 바꾸며 흘러. 수증기는 눈에 보이지 않아 점선으로 위치만 표시했어. 얼굴·장치 사이 이동·버튼 횟수는 게임의 표현이며 실제 변화 시간이나 크기를 나타내지 않아. 달리기와 점프, 장치를 타고 건너는 길도 게임의 표현이야. 실제 뜨거운 물은 어른과 함께 다뤄.';
@@ -213,10 +213,31 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
  // Pausing: start card, companion hint, arrival panel, any open dialog, or a hidden tab.
  let waiting=true,hinting=false,finished=adventure.done,stops=0,falls=0,flash=0,flashWarm=true,pop=0,flinch=0;
  const paused=()=>waiting||hinting||finished||document.hidden||!!document.querySelector('dialog[open]');
- function showDone(){
+ // fresh: Bangul has just arrived (celebrate once). Reopening a finished run shows the same panel without the burst or sound.
+ function showDone(fresh=false){
   finished=true;hud.done.hidden=false;
-  hud.done.innerHTML=`<h2>내가 만든 물의 변화</h2><ul>${adventure.log.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><div class="run-done-actions">${btn(adventure.chapter===expeditions.length-1?'처음 길 다시 탐험':'다음 모험으로','drop-next','primary')}${btn('연구섬 지도','map','secondary')}</div>`;
-  hud.done.querySelector('button')?.focus({preventScroll:true});
+  const total=expeditions.length,count=adventure.chapter+1,last=count===total,log=`<ul>${adventure.log.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+  const steps=`<ol class="run-done-steps" aria-label="변신 모험 ${count} / ${total} 완료">${expeditions.map((m,i)=>`<li class="${i<count?'is-done':''}" style="--i:${i}"><b>${i<count?icon('check',18):i+1}</b><span>${esc(m.title)}</span></li>`).join('')}</ol>`;
+  hud.done.classList.toggle('is-finale',last);root.classList.toggle('is-finale',last);
+  if(!last){
+   hud.done.innerHTML=`<p class="run-done-count">변신 모험 ${count} / ${total} 완료</p><h2>내가 만든 물의 변화</h2>${log}<div class="run-done-actions">${btn('다음 모험으로','drop-next','primary')}${btn('연구섬 지도','map','secondary')}</div>`;
+  }else{
+   const mapDone=(state.completed?.length||0)>=5;
+   const still=!fresh||state.settings.reduced?' is-still':'';
+   hud.done.innerHTML=`<div class="run-finale${still}">
+    <div class="run-finale-burst" aria-hidden="true">${Array.from({length:18},(_,i)=>`<i style="--a:${i*20}deg;--d:${120+(i%3)*46}px;--t:${(i%4)*.06}s"></i>`).join('')}</div>
+    <img class="run-finale-bangul" src="/assets/v2/bangul-title.webp" width="774" height="1015" alt="손을 흔드는 방울이">
+    <div class="run-finale-copy">
+     <p class="run-done-count">변신 모험 ${total} / ${total} 모두 완료</p>
+     <h2>모든 물길을 통과했어!</h2>
+     ${steps}
+     <h3>마지막 모험에서 만든 물의 변화</h3>${log}
+     <p class="run-finale-next">${mapDone?'이제 연구섬 지도에서 네가 되살린 물길과 섬 주민들을 다시 만나 봐.':'이제 연구섬 지도로 가서 섬마다 실험하고, 멈춘 물길을 되살려 봐!'}</p>
+     <div class="run-done-actions">${btn(`연구섬 지도 탐험하러 가기 ${icon('arrow',20)}`,'map','primary')}${btn('처음 길 다시 탐험','drop-next','secondary')}</div>
+    </div></div>`;
+   if(fresh)void playCue('victory');
+  }
+  hud.done.querySelector('.run-done-actions .btn.primary')?.focus({preventScroll:true});
  }
  function closeHint(){hinting=false;hud.hint.hidden=true;hud.hint.replaceChildren();}
  function showHint(text){
@@ -283,7 +304,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
    if(move.passed){stops=falls=0;beginTransit(runner,course.segments[event.segment]);void playCue('success');}
    else{bounce(runner);void playCue('error');if(++stops>=3){stops=0;showHint(runHint(adventure));}}
   }
-  if(event.type==='arrived'){falls=0;if(adventure.done)showDone();}
+  if(event.type==='arrived'){falls=0;if(adventure.done)showDone(true);}
  }
 
  let width=0,height=0,topSafe=130,frame=0,last=performance.now(),camX=runner.x+1.2,camY=runner.y,step=0;

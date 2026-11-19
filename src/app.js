@@ -44,6 +44,7 @@ function syncStorageNotice(){
 document.addEventListener('storage-status',syncStorageNotice);
 function persist(){const ok=save();if(!ok)toast(getStorageStatus().message);return ok;}
 function go(route){if(route==='home'||route==='map')state.dropReturn=false;if(route!==state.route)state.fieldwork.active=0;clearTimeout(travelTimer);clearInterval(endingTimer);clearTimeout(toast.timer);document.querySelector('#toast').classList.remove('show');document.querySelector('#toast').textContent='';if(typeof route==='number'&&!canEnter(route,state)){toast('앞 실험의 기록을 먼저 완성해 줘.');return;}if(route==='ending'&&!state.restored&&!state.settings.adminUnlock)return;if(route==='ending'&&!state.settings.adminUnlock&&remainingMapVillains(state)){state.finalePending=true;route='map';toast('남은 밸브 두더지를 모두 물리치면 엔딩 영상이 열려!');}state.route=route;if(typeof route==='number')state.lastScreen=route;persist();render();window.scrollTo(0,0);}
+let collectorSeen='';
 const finishActions={'act-complete-1':2,'act-complete-2':4,'act-complete-3':6,'act-complete-4':8};
 function baseAction(action){if(!action)return;if(handleActivity(action,ctx))return;handleWorkshop(action,ctx);}
 function routeAction(action){
@@ -56,16 +57,20 @@ function routeAction(action){
  if(handleFieldwork(action,ctx))return;
  if(state.route===9&&(action==='workshop-collector'||action==='complete-5'&&currentTrialValid(state.lab.workshop))){
   const complete=action==='complete-5';
-  openCollectorLesson({reduced:state.settings.reduced,continueLabel:complete?'이 장치로 출발':'공방으로 돌아가기',onContinue:complete?()=>{
+  const depart=()=>{
    if(state.route!==9)return;
    baseAction(action);
    if(state.route===10)openStageLetter(10);
-  }:undefined});
+  };
+  // The collector lesson already seen in this run (from its own button or a closed finish) is not shown again on finish.
+  if(complete&&collectorSeen===state.mapRunId){depart();return;}
+  collectorSeen=state.mapRunId;
+  openCollectorLesson({reduced:state.settings.reduced,continueLabel:complete?'이 장치로 출발':'공방으로 돌아가기',onContinue:complete?depart:undefined});
   return;
  }
  const n=finishActions[action];
  if([6,8].includes(n)&&activityReady(n,experimentActivities(n,state))){
-  openConcept(n/2,{reduced:state.settings.reduced,continueLabel:state.settings.autoObservation===true?'지도로 돌아가기':'관찰 마치기',onContinue:()=>baseAction(action)});
+  openConcept(n/2,{reduced:state.settings.reduced,once:state.mapRunId,continueLabel:state.settings.autoObservation===true?'지도로 돌아가기':'관찰 마치기',onContinue:()=>baseAction(action)});
   return;
  }
  if(n&&!hasFieldSeal(n)&&activityReady(n,experimentActivities(n,state))){startFieldwork(n,action,ctx);return;}

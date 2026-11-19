@@ -1,7 +1,7 @@
 import {measureStatus,measureTask} from './freeze-measure.js';
 import {coreTransfer} from './core-transfer.js';
 import {cupSummarySeen,activityReady,experimentActivities,heatingTrial,nextSortCard,sortCards,pipeStep} from './activity-model.js';
-import {currentTrialValid,testCollector,stageLessons} from './domain.js';
+import {currentTrialValid,testCollector,stageLessons,observations} from './domain.js';
 import {funnelSeat} from './workshop-controls.js';
 import {icon,esc} from './ui.js';
 import {iceSeat} from './scene-model.js';
@@ -31,7 +31,7 @@ export function experimentMove(n,state,final){
  if(n===3&&activityReady(3,a)&&a.freeze.talk<3)return a.freeze.talk<2
   ?move('tap','냉동실에 넣으면 어떻게 되는지 살펴보자','‘냉동실에 넣기’를 누르고 쭈쭈바 봉지의 모양을 비교해 봐.',actions('act-talk-chill'))
   :move('tap','배관은 왜 고장 났을까?','얼리기 전과 얼린 뒤 봉지의 모양을 살펴보고, 물이 꽉 찬 배관에는 어떤 일이 생길지 골라 봐.','.freeze-guess');
- if(n<=8&&activityReady(n,a)&&!(n===7&&a.dew.rewiped&&!a.dew.again)&&!(n===8&&cupSummarySeen(a.explain)&&!a.explain.transfer))return move('next','오늘 알게 된 것',predictionNote(n,a,q)+stageLessons[n],actions(next[n]));
+ if(n<=8&&activityReady(n,a)&&!(n===7&&a.dew.rewiped&&!a.dew.again)&&!(n===8&&cupSummarySeen(a.explain)&&!a.explain.transfer))return move('next','오늘 알게 된 것',predictionNote(n,a,q)+(n===1?observations[2].evidence:stageLessons[n]),actions(next[n]));
  if(n===1){
   const s=a.observe;
   if(s.step===0){
@@ -39,7 +39,7 @@ export function experimentMove(n,state,final){
    const tall=!s.pours.includes('tall');
    return move('pour',`${tall?'길쭉한':'넓은'} 그릇에 물 100mL를 담아 봐`,'100mL 붓기를 눌러. 그릇 위로 주전자를 끌어도 돼.',actions('ix-pour-next')+','+board,s.pours.length?[]:[[117,162,190,230]]);
   }
-  if(s.step===1)return s.iceMoved?move('compare','물과 얼음을 나란히 비교해 봐','물은 그릇마다 모양이 달랐는데 얼음은 어때? 다 봤으면 물자국을 보러 가자.',actions('act-observe-step-2')):move('drag','얼음을 넓은 그릇으로 옮겨 봐','물을 담았던 것과 같은 두 그릇이야. 얼음도 모양이 바뀔까?',board,[[iceSeat('wide').x,158,166,176],[iceSeat('tall').x,158,106,176]]);
+  if(s.step===1)return s.iceMoved?move('compare','물과 얼음을 비교했어 · 다 봤으면 물자국으로',stageLessons[1],actions('act-observe-step-2')):move('drag','얼음을 넓은 그릇으로 옮겨 봐','물을 담았던 것과 같은 두 그릇이야. 얼음도 모양이 바뀔까?',board,[[iceSeat('wide').x,158,166,176],[iceSeat('tall').x,158,106,176]]);
   if(!s.clothWet)return move('pour','천에 물을 부어 봐','주전자를 천 위로 끌거나 ‘천에 물 붓기’를 눌러 봐.',board+','+actions('act-wet-cloth'));
   return s.time<80?move('tap','물자국이 마르는 모습을 봐','시계를 톡 눌러 시간을 보내 봐.',time(n)):move('tap','마른 모습을 끝까지 봐','시간 관찰이 끝나면 관찰이 저절로 기록돼.',time(n));
  }

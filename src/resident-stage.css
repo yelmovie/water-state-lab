@@ -29,3 +29,5 @@
 
 /* This stage places the resident on the right, facing into the open map. */
 .water-character figure[data-character] img { transform: translateX(-50%) scaleX(-1); }
+/* The lesson line in a resident talk sits on the cream panel, so it needs dark coloured text, not the white of the standalone teal card. */
+.water-context .lesson-card{color:#17574f}.water-context .lesson-card strong{font-weight:800}.water-context .lesson-card span{color:#8a4f0e;font-weight:700}

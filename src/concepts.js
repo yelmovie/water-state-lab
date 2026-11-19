@@ -4,13 +4,19 @@ import {btn,buddy,esc,icon} from './ui.js';
 import {holdMusic,releaseMusic,playCue} from './sound.js';
 
 let active=null;
+// Films already played in this run. A stage's finish button opens its film with once set to the run id; pressing it again
+// after the film was closed with X or Esc goes straight on instead of replaying it. Replays the learner asks for still play,
+// and a reset (new run id) shows every film again.
+const played=new Set();
 export function closeConcept(){active?.close();}
 export function openCollectorLesson({reduced=false,onContinue,continueLabel='공방으로 돌아가기'}={}){
  closeConcept();
  active=openCollectorConcept({reduced,onContinue,continueLabel,onClose:()=>{active=null;},onFilm:()=>openConcept(4,{reduced,onContinue,continueLabel})});
 }
-export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으로 돌아가기'}={}){
+export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으로 돌아가기',once=''}={}){
  const clip=concepts[n];if(!clip)return;
+ const key=once&&`${once}|${n}`;
+ if(key&&played.has(key)&&onContinue){onContinue();return;}
  closeConcept();
  const opener=document.activeElement,d=document.createElement('dialog');
  d.className='concept-dialog concept-film';d.setAttribute('aria-labelledby','concept-title');
@@ -23,7 +29,7 @@ export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으
  const showCue=i=>{if(i===cue)return;cue=i;caption.textContent=clip.cues[i].text;d.querySelectorAll('[data-cue]').forEach((b,k)=>b.setAttribute('aria-pressed',String(k===i)));};
  const last=clip.cues.length-1,sync=()=>showCue(Math.max(0,clip.cues.findLastIndex(c=>c.at<=video.currentTime)));
  function close(){if(closed)return;closed=true;clearTimeout(waiting);video.pause();video.removeAttribute('src');video.load();d.close();d.remove();document.removeEventListener('visibilitychange',visibility);releaseMusic('concept');if(active?.dialog===d)active=null;if(opener?.isConnected)opener.focus({preventScroll:true});}
- function fallback(){if(closed||failed)return;failed=true;clearTimeout(waiting);video.pause();video.removeAttribute('src');video.load();video.hidden=true;end.hidden=false;play.hidden=true;list.hidden=false;d.querySelector('.concept-beats').hidden=true;caption.textContent='영상 대신 장면별 핵심을 함께 살펴봐.';d.querySelector('[data-concept=replay]').hidden=true;d.classList.add('film-failed');layout();}
+ function fallback(){if(closed||failed)return;failed=true;if(key)played.add(key);clearTimeout(waiting);video.pause();video.removeAttribute('src');video.load();video.hidden=true;end.hidden=false;play.hidden=true;list.hidden=false;d.querySelector('.concept-beats').hidden=true;caption.textContent='영상 대신 장면별 핵심을 함께 살펴봐.';d.querySelector('[data-concept=replay]').hidden=true;d.classList.add('film-failed');layout();}
  function start(){if(closed||failed)return;clearTimeout(waiting);waiting=setTimeout(()=>{if(!closed&&video.paused&&!video.ended)play.hidden=false;},6000);end.hidden=true;layout();void video.play().then(()=>{if(!closed)play.hidden=true;clearTimeout(waiting);}).catch(()=>{if(!closed){play.hidden=false;end.hidden=false;layout();}});}
  const visibility=()=>{if(document.hidden){video.pause();play.hidden=false;}};
  d.addEventListener('cancel',e=>{e.preventDefault();close();});
@@ -32,7 +38,7 @@ export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으
   if(b.dataset.cue!==undefined&&!failed){video.pause();video.currentTime=clip.cues[Number(b.dataset.cue)].at+.4;/* past the burned caption's fade-in */end.hidden=true;play.hidden=false;layout();showCue(Number(b.dataset.cue));return;}
   const a=b.dataset.concept;if(a==='close')close();if(a==='play')start();if(a==='replay'){video.currentTime=0;showCue(0);start();}if(a==='continue'){close();onContinue?.();}
  });
- video.addEventListener('timeupdate',sync);video.addEventListener('seeked',()=>{rolled=true;layout();sync();});video.addEventListener('playing',()=>{rolled=true;layout();});
+ video.addEventListener('timeupdate',sync);video.addEventListener('seeked',()=>{rolled=true;layout();sync();});video.addEventListener('playing',()=>{rolled=true;if(key)played.add(key);layout();});
  // The film stops on its last frame, which still shows its burned last caption.
  video.addEventListener('ended',()=>{end.hidden=rolled;layout();showCue(last);play.hidden=true;d.querySelector('[data-concept=continue]').focus();});
  video.addEventListener('error',fallback);
