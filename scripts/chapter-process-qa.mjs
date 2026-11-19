@@ -200,7 +200,7 @@ try{
     assert.ok(clock&&clock.y>=0&&clock.y+clock.height<=height,`${label}: clock must stay in view`);
     await layout(`${label}-${width}x${height}`);
    };
-   await click('settings');await page.locator('#settings-x').click();await reachable('greenhouse-settings');
+   await click('settings');await page.locator('#settings-close').click();await reachable('greenhouse-settings');
    await page.reload({waitUntil:'networkidle'});await reachable('greenhouse-reload');
    await cycle('wait');await cycle('collect');await cycle('compare');
    assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push(`greenhouse-resume-${width}x${height}`);

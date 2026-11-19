@@ -17,7 +17,7 @@ export const offlineText=({done,total})=>total&&done>=total?C.teacher.offlineDon
 
 /** Optional videos preserve the settings list and return focus to its selected item. */
 export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()=>{},showStory=()=>{},certificate=()=>{},notebook,discoveries,onSoundChange=()=>{},onReset,getResetToken=captureResetToken,storageStatus=getStorageStatus,offline=()=>null}){
- if(activeDialog?.open){activeDialog.querySelector('#settings-x').focus();return activeDialog;}
+ if(activeDialog?.open){activeDialog.querySelector('#settings-close').focus();return activeDialog;}
  const opener=document.activeElement,dialog=document.createElement('dialog');
  dialog.className='settings-dialog';dialog.setAttribute('data-science-settings','');dialog.setAttribute('aria-labelledby','settings-title');
  const settings=state.settings;
@@ -39,7 +39,7 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
  const accessibility=switchButton('settings-reduced',C.sound.reduced,settings.reduced===true);
  const videos=`<section aria-labelledby="settings-quick-heading"><h3 class="science-settings-label" id="settings-quick-heading">영상과 기록</h3><div class="settings-replays science-settings-actions"><button type="button" id="settings-intro" class="btn secondary">${esc(C.replay.intro)}</button><button type="button" id="settings-ending" class="btn secondary" ${endingUnlocked()?'':'disabled aria-describedby="settings-replay-locked"'}>${esc(C.replay.ending)}</button><button type="button" id="settings-certificate" class="btn secondary" ${done?'':'disabled aria-describedby="settings-replay-locked"'}>${esc(C.replay.certificate)}</button>${records}</div><p id="settings-replay-locked" class="settings-muted" ${done&&endingUnlocked()?'hidden':''}>${esc(done?'아직 남은 밸브 두더지를 모두 물리치면 엔딩 영상이 열려요.':C.replay.locked)}</p></section>`;
  const guides=details(C.app.title,C.app.rows.map(([label,text])=>`<p><strong>${esc(label)}</strong><br>${esc(text)}</p>`).join('')+offlineStatus+`<p id="storage-diagnostics" class="settings-muted"></p><p class="settings-signature">${esc(C.app.name)} v${esc(APP_VERSION)} · ${esc(C.app.maker)}</p>`)+details(C.student.title,paragraphs(C.student.lines))+details(C.teacher.title,teacher)+details(C.credits.title,credits);
- dialog.innerHTML=`<div class="settings-head"><h2 id="settings-title">${esc(C.title)}</h2><button type="button" id="settings-x" class="icon-btn" aria-label="${esc(C.close)}">${icon('close')}</button></div><p id="settings-save-notice" class="settings-notice" role="alert" hidden></p><div class="settings-scroll science-settings-body"><section class="science-settings-audio" aria-labelledby="settings-sound-heading"><h3 class="science-settings-label" id="settings-sound-heading">소리</h3>${audio}</section>${videos}${details(C.replay.concepts,`<div id="settings-concept-list" class="settings-concept-list">${clips()}</div>`)}${guides}${accessibility}${teacherTools}</div><footer class="settings-footer science-settings-footer"><button type="button" id="settings-reset" class="btn secondary" ${settings.adminUnlock?'disabled aria-describedby="settings-preview-notice"':''}>${esc(C.reset.button)}</button><button type="button" id="settings-close" class="btn primary">${esc(C.close)}</button></footer>`;
+ dialog.innerHTML=`<div class="settings-head"><h2 id="settings-title">${esc(C.title)}</h2></div><p id="settings-save-notice" class="settings-notice" role="alert" hidden></p><div class="settings-scroll science-settings-body"><section class="science-settings-audio" aria-labelledby="settings-sound-heading"><h3 class="science-settings-label" id="settings-sound-heading">소리</h3>${audio}</section>${videos}${details(C.replay.concepts,`<div id="settings-concept-list" class="settings-concept-list">${clips()}</div>`)}${guides}${accessibility}${teacherTools}</div><footer class="settings-footer science-settings-footer"><button type="button" id="settings-reset" class="btn secondary" ${settings.adminUnlock?'disabled aria-describedby="settings-preview-notice"':''}>${esc(C.reset.button)}</button><button type="button" id="settings-close" class="btn primary">${esc(C.close)}</button></footer>`;
  document.body.append(dialog);activeDialog=dialog;
  let confirmation;
  dialog.addEventListener('close',()=>{
@@ -47,7 +47,7 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
   if(!document.querySelector('dialog[open]'))(opener?.isConnected?opener:document.querySelector('[data-action="settings"]'))?.focus({preventScroll:true});
  },{once:true});
  const close=()=>dialog.close();
- dialog.querySelector('#settings-x').onclick=close;dialog.querySelector('#settings-close').onclick=close;
+ dialog.querySelector('#settings-close').onclick=close;
  const showStatus=()=>{const status=storageStatus(),notice=dialog.querySelector('#settings-save-notice');notice.textContent=status.message||'';notice.hidden=!status.message;
  const diagnostics=dialog.querySelector('#storage-diagnostics');
  diagnostics.textContent=`현재 저장 상태 · 읽기 ${status.read==='ok'?'성공':'실패'} · 쓰기 ${{saved:'성공',failed:'실패',blocked:'보류','not-attempted':'아직 시도 전'}[status.write]||'확인 전'} · 충돌 ${status.conflict?'있음':'없음'} · 원본 보호 ${status.protected?'중':'없음'}${status.preview?' · 교사 시연은 학생 진행과 분리':''}`;
@@ -99,5 +99,5 @@ export function openSettings({state,save=()=>{},render=()=>{},go=()=>{},reset=()
   };
   current.showModal();current.querySelector('#settings-cancel-reset').focus();
  };
- showStatus();dialog.showModal();dialog.querySelector('#settings-x').focus();return dialog;
+ showStatus();dialog.showModal();dialog.querySelector('#settings-close').focus();return dialog;
 }
