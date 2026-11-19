@@ -1,3 +1,15 @@
+# 소리 3차 수정: 설정의 효과음 크기·목소리 스위치, 첫 입력 전 재생 · 2026-11-20
+
+운영 배포: (아래 「배포 기록」 줄 참고). 지침 `../_shared/AUDIO-FIX3-BRIEF-20261120.md` 1장과 06번 줄.
+
+- 설정 소리 다섯 항목(`src/settings.js`, `settings-content.js`): 배경 음악·배경 음악 크기(그대로), 효과음, **효과음 크기**(새, 0~100% 5% 단위, 기본 100% = 3차 전 크기 그대로), **목소리**(새). 효과음 스위치는 효과음만, 목소리 스위치는 방울이·주민·밸브 두더지 대사, 개념 자막 음성, 영상 자막 음성만 끈다(글·말풍선·자막은 그대로). 효과음 크기는 `sound.js`의 모든 효과음(UI·실험 물소리·전투·보상·카드·발자국·합성음)에 곱하고, 재생 중인 소리에도 바로 적용.
+- 저장(`state.js`, `water-drop-lab:v1`): `settings.voice`(기본 true), `settings.sfxVolume`(기본 100). 값이 없는 예전 저장은 목소리 = 그때의 `sfx` 값, 효과음 크기 = 100. 초기화해도 소리 설정은 남는다.
+- 헤더 스피커는 전체 스위치: 하나라도 켜져 있으면 「소리 끄기」(배경 음악·효과음·목소리 모두 끔), 모두 꺼져 있으면 「소리 켜기」(모두 켬).
+- 목소리를 끄면 말풍선·카드·개념 정리 단계는 「음성 없음」 시간으로 돈다(`lineLeft` 0, `concept-collector.js` 3.4초).
+- 개념 영상: 소리 트랙(aac)은 있지만 `<video muted>`로 늘 무음 재생 → 겹침 해당 없음.
+- 첫 입력 전: 저장된 진행으로 지도를 다시 열면 두더지 등장음(`appear`)이 입력 전에 재생을 시도하던 것을 첫 입력 뒤로 미룸(`map-villains.js`). 지도를 떠나면 생략.
+- 검증: `npm test` 337개 통과, `npm run check`, 헤드리스 `.tmp/audio-fix3-20261120/probe3.mjs`(설정 화면 1280×800·1024×768·844×390 스크린숏 같은 폴더). 귀로 듣는 확인은 못 했다.
+
 # 소리 2차 수정: 갈래·발자국·축하 순서·엔딩 뒤 곡·악당 대사 차례 · 2026-11-20
 
 운영 배포: 커밋 `3ce148a` → Cloudflare Pages `db9fcb55`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `/`·`src/sound.js`·`app.js`·`journey.js`·`map-villains.js`·`voice-lines.js`·`run-stage.js` 해시가 빌드와 같고 `assets/audio/step-01·02.mp3` 200. 지침 `../_shared/AUDIO-FIX2-BRIEF-20261119.md` 06번 줄과 7장.

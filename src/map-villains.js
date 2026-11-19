@@ -1,5 +1,6 @@
 import {missions} from './domain.js';
 import {lineLeft} from './voice-lines.js';
+import {soundUnlocked} from './sound.js';
 
 export const MAP_VILLAINS_KEY='water-state-lab:map-villains:v1';
 const sessionClears=new Set();
@@ -267,7 +268,8 @@ export function mountMapVillains(world, options) {
  const fresh=targets.filter(t=>t.b.dataset.state==='ready').map(t=>t.b.dataset.stage+':'+(t.stage.token||'pending')).filter(id=>!announcedVillains.has(id));
  const announce=()=>{
   if(abort.signal.aborted)return;
-  if(fighting||document.hidden||paused()){later(announce,1000);return;}
+  // Before the first tap or key press the browser refuses sound, so the cue waits for it (leaving the map drops it).
+  if(fighting||document.hidden||paused()||!soundUnlocked()){later(announce,1000);return;}
   fresh.forEach(id=>announcedVillains.add(id));options.sound?.('appear');
  };
  if(fresh.length)later(announce,700);

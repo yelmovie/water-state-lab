@@ -25,6 +25,7 @@ globalThis.AudioContext=class{
  suspend(){return Promise.resolve();}
 };
 const sound=await import('../src/sound.js');
+const {state}=await import('../src/state.js');
 const {speakLine,stopVoiceLine}=await import('../src/voice-lines.js');
 const shown=text=>({isConnected:true,textContent:text,closest:()=>null,getClientRects:()=>[{}]});
 const voices=()=>created.filter(a=>a.src.includes('/voice/'));
@@ -70,4 +71,15 @@ test('a line ending does not undo a resident voice or an open film',()=>{
  assert.equal(music().paused,true,'the film is still open');
  sound.releaseMusic('film');assert.equal(music().paused,false);assert.equal(level(),.4);
  sound.setSoundSettings({sound:false});
+});
+
+test('the voice switch alone stops and gates spoken lines; the effects switch no longer does',()=>{
+ sound.setSoundSettings({sound:true,bgm:true,sfx:true,bgmVolume:40});state.settings.sound=true;state.settings.sfx=true;state.settings.voice=true;
+ const bubble=shown(mole);speakLine(mole,bubble);const line=voices().at(-1);assert.equal(line.paused,false);assert.equal(level(),.1);
+ state.settings.voice=false;sound.setSoundSettings({voice:false});
+ assert.equal(line.paused,true,'turning voices off stops the line at once');assert.equal(level(),.4,'and lifts the music duck');
+ const before=voices().length;speakLine(mole,bubble);assert.equal(voices().length,before,'no line starts while voices are off');
+ state.settings.voice=true;state.settings.sfx=false;sound.setSoundSettings({voice:true,sfx:false});
+ speakLine(mole,bubble);assert.equal(voices().length,before+1,'effects off: voices still speak');assert.equal(voices().at(-1).paused,false);
+ stopVoiceLine();state.settings.sfx=true;sound.setSoundSettings({sound:false,sfx:true});
 });

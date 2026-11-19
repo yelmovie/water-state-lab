@@ -12,7 +12,7 @@ export function attachNpcVoice(dialog,key){
  dialog.append(box);const audio=box.querySelector('audio'),button=box.querySelector('button'),label=button.querySelector('span'),status=box.querySelector('.npc-voice-status');
  const lifetime=new AbortController(),{signal}=lifetime;
  const update=event=>{
-  const speaking=event?.type==='playing'&&!audio.paused&&!audio.ended&&!document.hidden&&state.settings.sound&&state.settings.sfx!==false;
+  const speaking=event?.type==='playing'&&!audio.paused&&!audio.ended&&!document.hidden&&state.settings.sound&&state.settings.voice!==false;
   label.textContent=!audio.paused&&!audio.ended?'잠깐 멈추기':audio.currentTime?'다시 듣기':'목소리 듣기';
   button.setAttribute('aria-pressed',String(!audio.paused&&!audio.ended));
   dialog.classList.toggle('npc-speaking',speaking);
@@ -21,12 +21,12 @@ export function attachNpcVoice(dialog,key){
  const pause=()=>{audio.pause();update();};
  const stop=()=>{if(signal.aborted)return;observer.disconnect();lifetime.abort();audio.pause();audio.removeAttribute('src');audio.load();dialog.classList.remove('npc-speaking');releaseMusic('npc');if(stopCurrent===stop)stopCurrent=undefined;};
  const observer=new MutationObserver(()=>{if(!box.isConnected)stop();});observer.observe(dialog,{childList:true,subtree:true});
- const play=()=>{if(!state.settings.sound||state.settings.sfx===false||document.hidden){status.textContent='위쪽 스피커로 게임 소리를 켜 줘.';return;}status.textContent='';audio.currentTime=0;void audio.play().catch(()=>{if(!signal.aborted){pause();status.textContent='듣기 버튼을 다시 눌러 줘. 글로도 읽을 수 있어.';}});};
+ const play=()=>{if(!state.settings.sound||state.settings.voice===false||document.hidden){status.textContent=state.settings.sound&&state.settings.voice===false?'설정에서 목소리를 켜 줘. 글로도 읽을 수 있어.':'위쪽 스피커로 게임 소리를 켜 줘.';return;}status.textContent='';audio.currentTime=0;void audio.play().catch(()=>{if(!signal.aborted){pause();status.textContent='듣기 버튼을 다시 눌러 줘. 글로도 읽을 수 있어.';}});};
  button.addEventListener('click',()=>audio.paused?play():pause(),{signal});
  for(const event of ['playing','pause','ended','waiting','emptied'])audio.addEventListener(event,update,{signal});
  audio.addEventListener('error',()=>{pause();status.textContent='목소리를 불러오지 못했어. 글로 읽을 수 있어.';},{signal});
- document.addEventListener('game-audio-settings',()=>{if(!state.settings.sound||state.settings.sfx===false)pause();},{signal});
+ document.addEventListener('game-audio-settings',()=>{if(!state.settings.sound||state.settings.voice===false)pause();},{signal});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();},{signal});
  dialog.addEventListener('close',()=>{if(!dialog.open)stop();},{signal});
- stopCurrent=stop;if(state.settings.sound&&state.settings.sfx!==false&&!document.hidden)play();
+ stopCurrent=stop;if(state.settings.sound&&state.settings.voice!==false&&!document.hidden)play();
 }

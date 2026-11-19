@@ -90,14 +90,14 @@ test('spoken lines lower the music to a quarter without stopping it, and every n
 test('settings use the common order, lock rewards until completion, and preserve audio through confirmed reset',async t=>{
  const previousDocument=globalThis.document;const doc=mockDocument();globalThis.document=doc;t.after(()=>{globalThis.document=previousDocument;});
  const {openSettings}=await import('../src/settings.js');
- const state={mapRunId:'settings-test',evidence:{},settings:{sound:true,bgm:false,sfx:true,bgmVolume:35,reduced:false,adminUnlock:false},completed:[],restored:false};
+ const state={mapRunId:'settings-test',evidence:{},settings:{sound:true,bgm:false,sfx:true,voice:true,sfxVolume:100,bgmVolume:35,reduced:false,adminUnlock:false},completed:[],restored:false};
  let resets=0,savedAudio,rendered=0;
  const opener=doc.activeElement;
  doc.querySelector=selector=>selector==='dialog[open]'?doc.created.find(el=>el.open):null;
  const token={raw:'test'};
  let dialog=openSettings({state,render:()=>rendered++,getResetToken:()=>token,storageStatus:()=>({}),onReset:(audio,received)=>{assert.equal(received,token);resets++;savedAudio=audio;}});
  const html=dialog.innerHTML;
- const requiredOrder=['settings-bgm-label','settings-sfx-label','settings-bgm-volume','settings-intro','앱 정보 · 배움과 보상','학생용 가이드','교사용 가이드','성취기준','이미지·소리·저작권 고지','settings-unlock','settings-footer'];
+ const requiredOrder=['settings-bgm-label','settings-bgm-volume','settings-sfx-label','settings-sfx-volume','settings-voice-label','settings-intro','앱 정보 · 배움과 보상','학생용 가이드','교사용 가이드','성취기준','이미지·소리·저작권 고지','settings-unlock','settings-footer'];
  requiredOrder.forEach((token,index)=>{assert.ok(html.includes(token));if(index)assert.ok(html.indexOf(token)>html.indexOf(requiredOrder[index-1]));});
  assert.match(html,/id="settings-ending"[^>]*disabled/);assert.match(html,/id="settings-certificate"[^>]*disabled/);
  assert.match(html,/id="settings-bgm-volume"[^>]*disabled/);assert.doesNotMatch(html,/<details[^>]*\sopen(?:\s|>)/);
@@ -110,7 +110,7 @@ test('settings use the common order, lock rewards until completion, and preserve
  assert.equal(doc.activeElement,confirm.querySelector('#settings-cancel-reset'),'cancel receives the initial focus');
  confirm.querySelector('#settings-cancel-reset').onclick();assert.equal(resets,0);assert.equal(dialog.open,true);
  dialog.querySelector('#settings-reset').onclick();confirm=doc.created.at(-1);confirm.querySelector('#settings-confirm-reset').onclick();
- assert.equal(resets,1);assert.deepEqual(savedAudio,{sound:true,bgm:false,sfx:true,bgmVolume:35});assert.equal(doc.activeElement,opener);
+ assert.equal(resets,1);assert.deepEqual(savedAudio,{sound:true,bgm:false,sfx:true,voice:true,sfxVolume:100,bgmVolume:35});assert.equal(doc.activeElement,opener);
  state.restored=true;state.completed=[1,2,3,4,5];dialog=openSettings({state});
  assert.doesNotMatch(dialog.innerHTML,/id="settings-certificate"[^>]*disabled/);
  assert.match(dialog.innerHTML,/id="settings-ending"[^>]*disabled/);dialog.close();

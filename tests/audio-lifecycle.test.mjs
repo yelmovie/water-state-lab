@@ -51,3 +51,28 @@ test('CC0 water samples use gain, one voice, mute and background cleanup',async(
  document.hidden=false;
  delete globalThis.Audio;
 });
+
+test('the effects size scales every effect from the unchanged default and follows a playing one at once',async()=>{
+ const audio=[],gains=[];
+ globalThis.Audio=class {
+  constructor(src){this.src=src;this.currentTime=0;this.paused=true;audio.push(this);}
+  play(){this.paused=false;return Promise.resolve();}
+  pause(){this.paused=true;}
+ };
+ globalThis.AudioContext=class {
+  state='running';destination={};
+  createGain(){const node={gain:{value:1},connect(){}};gains.push(node);return node;}
+  createMediaElementSource(){return {connect(){}};}
+  suspend(){return Promise.resolve();}
+  resume(){return Promise.resolve();}
+ };
+ const scaled=await import('../src/sound.js?effects-size');
+ scaled.setSoundSettings({sound:true,sfx:true,bgm:false});
+ await scaled.playCue('hit');assert.equal(gains[0].gain.value,.42,'default 100 % keeps the level from before');
+ scaled.setSoundSettings({sfxVolume:50});assert.equal(gains[0].gain.value,.21,'a sound already playing follows the new size');
+ await scaled.playCue('click');assert.equal(gains[1].gain.value,.11);
+ scaled.setSoundSettings({sfxVolume:'x'});assert.equal(gains[1].gain.value,.22,'an unreadable size falls back to 100 %');
+ scaled.setSoundSettings({sfxVolume:0,voice:false});await scaled.playCue('hit');assert.equal(gains[0].gain.value,0);
+ scaled.setSoundSettings({sound:false});
+ delete globalThis.Audio;
+});

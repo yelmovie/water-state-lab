@@ -12,7 +12,8 @@ export function voiceFor(text){const t=norm(text);if(!t)return '';return exact.g
 const WATCH='.concept-caption p,.collector-concept-copy p,.lesson-card strong,#stage-how,.drop-feedback,.drop-world-label,#map-coach-help p,.coach-help p,.freeze-talk-line,.activity-status,.mv-say b,.start-tagline,#ending-caption';
 const QUEUED='.concept-caption p,.lesson-card strong';
 let audio=null,owner=null,pending=[],lastSrc='',lastAt=0,waiting=null;
-const audible=()=>state.settings.sound&&state.settings.sfx!==false&&!document.hidden;
+// Spoken lines follow the voice switch (settings), not the effects switch; text and bubbles stay either way.
+const audible=()=>state.settings.sound&&state.settings.voice!==false&&!document.hidden;
 const otherVoice=()=>[...document.querySelectorAll('.npc-voice-control audio')].some(a=>!a.paused&&!a.ended);
 // The music plays at a quarter under a line ('voice' hold in sound.js). Films and concept clips hold it under their own names.
 export function stopVoiceLine(){pending=[];if(!audio)return;const a=audio;audio=null;owner=null;a.onended=a.onerror=a.onpause=null;a.pause();a.removeAttribute('src');a.load();releaseMusic('voice');}

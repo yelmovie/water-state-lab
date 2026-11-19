@@ -31,9 +31,19 @@ test('admin unlock opens every valid screen without awarding or erasing progress
  assert.equal(JSON.stringify({completed:s.completed,pages:s.pages,evidence:s.evidence}),before);
 });
 test('old saves acquire settings defaults and reload always exits teacher preview',()=>{
- const old=initialState();old.settings={reduced:true};assert.deepEqual(readState(storage(JSON.stringify(old))).settings,{reduced:true,sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true,adminUnlock:false,autoObservation:false,observationPace:1});
+ const old=initialState();old.settings={reduced:true};assert.deepEqual(readState(storage(JSON.stringify(old))).settings,{reduced:true,sound:true,bgm:true,sfx:true,voice:true,sfxVolume:100,bgmVolume:35,themeMusic:true,adminUnlock:false,autoObservation:false,observationPace:1});
  const s=initialState();s.settings.adminUnlock=true;s.settings.sound=false;
  for(const route of [10,'ending']){s.route=route;const loaded=readState(storage(JSON.stringify(s)));assert.equal(loaded.route,'map');assert.equal(loaded.settings.adminUnlock,false);assert.equal(loaded.settings.sound,false);}
+});
+test('saves from before the voice switch keep hearing voices exactly when they heard effects',()=>{
+ const load=settings=>{const old=initialState();old.settings=settings;return readState(storage(JSON.stringify(old))).settings;};
+ const off=load({sound:true,bgm:true,sfx:false,bgmVolume:35,themeMusic:true});assert.equal(off.voice,false);assert.equal(off.sfx,false);assert.equal(off.sfxVolume,100);
+ const on=load({sound:true,bgm:true,sfx:true,bgmVolume:35,themeMusic:true});assert.equal(on.voice,true);assert.equal(on.sfxVolume,100);
+ const none=load({sound:false,bgm:true,bgmVolume:35,themeMusic:true});assert.equal(none.sfx,false);assert.equal(none.voice,false,'no effects value: voices follow the old master switch like effects');
+ const missing=load({bgm:true,themeMusic:true});assert.equal(missing.sfx,true);assert.equal(missing.voice,true);
+ const chosen=load({sound:true,sfx:false,voice:true,sfxVolume:45,themeMusic:true});assert.equal(chosen.voice,true);assert.equal(chosen.sfxVolume,45);
+ assert.equal(load({sfxVolume:'loud',themeMusic:true}).sfxVolume,100);assert.equal(load({sfxVolume:180,themeMusic:true}).sfxVolume,100);
+ assert.deepEqual([initialState().settings.voice,initialState().settings.sfxVolume],[true,100]);
 });
 test('previous page follows the lesson sequence with a disabled home boundary',()=>{
  assert.equal(previousRoute('adventure'),'map');assert.equal(previousRoute('home'),null);assert.equal(previousRoute('map'),'home');assert.equal(previousRoute(1),'map');

@@ -14,7 +14,7 @@ export const STAGE_LEARNING=stageLessons.slice(1).map((objective,index)=>({
 }));
 export const SETTINGS_CONTENT={
  title:'설정',close:'닫기',
- sound:{bgm:'배경 음악',sfx:'효과음',volume:'배경 음악 크기',on:'켜짐 · 끄기',off:'꺼짐 · 켜기',reduced:'움직임 줄이기'},
+ sound:{bgm:'배경 음악',sfx:'효과음',volume:'배경 음악 크기',sfxVolume:'효과음 크기',voice:'목소리',on:'켜짐 · 끄기',off:'꺼짐 · 켜기',reduced:'움직임 줄이기'},
  replay:{intro:'인트로 영상 다시 보기',ending:'엔딩 영상 다시 보기',certificate:'연구 인증서 받기',locked:'연구 인증서는 다섯 연구를 마치고 물길을 복구하면 열려요. 엔딩은 밸브 두더지도 모두 물리쳐야 볼 수 있어요.',concepts:'개념 영상 다시 보기 (선택)',conceptsIntro:'현장 의뢰를 해결한 발견만 다시 볼 수 있어요. 영상을 닫으면 이 목록으로 돌아와요.',conceptReady:'내가 확인한 발견 · 9초',conceptLocked:'현장 의뢰 {n}을 해결하면 열려요.',conceptReturn:'목록으로 돌아가기'},
  app:{title:'앱 정보 · 배움과 보상',name:'방울이의 물길 탐험',maker:'기획·제작: 옐샘 & 아이스크림미디어',rows:[
   ['물길 복구 탐험','방울이와 물·얼음·수증기를 관찰하고, 조건을 바꾸어 물의 상태 변화를 확인해요.'],
