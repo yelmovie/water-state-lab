@@ -1,0 +1,30 @@
+/* 한국어 줄바꿈 균형 (과학34 공통, 2026-11-19)
+   - 단어 중간에서 끊지 않는다(keep-all). 너무 긴 낱말만 상자 끝에서 끊는다.
+   - 문단은 끝줄에 한두 낱말만 떨어지지 않게(pretty).
+   - 제목·버튼·팝업·안내처럼 짧은 글은 줄 길이를 고르게(balance).
+   모든 선택자를 :where()로 감싸 우선순위 0이다. 프로젝트에 따로 정한 규칙이 있으면 항상 그쪽이 이긴다. */
+:where(html) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
+  text-wrap: pretty;
+}
+:where(h1, h2, h3, h4, h5, h6, button, label, legend, figcaption, caption, summary, th, dt,
+  dialog, [role="dialog"], [role="alertdialog"], [role="status"], [role="alert"], [role="tooltip"]) {
+  text-wrap: balance;
+}
+/* 글자가 한 자씩 나오는 대사는 치는 동안 줄이 출렁이지 않게 보통 줄바꿈을 쓴다 */
+:where(.dialogue-typing, [data-typing] [aria-hidden="true"]) {
+  text-wrap: wrap;
+}
+
+/* ── 프로젝트 보정: 이 아래에 이 프로젝트에서만 필요한 규칙을 둔다(공통 위쪽은 그대로) ── */
+/* 06 물방울 연구실 (2026-11-19 측정 결과). text-wrap 줄임형은 nowrap까지 풀어 버리므로 여기서는 text-wrap-style만 쓴다. */
+/* 장 끝 주민 대화의 발견 카드: 긴 발견 문장은 두 줄을 고르게, 얻은 도구 이름은 좁은 칸에 끼어 「…를 / 얻었어!」로 갈리지 않게 */
+.water-context .lesson-card strong { text-wrap-style: balance; }
+.water-context .lesson-card span { flex: 0 0 auto; max-width: 45%; text-wrap-style: balance; }
+/* 가운데 정렬 짧은 안내·도장 기록: 끝줄에 한 낱말만 떨어지지 않게 줄 길이를 고르게 */
+.stage-guard p, .stamp-page p, .bench-empty p { text-wrap-style: balance; }
+/* 개념 영상 자막(role=status): 공통 [role=status] 규칙이 줄임형이라 영상 재생 중 숨김 자막의 nowrap이 풀려 한 낱말씩 쌓였다.
+   줄바꿈 여부는 자막 상자(.concept-caption)를 따르고, 보일 때만 두 줄을 고르게 한다. */
+.concept-caption p { text-wrap-mode: inherit; text-wrap-style: balance; }
