@@ -1,6 +1,6 @@
 # 소리 3차 수정: 설정의 효과음 크기·목소리 스위치, 첫 입력 전 재생 · 2026-11-20
 
-운영 배포: (아래 「배포 기록」 줄 참고). 지침 `../_shared/AUDIO-FIX3-BRIEF-20261120.md` 1장과 06번 줄.
+운영 배포: 커밋 `d391cac` → Cloudflare Pages `ba53509c`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `/`·`src/sound.js`·`settings.js`·`state.js`·`voice-lines.js`·`npc-voice.js`·`map-villains.js`·`app.js` 해시가 빌드와 같고, 운영에서 헤드리스로 스위치·효과음 크기·새로고침 유지·예전 저장 이어받기 확인. 지침 `../_shared/AUDIO-FIX3-BRIEF-20261120.md` 1장과 06번 줄.
 
 - 설정 소리 다섯 항목(`src/settings.js`, `settings-content.js`): 배경 음악·배경 음악 크기(그대로), 효과음, **효과음 크기**(새, 0~100% 5% 단위, 기본 100% = 3차 전 크기 그대로), **목소리**(새). 효과음 스위치는 효과음만, 목소리 스위치는 방울이·주민·밸브 두더지 대사, 개념 자막 음성, 영상 자막 음성만 끈다(글·말풍선·자막은 그대로). 효과음 크기는 `sound.js`의 모든 효과음(UI·실험 물소리·전투·보상·카드·발자국·합성음)에 곱하고, 재생 중인 소리에도 바로 적용.
 - 저장(`state.js`, `water-drop-lab:v1`): `settings.voice`(기본 true), `settings.sfxVolume`(기본 100). 값이 없는 예전 저장은 목소리 = 그때의 `sfx` 값, 효과음 크기 = 100. 초기화해도 소리 설정은 남는다.
