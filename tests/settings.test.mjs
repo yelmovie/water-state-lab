@@ -55,9 +55,11 @@ test('independent sound controls gate autoplay, coalesce effects, and pause musi
  audio.holdMusic('film','pause');assert.equal(music.paused,true,'a film with its own music stops the theme');
  audio.setMusicTheme('ending');assert.equal(music.paused,true,'a theme change waits for the film to close');
  audio.releaseMusic('film');assert.match(music.src,/\/music\/ending-theme\.mp3$/);assert.equal(music.loop,false);assert.equal(music.paused,false);
- music.pause();music.events.ended();audio.holdMusic('film','pause');audio.releaseMusic('film');assert.equal(music.paused,true,'the ending theme plays once');
- audio.setMusicTheme('ending',true);assert.equal(music.paused,false,'watching the ending again replays it');assert.equal(music.currentTime,0);
- audio.setMusicTheme('main');assert.match(music.src,/main-theme/);assert.equal(music.loop,true);
+ music.pause();music.events.ended();assert.match(music.src,/main-theme/,'after its one pass the ending screen keeps the main theme');assert.equal(music.loop,true);assert.equal(music.paused,false);assert.equal(musicGain.gain.values.at(-1),.45,'at 0.45 of the usual level');
+ audio.setMusicTheme('ending');assert.match(music.src,/main-theme/,'redrawing the ending screen keeps it');
+ audio.setMusicTheme('ending',true);assert.equal(music.paused,false,'watching the ending again replays it');assert.match(music.src,/ending-theme/,'a new source starts from its beginning');
+ music.currentTime=7;audio.setMusicTheme('ending',true);assert.equal(music.currentTime,0,'replaying the loaded ending theme rewinds it');
+ audio.setMusicTheme('main');assert.match(music.src,/main-theme/);assert.equal(music.loop,true);assert.equal(musicGain.gain.values.at(-1),1,'leaving the ending returns the usual level');
  audio.setSoundEnabled(false);assert.equal(music.paused,true);
  const count=ctx.oscillators.length;await audio.playClick();assert.equal(ctx.oscillators.length,count,'master mute silences both channels');
 });

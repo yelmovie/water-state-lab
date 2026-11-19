@@ -5,7 +5,7 @@ import { mountMapVillains,MAP_VILLAINS_KEY,mapVillainToken,remainingMapVillains 
 import {residentForStage,returnedResidents,residentMarkers,villageFriend} from './island-residents.js';
 import {finalContext} from './workshop.js';
 import {state,save} from './state.js';
-import {playCue} from './sound.js';
+import {playCue,footstep,stopFootstep} from './sound.js';
 import {villageLights} from './village-lights.js';
 import {missions,canEnter,currentTrialValid} from './domain.js';
 import {buddy,icon,btn,propArt,toast} from './ui.js';
@@ -57,6 +57,8 @@ export function journeyView(){
 // Normal camera covers the screen and follows Bangul; overview fits the entire island between the controls.
 // Drag pans the view. Directional controls move the traveler in island coordinates.
 const MAP_W=1000,MAP_H=563,MAP_ZOOM=1.3;
+// Footsteps on the water island play a little slower and lower than the samples (sound.js footstep).
+const STEP_SPEED=.94;
 // Trouble spots occupy the routes near each lab, away from residents and entrances.
 const villainStops=[[203,350],[386,162],[517,323],[636,151],[770,375]];
 const directions={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
@@ -203,13 +205,13 @@ export function mountMapCamera(onVillainCleared){
   const length=Math.hypot(dx,dy);if(!length||departing||performance.now()<hurtUntil)return;
   const next=walkIslandStep(position,dx/length*distance,dy/length*distance);
   if(Math.hypot(next[0]-position[0],next[1]-position[1])<.02){paintPose();return;}
-  placeTraveler(next);focus=position;draw(false,true);
+  placeTraveler(next);focus=position;draw(false,true);footstep(STEP_SPEED);
  }
- function stopWalking(){held.clear();cancelAnimationFrame(frame);frame=0;paintPose();}
+ function stopWalking(){held.clear();cancelAnimationFrame(frame);frame=0;paintPose();stopFootstep();}
  function setGuidedBusy(busy){nextButton?.setAttribute('aria-busy',String(busy));nextButton?.setAttribute('aria-disabled',String(busy));}
  function cancelTravel(){
   if(!departing)return;
-  cancelAnimationFrame(arrivalFrame);arrivalFrame=0;departing=false;setGuidedBusy(false);showNearby();
+  cancelAnimationFrame(arrivalFrame);arrivalFrame=0;departing=false;setGuidedBusy(false);showNearby();stopFootstep();
  }
  function release(source){
   if(held.delete(source)&&!held.size)stopWalking();
@@ -304,14 +306,15 @@ export function mountMapCamera(onVillainCleared){
    if(guided)resumeFollow();
    departing=true;setGuidedBusy(guided);stopWalking();showNearby();
    const path=islandWalkTo(position,to),distance=routeDistance(path);
-   const finish=()=>{arrivalFrame=0;departing=false;setGuidedBusy(false);placeTraveler(pointOnRoute(path,1));focus=position;draw(false,true);paintPose();view.focus({preventScroll:true});arrive();};
+   const finish=()=>{arrivalFrame=0;departing=false;stopFootstep();setGuidedBusy(false);placeTraveler(pointOnRoute(path,1));focus=position;draw(false,true);paintPose();view.focus({preventScroll:true});arrive();};
    if(reduceMotion()||distance<2){finish();return;}
    let start=performance.now(),fraction=0;
    const duration=clamp(distance*4,160,4800);
    function walk(time){
-    if(!blocked())fraction=Math.min(1,fraction+clamp(time-start,0,60)/duration);
+    const walking=!blocked()&&fraction<1;
+    if(walking)fraction=Math.min(1,fraction+clamp(time-start,0,60)/duration);
     start=time;
-    placeTraveler(pointOnRoute(path,fraction));focus=position;draw(false,true);
+    placeTraveler(pointOnRoute(path,fraction));if(walking)footstep(STEP_SPEED);else stopFootstep();focus=position;draw(false,true);
     if(fraction<1)arrivalFrame=requestAnimationFrame(walk);else finish();
    }
    arrivalFrame=requestAnimationFrame(walk);

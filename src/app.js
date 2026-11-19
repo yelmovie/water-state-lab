@@ -1,5 +1,5 @@
 import {remainingMapVillains} from './map-villains.js';
-import {rewardSlotsHtml,revealRewardCard} from './map-rewards.js';
+import {rewardSlotsHtml,revealRewardCard,ownedRewardCards} from './map-rewards.js';
 import {dropAdventureView,handleDropAdventure,mountDropAdventure,cleanupDropAdventure} from './drop-adventure.js';
 import {prepareDrawingComparison} from './drawing-records.js';
 import {mountTimeTools} from './time-dial.js';
@@ -20,7 +20,7 @@ import {icon,btn,buddy,propArt,note,toast,modal,esc,celebrate} from './ui.js';
 import {journey,journeyView,mapEntryScreen,workshopProgress,mountMapCamera,cleanupMapCamera,travelIsland} from './journey.js';
 import {activityView,handleActivity,bindActivity,cleanupActivity,getActivityProgress} from './activities.js';
 import {workshopView,finalView,handleWorkshop,bindWorkshop,cleanupWorkshop,resetFinalPreview,finalContext} from './workshop.js';
-import {playClick,playCue,stopCue,setMusicTheme,setSoundSettings} from './sound.js';
+import {playClick,playCue,stopCue,afterCue,setMusicTheme,setSoundSettings} from './sound.js';
 import {openSettings,offlineText} from './settings.js';
 import {OFFLINE_BUILD} from './version.js';
 import {syncCoach,cleanupCoach,handleCoach,updateCoachMessage} from './coach.js';
@@ -78,9 +78,12 @@ function routeAction(action){
 }
 function showStory(kind,onFinish){if(kind==='final'&&!state.settings.adminUnlock&&(!state.restored||remainingMapVillains(state)))return;playStoryFilm(kind,{muted:!state.settings.sound,onFinish});if(kind==='final'&&state.route==='ending')setMusicTheme('ending',true);}
 function openEnding(){
- const play=state.finalePending;
- go('ending');
- if(state.route==='ending'&&play){state.finalePending=false;persist();showStory('final');}
+ // The ending film and theme wait for the card-set jingle to finish instead of cutting it.
+ afterCue('cardComplete',()=>{
+  const play=state.finalePending;
+  go('ending');
+  if(state.route==='ending'&&play){state.finalePending=false;persist();showStory('final');}
+ });
 }
 function startAdventure(){
  if(state.fieldwork.introSeen)return go('map');
@@ -302,7 +305,7 @@ export function render(){
  if(state.fieldwork.active!==route){
   // The achievement card of the cleared villain comes first; while it is open #app is inert and the map waits (journey.js blocked()),
   // so the all-villains status, jingle and ending film below start only after the card is put away.
-  if(route==='map')mountMapCamera(index=>void revealRewardCard(index,state).then(()=>{
+  if(route==='map')mountMapCamera(index=>{const card=ownedRewardCards(state)[index];void revealRewardCard(index,state).then(()=>{
    if(state.route!=='map'||!state.restored||state.settings.adminUnlock)return;
    const remaining=remainingMapVillains(state);
    const status=document.querySelector('.map-finale-status');
@@ -310,11 +313,12 @@ export function render(){
    if(!remaining){
     const button=document.querySelector('.journey-next [data-action="ending"]');
     if(button){button.disabled=false;button.textContent=state.finalePending?'엔딩 보기':'우리의 발견 보기';}
-    if(state.settings.autoObservation===true){state.finalePending=false;stopCue();go('ending');showStory('final');}
-    // The jingle follows the clear chime; skipped when the ending film and theme start right away.
-    else setTimeout(()=>{if(state.route==='map')void playCue('victory');},350);
+    // The last card's set-complete jingle is the all-clear fanfare: the ending opens only after it, and the victory
+    // jingle plays only when no card was shown (it would otherwise sound over that jingle).
+    if(state.settings.autoObservation===true)afterCue('cardComplete',()=>{if(state.route!=='map')return;state.finalePending=false;stopCue();go('ending');showStory('final');});
+    else if(!card)setTimeout(()=>{if(state.route==='map')void playCue('victory');},350);
    }
-  }));
+  });});
   simplifyControls(route);mountCanvas(route,currentTask?.regions,revision);
  }
  bindObservation(state,routeAction,state.route===10?finalContext():null,persist,manualToolsRoute===route);
@@ -325,7 +329,7 @@ export function render(){
  app.querySelectorAll('button.selected').forEach(b=>b.setAttribute('aria-pressed','true'));
  if(focusKey){const target=focusKey.id?document.getElementById(focusKey.id):[...app.querySelectorAll('[data-action]')].find(b=>b.dataset.action===focusKey.action);if(target&&!target.disabled){target.focus({preventScroll:true});if(target.closest('aside'))target.closest('aside').scrollTop=focusKey.scroll||0;}}
  if(resumeFinale)showStory('final');
- if(route==='ending'&&!state.settings.reduced){const lines=['다섯 개의 연구 기록이 하나의 물길로.','예상과 달라도, 다시 관찰했어.','흘러내린 물방울을 모아 장치를 고쳤어.','네가 알아낸 과학으로 연구실이 다시 움직여.'];let i=0;endingTimer=setInterval(()=>{const el=document.querySelector('#ending-caption');if(el)el.textContent=lines[++i%lines.length];if(i>=3)clearInterval(endingTimer);},4000);}
+ if(route==='ending'&&!state.settings.reduced){const lines=['다섯 개의 연구 기록이 하나의 물길로.','예상과 달라도, 다시 관찰했어.','흘러내린 물방울을 모아 장치를 고쳤어.','네가 알아낸 과학으로 연구실이 다시 움직여.'];let i=0;endingTimer=setInterval(()=>{const el=document.querySelector('#ending-caption');if(el)el.textContent=lines[i];if(++i>=lines.length)clearInterval(endingTimer);},4000);}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b||b.disabled||b.getAttribute('aria-busy')==='true')return;const a=b.dataset.action;if(handleDropAdventure(a,state,{go,render,save:persist}))return;if(a!=='sound'&&state.settings.sound)playClick();
  if(a==='guided-tools'){stopObservation();const opening=manualToolsRoute!==state.route;manualToolsRoute=opening?state.route:null;render();return;}

@@ -26,6 +26,12 @@ function start(src,el){
  const next=()=>{if(audio!==a)return;audio=null;owner=null;releaseMusic('voice');const n=pending.shift();if(n&&n[1].isConnected)start(n[0],n[1]);};
  a.onended=a.onerror=a.onpause=next;void a.play().catch(next);
 }
+/** Milliseconds left of the line now playing for `el` (or something inside it); 0 when none is playing. */
+export function lineLeft(el){
+ if(!audio||!owner||!el?.contains?.(owner)||audio.paused||audio.ended)return 0;
+ const left=(audio.duration-audio.currentTime)*1000;
+ return Number.isFinite(left)&&left>0?left:1000;
+}
 /** Plays the line for `text` now, or after the current one when `queue` is set. */
 export function speakLine(text,el=document.body,{queue=false}={}){
  const src=voiceFor(text);if(!src)return false;
@@ -47,9 +53,20 @@ function scan(){
  }
  for(const [src,el] of found){
   if(otherVoice()){waitFor(src,el);continue;}
+  // A villain's quick answer and another speaker's line never cut each other: the later one waits up to 2 s.
+  if(audio&&villain(el)!==villain(owner)){after(src,el);continue;}
   if(audio&&el.matches(QUEUED))pending=[[src,el]];else start(src,el);
  }
 }
+const villain=el=>!!el?.closest?.('.mv-say');
+// Waits for the current line of the other speaker. A villain line still blocked after 2 s is skipped (its bubble has
+// moved on); a guide line then starts, cutting the villain.
+function after(src,el,until=Date.now()+2000){setTimeout(()=>{
+ if(!visible(el)||voiceFor(el.textContent)!==src||src===lastSrc&&audio)return;
+ if(!audio||villain(owner)===villain(el)){start(src,el);return;}
+ if(Date.now()<until){after(src,el,until);return;}
+ if(!villain(el))start(src,el);
+},100);}
 // A resident's own voice in the same dialog finishes first; the lesson card follows it.
 function waitFor(src,el,tries=0){setTimeout(()=>{if(!el.isConnected||tries>60)return;if(otherVoice())waitFor(src,el,tries+1);else start(src,el);},500);}
 // First input: once that tap or key press is over, say the line that was waiting if its text is still shown.

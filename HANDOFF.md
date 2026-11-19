@@ -1,3 +1,16 @@
+# 소리 2차 수정: 갈래·발자국·축하 순서·엔딩 뒤 곡·악당 대사 차례 · 2026-11-20
+
+운영 배포: (아래 「배포 기록」 줄 참고). 지침 `../_shared/AUDIO-FIX2-BRIEF-20261119.md` 06번 줄과 7장.
+
+- 갈래(`src/sound.js`): 전투·보상 소리(물총·명중·반격·등장·퇴장·승리·카드 5종)는 서로 겹쳐 나고(최대 4개) UI 소리에 끊기지 않는다. UI 소리는 서로만 끊는다. 완료음(`success`)은 바로 이어지는 개념 영상·팝업 소리에 끊기지 않는다.
+- 발자국(새로): `public/assets/audio/step-01.mp3`·`step-02.mp3`(공용 라이브러리 CC0, 출처 `public/assets/CREDITS.md`). WebAudio 버퍼로 300ms마다 번갈아, gain 0.16(대사 중 ×0.5), 재생 속도 0.94배 ±4%(3D 달리기 얼음 1.02배, 수증기는 소리 없음). 지도 키·화살표·자동 이동(`journey.js`)과 3D 달리기(`run-stage.js`). 멈추면 바로 그친다. 효과음 끄기·탭 숨김·영상·대화창·카드 동안 안 난다.
+- 축하 순서(`app.js`): 카드가 나온 경우 승리 징글을 내지 않는다(카드 완성 징글이 축하음). 자동 관찰의 엔딩 영상과 「엔딩 보기」는 카드 완성 징글이 끝난 뒤 연다(`afterCue`).
+- 악당 대사(`map-villains.js`, `voice-lines.js`): 3타 퇴장 대사는 타격음 300ms 뒤. 말풍선은 음성이 끝날 때(+0.2초, 상한 6초)까지 남고, 카드는 퇴장 대사가 끝난 뒤. 악당 대사와 다른 인물 대사는 서로 끊지 않고 뒤에 온 쪽이 최대 2초 기다린다(악당 대사는 그 뒤 건너뜀, 안내 대사는 시작).
+- 엔딩 곡이 끝나면 엔딩 화면에서 메인테마를 평소의 0.45배로 잇는다. 나가면 평소 크기.
+- 엔딩 자막 「다섯 개의 연구 기록이 하나의 물길로.」가 이제 나온다(4초마다 4줄, `app.js` 타이머).
+- 스테이지 열림 소리: 해당 없음 — 이미 `journey.js`가 새 주민 도착 때 `discover`를 한 번 낸다(`villageArrivals`를 비우고 저장).
+- 검증: `npm test` 334개 통과(새 `tests/audio-lanes.test.mjs`), `npm run check`, 헤드리스 `.tmp/audio-fix-20261119/probe2.mjs`. 귀로 듣는 확인은 못 했다.
+
 # 변신 모험 5/5 마무리·실험 1 문장 위치·주민 대화 글자색·개념 영상 중복 · 2026-11-19 밤
 
 운영 배포: 커밋 `da3f655` → Cloudflare Pages `6795a98f`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `src/run-stage.js`·`run-stage.css`·`concepts.js`·`app.js`·`stage-guide.js`·`resident-stage.css`·`fieldwork.js`·`drop-adventure.js`·`sw.js` SHA-256이 빌드와 일치(MATCH).

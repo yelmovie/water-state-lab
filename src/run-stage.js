@@ -5,7 +5,7 @@ import {expeditions,phaseName,restoreAdventure} from './drop-adventure-model.js'
 import {RUN,runMove,runHint,buildCourse,createRunner,stepRunner,runZone,groundBelow,beginTransit,bounce,moleDepth,transitPoint} from './run-stage-model.js';
 import {bindDirectionPad,mapKeyDirection} from './map-controls.js';
 import {esc,btn,icon} from './ui.js';
-import {playCue} from './sound.js';
+import {playCue,footstep,stopFootstep} from './sound.js';
 
 const SCIENCE='얼음은 단단한 모양을 유지하고, 물은 모양을 바꾸며 흘러. 수증기는 눈에 보이지 않아 점선으로 위치만 표시했어. 얼굴·장치 사이 이동·버튼 횟수는 게임의 표현이며 실제 변화 시간이나 크기를 나타내지 않아. 달리기와 점프, 장치를 타고 건너는 길도 게임의 표현이야. 실제 뜨거운 물은 어른과 함께 다뤄.';
 const ACT={heat:'열 주기',cool:'열 빼앗기'};
@@ -252,6 +252,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
  function go(){waiting=false;hud.card.hidden=true;}
 
  // Input: buttons first, keyboard alongside. Everything is released when the window loses focus.
+ disposers.push(()=>stopFootstep());
  const input=new AbortController(),on={signal:input.signal},keys=new Map();let padDir=null,tapUntil=0,jumpQueued=false;
  disposers.push(()=>input.abort());
  const typing=target=>!!target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
@@ -324,6 +325,9 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   const moving=Math.hypot(runner.vx,runner.vz)>.6&&runner.grounded&&!runner.transit;
   if(moving)step+=dt*11;
   const vapor=adventure.phase==='vapor';
+  // Footsteps while water or ice runs on the ground (vapor floats). Ice steps sound a little higher than water steps.
+  if(moving&&!vapor&&!paused())footstep(adventure.phase==='ice'?1.02:.94);
+  else if(runner.grounded&&Math.hypot(runner.vx,runner.vz)<.3||paused())stopFootstep();
   pop=Math.max(0,pop-dt);flash=Math.max(0,flash-dt);flinch=Math.max(0,flinch-dt);
   const riding=runner.transit?course.segments[runner.transit.segment].gate.scene:'',flat=riding==='channel'?Math.min(1,runner.transit.t*5,(runner.transit.dur-runner.transit.t)*5):0;
   const stretch=(runner.transit?1:runner.grounded?1:1+Math.max(-.12,Math.min(.16,runner.vy*.012)))*(1-flat*.42),size=(vapor?1.75:1.5)*(1+Math.sin(pop*Math.PI*4)*.12*(pop>0?1:0));

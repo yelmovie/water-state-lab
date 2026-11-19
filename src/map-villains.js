@@ -1,4 +1,5 @@
 import {missions} from './domain.js';
+import {lineLeft} from './voice-lines.js';
 
 export const MAP_VILLAINS_KEY='water-state-lab:map-villains:v1';
 const sessionClears=new Set();
@@ -131,11 +132,18 @@ export function mountMapVillains(world, options) {
   b.setAttribute('aria-label',stage.name+' 물길을 막는 밸브 두더지 · '+(cleared?'퇴치 완료':stage.ready?'물방울 파동으로 세 번 공격':'이 구역 탐구를 마치면 공격할 수 있어요'));
   if(cleared){b.disabled=true;label.textContent='물길 정화 완료';meter.textContent='✓';}
 
+  // Runs `next` once the bubble's spoken line has finished (+0.2 s), at most 6 s after `since`; at once when it is silent.
+  // `track` keeps the bubble timer so a new line can cancel it; the clear chain keeps its own so nothing cancels the card.
+  const afterLine=(next,since=performance.now(),track=true)=>{
+   const left=lineLeft(say),spent=performance.now()-since;
+   if(left>0&&spent<6000){const id=later(()=>afterLine(next,since,track),Math.min(left+200,6000-spent));if(track)sayTimer=id;}else next();
+  };
   const face=right=>{facingRight=right;creature.style.scale=right?'-1 1':'';};
   const speak=(text,withHint=true,ms=2800)=>{
    sayText.textContent=text;sayHint.textContent=withHint?hint():'';sayHint.hidden=!withHint;
    say.classList.remove('show');void say.offsetWidth;say.classList.add('show');arrangeSpeech();lastSaid=performance.now();
-   cancel(sayTimer);sayTimer=later(()=>say.classList.remove('show'),ms);
+   // The bubble stays while its spoken line is still playing (up to 6 s), so the voice is not cut with it.
+   cancel(sayTimer);sayTimer=later(()=>afterLine(()=>say.classList.remove('show'),performance.now()-ms),ms);
   };
   const where=()=>{const offset=getComputedStyle(b).translate.match(/-?[\d.]+/g)?.map(Number)||[dx,dy];return {x:stage.x+offset[0]/(world.offsetWidth||1)*100,y:stage.y+(offset[1]||0)/(world.offsetHeight||1)*100};};
   const freeze=()=>{
@@ -206,7 +214,9 @@ export function mountMapVillains(world, options) {
     frameAt(sprite,hit===1?MOLE.hit:hit===2?MOLE.knocked:MOLE.down);shake();
     b.classList.remove('mv-hit');void b.offsetWidth;b.classList.add('mv-hit');
     if(!reduced)burst(vx,impactY,'drop',7);
-    speak(['으악!','아야야, 내 밸브!','내 물길이이~!'][hit-1],false,1100);
+    // The exit line (third hit) starts 300 ms after the hit sound so the two do not land on each other.
+    const line=['으악!','아야야, 내 밸브!','내 물길이이~!'][hit-1];
+    if(hit===3&&!reduced)later(()=>speak(line,false,1100),300);else speak(line,false,1100);
     status.textContent=stage.name+' 밸브 두더지에게 '+hit+'번째 물방울 파동!';
    };
    const shoot=()=>{
@@ -239,11 +249,12 @@ export function mountMapVillains(world, options) {
   };
   const finish=reduced=>{
    const saved=options.preview||recordMapVillainClear(index,token,undefined,options.key);
-   b.dataset.state='cleared';b.classList.remove('mv-hit','mv-cleaning');delete b.dataset.busy;label.textContent='물길 정화 완료';meter.textContent='✓';say.classList.remove('show');
+   b.dataset.state='cleared';b.classList.remove('mv-hit','mv-cleaning');delete b.dataset.busy;label.textContent='물길 정화 완료';meter.textContent='✓';
    b.setAttribute('aria-label',stage.name+' 밸브 두더지 퇴치 완료');b.setAttribute('aria-disabled','true');
    status.textContent=stage.name+' 밸브 두더지가 사라지고 물길이 맑아졌어요. '+(options.preview?'시연 기록은 저장하지 않아요.':saved?'퇴치 기록을 저장했어요.':'저장하지 못했어요. 이 창에서만 유지돼요.');
    if(!reduced)options.sound?.('success');
-   later(()=>{fighter?.pose?.(null);fighting=null;options.onCleared?.(index);},reduced?0:300);
+   // The exit line finishes first; then its bubble goes and the achievement card comes (card order unchanged).
+   later(()=>afterLine(()=>{say.classList.remove('show');fighter?.pose?.(null);fighting=null;options.onCleared?.(index);},performance.now(),false),reduced?0:300);
   };
   b.addEventListener('pointerdown',e=>e.stopPropagation(),{signal:abort.signal});
   b.addEventListener('keydown',e=>{if(e.repeat&&(e.key==='Enter'||e.key===' '))e.preventDefault();},{signal:abort.signal});
@@ -320,7 +331,7 @@ const STYLES=`
 .mv-target[data-state=ready] .mv-wave{animation:mv-ready 1.6s ease-out infinite}
 .mv-hit .mv-wave{animation:mv-burst .45s ease-out}
 .mv-target[data-state=cleared]{min-height:48px;cursor:default}
-.mv-target[data-state=cleared] .mv-creature,.mv-target[data-state=cleared] .mv-wave,.mv-target[data-state=cleared] .mv-say{display:none}
+.mv-target[data-state=cleared] .mv-creature,.mv-target[data-state=cleared] .mv-wave,.mv-target[data-state=cleared] .mv-say:not(.show){display:none}
 .mv-target[data-state=cleared] .mv-label{display:block}
 .mv-target[data-state=cleared] .mv-murk{top:2px}
 .mv-shot{position:absolute;z-index:16;width:22px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 35% 30%,#fff 0 18%,#9fe7ff 30%,#2f9fd8 75%);box-shadow:0 0 10px #8fe3ff,0 0 0 3px #d9f7ff88;pointer-events:none}

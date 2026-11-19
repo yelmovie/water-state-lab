@@ -392,3 +392,12 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 - 방울이: Aria – Bright & Youthful Korean(`O2KReOFLpoR65nz6C9Se`). 도입·엔딩 영상 자막, 첫 화면·엔딩 문구, 개념 영상·물 모으기 설명, 지도·실험 힌트, 변신 모험 안내를 읽는다. 도입·엔딩 영상은 다시 렌더링하지 않고 자막 큐에 맞춰 재생한다.
 - 밸브 두더지: Harry - Character(`wMrz30qBeYiSkAtnZGtn`). 주민의 '오늘 알게 된 것'은 각 주민의 기존 ElevenLabs 목소리(파랑·뚝딱·보리·송이·느티)로 읽는다.
 - 줄마다 목소리 ID·생성 ID·원문·받아쓰기 검수·음량·SHA-256은 `docs/VOICE-FILL-20261118.json`에 기록했다. 실존 인물 음성 복제를 사용하지 않았다.
+
+## 발자국 효과음 · 2026-11-19
+
+지도에서 방울이가 걷는 동안과 변신 모험(3D 달리기)에서 물·얼음 모습으로 달리는 동안 약 0.3초마다 번갈아 낸다(`src/sound.js` `footstep`). 과학34 공용 효과음 라이브러리(`_shared/sfx-library-20261117`, 2026-11-17 라이선스 재확인)에서 복사했고 새로 내려받지 않았다. 두 파일 모두 원본 게시 페이지에 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)로 표시되어 있다. 라이브러리에서 앞뒤 무음 제거·짧은 페이드·음량 맞춤·모노 MP3 변환만 했고, 재생할 때 속도만 조금씩 바꾼다(물 단원이라 기준 0.94배, ±4%).
+
+| 쓰임 | 배포 파일 | 원본 제목 · 제작자 · 배포처 |
+|---|---|---|
+| 발자국 1 | `audio/step-01.mp3` | Footstep on Stone · sgossner · https://freesound.org/people/sgossner/sounds/197778 |
+| 발자국 2 | `audio/step-02.mp3` | concrete footstep 4 · Yoyodaman234 · https://freesound.org/people/Yoyodaman234/sounds/166506 |
