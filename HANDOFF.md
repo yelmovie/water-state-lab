@@ -1,3 +1,13 @@
+# 놀이 화면 비율·중복 조작 정리 · 2026-11-18
+
+운영 배포: 커밋 `94df39f` → Cloudflare Pages `1354a0ad`(https://water-state-lab.pages.dev/, `_scratch/deploy-20261118/deploy.sh 06 "6 waterchange" pages water-state-lab`). 같은 배포에 앞선 다른 세션 커밋 `d07a578`·`63e42dd`(영상 전체 화면·자막)도 함께 올라갔다. 운영 `/`·`src/app.js`·`src/layout-balance.css`·`src/guided-experience.css`·`sw.js` SHA-256이 빌드와 일치.
+
+- 결과(엔딩) 화면만 기준 미달이었다(놀이 영역 높이 36~47%). 그림 카드와 버튼 열이 위 띠 아래 높이를 다 쓰게 해 89.0%(1280×800)·88.5%(1024×768)·91.9%(1920×1080). 실험·현장·지도·3D 런은 원래 98~100%라 그대로.
+- 결과 화면 같은 무게 버튼 7개 → 주 버튼(인증서) 1개 + 보조 3개 + 글자 버튼 3개(엔딩 영상·연구섬 다시 보기, 교실 장치). 지도 현재 섬 이름표의 「→」 가짜 출발 표시 제거. 없앤 버튼은 없다(진행 경로 그대로).
+- 전부 새 파일 `src/layout-balance.css`(index.html 마지막 CSS)에 있다. `scenic-glass.css`의 `#app :is(.btn:not(.primary)…)`가 우선순위가 높아 선택자를 `#app … .btn.classroom-making`처럼 맞췄다.
+- 확인: `npm run check`, `npm test` 325개, 빌드 통과. 세 뷰포트 18개 화면 측정, 클릭 완주 5단계·콘솔 오류 0, 글자 버튼 대비 5.61:1 이상, 운영 smoke test 통과(첫 화면 0.42초, 제한 환경 1.77초). 기록: `docs/LAYOUT-BALANCE-20261118.md`, `docs/reviews/RELEASE-REVIEW-20261118.md`·`SCORE-20261118.md`(85/100, 조건부 — 교사 승인·학생 난이도·수업 시간 NOT TESTED).
+- 남긴 제안: 결과 화면 주 버튼 위치(오른쪽 아래), 현장 4 물통 크기·숫자 한 곳, 현장 2 1920 위쪽 빈 공간. 「100mL 붓기」「얼음틀에 물 붓기」 버튼은 안내 문구가 부르는 대체 경로라 유지.
+
 # 성취 카드(지도 두더지 퇴치 보상) · 2026-11-18
 
 운영 배포: 커밋 `924df16` → Cloudflare Pages `748761fa`(https://water-state-lab.pages.dev/). 직전 커밋 `a07d960`(방울이·두더지 음성, 썸네일)까지 함께 올라갔다. 운영 주소의 카드 그림 10장·효과음 5개·`src/app.js` 등 25개 파일 SHA-256이 커밋본 빌드와 일치. 빌드는 `_scratch/deploy-20261118/wt/06`(git archive 커밋본), 명령은 `deploy.sh 06 "6 waterchange" pages water-state-lab`.

@@ -27,9 +27,16 @@
 | C3 터치 크기 | PASS | 확인됨 | 낮춘 버튼도 min-height 44px 유지, 결과 화면 버튼 수 11개 그대로 |
 | B 클릭 완주 | PASS | 확인됨 | 타이틀 → 지도 → 실험 1, 결과 → 인증서 열기·Esc → 연구섬 다시 탐험 → 지도. 5단계 통과, 콘솔 오류 0 |
 | C 3D 런 스테이지 배치 | PASS | 확인됨 | 전체 화면 유지, 시작·주행 100% |
-| G10 공개본 일치 | 배포 뒤 기록 | — | 아래 "배포 확인" |
-| G11 운영 smoke test | 배포 뒤 기록 | — | 아래 "배포 확인" |
-| D1 초기 로딩 | 배포 뒤 기록 | — | 운영 주소에서 직접 실측 |
+| G10 공개본 일치 | PASS | 확인됨 | 아래 "배포 확인" |
+| G11 운영 smoke test | PASS | 확인됨 | 아래 "배포 확인" |
+| D1 초기 로딩 | PASS | 확인됨 | 운영 주소 새 브라우저 컨텍스트, 첫 화면 주 버튼까지 0.42초 / 10Mbps·지연 100ms·CPU 4배 1.77초 |
+
+## 배포 확인
+
+커밋 `94df39f` → Cloudflare Pages `1354a0ad`(https://water-state-lab.pages.dev). `_scratch/deploy-20261118/deploy.sh`로 origin/main 커밋본을 빌드해 올렸다.
+
+- 빌드본과 운영 파일 SHA-256 일치: `/`(index), `src/app.js`, `src/layout-balance.css`, `src/guided-experience.css`, `sw.js` 모두 MATCH. `cmp.sh … 'layout-balance'`는 바늘이 `index.html`에만 있어 `/index.html`(Pages가 본문 없이 `/`로 넘김)을 비교해 DIFF로 나왔다. 같은 줄의 `index MATCH`와 `curl -L` 직접 비교로 일치를 확인했다.
+- 운영 smoke test(`prod-smoke.mjs`): `layout-balance.css` 연결·200, 결과 화면 높이 89.0%, 다시 보기 버튼 배경 투명·밑줄, 콘솔 오류 0(제한 환경 포함).
 
 ## 남은 확인과 감점(이전 보고서에서 이어짐)
 
