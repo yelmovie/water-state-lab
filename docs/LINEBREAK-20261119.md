@@ -55,3 +55,4 @@
 - 커밋 `97e5a35` → Cloudflare Pages `water-state-lab` 배포 `5fa6aaea`.
 - `cmp.sh`: `src/korean-linebreak.css` 빌드=운영 `bebacd5e7abe7d39` MATCH, `index.html` MATCH.
 - 운영 재측정(`sweep.mjs live`, `run.mjs 06`): 1280×800·1920×1080 모두 `<br>` 오탐 3개만 남음. 장 끝 대화 발견 카드 운영 스크린샷 `.tmp/linebreak-20261119/live/1280x800/endtalk6.png`(전: `before/1280x800/endtalk6.png`).
+- 추가(2026-11-20, 사용자 승인): 성취 카드 보관함 잠긴 문구 `src/reward-cards.css` `.rc-locked` 컨테이너 보정 네 줄(공통 지침 8절). 06은 전에도 한 줄(카드 175~180px)이었고, 후 1280×800·1920×1080 한 줄, 1024×768 「악당을 / 물리치면 / 열려요」 세 줄, 카드 넘침 없음. 커밋 `8b6575b` → Pages `7ae206f8`, `cmp.sh` reward-cards.css·index.html MATCH.
