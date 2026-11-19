@@ -1,6 +1,6 @@
 # 소리 2차 수정: 갈래·발자국·축하 순서·엔딩 뒤 곡·악당 대사 차례 · 2026-11-20
 
-운영 배포: (아래 「배포 기록」 줄 참고). 지침 `../_shared/AUDIO-FIX2-BRIEF-20261119.md` 06번 줄과 7장.
+운영 배포: 커밋 `3ce148a` → Cloudflare Pages `db9fcb55`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `/`·`src/sound.js`·`app.js`·`journey.js`·`map-villains.js`·`voice-lines.js`·`run-stage.js` 해시가 빌드와 같고 `assets/audio/step-01·02.mp3` 200. 지침 `../_shared/AUDIO-FIX2-BRIEF-20261119.md` 06번 줄과 7장.
 
 - 갈래(`src/sound.js`): 전투·보상 소리(물총·명중·반격·등장·퇴장·승리·카드 5종)는 서로 겹쳐 나고(최대 4개) UI 소리에 끊기지 않는다. UI 소리는 서로만 끊는다. 완료음(`success`)은 바로 이어지는 개념 영상·팝업 소리에 끊기지 않는다.
 - 발자국(새로): `public/assets/audio/step-01.mp3`·`step-02.mp3`(공용 라이브러리 CC0, 출처 `public/assets/CREDITS.md`). WebAudio 버퍼로 300ms마다 번갈아, gain 0.16(대사 중 ×0.5), 재생 속도 0.94배 ±4%(3D 달리기 얼음 1.02배, 수증기는 소리 없음). 지도 키·화살표·자동 이동(`journey.js`)과 3D 달리기(`run-stage.js`). 멈추면 바로 그친다. 효과음 끄기·탭 숨김·영상·대화창·카드 동안 안 난다.
