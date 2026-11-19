@@ -1,3 +1,13 @@
+# 변신 모험 5/5 마무리·실험 1 문장 위치·주민 대화 글자색·개념 영상 중복 · 2026-11-19 밤
+
+운영 배포: 커밋 `da3f655` → Cloudflare Pages `6795a98f`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `src/run-stage.js`·`run-stage.css`·`concepts.js`·`app.js`·`stage-guide.js`·`resident-stage.css`·`fieldwork.js`·`drop-adventure.js`·`sw.js` SHA-256이 빌드와 일치(MATCH).
+
+- 3D 물길(변신 모험): 마지막 5/5 도착 때 물방울 터짐·방울이 점프·모험 5개 체크 연출(`run-stage.js` `showDone(fresh)`, `run-stage.css` 끝). 주 버튼은 「연구섬 지도 탐험하러 가기」, 보조는 「처음 길 다시 탐험」. 1~4번째 도착엔 「변신 모험 n / 5 완료」. 다시 열 때는 연출·소리 없이 같은 패널. 높이 620px 이하에선 요약 목록을 숨겨 버튼까지 한 화면. 2D 대체 화면(`drop-adventure.js`)도 같은 문구·버튼.
+- 실험 1: 그릇·얼음 결론 문장(`stageLessons[1]`)은 얼음 비교 장면 위 띠로 옮기고, 물자국 장면 끝 「오늘 알게 된 것」은 `observations[2].evidence`(천이 마른 관찰)로(`stage-guide.js`).
+- 주민 대화창(파랑·뚝딱 등 모든 주민)의 학습 문장이 `.lesson-card`의 흰 글자를 물려받아 크림색 판 위에서 안 보였다 → `.water-context .lesson-card` 글자 #17574f, 얻은 도구 줄 #8a4f0e(`resident-stage.css`).
+- 개념 영상 중복: 완료 버튼으로 연 영상을 X·Esc로 닫으면 스테이지에 남아 같은 버튼이 같은 영상을 처음부터 다시 틀었다. 이제 한 번 재생된 영상은 같은 회차(`mapRunId`)에서 완료 버튼을 다시 누르면 영상 없이 다음으로(`concepts.js` `once`, `app.js`·`fieldwork.js`). 공방 응결 설명창도 같은 회차에 이미 봤으면 완성 때 다시 안 띄움. 설정의 다시 보기·「영상으로 보기」는 그대로 재생, 기록 초기화(새 회차)면 다시 나온다.
+- 확인: `npm run check`, `npm test` 329개, 빌드 통과. 개발 서버 4개 뷰포트(1280·1920·1024·915×412)에서 마무리 패널이 화면 안·주 버튼 초점·지도로 이동, 2/5 패널·2D 대체 화면, 실험 1 문장 위치 확인, 콘솔 오류 0(`.tmp/finale-20261119/verify.json`, `shots/`). 브라우저 잠금이 1시간 넘게 잡혀 있어 주민 글자색·개념 영상 중복은 배포 뒤 확인으로 남김(글자 대비는 계산상 6.4:1·5.1:1).
+
 # 소리 1차 수정: 대사 때 배경음 줄임·이름표·타이틀 대사 · 2026-11-19
 
 운영 배포: 커밋 `8b4542a` → Cloudflare Pages `2c0a87a6`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`, 직전 `1650ff81`). 운영 `/`·`src/sound.js`·`src/voice-lines.js`·`src/npc-voice.js`·`src/story-film.js`·`src/concepts.js`·`src/concept-collector.js`·`sw.js`·`build-info.json` SHA-256이 빌드와 일치(MATCH). 운영 주소에서도 같은 상태 기록을 다시 돌려 타이틀·인트로·지도·주민·엔딩 항목이 개발 서버와 같은 값이고 콘솔 오류·404 0(`.tmp/audio-fix-20261119/probe-prod.log`). 지침 `../_shared/AUDIO-FIX-BRIEF-20261119.md` 06번 줄.
