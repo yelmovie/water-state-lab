@@ -1,5 +1,5 @@
 // Project themes (the main theme loops, the ending theme plays once) + locally hosted CC0 interface and water sounds.
-let context,unlocked=false,music=null,musicGain=null,loadedTheme=null,endedTheme=null,theme='main',activeCue=null,cueSequence=0,quiet=false;
+let context,unlocked=false,music=null,musicGain=null,loadedTheme=null,endedTheme=null,theme='main',activeCue=null,cueSequence=0;
 let settings={sound:true,bgm:true,sfx:true,bgmVolume:35};
 const SFX_VOLUME=.035;
 const themes={main:'/assets/audio/music/main-theme.mp3',ending:'/assets/audio/music/ending-theme.mp3'};
@@ -8,7 +8,11 @@ const files={click:'click_003.ogg',drop:'water-drop.mp3',success:'confirmation_0
  cardWhoosh:'wind-whoosh-03.mp3',cardReveal:'reward-01.mp3',cardEpic:'reward-03.mp3',cardSlot:'pickup-01.mp3',cardComplete:'victory-jingle-01.mp3'};
 const players=new Map(),cueGains=new Map();let fileCue=null;
 const hidden=()=>typeof document!=='undefined'&&document.hidden;
-const desiredMusic=()=>settings.sound&&settings.bgm&&!quiet&&!hidden()&&unlocked;
+// Why the music is held back, by name: 'duck' plays it at a quarter under a spoken line, 'pause' stops it while a story film or concept clip is open.
+// It returns only when every name is gone, so one voice ending cannot undo another voice or an open film.
+const holds=new Map(),DUCK=.25,DUCK_SECONDS=.06;
+const held=mode=>[...holds.values()].includes(mode);
+const desiredMusic=()=>settings.sound&&settings.bgm&&!held('pause')&&!hidden()&&unlocked;
 
 function audioContext(){
  const AudioContext=globalThis.AudioContext||globalThis.webkitAudioContext;
@@ -42,9 +46,11 @@ function syncMusic(){
   const player=musicPlayer(ctx);if(!player)return;
   if(loadedTheme!==theme){player.src=themes[theme];loadedTheme=theme;}
   player.loop=theme==='main';
-  const volume=settings.bgmVolume/100;
+  const volume=settings.bgmVolume/100*(held('duck')?DUCK:1);
   if(!musicGain)player.volume=volume;
-  else{if(player.paused)musicGain.gain.setValueAtTime(0,ctx.currentTime);musicGain.gain.setTargetAtTime(volume,ctx.currentTime,.25);}
+  // A stopped theme fades in; a playing one moves to its new level in about 0.2 s (three time constants).
+  else if(player.paused){musicGain.gain.setValueAtTime(0,ctx.currentTime);musicGain.gain.setTargetAtTime(volume,ctx.currentTime,.25);}
+  else musicGain.gain.setTargetAtTime(volume,ctx.currentTime,DUCK_SECONDS);
   if(player.paused)void player.play()?.catch(()=>{/* A blocked or missing track never blocks learning. */});
  }catch{/* Audio availability must never block an activity. */}
 }
@@ -63,8 +69,12 @@ export function setSoundEnabled(value){
  const on=Boolean(value);setSoundSettings({sound:on,bgm:on,sfx:on});
  if(!on&&context)void context.suspend().catch(()=>{});
 }
-/** Call true while a narrated story or video is playing, false when it closes. */
-export function setMusicQuiet(value){quiet=Boolean(value);syncMusic();}
+/** Holds the music back under `tag` until releaseMusic(tag): 'duck' for a spoken line, 'pause' for a story film or concept clip. */
+export function holdMusic(tag,mode='duck'){if(holds.get(tag)===mode)return;holds.set(tag,mode);syncMusic();}
+/** Always call this when the line or film ends, stops early or fails. */
+export function releaseMusic(tag){if(holds.delete(tag))syncMusic();}
+/** True once the first tap or key press has let the browser play sound. */
+export const soundUnlocked=()=>unlocked;
 /** Picks the theme for the current screen; replay restarts it, because the ending theme stops after one pass. */
 export function setMusicTheme(name,replay=false){
  if(!themes[name])return;

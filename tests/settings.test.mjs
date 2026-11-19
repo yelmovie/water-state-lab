@@ -52,14 +52,37 @@ test('independent sound controls gate autoplay, coalesce effects, and pause musi
  audio.setSoundSettings({bgm:true});assert.equal(music.paused,false);
  doc.hidden=true;doc.events.get('visibilitychange')();assert.equal(music.paused,true);assert.equal(ctx.state,'suspended');
  doc.hidden=false;doc.events.get('visibilitychange')();await Promise.resolve();await Promise.resolve();assert.equal(music.paused,false);
- audio.setMusicQuiet(true);assert.equal(music.paused,true,'stories can explicitly quiet music');
+ audio.holdMusic('film','pause');assert.equal(music.paused,true,'a film with its own music stops the theme');
  audio.setMusicTheme('ending');assert.equal(music.paused,true,'a theme change waits for the film to close');
- audio.setMusicQuiet(false);assert.match(music.src,/\/music\/ending-theme\.mp3$/);assert.equal(music.loop,false);assert.equal(music.paused,false);
- music.pause();music.events.ended();audio.setMusicQuiet(true);audio.setMusicQuiet(false);assert.equal(music.paused,true,'the ending theme plays once');
+ audio.releaseMusic('film');assert.match(music.src,/\/music\/ending-theme\.mp3$/);assert.equal(music.loop,false);assert.equal(music.paused,false);
+ music.pause();music.events.ended();audio.holdMusic('film','pause');audio.releaseMusic('film');assert.equal(music.paused,true,'the ending theme plays once');
  audio.setMusicTheme('ending',true);assert.equal(music.paused,false,'watching the ending again replays it');assert.equal(music.currentTime,0);
  audio.setMusicTheme('main');assert.match(music.src,/main-theme/);assert.equal(music.loop,true);
  audio.setSoundEnabled(false);assert.equal(music.paused,true);
  const count=ctx.oscillators.length;await audio.playClick();assert.equal(ctx.oscillators.length,count,'master mute silences both channels');
+});
+
+test('spoken lines lower the music to a quarter without stopping it, and every named hold must clear before it returns',async t=>{
+ const previousDocument=globalThis.document,previousAudio=globalThis.AudioContext,previousElement=globalThis.Audio;
+ const doc=mockDocument(),mock=fakeAudio(),media=fakeMediaElements();globalThis.document=doc;globalThis.AudioContext=mock.Context;globalThis.Audio=media.Element;
+ const audio=await import(`../src/sound.js?holds-test=${Date.now()}`);
+ t.after(()=>{audio.setSoundSettings({sound:false});globalThis.document=previousDocument;globalThis.AudioContext=previousAudio;globalThis.Audio=previousElement;});
+ audio.setSoundSettings({sound:true,bgm:true,sfx:true,bgmVolume:40});
+ assert.equal(audio.soundUnlocked(),false);
+ audio.holdMusic('voice');assert.equal(media.created.length,0,'a line before the first input starts no music');
+ doc.events.get('keydown')();assert.equal(audio.soundUnlocked(),true,'a key press unlocks sound like a tap');
+ const music=media.created[0],level=()=>mock.instances[0].gains[0].gain.values.at(-1);
+ assert.equal(music.paused,false);assert.equal(level(),.1,'music that starts under a line starts lowered');
+ audio.releaseMusic('voice');assert.equal(level(),.4);
+ audio.holdMusic('voice');assert.equal(music.paused,false,'a spoken line never stops the music');assert.equal(level(),.1);
+ audio.holdMusic('npc');audio.releaseMusic('voice');assert.equal(level(),.1,'one voice ending does not raise the music under another');
+ audio.releaseMusic('voice');audio.releaseMusic('npc');assert.equal(level(),.4);
+ audio.holdMusic('voice');audio.holdMusic('film','pause');assert.equal(music.paused,true);
+ audio.releaseMusic('voice');assert.equal(music.paused,true,'a line ending inside a film does not restart the music');
+ audio.holdMusic('npc');audio.releaseMusic('film');assert.equal(music.paused,false);assert.equal(level(),.1,'the film closes under a line: music returns lowered');
+ audio.releaseMusic('npc');assert.equal(level(),.4);
+ audio.setSoundSettings({bgmVolume:100});audio.holdMusic('voice');assert.equal(level(),.25);
+ audio.setSoundSettings({bgm:false});assert.equal(music.paused,true,'the music switch still stops it at once');
 });
 
 test('settings use the common order, lock rewards until completion, and preserve audio through confirmed reset',async t=>{

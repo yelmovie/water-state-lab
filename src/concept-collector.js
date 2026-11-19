@@ -1,5 +1,5 @@
 import {btn,icon,canArt} from './ui.js';
-import {setMusicQuiet} from './sound.js';
+import {holdMusic,releaseMusic} from './sound.js';
 import {state} from './state.js';
 const phases=[
  {title:'먼저, 차갑게 하지 않은 판',text:'받이를 같은 자리에 놓아도 판이 차갑지 않으면 이 모형에서는 물이 모이지 않아.'},
@@ -18,8 +18,8 @@ export function openCollectorConcept({reduced=false,onContinue,continueLabel='�
  const stop=()=>{clearInterval(timer);timer=undefined;};
  const play=()=>{stop();show(0);if(reduced||matchMedia('(prefers-reduced-motion: reduce)').matches)return;let i=0;const step=()=>{timer=setTimeout(()=>{show(++i);if(i<3)step();else timer=undefined;},phaseMs(i));};step();};
  const visibility=()=>{if(document.hidden)stop();};
- const close=()=>{if(closed)return;closed=true;stop();d.close();d.remove();document.removeEventListener('visibilitychange',visibility);setMusicQuiet(false);onClose?.();if(opener?.isConnected)opener.focus({preventScroll:true});};
+ const close=()=>{if(closed)return;closed=true;stop();d.close();d.remove();document.removeEventListener('visibilitychange',visibility);releaseMusic('collector');onClose?.();if(opener?.isConnected)opener.focus({preventScroll:true});};
  d.addEventListener('cancel',e=>{e.preventDefault();close();});d.addEventListener('close',close,{once:true});
  d.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-collector-close'))close();if(b.hasAttribute('data-collector-continue')){close();onContinue?.();}if(b.hasAttribute('data-collector-film')){close();onFilm?.();}if(b.hasAttribute('data-collector-replay'))play();if(b.dataset.collectorStep!==undefined){stop();show(+b.dataset.collectorStep);}});
- document.addEventListener('visibilitychange',visibility);setMusicQuiet(true);d.showModal();d.querySelector('[data-collector-continue]').focus();play();return {dialog:d,close};
+ document.addEventListener('visibilitychange',visibility);holdMusic('collector','pause');d.showModal();d.querySelector('[data-collector-continue]').focus();play();return {dialog:d,close};
 }

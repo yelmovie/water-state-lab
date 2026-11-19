@@ -1,7 +1,7 @@
 import {openCollectorConcept} from './concept-collector.js';
 import {concepts} from './concept-data.js';
 import {btn,buddy,esc,icon} from './ui.js';
-import {setMusicQuiet,playCue} from './sound.js';
+import {holdMusic,releaseMusic,playCue} from './sound.js';
 
 let active=null;
 export function closeConcept(){active?.close();}
@@ -22,7 +22,7 @@ export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으
  const layout=()=>d.classList.toggle('film-on',rolled&&!failed&&end.hidden);
  const showCue=i=>{if(i===cue)return;cue=i;caption.textContent=clip.cues[i].text;d.querySelectorAll('[data-cue]').forEach((b,k)=>b.setAttribute('aria-pressed',String(k===i)));};
  const last=clip.cues.length-1,sync=()=>showCue(Math.max(0,clip.cues.findLastIndex(c=>c.at<=video.currentTime)));
- function close(){if(closed)return;closed=true;clearTimeout(waiting);video.pause();video.removeAttribute('src');video.load();d.close();d.remove();document.removeEventListener('visibilitychange',visibility);setMusicQuiet(false);if(active?.dialog===d)active=null;if(opener?.isConnected)opener.focus({preventScroll:true});}
+ function close(){if(closed)return;closed=true;clearTimeout(waiting);video.pause();video.removeAttribute('src');video.load();d.close();d.remove();document.removeEventListener('visibilitychange',visibility);releaseMusic('concept');if(active?.dialog===d)active=null;if(opener?.isConnected)opener.focus({preventScroll:true});}
  function fallback(){if(closed||failed)return;failed=true;clearTimeout(waiting);video.pause();video.removeAttribute('src');video.load();video.hidden=true;end.hidden=false;play.hidden=true;list.hidden=false;d.querySelector('.concept-beats').hidden=true;caption.textContent='영상 대신 장면별 핵심을 함께 살펴봐.';d.querySelector('[data-concept=replay]').hidden=true;d.classList.add('film-failed');layout();}
  function start(){if(closed||failed)return;clearTimeout(waiting);waiting=setTimeout(()=>{if(!closed&&video.paused&&!video.ended)play.hidden=false;},6000);end.hidden=true;layout();void video.play().then(()=>{if(!closed)play.hidden=true;clearTimeout(waiting);}).catch(()=>{if(!closed){play.hidden=false;end.hidden=false;layout();}});}
  const visibility=()=>{if(document.hidden){video.pause();play.hidden=false;}};
@@ -37,7 +37,7 @@ export function openConcept(n,{reduced=false,onContinue,continueLabel='실험으
  video.addEventListener('ended',()=>{end.hidden=rolled;layout();showCue(last);play.hidden=true;d.querySelector('[data-concept=continue]').focus();});
  video.addEventListener('error',fallback);
  video.addEventListener('loadedmetadata',()=>{clearTimeout(waiting);if(!reduced&&!matchMedia('(prefers-reduced-motion: reduce)').matches)start();},{once:true});
- document.addEventListener('visibilitychange',visibility);active={close,dialog:d};setMusicQuiet(true);void playCue('discover');
+ document.addEventListener('visibilitychange',visibility);active={close,dialog:d};holdMusic('concept','pause');void playCue('discover');
  video.src=`/assets/concepts/zone-${n}.mp4`;
  waiting=setTimeout(()=>{if(video.readyState<1)fallback();},6500);
  d.showModal();d.querySelector('[data-concept=continue]').focus();
