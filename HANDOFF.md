@@ -1,6 +1,6 @@
 # 소리 1차 수정: 대사 때 배경음 줄임·이름표·타이틀 대사 · 2026-11-19
 
-운영 배포: (아래 「배포 기록」 줄 참고). 지침 `../_shared/AUDIO-FIX-BRIEF-20261119.md` 06번 줄.
+운영 배포: 커밋 `8b4542a` → Cloudflare Pages `2c0a87a6`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`, 직전 `1650ff81`). 운영 `/`·`src/sound.js`·`src/voice-lines.js`·`src/npc-voice.js`·`src/story-film.js`·`src/concepts.js`·`src/concept-collector.js`·`sw.js`·`build-info.json` SHA-256이 빌드와 일치(MATCH). 운영 주소에서도 같은 상태 기록을 다시 돌려 타이틀·인트로·지도·주민·엔딩 항목이 개발 서버와 같은 값이고 콘솔 오류·404 0(`.tmp/audio-fix-20261119/probe-prod.log`). 지침 `../_shared/AUDIO-FIX-BRIEF-20261119.md` 06번 줄.
 
 - 대사 때 배경음: 자동 대사(`voice-lines.js`: 팝업·안내·악당 말풍선·엔딩 자막)와 주민 목소리(`npc-voice.js`)가 나오는 동안 메인테마·엔딩 곡을 멈추지 않고 평소의 0.25배로 줄인다(기본 0.35 → 0.0875, 약 0.2초에 걸쳐 바뀜). 전에는 `quiet` 값 하나로 곡을 멈췄다. 엔딩 화면 자막 음성마다 엔딩 곡이 끊기던 것도 같이 없어졌다.
 - 이야기 영상(인트로·엔딩)과 개념 영상·공방 설명은 전처럼 멈춘다. 파형 대조로 인트로에는 메인테마, 엔딩 영상에는 엔딩 곡이 섞여 있는 것을 확인했다(최고점/둘째 4.27, 13.11).
