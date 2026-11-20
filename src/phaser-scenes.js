@@ -319,7 +319,7 @@ function makeScene(P,route,ctx,host,hidden,regions,onReady,onFailure){
     obj.setDepth(s.selected===key?8:2);
     obj.on('pointerdown',()=>{if(final)return;s.selected=key;Object.entries(this.parts).forEach(([k,part])=>part.setDepth(k===key?8:2));});
     if(!final&&key==='ramp')obj.on('pointerup',()=>this.action('ramp-tilt'));
-    const label=this.text(...labelPosition(obj,key),['냉각판','경사판','깔때기','연결관','물통'][i],17);
+    const label=this.text(...labelPosition(obj,key),['냉각판','경사판','깔때기','연결관','물통'][i],17).setDepth(9);
     if(key==='ramp'){obj.setDisplaySize(211,58);obj.setOrigin(.1,.5).setAngle(Math.atan(s.angle*2/180)*180/Math.PI);}
     obj.onMove=()=>{const next=partPosition(key,obj.x,(obj.y-offset)/scale);obj.x=next.x;obj.y=final?p.y*scale+offset:next.y*scale+offset;label.setPosition(...labelPosition(obj,key));};
     obj.onRelease=()=>{p.x=obj.x;p.y=Math.round((obj.y-offset)/scale);if(!final&&key==='funnel'){const seat=funnelSeat(s.parts.ramp);if(Math.hypot(p.x-seat.x,p.y-seat.y)<90)Object.assign(p,seat);}s.selected=key;this.reactAt(obj.x,obj.y);if(final){context.progress.diagnosis.resolved=false;context.progress.tested=false;context.progress.lever=0;if(!context.preview)save();later(()=>ctx.render());}else{s.compare=false;this.commit();}};

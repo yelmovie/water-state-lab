@@ -857,7 +857,7 @@ button.village-slot{cursor:pointer}
 .transform-progress li{display:flex;gap:5px;align-items:center;padding:4px 9px;border:1px solid #d0d9c6;border-radius:999px;background:#f6f6e9}
 .transform-progress li>span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e0e9d8;color:#285d50;font-weight:800}
 .transform-progress li[aria-current]{color:#714e16;border-color:#bb9141;background:#ffedb9;font-weight:800}
-.transform-progress li[aria-current]>span{background:#9c6c23;color:#fff9e8}
+.transform-progress li[aria-current]>span{background:#8f631f;color:#fff9e8}
 .transform-progress li.is-done{background:#e5f3df;color:#275c49}
 .transform-progress li.is-done>span{background:#376f58;color:white}
 .transform-goal small{display:block;color:#44665a;font-size:clamp(14px,1.55vw,18px);font-weight:800}

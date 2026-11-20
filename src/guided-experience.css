@@ -413,7 +413,7 @@
 .ending-shell .ending-stats{display:flex;gap:8px;margin:0}
 .ending-shell .ending-stats>div{padding:6px 10px}.ending-shell .ending-stats strong{font-size:24px}.ending-shell .ending-stats small{font-size:18px}
 .ending-shell .ending-copy{display:flex;flex-direction:column;justify-content:flex-start;gap:10px;height:100%;max-height:none;min-height:0;overflow:visible;padding:0}
-.ending-shell .ending-copy>.unit-label{font-size:18px;line-height:1.2}
+.ending-shell .ending-copy>.unit-label{font-size:18px;line-height:1.2;color:#2f5767}
 .ending-shell .ending-copy h1{margin:0;font-size:clamp(28px,2.6vw,42px);line-height:1.15}
 .ending-shell .ending-copy>p{margin:0;font-size:18px;line-height:1.4}
 .ending-shell .ending-statement{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;padding:12px}
@@ -773,6 +773,7 @@
 .core-height-fine input{width:100%;min-height:44px}
 .workspace-controls .core-repair{position:relative;pointer-events:auto}
 .workspace-controls .core-repair>summary{min-height:44px;padding:10px;font-size:16px;cursor:pointer}
+.workshop-layout details>summary{color:#2a5649}
 .workspace-controls .core-repair[open]{position:absolute;right:12px;bottom:100%;display:grid;gap:8px;width:min(320px,90vw);padding:12px;border:1px solid #9db8aa;border-radius:12px;background:#fffdf0;max-height:55vh;overflow:auto}
 .guided-shell .final-layout .diagnosis-readout{display:none}
 @media(max-width:800px),(max-height:520px){
