@@ -30,3 +30,6 @@
 .concept-caption p { text-wrap-mode: inherit; text-wrap-style: balance; }
 /* 2차(2026-11-20): 3D 달리기 도착 패널의 기록 문장(「…끓지 / 않아도 증발해.」)과 마지막 완료의 모험 이름 칸(「물방울 배달 / 작전」) */
 .run-done li, .run-done-steps span { text-wrap-style: balance; }
+/* 4차(2026-11-21): 지도 악당 말풍선은 124px 버튼 안의 절대 위치 상자라 자리에 따라 최소 폭 190px로 줄어,
+   힌트가 「이 구역 탐구를 / 마치면 물리칠 / 수 있어」로 3줄이 됐다. 정해진 폭(190~240px) 안에서 글 길이만큼 넓힌다. */
+.mv-target .mv-say { width: max-content; }
