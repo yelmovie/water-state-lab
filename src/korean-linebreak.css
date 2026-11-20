@@ -28,3 +28,5 @@
 /* 개념 영상 자막(role=status): 공통 [role=status] 규칙이 줄임형이라 영상 재생 중 숨김 자막의 nowrap이 풀려 한 낱말씩 쌓였다.
    줄바꿈 여부는 자막 상자(.concept-caption)를 따르고, 보일 때만 두 줄을 고르게 한다. */
 .concept-caption p { text-wrap-mode: inherit; text-wrap-style: balance; }
+/* 2차(2026-11-20): 3D 달리기 도착 패널의 기록 문장(「…끓지 / 않아도 증발해.」)과 마지막 완료의 모험 이름 칸(「물방울 배달 / 작전」) */
+.run-done li, .run-done-steps span { text-wrap-style: balance; }
