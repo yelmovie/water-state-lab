@@ -1,3 +1,12 @@
+# 폰 가로 시작 화면 버튼 잘림 수정 · 2026-11-20
+
+운영 배포: 커밋 `58f11b1` → Cloudflare Pages `2769c86b`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `/`·`src/experience.css` 해시가 빌드와 같고, 운영에서 헤드리스로 844×390·740×360·932×430과 태블릿 세 크기를 저장 없음·이어서·완성 세 상태로 확인. 지침 `../_shared/EXISTING-ISSUES-FIX-20261120.md`.
+
+- 고치기 전(운영): 844×390 「이어서」 상태에서 「탐험 지도 보기」 아래가 410px(화면 390px)로 잘리고 머리말 알약도 위로 3px 잘림. 740×360은 세로 화면용 배치가 적용돼 표기 줄이 오른쪽 버튼을 덮음. 「내 탐험 기록은…」 줄은 세 크기 모두 화면 밖.
+- 원인: 글 묶음 폭이 `46vw`(844에서 388px)라 버튼이 2~3줄로 접혀 묶음 높이가 443px(쓸 수 있는 높이 306px).
+- 수정: `src/experience.css`에 `@media(max-height:500px) and (orientation:landscape)` 한 묶음. 글 묶음을 넓혀 버튼을 한 줄로(높이 48px·글자 20px 그대로, 좌우 안쪽 여백 16px), 로고는 `min(34dvh, 100dvh - 268px)`, 방울이는 오른쪽 아래에서 버튼 줄·표기 줄에 닿지 않게(이제 표기가 발끝을 덮지 않는다). 태블릿 크기 경계 상자는 그대로(최대 차이 0.1px).
+- 검증: `npm test` 337개 통과, `npm run check`, `npm run build`, 헤드리스 `.tmp/existing-fix-20261120/measure.mjs`(스크린숏 같은 폴더).
+
 # 시작 화면 우측 하단 제작·저작권 표기 · 2026-11-20
 
 운영 배포: 커밋 `399e633` → Cloudflare Pages `af3603ff`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `/`·`src/app.js`·`src/experience.css`·`src/settings-content.js` 해시가 빌드와 같고, 운영에서 헤드리스로 네 뷰포트(1280×800·1024×768·1920×1080·844×390) 표기와 설정의 제작 줄·저작권 줄 확인. 지침 `../_shared/CREDIT-LINE-20261120.md`.
