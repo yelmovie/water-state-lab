@@ -56,3 +56,20 @@
 - `cmp.sh`: `src/korean-linebreak.css` 빌드=운영 `bebacd5e7abe7d39` MATCH, `index.html` MATCH.
 - 운영 재측정(`sweep.mjs live`, `run.mjs 06`): 1280×800·1920×1080 모두 `<br>` 오탐 3개만 남음. 장 끝 대화 발견 카드 운영 스크린샷 `.tmp/linebreak-20261119/live/1280x800/endtalk6.png`(전: `before/1280x800/endtalk6.png`).
 - 추가(2026-11-20, 사용자 승인): 성취 카드 보관함 잠긴 문구 `src/reward-cards.css` `.rc-locked` 컨테이너 보정 네 줄(공통 지침 8절). 06은 전에도 한 줄(카드 175~180px)이었고, 후 1280×800·1920×1080 한 줄, 1024×768 「악당을 / 물리치면 / 열려요」 세 줄, 카드 넘침 없음. 커밋 `8b6575b` → Pages `7ae206f8`, `cmp.sh` reward-cards.css·index.html MATCH.
+
+## 2차: 남은 것 정리 (2026-11-20, 공통 지침 9절)
+
+측정: `.tmp/linebreak-20261119/extra.mjs`, `cardmeasure.mjs`(1280×800·1024×768, 3D 패널은 1920×1080도).
+
+| 화면 | 잰 것 | 전 | 후 |
+|---|---|---|---|
+| 지도 악당 말풍선 `.mv-say`(map-villains.js 인라인 스타일) | 실제 말풍선에 대사 11줄(놀림 7·「아직은 날 못 이겨! 흐흐」·맞을 때 3) × 힌트 4가지(없음·「공격 버튼을 눌러 봐!」·「공격 버튼 · 스페이스!」·「이 구역 탐구를 마치면 물리칠 수 있어」) = 크기마다 44개 | 0 | 0(보정 없음) |
+| 3D 달리기 도착 패널 1~4 `.run-done` | 각 장 기록 문장 | 1 「…끓지 / 않아도 증발해.」(26%) | 0 |
+| 3D 달리기 마지막 완료(5/5) `.run-done-steps` | 모험 이름 5칸(102px) | 「물방울 배달 / 작전」「마지막 물길 / 연결」(38%) | 「물방울 / 배달 작전」「마지막 / 물길 연결」(100%) |
+| 3D 귀띔 패널 `.run-hint`, 상태 문구 `.run-message` | 귀띔 5개, 상태·관문 안내·증거 문구 전부 | 0 | 0 |
+| 3D 장면 라벨 `.run-labels`, 2D 대체 화면 도착 | 장마다 | `<br>` 오탐 1(「방울이는 지금<br>수증기 상태야」) | 같음 |
+| 성취 카드 획득 장면 `.rc-layer` | 첫 카드·다섯째 카드, 보관함에 넣기 뒤 다 모은 장면 | 0 | 0 |
+
+- 고친 선택자: `src/korean-linebreak.css` 프로젝트 보정 `.run-done li, .run-done-steps span { text-wrap-style: balance; }`. 커밋 `ab90f7d` → Pages `beead431`, `cmp.sh` korean-linebreak.css·index.html MATCH. 검사 `check` 통과, 테스트 337개 통과.
+- 남김: 「좁은 물길을 / 건너라」(57%)는 balance로도 더 고르게 나눌 수 없어(「좁은 / 물길을 건너라」가 더 나쁨) 그대로. 지도 이동 판 「방울이 / 이동」은 좁은 칸의 두 낱말 이름표(9절 「그대로 두는 것」과 같은 경우).
+- 캔버스: 3D(Three)는 `painted()` 캔버스 텍스처에 글자를 그리지 않고(`fillText` 없음), 글은 모두 DOM 라벨이다. Phaser 이름표는 1차 때 확인한 대로 짧은 한 줄.
