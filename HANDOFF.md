@@ -1,3 +1,11 @@
+# 시작 화면 우측 하단 제작·저작권 표기 · 2026-11-20
+
+운영 배포: 커밋 `399e633` → Cloudflare Pages `af3603ff`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `/`·`src/app.js`·`src/experience.css`·`src/settings-content.js` 해시가 빌드와 같고, 운영에서 헤드리스로 네 뷰포트(1280×800·1024×768·1920×1080·844×390) 표기와 설정의 제작 줄·저작권 줄 확인. 지침 `../_shared/CREDIT-LINE-20261120.md`.
+
+- 타이틀 화면(`homeView`, `src/app.js`)에만 `<p class="start-credit">`로 「기획·제작: 옐샘 & ⓒ 아이스크림미디어」 한 줄(문구는 `SETTINGS_CONTENT.credits.copyright`). 스타일은 `src/experience.css`의 `.start-credit`: 10~13px, 누를 수 없음, 옅은 크림 바탕.
+- 폰 가로(844×390)에서는 방울이 발끝과 몇 px 겹친다(방울이를 옮기지 않기로 해서 그대로 둠).
+- 검증: `npm test` 337개 통과, `npm run check`, 헤드리스 `.tmp/credit-line-20261120/check.mjs`(스크린숏 같은 폴더).
+
 # 소리 3차 수정: 설정의 효과음 크기·목소리 스위치, 첫 입력 전 재생 · 2026-11-20
 
 운영 배포: 커밋 `d391cac` → Cloudflare Pages `ba53509c`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `/`·`src/sound.js`·`settings.js`·`state.js`·`voice-lines.js`·`npc-voice.js`·`map-villains.js`·`app.js` 해시가 빌드와 같고, 운영에서 헤드리스로 스위치·효과음 크기·새로고침 유지·예전 저장 이어받기 확인. 지침 `../_shared/AUDIO-FIX3-BRIEF-20261120.md` 1장과 06번 줄.
