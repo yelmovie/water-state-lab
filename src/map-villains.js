@@ -302,7 +302,7 @@ export function mountMapVillains(world, options) {
 }
 
 const STYLES=`
-.mv-target{position:absolute;z-index:15;transform:translate(-50%,-50%);width:124px;min-height:132px;padding:4px;background:transparent;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;touch-action:manipulation;pointer-events:auto;color:#fff;font:16px/1.2 var(--font-display);isolation:isolate}
+.mv-target{position:absolute;z-index:15;transform:translate(-50%,-50%);width:124px;min-height:132px;padding:4px;background:transparent;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;touch-action:manipulation;pointer-events:auto;color:#fff;font:18px/1.2 var(--font-display);isolation:isolate}
 .mv-target:focus-visible{outline:4px solid #fff59b;outline-offset:4px;border-radius:15px}
 .mv-creature{position:relative;display:block;width:104px;height:104px;transform-origin:50% 90%;transition:scale .15s}
 .mv-sprite{position:absolute;inset:0;background:url('/assets/v2/map-villain-mole.webp') 0 0/400% 200% no-repeat;animation:mv-idle 2.4s step-end infinite,mv-bob 1.2s ease-in-out infinite;transform-origin:50% 95%;
@@ -327,7 +327,7 @@ const STYLES=`
 .mv-say[data-placed=side]:after{display:none}
 .mv-sfx{position:absolute;left:50%;top:6px;z-index:3;font:20px/1 var(--font-display);color:#ffe066;-webkit-text-stroke:4px #4a1d63;paint-order:stroke fill;pointer-events:none;white-space:nowrap}
 .mv-label{display:none;background:#236754;border:2px solid #b8f2d8;border-radius:12px;padding:3px 8px;white-space:nowrap;box-shadow:0 2px 0 #12303266}
-.mv-meter{display:none;font-size:16px;letter-spacing:1px;color:#ff6b5b;-webkit-text-stroke:3px #3a1752;paint-order:stroke fill}
+.mv-meter{display:none;font-size:18px;letter-spacing:1px;color:#ff6b5b;-webkit-text-stroke:3px #3a1752;paint-order:stroke fill}
 .mv-target[data-state=ready] .mv-meter,.mv-target[data-state=leaving] .mv-meter{display:block}
 .mv-wave{position:absolute;top:44px;width:40px;height:40px;border:5px solid #9effea;border-radius:50%;opacity:0;pointer-events:none}
 .mv-target[data-state=ready] .mv-wave{animation:mv-ready 1.6s ease-out infinite}
