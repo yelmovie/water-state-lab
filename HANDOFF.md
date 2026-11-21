@@ -1,3 +1,11 @@
+# 3D 달리기 유리 배관을 Meshy 연결관으로 · 2026-11-21
+
+운영 배포: 커밋 `2179f81` → Cloudflare Pages `bc7b6751`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `src/run-stage.js`·`assets/models/device-tube.glb` SHA-256이 빌드와 같고, 운영에서 헤드리스로 탐험 2 밸브 옆 배관에 모형이 뜨는 것(물 꽉 참·얼 자리 남김 두 상태)과 GLB를 막았을 때 원기둥으로 그려지는 것 확인. 지침 `../_shared/MESHY-3D-UPGRADE-20261121.md` 6번 줄(새 생성 0장).
+
+- 바꾼 것: `src/run-stage.js` 밸브 옆 유리 배관(원기둥)을 이미 3D 공방 보기에서 쓰는 `public/assets/models/device-tube.glb`(Meshy 연결관, 3,000면·240KB)로. 원기둥과 같은 자리·크기(높이 1.5·반지름 0.34), 안의 물 높이(`space`)가 보이게 반투명 0.42. 불러오기 전·실패 시 원기둥 그대로.
+- 안 바꾼 것(맞는 GLB 없음): 열판·냉각판(바닥 판정 패드, `device-cooling-plate`는 받침 달린 방열판이라 모양이 다름), 밸브 기둥·바퀴, 놋쇠 난간, 돌길·교각, 공기 통로 점. 장치 네 개(수로·냉각 관찰대·증발 접시·차가운 지붕)는 세워 둔 그림이고 하나의 GLB와 같은 물체가 아님.
+- 검증: `npm run check`, `npm test` 337개 통과, `npm run build`, 헤드리스 `.tmp/meshy-20261121/check.mjs`(스크린숏 `shots/`·`shots-prod/`), 콘솔 오류 0(GLB 차단 시험의 의도된 실패 1건 제외).
+
 # 폰 가로 시작 화면 버튼 잘림 수정 · 2026-11-20
 
 운영 배포: 커밋 `58f11b1` → Cloudflare Pages `2769c86b`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `/`·`src/experience.css` 해시가 빌드와 같고, 운영에서 헤드리스로 844×390·740×360·932×430과 태블릿 세 크기를 저장 없음·이어서·완성 세 상태로 확인. 지침 `../_shared/EXISTING-ISSUES-FIX-20261120.md`.
