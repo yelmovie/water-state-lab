@@ -14,3 +14,9 @@
 #app :is(.lesson-card,.mission-card,.expedition-card,.ending-art-card,.settings-concept-card,.settings-unlock-card,.activity-object,.activity-target){border-radius:var(--scenic-card-radius);}
 #app :is(.activity-cardbank,.inquiry-cardbank,.guided-question-choices,.activity-two){gap:var(--scenic-card-gap);}
 #app :is(.activity-object,.activity-target,.settings-concept-card){background-color:#fffdf0d9;}
+
+/* Moved here from layout-balance.css on 2026-11-21: it has to come after the glass button rule above (same specificity). */
+/* Ending: one main button (the certificate). Replays and the classroom idea step down to text buttons so seven
+   same-looking buttons no longer compete. Each keeps a 44px touch height. */
+#app .ending-shell .ending-replay-actions .btn,#app .ending-shell .btn.classroom-making{min-height:44px;background:transparent;border-color:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;color:#245a55;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+#app .ending-shell .ending-replay-actions .btn:hover,#app .ending-shell .btn.classroom-making:hover{background:#fffdf3a8}
