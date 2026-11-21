@@ -32,6 +32,24 @@ import {fieldMissions,areaStages,experimentTitles} from './fieldwork-model.js';
 import {fieldworkView,bindFieldwork,cleanupFieldwork,handleFieldwork,startFieldwork,hasFieldSeal,fieldChapter} from './fieldwork.js';
 import {passportView,certificateView,researchRecords} from './achievement.js';
 const app=document.querySelector('#app');
+// Browser back stays in the app: activity → map → home, and one more back on home leaves as usual (2026-11-21).
+// While away from home one guard entry sits on top of the page entry; popstate onto the page entry walks one step up.
+const backNav={skip:0};
+function syncHistory(){
+ if(state.route==='home'){if(history.state?.wdl==='guard'){backNav.skip++;history.back();}return;}
+ if(history.state?.wdl!=='guard')history.pushState({wdl:'guard'},'');
+}
+addEventListener('popstate',event=>{
+ if(backNav.skip){backNav.skip--;return;}
+ if(event.state?.wdl==='guard'){if(state.route==='home')go('map');return;}
+ const dialog=[...document.querySelectorAll('dialog[open]')].pop();
+ if(dialog||document.querySelector('.rc-layer')){
+  // Back closes the open window the same way Escape does; achievement card layers close themselves (reward-cards.js).
+  if(dialog&&dialog.dispatchEvent(new Event('cancel',{cancelable:true})))dialog.close();
+  history.pushState({wdl:'guard'},'');return;
+ }
+ if(state.route==='map')go('home');else if(state.route!=='home')go('map');
+});
 const ctx={render,go,pageDone,complete,action:routeAction,baseAction,wipe:(kind,ids)=>wipe(kind,ids,ctx),finishEnding,say:updateCoachMessage,enterMission:m=>{if(canEnter((m-1)*2+1,state))document.querySelector(`[data-action="mission-${m}"]`)?.click();}};
 let endingTimer,travelTimer,lastRenderedRoute,resetToken,manualToolsRoute=null,clockObserver=null,workspaceObserver=null;
 function syncStorageNotice(){
@@ -300,6 +318,7 @@ export function render(){
  if(state.route==='ending'&&state.restored&&!state.settings.adminUnlock&&remainingMapVillains(state)){state.route='map';state.finalePending=true;persist();}
  const resumeFinale=state.settings.autoObservation===true&&state.route==='map'&&state.restored&&state.finalePending&&!state.settings.adminUnlock&&!remainingMapVillains(state);
  if(resumeFinale){state.route='ending';state.finalePending=false;persist();}
+ syncHistory();
  if(state.route===5&&state.fieldwork.active!==5&&prepareDrawingComparison(state.activities.draw))save();
  clockObserver?.disconnect();clockObserver=null;
  workspaceObserver?.disconnect();workspaceObserver=null;
