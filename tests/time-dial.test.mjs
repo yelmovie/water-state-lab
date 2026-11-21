@@ -106,7 +106,7 @@ test('an open dialog prevents starting a clock behind it',t=>{
 
  test("guided clock highlights preserve absolute placement",async()=>{
  const {readFile}=await import("node:fs/promises");
- const css=await readFile(new URL("../src/experience.css",import.meta.url),"utf8");
+ const css=await readFile(new URL("../src/experience.css",import.meta.url),"utf8")+await readFile(new URL("../src/experience-tasks.css",import.meta.url),"utf8");
  assert.ok(css.includes(".guided-control:not(.phaser-stage):not(#field-canvas):not(.time-magic){position:relative;z-index:2}"));
  assert.ok(!css.includes(".guided-control:not(.phaser-stage):not(#field-canvas){position:relative"));
  });
@@ -136,7 +136,7 @@ test("reduced motion keeps the static arrival cue available",t=>{
  test('large arrival clock has no yellow guided ring and no side rail',async()=>{
  const {readFile}=await import('node:fs/promises');
  const css=await readFile(new URL('../src/guided-experience.css',import.meta.url),'utf8');
- const guide=await readFile(new URL('../src/experience.css',import.meta.url),'utf8');
+ const guide=await readFile(new URL('../src/experience.css',import.meta.url),'utf8')+await readFile(new URL('../src/experience-tasks.css',import.meta.url),'utf8');
  assert.ok(css.includes('--clock-size:164px'));assert.ok(css.includes('--clock-size:136px'));assert.ok(css.includes('--clock-size:88px'));
  assert.ok(!css.includes('--time-rail:'));assert.ok(guide.includes('.guided-control:not(.phaser-stage):not(#field-canvas):not(.time-magic){outline:'));
  });
