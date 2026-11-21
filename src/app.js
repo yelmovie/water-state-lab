@@ -1,5 +1,5 @@
 import {remainingMapVillains} from './map-villains.js';
-import {rewardSlotsHtml,revealRewardCard,ownedRewardCards} from './map-rewards.js';
+import {revealRewardCard,ownedRewardCards} from './map-rewards.js';
 import {dropAdventureView,handleDropAdventure,mountDropAdventure,cleanupDropAdventure} from './drop-adventure.js';
 import {prepareDrawingComparison} from './drawing-records.js';
 import {mountTimeTools} from './time-dial.js';
@@ -22,7 +22,7 @@ import {activityView,handleActivity,bindActivity,cleanupActivity,getActivityProg
 import {workshopView,finalView,handleWorkshop,bindWorkshop,cleanupWorkshop,resetFinalPreview,finalContext} from './workshop.js';
 import {playClick,playCue,stopCue,afterCue,setMusicTheme,setSoundSettings} from './sound.js';
 import {openSettings,offlineText} from './settings.js';
-import {SETTINGS_CONTENT} from './settings-content.js';
+import './settings-content.js';
 import {OFFLINE_BUILD} from './version.js';
 import {syncCoach,cleanupCoach,handleCoach,updateCoachMessage} from './coach.js';
 import {closeConcept,openConcept,openCollectorLesson} from './concepts.js';
@@ -31,6 +31,7 @@ import {activityReady,experimentActivities,sortCards} from './activity-model.js'
 import {fieldMissions,areaStages,experimentTitles} from './fieldwork-model.js';
 import {fieldworkView,bindFieldwork,cleanupFieldwork,handleFieldwork,startFieldwork,hasFieldSeal,fieldChapter} from './fieldwork.js';
 import {passportView,certificateView,researchRecords} from './achievement.js';
+import {anySound,soundButton,header,homeView,endingView} from './screen-views.js';
 const app=document.querySelector('#app');
 // Browser back stays in the app: activity → map → home, and one more back on home leaves as usual (2026-11-21).
 // While away from home one guard entry sits on top of the page entry; popstate onto the page entry walks one step up.
@@ -145,12 +146,7 @@ function pageDone(n){
 }
 function complete(m,record){const first=!state.completed.includes(m);state.evidence[m]=record;if(first)state.completed.push(m);const greeted=pageDone(m*2,false);persist();state.dropReturn=false;if(state.settings.autoObservation===true){go('map');toast(`${residentForStage(m*2).spot}의 발견을 남겼어! 다음 건물로 가 보자.`);return;}render();playCue('success');const j=journey[m-1];if(first&&greeted){stageEndTalk(m*2,{label:'지도 보기',action:'reward-map'},j.tool);return celebrate(document.querySelector('#dialog'));}modal(first?'새로운 물길을 연결했어!':'연구 기록을 새로 남겼어',`<div class="reward-modal">${first?residentReward(m*2):`<div class="reward-character">${buddy('celebrate')}${propArt(j.prop)}</div>`}<span class="eyebrow">${m}번째 발견</span><h3>${j.tool}</h3><p>${j.after}</p><div class="reward-proof">${m===1?'직접 옮기고 부어 본 관찰':m===2?`${record.trials.length}개 조건을 비교한 배관 기록`:m===3?'같은 조건과 다른 조건을 나란히 비교한 기록':'두 컵을 비교하고 다시 닦아 확인한 증거'}</div>${btn('지도 보기 '+icon('arrow'),'reward-map','primary wide')}</div>`);}
 // The speaker reads "off" (offers to turn sound on) only when music, effects and voices are all off.
-const anySound=()=>state.settings.sound!==false&&(state.settings.bgm!==false||state.settings.sfx!==false||state.settings.voice!==false);
-function soundButton(){return `${icon(anySound()?'speaker':'speakerOff')}`;}
-function header(home=false){return `<header class="topbar" aria-label="화면 도구"><div class="topbar-left">${state.settings.adminUnlock?'<button type="button" class="btn teacher-stage-launch" data-action="teacher-stages">시연할 장</button>':''}${home?'':`<nav class="page-nav" aria-label="페이지 이동"><button class="icon-btn" data-action="home" aria-label="홈으로 가기" title="홈으로 가기">${icon('home')}</button><button class="icon-btn" data-action="previous" aria-label="이전 페이지로 가기" title="이전 페이지로 가기" ${previousRoute(state.route)===null?'disabled':''}>${icon('back')}</button></nav>`}</div><div class="topbar-right">${state.route==='map'?rewardSlotsHtml(state):''}<button class="icon-btn" data-action="sound" aria-label="소리 ${anySound()?'끄기':'켜기'}" aria-pressed="${anySound()}" title="소리 ${anySound()?'끄기':'켜기'}">${soundButton()}</button><button class="icon-btn ${state.settings.adminUnlock?'admin-active':''}" data-action="settings" aria-label="설정" title="설정${state.settings.adminUnlock?' · 교사 시연 중':''}">${icon('settings')}</button></div></header>`;}
 
-// Title screen: logo, Bangul and one next step. With saved progress, "continue" leads and the map is the second choice.
-function homeView(){const started=waterResumeRoute(state)!==null;return `<div class="start-screen">${header(true)}<main class="start-main"><img class="start-bg" src="/assets/v2/title-island.webp" width="1344" height="752" alt=""><div class="start-bubbles" aria-hidden="true">${'<i></i>'.repeat(9)}</div><div class="start-copy"><span class="start-kicker">${icon('drop',20)}방울이와 함께하는 물의 상태 변화 탐험</span><h1 class="start-title"><img src="/assets/v2/title-logo.webp" width="927" height="532" alt="방울이의 물길 탐험"></h1><p class="start-tagline">얼고, 마르고, 다시 맺히는 물의 비밀로<br>멈춘 물길을 다시 흐르게 해 줘!</p><div class="start-actions">${btn('방울이 변신 모험','drop-start','start-second')}${started?btn(`${state.restored?'완성한 물길 보기':'이어서 탐험하기'} ${icon('arrow')}`,'start','primary start-cta')+btn('탐험 지도 보기','map','start-second'):btn(`실험부터 시작 ${icon('arrow')}`,'title-start','primary start-cta')}</div><small class="start-save">내 탐험 기록은 이 기기에 저장돼요</small></div><img class="start-bangul" src="/assets/v2/bangul-title.webp" width="774" height="1015" alt="돋보기를 들고 손을 흔드는 물방울 연구원 방울이"><p class="start-credit">${esc(SETTINGS_CONTENT.credits.copyright)}</p></main></div>`;}
 function mapView(){return `<div class="journey-shell">${header()}${journeyView()}</div>`;}
 let currentTask;
 function experimentShell(n){
@@ -168,7 +164,6 @@ function experimentShell(n){
  const panel=question?`<aside class="guided-question-panel" aria-labelledby="guided-question-title"><span class="guided-question-label">❓ 문제</span><h2 id="guided-question-title">${esc(question.prompt)}</h2><div class="guided-question-choices">${question.choices.map(choice=>`<button type="button" class="btn" data-guided-answer data-action="${choice.action}">${esc(choice.label)}</button>`).join('')}</div>${question.note?`<p class="guided-question-note">${esc(question.note)}</p>`:''}<span class="guided-answer-after">👇 답을 하나 골라 줘</span></aside>`:'';
  return `<div class="experiment-shell guided-shell scene-${n}">${header()}<main class="experiment-main${manual?' manual-tools':''}" data-guided-phase="${question?'question':'observe'}" data-question-id="${question?.id||''}" data-has-question="${!!question}"><div class="scene-workspace">${guide}<section class="activity-area" aria-label="큰 화면으로 관찰하는 실험">${field?fieldworkView(n):n<=8?activityView(n):n===9?workshopView():finalView()}</section>${panel}</div></main></div>`;
 }
-function endingView(){const preview=!state.restored;return `<div class="ending-shell">${header()}<main class="ending-main"><div class="ending-illustration"><figure class="ending-art-card reward-reveal"><img src="/assets/v2/rescue-reward.webp" alt="방울이와 함께 복구한 연구섬의 물레"><figcaption id="ending-caption">네가 모은 물로 온실과 물레가 다시 움직여!</figcaption></figure></div><div class="ending-copy"><span class="unit-label">${preview?'교사 시연 · 학생 기록과 별개예요':'MISSION COMPLETE · 복구 100%'}</span><h1>우리가 찾은 물의 비밀로,<br>연구섬을 깨웠어!</h1><p>관찰하고 다시 고친 네 기록이 물길을 되살렸어.</p><div class="ending-replay-actions">${btn('엔딩 영상 다시 보기','final-replay','secondary wide')}<button type="button" class="btn secondary wide three-open" data-action="three-island">되살린 연구섬 다시 보기</button></div><button type="button" class="btn quiet classroom-making" data-action="classroom-making">교실에서 진짜 장치도 만들어 볼까?</button><div class="home-actions">${btn('처음부터 다시 하기','request-reset','ending-restart',preview)}${btn('탐구 노트 보기','notebook','secondary')}${btn(state.restored&&!state.residentsMet.includes(10)?'느티 만나러 연구섬으로':'연구섬 다시 탐험','map','quiet')}${btn(icon('print')+' 나의 연구 인증서','certificate','primary',preview)}</div></div></main></div>`;}
 function notebook(){
  void playCue('page');
  modal('나의 연구 노트',`${passportView()}${researchRecords(state.evidence)}<details class="notebook-observations"><summary>내가 남긴 관찰 그림 보기</summary>${inquiryNotebook()}</details>`);
