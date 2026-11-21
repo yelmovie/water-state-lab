@@ -51,9 +51,9 @@
 | G22 | `learning/weight-100g.webp`, `ice-pop-soft.webp`, `ice-pop-frozen.webp`, `pipe-water.webp`, `pipe-burst.webp` (`learning/` 바로 아래) | 5 | 프로젝트 코드로 직접 그림(`scripts/learning-art/freeze-props.mjs`가 SVG → WebP) | 2026-11-06 | 자체 제작. 외부 자료 없음 | `public/assets/CREDITS.md` 247~256행, `scripts/learning-art/freeze-props.mjs` | 확인됨 |
 | G23 | `icons/bangul-loader.webp` | 1 | 기록 없음 | 첫 커밋 `46038cf` 2026-10-25(커밋 메시지에 그림 설명 없음) | 기록 없음. 앱 표시 안 함 | — | **출처 미확인** |
 | G24 | `v2/experiment-table-v3.webp` | 1 | 기록 없음. CREDITS는 "이전 작업에서 생성해 둔"이라고만 적고 "생성 도구부터 확인해야 한다"고 표시 | 첫 커밋 `dab7cb1` 2026-10-18 | 기록 없음. `src/experience.css`·`src/tablet.css`가 사용 | `public/assets/CREDITS.md` 16·96행 | **출처 미확인** |
-| G25 | `learning/time-clock-face.webp`, `time-clock.webp`, `time-wand.webp`, `time-wand-tap.webp` | 4 | 기록 없음. 외장 원본 `assets/source-media/time-magic-20261110/clock.png`·`wand.png`(git 제외)만 있고 도구·프롬프트 파일 없음 | 첫 커밋 `d0d906a` 2026-11-10(메시지는 "실험 관찰과 코어 복구 흐름 개선 및 CC0 물소리 적용") | 기록 없음. `src/time-dial.js`가 사용 | — | **출처 미확인** |
-| G26 | `learning/ice-texture.webp`, `learning/water-texture.webp`, `learning/pipe-burst-photo.webp` | 3 | 기록 없음. 원본 파일도 찾지 못함. `pipe-burst-photo`는 이름에 'photo'가 있어 실사 사진인지부터 확인해야 함 | 첫 커밋 `d0d906a` 2026-11-10 | 기록 없음. `pipe-burst-photo`는 `src/freeze-measure.js`가 사용, 두 텍스처는 앱 표시 안 함 | — | **출처 미확인** |
-| G27 | `learning/condensation-20261108/bottle-wet.webp`, `cold-plate-wet.webp`, `collector-cold-dry.webp`, `collector-cold-wet.webp`, `room-bench.webp` | 5 | 기록 없음. 원본 `assets/source-media/condensation-20261108/*-generated.png`(git 추적)의 이름에 'generated'만 있음 | 첫 커밋 `7ae28c7` 2026-11-09 | 기록 없음. `src/inquiry.js`·`phaser-scenes.js`·`transform-process.js`·`greenhouse-cycle.js`가 사용 | — | **출처 미확인** |
+| G25 | `learning/time-clock-face.webp`, `time-clock.webp`, `time-wand.webp`, `time-wand-tap.webp` | 4 | Codex 내장 이미지 도구(`image_gen`) | 2026-11-10. Codex 세션 `rollout-2026-11-10T18-50-06-01a1c4dd…` 10:07 UTC 「one round antique tabletop clock dial」·「one short narrow magical wand」 → 같은 세션 변환 명령이 `exec-f12a615d…`·`exec-1c61863e…`를 `time-clock.webp`(300px)·`time-wand.webp`로 만듦. 세션 `rollout-2026-11-10T19-24-01-01a1c4fc…` 10:43·10:44 UTC 「single isolated magical wand」·「front-facing circular clock dial」 → `exec-1e20c1e5…`·`exec-95bd6a27…`를 `assets/source-media/time-magic-20261110/wand.png`·`clock.png`로 복사, ffmpeg로 `time-wand-tap.webp`·`time-clock-face.webp`(384px). 커밋 `d0d906a` | OpenAI 공통 근거(계정 명의·요금제 기록 없음) | 생성 기록 색인 `_shared/codex-image-records-20261121/index.jsonl`(방법 `_shared/CODEX-IMAGE-RECORDS-20261121.md`) | 근거 약함(2026-11-21 3-2a: 출처 미확인 → 생성 기록 확인) |
+| G26 | `learning/ice-texture.webp`, `learning/water-texture.webp`, `learning/pipe-burst-photo.webp` | 3 | Codex 내장 이미지 도구(`image_gen`). **실사 사진을 내려받은 것이 아니라 생성 그림** | 2026-11-10. Codex 세션 `rollout-2026-11-10T18-50-06-01a1c4dd…` 09:57 UTC 「photoreal isolated 3D product photograph … galvanized steel water pipe」(`exec-107328e5…` → ffmpeg 자르기·1500px → `pipe-burst-photo.webp`), 10:01 「rectangular raster material for the body of clear water」(`exec-084945ab…` → `water-texture.webp`), 10:02 「photoreal raster material for the INSIDE of a solid block of frozen water」(`exec-9da9eed4…` → `ice-texture.webp`). 커밋 `d0d906a` | OpenAI 공통 근거(계정 명의·요금제 기록 없음) | 생성 기록 색인 `_shared/codex-image-records-20261121/index.jsonl`(방법 `_shared/CODEX-IMAGE-RECORDS-20261121.md`) | 근거 약함(2026-11-21 3-2a: 출처 미확인 → 생성 기록 확인) |
+| G27 | `learning/condensation-20261108/bottle-wet.webp`, `cold-plate-wet.webp`, `collector-cold-dry.webp`, `collector-cold-wet.webp`, `room-bench.webp` | 5 | Codex 내장 이미지 도구(`image_gen`, 기존 그림 편집 포함) | 2026-11-08. Codex 세션 `rollout-2026-11-08T20-26-25-01a1bae8…` 12:17~12:28 UTC: 「Edit the supplied image … about condensation」(`exec-44466767…` → `cold-plate-wet-generated.png`), 「Edit the supplied single water-bottle game asset」(`exec-6333ceb9…` → `bottle-wet-generated.png`), 「Edit this supplied single round metal condenser plate」(`exec-54a63b69…` → `collector-cold-dry-generated.png`), 「Precise object edit of the supplied DRY round metal condenser」(`exec-4fa99042…` → `collector-cold-wet-generated.png`), 「ONE empty room-temperature laboratory preparation bench」(`exec-22ba2d6d…` → `room-bench-generated.png`). 같은 세션 sharp 명령이 `public/assets/learning/condensation-20261108/*.webp` 4장을 씀. 커밋 `7ae28c7` | OpenAI 공통 근거(계정 명의·요금제 기록 없음) | 생성 기록 색인 `_shared/codex-image-records-20261121/index.jsonl`(방법 `_shared/CODEX-IMAGE-RECORDS-20261121.md`), 원본 `assets/source-media/condensation-20261108/*-generated.png` | 근거 약함(2026-11-21 3-2a: 출처 미확인 → 생성 기록 확인) |
 
 ## 2. 영상
 
@@ -120,15 +120,16 @@
 | 상태 | 줄 수 | 파일 수 |
 |---|---:|---:|
 | 확인됨 | 19 | 251 |
-| 근거 약함 | 24 | 238 |
-| **출처 미확인** | 6 | 18 |
+| 근거 약함 | 27 | 250 |
+| **출처 미확인** | 3 | 6 |
 | 합계(장부 대상) | 49 | 507 |
 | 장부 밖(자체 코드·기록) | 1 | 101 |
 | 배포본 전체 | | 608 |
 
 - 근거 약함 238개 가운데 그림이 133개(OpenAI 생성분 G6~G19 122, Higgsfield 11-09분 G5 4, 방울이 원본·파생 G2·G20·G21 7)다. **OpenAI 생성 계정의 요금제 하나만 확인되면 G6~G19 14줄(122개)이 한꺼번에 「확인됨」으로 올라간다.**
 - 근거 약함 가운데 V5·V6·V7 목소리 66개는 앱이 재생하지 않는다. 확인됨인 V3·V4 50개도 재생하지 않는다. 납품본에서 빼면 장부가 116개 줄어든다(빼는 결정은 이 문서 범위 밖).
-- 앱에서 쓰지 않는데 배포되는 그림: `icons/bangul-loader.webp`(출처 미확인), `learning/ice-texture.webp`·`water-texture.webp`(출처 미확인), `v2/valve-mole-sheet.webp`(근거 약함).
+- 앱에서 쓰지 않는데 배포되는 그림: `icons/bangul-loader.webp`(출처 미확인), `learning/ice-texture.webp`·`water-texture.webp`·`time-clock.webp`·`time-wand.webp`(근거 약함), `v2/valve-mole-sheet.webp`(근거 약함).
+- **3-2a 보강(2026-11-21):** `_shared/CODEX-IMAGE-RECORDS-20261121.md` 방법으로 Codex 생성 기록(이 맥은 2026-11-05부터)과 대조해 G25·G26·G27 12장의 생성 기록·변환 명령을 찾았다. 계정 요금제 기록은 다른 OpenAI 줄처럼 아직 없어서 「근거 약함」으로 올렸다. G23(10-25)·G24(10-18)는 기록 시작일 전이라 기록이 없고, 사용자 말(「이미지는 다 코덱스로 만들었어」)은 이 프로젝트에 다시 확인받지 않아 쓰지 않았다. M1 영상도 같은 이유로 그대로 둔다.
 
 ### CREDITS와 현재 파일이 어긋나는 곳
 
@@ -146,7 +147,7 @@
 5. **도입·엔딩 영상 원본(M1)** — 원본 영상을 만든 도구 이름, 계정·요금제, 생성 날짜(2026-11-01~04 무렵), 그 도구의 상업 이용 조건 화면. 시작 장면 그림을 만든 ChatGPT 계정. 영상 속 주변음의 출처.
 6. **Remotion(M4)** — 제작 주체가 Remotion 무료 라이선스 대상(개인 또는 직원 3명 이하 조직)인지에 대한 확인. 회사 라이선스가 필요하면 구매 내역.
 7. **HyperFrames(M3)** — 쓴 HyperFrames 0.9.26의 라이선스 파일이나 이용 조건 화면(무료판인지 Pro인지), 함께 쓴 애니메이션 라이브러리 조건.
-8. **출처 미확인 그림 14개(G23~G27)의 생성 기록** — 그 날짜(2026-10-25, 10-18, 11-09, 11-10)의 생성 대화나 원본 파일이 남아 있으면 도구 이름과 프롬프트. 없으면 다시 만들 그림 목록으로 넘긴다. `learning/pipe-burst-photo.webp`는 실사 사진을 내려받은 것인지 꼭 확인.
+8. **출처 미확인 그림 2개(G23 `icons/bangul-loader.webp`, G24 `v2/experiment-table-v3.webp`)의 생성 기록**(3-2a에서 G25~G27 12개는 Codex 기록으로 찾음) — 그 날짜(2026-10-25, 10-18)의 생성 대화나 원본 파일이 남아 있으면 도구 이름과 프롬프트. 이 맥의 Codex 기록은 11-05부터라 여기서는 찾을 수 없다. 없으면 다시 만들 그림 목록으로 넘긴다(`pipe-burst-photo`는 생성 그림으로 확인됨).
 9. **ElevenLabs** — 2026-11-12 Starter, 2026-11-18 Creator 구독 결제 영수증이나 구독 화면 캡처(지금은 사용자 구두 확인만 기록됨). 쓴 라이브러리 음성(Aria, Harry - Character, Klamon, oki, Rowan, Jisun, Rumi)의 상업 이용 조건이 보이는 화면.
 10. **Suno** — 2026-11-01 생성 시점에 Premier(또는 유료) 구독 중이었다는 결제 화면. 지금은 사용자 확인 문장만 있음.
 11. **모모 음성(V5·V6·V7)** — 2026-11-05·11-07에 쓴 음성 엔진(Qwen3-TTS인지 다른 모델인지). 또는 앱이 재생하지 않으니 납품본에서 빼기로 한 결정.
