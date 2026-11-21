@@ -108,7 +108,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
    // A full pipe beside the valve: its water level is the model's `space`, drawn in code.
    const tube=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,1.5,16),glass);tube.position.set(v.x+.95,seg.level+.75,v.z);
    const water=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,1,16),pipeWater);water.position.set(v.x+.95,seg.level+.5,v.z);
-   scene.add(post,wheel,water,tube);part.wheel=wheel;part.pipeWater=water;
+   scene.add(post,wheel,water,tube);part.wheel=wheel;part.pipeWater=water;part.pipe=tube;
    part.valveLabel=label('',v.x+.4,seg.level+1.75,v.z,'run-label-valve');
   }
   // The device stands in the break of the path. Reaching it asks the model; the ride across is the game's picture of passing.
@@ -138,6 +138,14 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   block(seg.gateX+.5,seg.gateX+span-.5,waterY-.6,pier,-1.3,1.3,sideMat,sideMat);
   part.gateLabel=label('',mid,Math.max(seg.level,seg.exit.y)+(gate.scene==='cooling'?3.1:gate.scene==='condenser'?3.9:2.5),0,'run-label-gate');part.gateLabel.gate=true;
  }
+ // The glass pipe is the workshop's Meshy connector tube (device-tube.glb: bottom origin, 0.07 m tall), scaled to the code
+ // cylinder and kept see-through so the code-drawn water level stays visible. Until it loads, or if it fails, the cylinder stays.
+ const pipes=parts.filter(p=>p.pipe);
+ if(pipes.length)import('/assets/vendor/three/GLTFLoader.js').then(m=>new m.GLTFLoader().loadAsync('/assets/models/device-tube.glb')).then(gltf=>{
+  if(view.stop){gltf.scene.traverse(o=>{o.geometry?.dispose();for(const m of [].concat(o.material||[])){m.map?.dispose();m.dispose();}});return;}
+  gltf.scene.traverse(o=>{if(o.material){o.material.transparent=true;o.material.opacity=.42;o.material.depthWrite=false;}});
+  for(const p of pipes){const model=gltf.scene.clone();model.scale.setScalar(1.5/.07);model.position.set(p.pipe.position.x,p.seg.level,p.pipe.position.z);scene.add(model);p.pipe.visible=false;}
+ }).catch(()=>{});
  // Decoration: small standing pictures. They sit behind the walking lanes or out on the sea, never in the runner's way.
  const decorMaps={},decorSize={bush:[1.2,1],reeds:[1.55,1.78],lantern:[.62,1.5],fountain:[2.5,2.4],planter:[.75,1.1],islet:[5.6,5.8],boat:[2.5,2.65],buoy:[1.25,1.7],lilies:[2.6,1.7]},floating=[];
  function decor(name,x,y,z,{scale=1,flat=false,bob=0,drift=0}={}){
