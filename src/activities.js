@@ -8,19 +8,10 @@ import {benchMarkup,bindBench} from './freeze-bench.js';
 import {freezeTalk,talkDone,pipeChoices} from './freeze-talk.js';
 import {cupSummarySeen,initialActivities,activityReady,experimentActivities,nextSortCard,sortCards,heatingTrial,recordPipeTrial,dryTrace,dewTrial,limit,freezeAmounts,freezeChallengeTrial,bestFreezeChallenge} from './activity-model.js';
 export {initialActivities} from './activity-model.js';
+import {button,moveable,target,slider,status,help,alternatives,shell,records,stamp} from './activities-markup.js';
 const {esc,beaker,canArt}=ui;
 const data=()=>experimentActivities(state.route,state);
 const art=(name,label='',cls='')=>ui.propArt?ui.propArt(name,`activity-prop ${cls}`,label):`<span class="activity-fallback ${cls}" aria-label="${esc(label)}">${({jug:'♧',ice:'❄',cloth:'▧',can:'▤',icepack:'❄',thermometer:'♨',magnifier:'⌕',seedling:'♧'})[name]||'◯'}</span>`;
-const button=(label,action,disabled=false,cls='')=>`<button class="activity-button ${cls}" data-action="act-${action}" ${disabled?'disabled':''}>${label}</button>`;
-const moveable=(token,body,label)=>`<button class="activity-object" data-activity-drag="${token}" data-action="act-pick-${token}" aria-label="${esc(label)}">${body}<span>${label}</span></button>`;
-const target=(token,body,label,cls='')=>`<div class="activity-target ${cls}" data-activity-drop="${token}" role="button" tabindex="0" aria-label="${esc(label)}">${body}</div>`;
-const slider=(id,label,value,min=0,max=100,step=1)=>`<label class="activity-range" for="${id}"><span>${label}</span><output>${value}</output><input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${value}"></label>`;
-const status=text=>`<p class="activity-status" aria-live="polite">${text}</p>`;
-const help=text=>`<details class="science-detail"><summary>알아두기</summary><p>${text}</p></details>`;
-const alternatives=html=>`<details class="activity-alternative essential-controls"><summary>버튼으로 조작하기</summary><div>${html}</div></details>`;
-const shell=(n,main,tools)=>`<section class="activity activity-${n}"><div class="activity-scene">${main}</div><aside class="activity-tools">${tools}</aside></section>`;
-const records=(list,draw)=>`<div class="activity-records">${list.map(draw).join('')}</div>`;
-const stamp=(label,body)=>`<figure class="activity-record"><div>${body}</div><figcaption>${label}</figcaption></figure>`;
 // Optional transfer goal after stage 3: use the first record (60 → 65.4) to predict a different amount.
 function freezeTalkPanel(s){
  const line=text=>`<p class="freeze-talk-line">${text}</p>`,hint=pipeChoices.find(c=>c.id===s.pipeTry&&!c.ok)?.hint;
