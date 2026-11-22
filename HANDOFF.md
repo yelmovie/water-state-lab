@@ -1,3 +1,11 @@
+# 파이널 영상은 마지막 단계 완료 때 한 번만 · 2026-11-22
+
+운영 배포: 커밋 `89634f8` → Cloudflare Pages `a870adb1`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `src/app.js`·`src/settings.js`·`/` 해시가 빌드와 같다(cmp MATCH).
+
+- 바꾼 것(공통 `_shared/FINALE-ONCE-20261122.md`): 밸브 두더지 격퇴는 성취 카드만. 자동 관찰 때 마지막 카드 뒤 엔딩 영상으로 넘어가던 것과 새로고침 때 다시 띄우던 `resumeFinale`를 지웠다. 엔딩 영상·엔딩 화면·설정 「엔딩 영상 다시 보기」 잠금에서 남은 악당 조건을 빼고, 안내 문구를 카드·스테이지 완료 기준으로 맞췄다.
+- 엔딩 영상 경로: 마지막 단계(`finishEnding`) 완료 → 자동 관찰이면 바로, 기본 흐름이면 지도로 돌아와 「우리의 발견 보기」에서 `finalePending`으로 한 번.
+- 검증: `npm run check`, `npm test` 337개, `npm run build`, 헤드리스 `.tmp/finale-once-20261122/qa.mjs`(로컬·운영 모두 시나리오 1 영상 0회, 2·3 영상 1회, 새로고침 0회, 콘솔 오류 0).
+
 # 3D 달리기 유리 배관을 Meshy 연결관으로 · 2026-11-21
 
 운영 배포: 커밋 `2179f81` → Cloudflare Pages `bc7b6751`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `src/run-stage.js`·`assets/models/device-tube.glb` SHA-256이 빌드와 같고, 운영에서 헤드리스로 탐험 2 밸브 옆 배관에 모형이 뜨는 것(물 꽉 참·얼 자리 남김 두 상태)과 GLB를 막았을 때 원기둥으로 그려지는 것 확인. 지침 `../_shared/MESHY-3D-UPGRADE-20261121.md` 6번 줄(새 생성 0장).
