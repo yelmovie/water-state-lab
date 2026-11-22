@@ -22,6 +22,7 @@ for(const folder of ['audio','story','concepts','learning','stages','village','i
 for(const file of await readdir(path.join(root,'public/assets/v2'))){
  if(!file.startsWith('.')&&file.endsWith('.webp'))await copyFile(path.join(root,'public/assets/v2',file),path.join(output,'assets/v2',file));
 }
+await copyFile(path.join(root,'public/assets/certificate-frame-20261122.webp'),path.join(output,'assets/certificate-frame-20261122.webp'));
 await copyFile(path.join(root,'public/assets/CREDITS.md'),path.join(output,'assets/CREDITS.md'));
 await copyFile(path.join(root,'public/manifest.webmanifest'),path.join(output,'manifest.webmanifest'));
 await copyFile(path.join(root,'index.html'),path.join(output,'index.html'));

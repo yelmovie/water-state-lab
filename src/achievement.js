@@ -34,14 +34,6 @@ export function passportView(){
 }
 
 const skills=['물의 세 가지 모습과 우리 주변의 예를 말할 수 있어요.','물이 얼고 녹고 증발하고 끓고 응결할 때의 변화를 관찰했어요.','물의 상태 변화를 이용해 물을 모으는 장치를 설계했어요.'];
-export function certificateView(){
- return `<div id="certificate-print"><div class="cert-sheet">
-  <header class="cert-ribbon"><small>방울이의 물길 탐험</small><h3>연구 인증서</h3></header>
-  <p class="cert-name">물방울 연구원</p>
-  <div class="cert-student" aria-label="인쇄 후 손으로 작성하는 학생 정보">${['학교','반','번호','이름'].map(label=>`<div><b>${label}</b><span aria-label="${label} 쓰는 빈칸"></span></div>`).join('')}</div>
-  <p class="cert-lead">물의 변화를 탐구하고 연구섬의 물길을 되살렸기에<br>이 인증서를 드립니다.</p>
-  <div class="cert-columns"><ul class="cert-skills">${skills.map((text,i)=>`<li style="--i:${i}"><span>${icon('check',18)}</span>${text}</li>`).join('')}</ul><div class="cert-mascot">${buddy('celebrate')}</div></div>
-  <footer class="cert-foot"><div class="cert-seals">${areaStages.map((_,i)=>`<span style="--i:${i}">${seal(i)}</span>`).join('')}</div><p>${new Date().toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})}<br><strong>물방울 연구실 · 방울이</strong></p></footer>
-  <small class="cert-credit">${esc(SETTINGS_CONTENT.credits.copyright)}</small>
- </div></div>`;
+export function certificateView({reduced=false}={}){
+ return `<section id="certificate-print" class="cert-paper${reduced?' cert-reduced':''}" aria-label="물방울 연구원 인증서"><img class="cert-frame" src="/assets/certificate-frame-20261122.webp" alt="" aria-hidden="true"><div class="cert-content"><p class="cert-world">방울이의 물길 탐험 · 물방울 연구실</p><h3 class="cert-title">물방울 연구원 인증서</h3><div class="cert-recipient"><div class="cert-recipient-top"><span class="cert-blank cert-school" data-cert-blank="school" aria-label="학교 쓰는 빈칸"></span><span>학교</span><span class="cert-blank cert-short" data-cert-blank="grade" aria-label="학년 쓰는 빈칸"></span><span>학년</span><span class="cert-blank cert-short" data-cert-blank="class" aria-label="반 쓰는 빈칸"></span><span>반</span><span class="cert-blank cert-short" data-cert-blank="number" aria-label="번호 쓰는 빈칸"></span><span>번</span></div><div class="cert-recipient-name"><b>이름</b><span class="cert-blank cert-name" data-cert-blank="name" aria-label="이름 쓰는 빈칸"></span></div></div><p class="cert-award">위 연구원은 물의 여러 모습과 상태 변화를 관찰·비교하고,<br>그 원리로 물을 모으는 장치를 설계해 연구섬의 물길을 되살렸으므로<br><strong>물방울 연구원</strong>으로 이 인증서를 드립니다.</p><div class="cert-learning">${skills.map(text=>`<p>${esc(text)}</p>`).join('')}</div><div class="cert-bottom"><p class="cert-date">인증서를 만든 날<br><b>${new Date().toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})}</b></p><div class="cert-stamp">${icon('drop')}<strong>물길 탐험<br>연구원 인증</strong></div><p class="cert-issuer">주는 이<br><b>물방울 연구실 · 방울이</b></p></div><small class="cert-credit">${esc(SETTINGS_CONTENT.credits.copyright)}</small></div></section><p class="cert-note">인쇄한 뒤 학교·반·번호·이름을 직접 적어요.</p>`;
 }

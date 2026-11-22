@@ -1,0 +1,49 @@
+/* One A4 landscape sheet; recipients write their information after printing. */
+#dialog.certificate-dialog[open]{inset:0;position:fixed;width:100vw;height:100svh;max-width:none;max-height:none;margin:0;padding:12px 20px;box-sizing:border-box;border:0;border-radius:0;background:linear-gradient(140deg,#16465bea,#386f7ae6);display:flex;flex-direction:column;align-items:center;gap:8px;overflow:hidden}
+#dialog.certificate-dialog>#dialog-title{position:absolute;width:1px;height:1px;margin:0;padding:0;clip-path:inset(50%);overflow:hidden}
+#dialog.certificate-dialog>.dialog-head{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
+#dialog.certificate-dialog>.dialog-body{display:flex;flex:1 1 auto;min-height:0;width:100%;padding:0;flex-direction:column;align-items:center;justify-content:center;gap:7px;overflow:hidden}
+#dialog.certificate-dialog .cert-paper{position:relative;display:block;flex:0 0 auto;container-type:inline-size;box-sizing:border-box;width:min(calc(100vw - 60px),calc((100svh - 142px)*1.4142857));max-width:none;aspect-ratio:297/210;height:auto;min-height:0;overflow:hidden;padding:0;margin:0;border:0;border-radius:3px;background:#fff5dc;box-shadow:0 12px 35px #122a3755;animation:certificate-rise .8s ease-out both}
+#dialog.certificate-dialog .cert-paper .cert-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
+#dialog.certificate-dialog .cert-paper .cert-content{position:absolute;inset:0;color:#1e5064;text-align:center;font-family:inherit}
+#dialog.certificate-dialog .cert-paper .cert-content p,#dialog.certificate-dialog .cert-paper .cert-content h3,#dialog.certificate-dialog .cert-paper .cert-content small{margin:0;line-height:1.45}
+#dialog.certificate-dialog .cert-paper .cert-world{position:absolute;top:13%;left:15%;width:70%;font-size:1.45cqw!important;font-weight:800;letter-spacing:.22em;color:#456d51}
+#dialog.certificate-dialog .cert-paper .cert-title{position:absolute;top:19%;left:12%;width:76%;font-size:4.8cqw!important;font-weight:900;-webkit-text-stroke:.02em currentColor;paint-order:stroke fill;letter-spacing:-.035em;color:#12566b}
+#dialog.certificate-dialog .cert-paper .cert-recipient{position:absolute;inset:31% 15% auto;font-size:1.8cqw;font-weight:700}
+#dialog.certificate-dialog .cert-paper .cert-recipient-top,#dialog.certificate-dialog .cert-paper .cert-recipient-name{display:flex;align-items:flex-end;justify-content:center;gap:.65cqw;white-space:nowrap}
+#dialog.certificate-dialog .cert-paper .cert-blank{display:inline-block;box-sizing:border-box;height:3.8cqw;border-bottom:1px solid #42634c;flex-shrink:0}
+#dialog.certificate-dialog .cert-paper .cert-school{width:20cqw}#dialog.certificate-dialog .cert-paper .cert-short{width:5.3cqw}#dialog.certificate-dialog .cert-paper .cert-name{width:22cqw}
+#dialog.certificate-dialog .cert-paper .cert-recipient-name{margin-top:.9cqw;font-size:2.2cqw}
+#dialog.certificate-dialog .cert-paper .cert-award{position:absolute;top:46%;left:13%;width:74%;font-size:1.85cqw!important;line-height:1.55!important;word-break:keep-all}
+#dialog.certificate-dialog .cert-paper .first-try-note{font-size:inherit!important}
+#dialog.certificate-dialog .cert-paper .cert-bottom{position:absolute;top:75%;left:22%;right:22%;height:10%;display:flex;align-items:center;justify-content:space-between;gap:2cqw}
+#dialog.certificate-dialog .cert-paper .cert-date,#dialog.certificate-dialog .cert-paper .cert-issuer{font-size:1.25cqw!important;flex:1;line-height:1.8!important;color:#44624c}
+#dialog.certificate-dialog .cert-paper .cert-date b,#dialog.certificate-dialog .cert-paper .cert-issuer b{font-size:1.45cqw!important;color:#1d5365}
+#dialog.certificate-dialog .cert-paper .cert-stamp{flex:0 0 7cqw;width:7cqw;height:7cqw;box-sizing:border-box;border:2px solid #387c98;border-radius:50%;background:#e1f0f1;color:#1f617a;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:none;animation:certificate-stamp .8s ease-out both}
+#dialog.certificate-dialog .cert-paper .cert-stamp .icon{width:2.5cqw;height:2.5cqw;margin:0 0 .3cqw}#dialog.certificate-dialog .cert-paper .cert-stamp strong{font-size:1.15cqw;line-height:1.15}
+#dialog.certificate-dialog .cert-paper .cert-credit{position:absolute;top:87%;left:15%;width:70%;display:block;font-size:1.05cqw!important;color:#48666c}
+#dialog.certificate-dialog .cert-paper .cert-unused-context{position:absolute;top:68%;left:18%;width:64%;font-size:1.1cqw!important;color:#59674b}
+#dialog.certificate-dialog .cert-stamp>span{font-size:2.4cqw;line-height:1.1}
+#dialog.certificate-dialog .cert-note{font-size:14px;line-height:1.4;color:#fffbed;margin:0;text-align:center}
+#dialog.certificate-dialog .cert-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;flex:0 0 auto;min-height:48px;margin:0;padding:0}
+#dialog.certificate-dialog .cert-actions button{min-height:48px;padding:8px 18px;font-size:17px;white-space:nowrap}
+@keyframes certificate-rise{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}
+@keyframes certificate-stamp{0%,45%{opacity:0;scale:1.2}75%{opacity:1;scale:.96}100%{opacity:1;scale:1}}
+#dialog.certificate-dialog .cert-paper.cert-reduced,#dialog.certificate-dialog .cert-reduced .cert-stamp{animation:none!important}
+@media(prefers-reduced-motion:reduce){#dialog.certificate-dialog .cert-paper,#dialog.certificate-dialog .cert-stamp{animation:none!important}}
+@media print{
+ @page{size:A4 landscape;margin:0}
+ html:has(.cert-paper),html:has(.cert-paper) body{height:210mm!important;width:297mm!important;min-height:0!important;max-height:210mm!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important}
+ body:has(.cert-paper)>:not(#dialog){display:none!important}
+ #dialog.certificate-dialog[open]{position:absolute!important;inset:0!important;display:block!important;width:297mm!important;height:210mm!important;max-width:297mm!important;max-height:210mm!important;padding:0!important;margin:0!important;border:0!important;background:#fff!important;box-shadow:none!important;overflow:hidden!important;backdrop-filter:none!important}
+ #dialog.certificate-dialog>.dialog-body{display:block!important;width:297mm!important;height:210mm!important;padding:0!important;margin:0!important;overflow:hidden!important}
+ #dialog.certificate-dialog>.dialog-body>#certificate-print.cert-paper{position:relative!important;display:block!important;width:297mm!important;height:210mm!important;aspect-ratio:297/210!important;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important;animation:none!important;transform:none!important;translate:none!important;print-color-adjust:exact;-webkit-print-color-adjust:exact;break-inside:avoid}
+ #dialog.certificate-dialog>:not(.dialog-body),#dialog.certificate-dialog .cert-note{display:none!important}
+ #dialog.certificate-dialog .cert-stamp{animation:none!important}
+}
+
+#dialog.certificate-dialog .cert-paper .cert-learning{position:absolute;top:61%;left:19%;width:62%;display:flex;flex-direction:column;gap:.6cqw;text-align:center}
+#dialog.certificate-dialog .cert-paper .cert-learning p{font-size:1.3cqw!important;line-height:1.4;margin:0;color:#316779;word-break:keep-all}
+#dialog.certificate-dialog>.dialog-body>.cert-actions{display:flex;justify-content:center;gap:8px;padding:0;margin:0;flex:0 0 auto}
+#dialog.certificate-dialog .cert-actions .btn{min-height:48px;padding:8px 18px;font-size:17px;white-space:nowrap}
+@media print{#dialog.certificate-dialog .cert-actions{display:none!important}#dialog.certificate-dialog>.dialog-body>#certificate-print.cert-paper{width:297mm!important;height:210mm!important;max-width:297mm!important;max-height:210mm!important;overflow:hidden!important}}
