@@ -34,8 +34,8 @@ export const SETTINGS_CONTENT={
  credits:{title:'이미지·소리·저작권 고지',lines:[
   '캐릭터·배경·장식은 제작자가 제공한 원화와 프로젝트 자체 AI 생성 이미지예요. 3D 장치·연구섬 모형도 프로젝트 자체 AI 이미지로 만든 뒤 다듬은 모형이에요.',
   '실험 장면은 실제 현장 사진이 아닌 학습용 재현 이미지예요. 그림 속 눈금이나 배치는 실제 측정값의 근거로 쓰지 않아요.',
-  '배경 음악 「섬의 탐험」과 「물바퀴의 노래」는 제작자가 Suno로 만든 곡이에요. 물 따르기·물방울·기포는 qubodup, AngeloYazar, BMacZero의 CC0 효과음이에요. 다른 물소리는 rubberduck, 책장·도구·버튼 소리는 Kenney의 CC0 효과음이에요. 음원 재생이 안 되면 자체 합성음으로 대신해요.',
-  '방울이·주민·밸브 두더지의 목소리는 ElevenLabs v4의 한국어 라이브러리 음성으로 만든 가상 인물의 AI 음성이에요(유료 요금제, 상업 이용 가능). 실제 인물의 목소리를 복제하지 않았어요.',
+  '배경 음악 「섬의 탐험」과 「물바퀴의 노래」는 제작자가 Suno로 만든 곡이에요. 물 따르기·물방울·기포는 qubodup, AngeloYazar, BMacZero의 CC0 효과음이에요. 다른 물소리는 rubberduck, 책장·도구·버튼·부딪힘 소리는 Kenney, 카드·승리·발걸음 소리는 Freesound 제작자들의 CC0 효과음이에요. 음원 재생이 안 되면 자체 합성음으로 대신해요.',
+  '방울이·주민·밸브 두더지의 목소리는 ElevenLabs v4의 한국어 라이브러리 음성으로 만든 가상 인물의 AI 음성이에요. 실제 인물의 목소리를 복제하지 않았어요.',
   '개념 영상 5편은 직접 작성한 SVG 모션 그래픽으로 제작했어요. 영상 자체는 무음이고, 큰 글씨 설명이 바뀔 때마다 방울이 목소리가 그 문장을 읽어 줘요.',
   '도입·엔딩 영상은 제작자가 제공한 영상에 자막과 연출, 프로젝트 음악을 FFmpeg로 더했어요.',
   '화면과 실험 글꼴은 네이버 나눔스퀘어네오이며 SIL Open Font License 1.1에 따라 앱에 담았어요. Phaser 게임 엔진과 Three.js 3D 엔진은 MIT 라이선스에 따라 사용해요.',
@@ -43,7 +43,7 @@ export const SETTINGS_CONTENT={
  ],sourcesTitle:'자료 출처 모아 보기',sourcesIntro:'활동 화면에서 쓰는 자료의 출처를 이곳에 모았어요.',sources:[
   ['연구섬·실험실·방울이','사용자 제공 ChatGPT 생성 이미지와 프로젝트 자체 AI 생성 이미지예요.'],
   ['실험 도구·물 수집 장치','프로젝트 자체 AI 생성 이미지와 직접 작성한 Canvas·SVG 실험 표현이에요.'],
-  ['배경 음악·효과음','배경 음악: 제작자가 Suno로 만든 곡. 효과음: Kenney Interface Sounds와 RPG Audio, rubberduck의 Water / Splash / Slime SFX, qubodup·AngeloYazar·BMacZero의 물소리 · CC0 1.0 (Kenney, OpenGameArt).'],
+  ['배경 음악·효과음','배경 음악: 제작자가 Suno로 만든 곡. 효과음: Kenney Interface Sounds·RPG Audio·Impact Sounds, rubberduck의 Water / Splash / Slime SFX, qubodup·AngeloYazar·BMacZero의 물소리, Freesound 제작자들의 카드·승리·발걸음 소리 · CC0 1.0 (Kenney, OpenGameArt, Freesound).'],
   ['개념 영상','프로젝트 자체 SVG 모션 그래픽 · FFmpeg 렌더링이에요.'],
   ['3D 모형','프로젝트 자체 AI 생성 이미지를 Meshy로 3D로 바꾸고 Blender로 다듬었어요.'],
   ['게임 엔진','Phaser · Richard Davey, Phaser Studio Inc. · MIT License예요.'],
