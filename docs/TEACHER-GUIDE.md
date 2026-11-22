@@ -89,3 +89,7 @@
 - 학생 난이도, 40분 수업, 저사양 태블릿, 학교 네트워크는 확인하지 않았습니다(`docs/reviews/SCORE-20261121.md`).
 
 근거: `README.md`, `docs/water-drop-lab_PRD.md`, `src/settings-content.js`, `src/journey.js`, `src/fieldwork-model.js`, `docs/TEACHER-REVIEW-20261121.md`, `src/state.js`, `docs/reviews/SCORE-20261121.md`
+
+### 2026-11-22 인증서 고도화
+
+물길 복구를 마치면 엔딩 화면이나 설정에서 물방울 연구원 인증서를 엽니다. 물의 여러 모습과 상태 변화,장치 설계의 학습 내용을 정성적인 문장으로 담으며 진행·성취 숫자 요약은 넣지 않습니다. 제목 획을 굵게 맞췄습니다. 학교·학년·반·번호·이름은 출력한 뒤 손으로 적습니다. 학교 밑줄59.4mm,이름65.3mm,쓰기높이11.3mm입니다. 인쇄/PDF는 A4 가로1쪽,PNG는2400×1697이며 같은 양식입니다. 기존 과학 역량3문장과 연구 노트·탐구 노트는 그대로입니다.

@@ -401,3 +401,7 @@ Kenney [Impact Sounds](https://kenney.nl/assets/impact-sounds) 1.0, CC0 1.0(라�
 |---|---|---|
 | 발자국 1 | `audio/step-01.mp3` | Footstep on Stone · sgossner · https://freesound.org/people/sgossner/sounds/197778 |
 | 발자국 2 | `audio/step-02.mp3` | concrete footstep 4 · Yoyodaman234 · https://freesound.org/people/Yoyodaman234/sounds/166506 |
+
+## 2026-11-22 인증서 테두리
+
+`assets/certificate-frame-20261122.webp`는 Codex 기본 이미지 생성 도구로 만든 물방울·얼음·수증기 구름·실험기구·방울이 테두리입니다. 글자·로고 없이 제작했으며 원본과 프롬프트는 저장소의 `assets/source/certificate-20261122/`에 보관합니다. 권리 장부 IMG-CERT-06.
