@@ -354,7 +354,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');
  if(a==='title-start')return startAdventure();
  if(a==='final-replay'&&state.route==='ending')return showStory('final');if(a.startsWith('ability-')){state.fieldwork.ability=a.slice(8);persist();render();return;}if(a==='notebook')return notebook();if(a==='discoveries')return discoveries();if(a==='focus-experiment')return sceneModule?.focusExperiment();if(a==='settings')return settings();if(a==='certificate')return certificate();if(a==='print-certificate')return window.print();
  if(a==='classroom-making'){modal('교실에서 장치 만들기','<p>선생님과 차가운 용기·받침·모으는 컵으로 내 설계를 만들어 봐. 물이 모이는 곳과 새는 곳을 관찰하고 한 부분씩 고쳐 보자.</p><p>화면에서는 가상 설계를 시험했어. 실제 제작과 관찰 결과는 따로 남겨 줘.</p>');return;}
- if(a==='request-reset'){resetToken=captureResetToken();if(!resetToken){toast(getStorageStatus().message);return;}modal('연구 기록을 처음부터 만들까?',`<p>이 브라우저에 저장된 실험과 설계 기록이 지워져.</p>${btn('기록 지우고 새로 시작','reset','danger wide')}${btn('취소','cancel-reset','wide')}`);return;}
+ if(a==='request-reset'){resetToken=captureResetToken();if(!resetToken){toast(getStorageStatus().message);return;}modal('연구 기록을 처음부터 만들까?',`<p>이 브라우저에 저장된 실험과 설계 기록이 지워져.</p><div class="settings-confirm-actions">${btn('취소','cancel-reset','secondary')}${btn('기록 지우기','reset','danger')}</div>`);document.querySelector('#dialog [data-action="cancel-reset"]')?.focus({preventScroll:true});return;}
  if(a==='cancel-reset'){resetToken=null;document.querySelector('#dialog').close();return;}
  if(a==='reset'){if(!reset(resetToken)){toast(getStorageStatus().message);return;}resetFinalPreview();setSoundSettings(state.settings);document.querySelector('#dialog').close();go('home');return;}
  if(a==='resident-close'){document.querySelector('#dialog')?.close();return;}
