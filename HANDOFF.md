@@ -1,3 +1,10 @@
+# 마지막 단계를 마치면 엔딩 영상 바로 자동 재생 · 2026-11-22 저녁
+
+운영 배포: 커밋 `1e66921` → Cloudflare Pages `bbebd63b`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `src/app.js`·`src/fieldwork.js`·`/` 해시가 빌드와 같다(cmp MATCH).
+
+- 바꾼 것(공통 `_shared/FINALE-ONCE-20261122.md` 8장): `finishEnding` 처음 복구 때 느티 대화(「지도 보기」/「엔딩 보기」)·지도 복귀·「우리의 발견 보기」 단계를 빼고 바로 `openEnding()`(엔딩 화면 + 엔딩 영상 한 번). 자동 관찰 켜짐·꺼짐 같음. 온실 현장 10 개념 영상 버튼 「느티 만나기」 → 「탐험 마치기」. `scripts/chapter-process-qa.mjs` flow 단정도 새 흐름으로.
+- 검증: `npm run check`, `npm test` 337개, `npm run build`, 헤드리스 `.tmp/finale-once-20261122/auto/qa.mjs`·`s4.mjs`(로컬·운영 모두 시나리오 1 영상 0회, 2·3·4 버튼 없이 영상 1회·중간 대화/지도/안내 0, 새로고침 0회, 다시 보기 동작, 콘솔 오류 0).
+
 # 파이널 영상은 마지막 단계 완료 때 한 번만 · 2026-11-22
 
 운영 배포: 커밋 `89634f8` → Cloudflare Pages `a870adb1`(https://water-state-lab.pages.dev/, `deploy.sh 06 "6 waterchange" pages water-state-lab`). 운영 `src/app.js`·`src/settings.js`·`/` 해시가 빌드와 같다(cmp MATCH).
