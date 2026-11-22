@@ -113,7 +113,8 @@ test('settings use the common order, lock rewards until completion, and preserve
  assert.equal(resets,1);assert.deepEqual(savedAudio,{sound:true,bgm:false,sfx:true,voice:true,sfxVolume:100,bgmVolume:35});assert.equal(doc.activeElement,opener);
  state.restored=true;state.completed=[1,2,3,4,5];dialog=openSettings({state});
  assert.doesNotMatch(dialog.innerHTML,/id="settings-certificate"[^>]*disabled/);
- assert.match(dialog.innerHTML,/id="settings-ending"[^>]*disabled/);dialog.close();
+ // The ending replay opens with the finished stages, whatever the map villains (2026-11-22).
+ assert.doesNotMatch(dialog.innerHTML,/id="settings-ending"[^>]*disabled/);dialog.close();
 });
 
 test('settings include all three original standards, local saving policy, and separate original and external rights',()=>{

@@ -20,7 +20,7 @@ import {icon,btn,buddy,propArt,note,toast,modal,esc,celebrate} from './ui.js';
 import {journey,journeyView,mapEntryScreen,workshopProgress,mountMapCamera,cleanupMapCamera,travelIsland} from './journey.js';
 import {activityView,handleActivity,bindActivity,cleanupActivity,getActivityProgress} from './activities.js';
 import {workshopView,finalView,handleWorkshop,bindWorkshop,cleanupWorkshop,resetFinalPreview,finalContext} from './workshop.js';
-import {playClick,playCue,stopCue,afterCue,setMusicTheme,setSoundSettings} from './sound.js';
+import {playClick,playCue,afterCue,setMusicTheme,setSoundSettings} from './sound.js';
 import {openSettings,offlineText} from './settings.js';
 import './settings-content.js';
 import {OFFLINE_BUILD} from './version.js';
@@ -63,7 +63,7 @@ function syncStorageNotice(){
 }
 document.addEventListener('storage-status',syncStorageNotice);
 function persist(){const ok=save();if(!ok)toast(getStorageStatus().message);return ok;}
-function go(route){if(route==='home'||route==='map')state.dropReturn=false;if(route!==state.route)state.fieldwork.active=0;clearTimeout(travelTimer);clearInterval(endingTimer);clearTimeout(toast.timer);document.querySelector('#toast').classList.remove('show');document.querySelector('#toast').textContent='';if(typeof route==='number'&&!canEnter(route,state)){toast('앞 실험의 기록을 먼저 완성해 줘.');return;}if(route==='ending'&&!state.restored&&!state.settings.adminUnlock)return;if(route==='ending'&&!state.settings.adminUnlock&&remainingMapVillains(state)){state.finalePending=true;route='map';toast('남은 밸브 두더지를 모두 물리치면 엔딩 영상이 열려!');}state.route=route;if(typeof route==='number')state.lastScreen=route;persist();render();window.scrollTo(0,0);}
+function go(route){if(route==='home'||route==='map')state.dropReturn=false;if(route!==state.route)state.fieldwork.active=0;clearTimeout(travelTimer);clearInterval(endingTimer);clearTimeout(toast.timer);document.querySelector('#toast').classList.remove('show');document.querySelector('#toast').textContent='';if(typeof route==='number'&&!canEnter(route,state)){toast('앞 실험의 기록을 먼저 완성해 줘.');return;}if(route==='ending'&&!state.restored&&!state.settings.adminUnlock)return;state.route=route;if(typeof route==='number')state.lastScreen=route;persist();render();window.scrollTo(0,0);}
 let collectorSeen='';
 const finishActions={'act-complete-1':2,'act-complete-2':4,'act-complete-3':6,'act-complete-4':8};
 function baseAction(action){if(!action)return;if(handleActivity(action,ctx))return;handleWorkshop(action,ctx);}
@@ -96,7 +96,7 @@ function routeAction(action){
  if(n&&!hasFieldSeal(n)&&activityReady(n,experimentActivities(n,state))){startFieldwork(n,action,ctx);return;}
  baseAction(action);
 }
-function showStory(kind,onFinish){if(kind==='final'&&!state.settings.adminUnlock&&(!state.restored||remainingMapVillains(state)))return;playStoryFilm(kind,{muted:!state.settings.sound,onFinish});if(kind==='final'&&state.route==='ending')setMusicTheme('ending',true);}
+function showStory(kind,onFinish){if(kind==='final'&&!state.settings.adminUnlock&&!state.restored)return;playStoryFilm(kind,{muted:!state.settings.sound,onFinish});if(kind==='final'&&state.route==='ending')setMusicTheme('ending',true);}
 function openEnding(){
  // The ending film and theme wait for the card-set jingle to finish instead of cutting it.
  afterCue('cardComplete',()=>{
@@ -122,7 +122,7 @@ function finishEnding(){
  }
  state.dropReturn=false;
  if(!f.preview&&first){
-  const toEnding=state.settings.autoObservation===true&&!remainingMapVillains(state);
+  const toEnding=state.settings.autoObservation===true;
   stageEndTalk(10,{label:toEnding?'엔딩 보기':'지도 보기',action:'resident-close'});
   const dialog=document.querySelector('#dialog');
   const leave=()=>{
@@ -310,9 +310,6 @@ window.addEventListener('resize',()=>{if(typeof state.route==='number')integrate
 document.addEventListener('guided-question-change',()=>{if(typeof state.route==='number')render();});
 export function render(){
  const revision=++sceneRevision;
- if(state.route==='ending'&&state.restored&&!state.settings.adminUnlock&&remainingMapVillains(state)){state.route='map';state.finalePending=true;persist();}
- const resumeFinale=state.settings.autoObservation===true&&state.route==='map'&&state.restored&&state.finalePending&&!state.settings.adminUnlock&&!remainingMapVillains(state);
- if(resumeFinale){state.route='ending';state.finalePending=false;persist();}
  syncHistory();
  if(state.route===5&&state.fieldwork.active!==5&&prepareDrawingComparison(state.activities.draw))save();
  clockObserver?.disconnect();clockObserver=null;
@@ -322,19 +319,18 @@ export function render(){
  if(typeof route==='number'){const resident=residentForStage(route);if(!state.settings.adminUnlock&&!state.residentsMet.includes(resident.stage)){state.residentsMet.push(resident.stage);save();}if(state.fieldwork.active===route)bindFieldwork(route,ctx);else{if(route<=8)bindActivity(route,ctx);bindWorkshop(route,ctx);}}
  if(state.fieldwork.active!==route){
   // The achievement card of the cleared villain comes first; while it is open #app is inert and the map waits (journey.js blocked()),
-  // so the all-villains status, jingle and ending film below start only after the card is put away.
+  // so the all-villains status and jingle below start only after the card is put away. Clearing villains only collects cards:
+  // the ending film plays once, when the last stage is finished (finishEnding), never after a villain.
   if(route==='map')mountMapCamera(index=>{const card=ownedRewardCards(state)[index];void revealRewardCard(index,state).then(()=>{
    if(state.route!=='map'||!state.restored||state.settings.adminUnlock)return;
    const remaining=remainingMapVillains(state);
    const status=document.querySelector('.map-finale-status');
-   if(status)status.textContent=remaining?`남은 밸브 두더지 ${remaining}마리 · 모두 물리치면 엔딩 영상이 열려!`:'물길을 모두 되살렸어!';
+   if(status)status.textContent=remaining?`남은 밸브 두더지 ${remaining}마리 · 물리치면 성취 카드를 얻어!`:'물길을 모두 되살렸어!';
    if(!remaining){
     const button=document.querySelector('.journey-next [data-action="ending"]');
     if(button){button.disabled=false;button.textContent=state.finalePending?'엔딩 보기':'우리의 발견 보기';}
-    // The last card's set-complete jingle is the all-clear fanfare: the ending opens only after it, and the victory
-    // jingle plays only when no card was shown (it would otherwise sound over that jingle).
-    if(state.settings.autoObservation===true)afterCue('cardComplete',()=>{if(state.route!=='map')return;state.finalePending=false;stopCue();go('ending');showStory('final');});
-    else if(!card)setTimeout(()=>{if(state.route==='map')void playCue('victory');},350);
+    // The victory jingle plays only when no card was shown (it would otherwise sound over the card-set jingle).
+    if(!card)setTimeout(()=>{if(state.route==='map')void playCue('victory');},350);
    }
   });});
   simplifyControls(route);mountCanvas(route,currentTask?.regions,revision);
@@ -346,7 +342,6 @@ export function render(){
  syncStorageNotice();
  app.querySelectorAll('button.selected').forEach(b=>b.setAttribute('aria-pressed','true'));
  if(focusKey){const target=focusKey.id?document.getElementById(focusKey.id):[...app.querySelectorAll('[data-action]')].find(b=>b.dataset.action===focusKey.action);if(target&&!target.disabled){target.focus({preventScroll:true});if(target.closest('aside'))target.closest('aside').scrollTop=focusKey.scroll||0;}}
- if(resumeFinale)showStory('final');
  if(route==='ending'&&!state.settings.reduced){const lines=['다섯 개의 연구 기록이 하나의 물길로.','예상과 달라도, 다시 관찰했어.','흘러내린 물방울을 모아 장치를 고쳤어.','네가 알아낸 과학으로 연구실이 다시 움직여.'];let i=0;endingTimer=setInterval(()=>{const el=document.querySelector('#ending-caption');if(el)el.textContent=lines[i];if(++i>=lines.length)clearInterval(endingTimer);},4000);}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b||b.disabled||b.getAttribute('aria-busy')==='true')return;const a=b.dataset.action;if(handleDropAdventure(a,state,{go,render,save:persist}))return;if(a!=='sound'&&state.settings.sound)playClick();
