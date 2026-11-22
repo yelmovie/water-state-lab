@@ -121,19 +121,8 @@ function finishEnding(){
   pageDone(10);
  }
  state.dropReturn=false;
- if(!f.preview&&first){
-  const toEnding=state.settings.autoObservation===true;
-  stageEndTalk(10,{label:toEnding?'엔딩 보기':'지도 보기',action:'resident-close'});
-  const dialog=document.querySelector('#dialog');
-  const leave=()=>{
-   if(dialog.open)return;
-   dialog.removeEventListener('close',leave);
-   if(state.route!==10)return;
-   if(toEnding)openEnding();else go('map');
-  };
-  dialog.addEventListener('close',leave);
-  return;
- }
+ // Finishing the last stage plays the ending film straight away (no talk or button in between), then the ending screen.
+ if(!f.preview&&first){openEnding();return;}
  if(!f.preview&&state.settings.autoObservation!==true){go('map');return;}
  go('ending');
  if(state.route==='ending'&&(first||state.finalePending)){state.finalePending=false;persist();showStory('final');}

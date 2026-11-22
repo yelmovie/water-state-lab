@@ -122,11 +122,11 @@ try{
   await stays('field-10-done',10,10);
   await click('field-finish');await page.locator('dialog.concept-dialog[open]').waitFor();assert.equal((await get()).restored,false);
   await page.locator('[data-concept="continue"]').click();
-  await neuti.waitFor();assert.equal(await neuti.locator('.water-speaker strong').innerText(),'느티');
-  assert.equal((await get()).restored,true);assert.equal((await get()).route,10);
-  await click('resident-ask-10');await click('resident-close');
-  await page.locator('.journey-main').waitFor();assert.equal(await page.locator('.story-film[open]').count(),0);
-  assert.equal(await page.locator('.journey-next [data-action="ending"]').isDisabled(),true);
+  // Finishing the last stage plays the ending film at once: no 느티 talk, no map button in between.
+  await page.locator('.story-film[open]').waitFor();assert.equal(await neuti.count(),0);
+  assert.equal((await get()).restored,true);assert.equal((await get()).route,'ending');assert.equal((await get()).finalePending,false);
+  await page.locator('[data-film="skip"]').click();await page.locator('.ending-main').waitFor();
+  await click('map');await page.locator('.journey-main').waitFor();assert.equal(await page.locator('.story-film[open]').count(),0);
   await page.locator('[data-map-mode="overview"]').click();await page.waitForTimeout(250);
   for(let i=0;i<5;i++)for(let hit=0;hit<3;hit++){await page.locator(`.mv-target[data-stage="${i}"]`).click({force:true});await page.waitForTimeout(180);}
   await stays('last-villain-defeated', 'map');
@@ -140,8 +140,7 @@ try{
   await click('resident-close');checks.push('villager-clickable-after-cleanup');
   assert.equal(await page.locator('.story-film[open]').count(),0);
   await click('ending');
-  await page.locator('.story-film[open]').waitFor();await page.locator('[data-film="skip"]').click();
-  await page.locator('.ending-main').waitFor();assert.equal(await page.locator('.ending-stats').count(),0);await shot('ending-without-stat-boxes');assert.equal((await get()).restored,true);checks.push('core-to-field10-concept-villains-ending');
+  await page.locator('.ending-main').waitFor();await page.waitForTimeout(400);assert.equal(await page.locator('.story-film[open]').count(),0,'the ending film played once already');assert.equal(await page.locator('.ending-stats').count(),0);await shot('ending-without-stat-boxes');assert.equal((await get()).restored,true);checks.push('core-to-field10-concept-villains-ending');
   await page.reload({waitUntil:'networkidle'});assert.equal((await get()).route,'ending');assert.equal((await get()).fieldwork.chapters[10].done,true);checks.push('ending-reload');
   await setup(2,true);for(const step of ['fill','load','wait','take','compare'])await page.locator(step==='wait'?'[data-time-magic]':`[data-tray-action="${step}"]`).click();await page.locator('[data-transform-next]').click();
   for(const [kind,steps] of Object.entries({melt:['place','wait','compare'],evaporate:['fill','heat','wait','stop','compare'],condense:['dry','cool','wait','wipe','wait','compare']})){for(const step of steps)await page.locator(step==='wait'?'[data-time-magic]':`[data-process-action="${step}"]`).click();await page.locator('[data-transform-next]').click();}

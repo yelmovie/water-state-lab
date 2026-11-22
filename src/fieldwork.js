@@ -87,7 +87,7 @@ export function handleFieldwork(action,ctx){
   if(!hasFieldSeal(n)){toast('조건을 바꿔 보고, 관찰한 근거로 문제를 해결해 줘.');return true;}
   if(action==='field-finish'){
    const meetNeuti=n===10&&state.fieldwork.pending==='field-ending'&&!state.restored;
-   const continueLabel=meetNeuti?'느티 만나기':n===10||state.settings.autoObservation===true?'지도로 돌아가기':'주민 만나기';
+   const continueLabel=meetNeuti?'탐험 마치기':n===10||state.settings.autoObservation===true?'지도로 돌아가기':'주민 만나기';
    openConcept(n/2,{reduced:state.settings.reduced,once:state.mapRunId,continueLabel,onContinue:()=>{if(state.route===n&&state.fieldwork.active===n)handleFieldwork('field-continue',ctx);}});
    return true;
   }
