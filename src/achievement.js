@@ -4,6 +4,7 @@ import {fieldMissions,areaStages} from './fieldwork-model.js';
 import {missions,stageLessons} from './domain.js';
 import {hasFieldSeal} from './fieldwork.js';
 import {buddy,esc,icon} from './ui.js';
+import {SETTINGS_CONTENT} from './settings-content.js';
 
 // The resident who asked for each area's request signs its stamp.
 const signers=[2,4,6,8,10];
@@ -41,5 +42,6 @@ export function certificateView(){
   <p class="cert-lead">물의 변화를 탐구하고 연구섬의 물길을 되살렸기에<br>이 인증서를 드립니다.</p>
   <div class="cert-columns"><ul class="cert-skills">${skills.map((text,i)=>`<li style="--i:${i}"><span>${icon('check',18)}</span>${text}</li>`).join('')}</ul><div class="cert-mascot">${buddy('celebrate')}</div></div>
   <footer class="cert-foot"><div class="cert-seals">${areaStages.map((_,i)=>`<span style="--i:${i}">${seal(i)}</span>`).join('')}</div><p>${new Date().toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})}<br><strong>물방울 연구실 · 방울이</strong></p></footer>
+  <small class="cert-credit">${esc(SETTINGS_CONTENT.credits.copyright)}</small>
  </div></div>`;
 }
