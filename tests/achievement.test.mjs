@@ -20,7 +20,7 @@ test('the passport shows one page per area and counts what is left',()=>{
 });
 test('the certificate names what was learned, and the nickname field stays out of its markup',()=>{
  const html=certificateView('<b>');
- assert.match(html,/우리 주변의 예/);assert.match(html,/관찰했어요/);assert.match(html,/장치를 설계했어요/);
+ assert.match(html,/우리 주변의 예/);assert.match(html,/관찰함/);assert.match(html,/장치를 설계함/);
  assert.equal(html.match(/class="cert-stamp"/g).length,1);
  assert.doesNotMatch(html,/cert-strength|cert-gold|cert-office-seal/);
  assert.doesNotMatch(html,/student-name/);
