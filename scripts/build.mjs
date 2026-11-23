@@ -18,7 +18,7 @@ await cp(path.join(root,'src'),path.join(output,'src'),copyTree);
 await writeFile(path.join(output,'src/version.js'),versionModule(true));
 await cp(path.join(root,'public/assets/vendor'),path.join(output,'assets/vendor'),copyTree);
 await cp(path.join(root,'public/assets/fonts'),path.join(output,'assets/fonts'),copyTree);
-for(const folder of ['audio','story','concepts','learning','stages','village','icons','models','npc-expressions','run-stage','reward-cards'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),copyTree);
+for(const folder of ['ui','audio','story','concepts','learning','stages','village','icons','models','npc-expressions','run-stage','reward-cards'])await cp(path.join(root,'public/assets',folder),path.join(output,'assets',folder),copyTree);
 for(const file of await readdir(path.join(root,'public/assets/v2'))){
  if(!file.startsWith('.')&&file.endsWith('.webp'))await copyFile(path.join(root,'public/assets/v2',file),path.join(output,'assets/v2',file));
 }

@@ -47,3 +47,7 @@
 #dialog.certificate-dialog>.dialog-body>.cert-actions{display:flex;justify-content:center;gap:8px;padding:0;margin:0;flex:0 0 auto}
 #dialog.certificate-dialog .cert-actions .btn{min-height:48px;padding:8px 18px;font-size:17px;white-space:nowrap}
 @media print{#dialog.certificate-dialog .cert-actions{display:none!important}#dialog.certificate-dialog>.dialog-body>#certificate-print.cert-paper{width:297mm!important;height:210mm!important;max-width:297mm!important;max-height:210mm!important;overflow:hidden!important}}
+
+/* 2026-11-23: keep the dimensional wax seal between the date and issuer. */
+#dialog.certificate-dialog .cert-paper .cert-bottom{top:75.4%;height:14.3%;left:18%;right:18%}
+#dialog.certificate-dialog .cert-paper .cert-credit{top:91%}

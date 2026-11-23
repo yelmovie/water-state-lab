@@ -1,3 +1,4 @@
+import {finishCertificateWax} from './certificate-wax.js';
 // 인증서 PNG 저장(2026-11-22). 화면의 인증서 종이를 그대로 캔버스에 옮긴다: 테두리 그림, 글자(낱말마다 화면 위치),
 // 빈칸 밑줄, 도장. 새 의존성 없이 화면 배치를 읽어 그리므로 화면·PNG 모양이 같다. 긴 변 2400px, A4 가로 비율.
 const W = 2400, H = Math.round(2400 * 210 / 297);
@@ -33,6 +34,7 @@ function drawText(ctx, node, box, s) {
 }
 
 export async function saveCertificatePng(paper, fileName = '물방울-연구원-인증서.png') {
+  finishCertificateWax(paper);
   await document.fonts?.ready;
   // 등장 연출(종이 올라옴·도장 찍힘) 중이면 끝난 모습으로 맞춘 뒤 잰다.
   for (const an of paper.getAnimations({ subtree: true })) an.finish();
@@ -42,13 +44,10 @@ export async function saveCertificatePng(paper, fileName = '물방울-연구원-
   const frame = paper.querySelector('.cert-frame');
   if (!frame.complete) await frame.decode();
   ctx.drawImage(frame, 0, 0, W, H);
-  // 도장: 동그라미 바탕과 테두리
-  for (const el of paper.querySelectorAll('.cert-stamp')) {
-    const r = el.getBoundingClientRect(), cs = getComputedStyle(el), cx = (r.left - box.left + r.width / 2) * s, cy = (r.top - box.top + r.height / 2) * s;
-    ctx.save(); ctx.translate(cx, cy);
-    ctx.beginPath(); ctx.arc(0, 0, r.width / 2 * s * 0.98, 0, Math.PI * 2); ctx.fillStyle = cs.backgroundColor; ctx.fill();
-    ctx.lineWidth = parseFloat(cs.borderTopWidth) * s; ctx.strokeStyle = cs.borderTopColor; ctx.stroke();
-    ctx.restore();
+  // 사용자 제공 촛농 봉인은 alpha 그대로 출력한다.
+  for (const image of paper.querySelectorAll('.cert-wax-art')) {
+    await image.decode(); const r = image.getBoundingClientRect();
+    ctx.drawImage(image, (r.left - box.left) * s, (r.top - box.top) * s, r.width * s, r.height * s);
   }
   // 빈칸 밑줄
   for (const el of paper.querySelectorAll('.cert-blank')) {
