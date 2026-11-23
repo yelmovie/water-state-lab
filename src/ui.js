@@ -53,7 +53,14 @@ export function celebrate(host,delay=0){
  layer.innerHTML=Array.from({length:36},(_,i)=>`<i class="bit-${i%4}" style="--x:${i*37%100}%;--wait:${delay+i*53%700}ms;--turn:${i*67%360}deg;--drift:${i*29%120-60}px"></i>`).join('');
  host.append(layer);setTimeout(()=>layer.remove(),delay+3400);
 }
-export function toast(message){const el=document.querySelector('#toast');el.textContent=message;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),3800);}
+export function toast(message,{visual=true}={}){
+ const el=document.querySelector('#toast');
+ el.textContent=message;
+ clearTimeout(toast.timer);
+ if(!visual){el.classList.remove('show');return;}
+ el.classList.add('show');
+ toast.timer=setTimeout(()=>el.classList.remove('show'),3800);
+}
 let modalOpener;
 const modalDialogs=new WeakSet();
 // scene:true opens the dialog without a backdrop so the scene behind stays visible (resident talk cards).

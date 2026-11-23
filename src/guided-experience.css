@@ -478,8 +478,8 @@
 
 /* 2026-11-10 play review: the toast sat on top of the bottom answer and next buttons. */
 #toast{top:84px;bottom:auto;transform:translate(-50%,-12px)}#toast.show{transform:translate(-50%,0)}
-/* The summary step titled '오늘 알게 된 것' shows what was learned instead of hiding it behind the hint button. */
-.guided-shell .building-guide.lesson-shown .building-guide-copy p{display:block!important;position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:6;margin:0;padding:10px 16px;border:3px solid #e0a52a;border-radius:14px;background:#fffdf3;color:#24433f;font:clamp(17px,1.5vw,22px)/1.35 var(--font-display);box-shadow:0 6px 18px #00000022;pointer-events:none}
+/* Include the summary in the measured header height so it clears the experiment. */
+.building-guide-lesson{grid-column:1/-1;margin:0;padding:8px 12px;border:2px solid #e0a52a;border-radius:12px;background:#fffdf3;color:#24433f;font:clamp(17px,1.5vw,22px)/1.35 var(--font-display);word-break:keep-all;overflow-wrap:anywhere}
 /* The highlighted fill handle must stay on the tube; the guide outline used to make it position:relative and drop it under the status bar. */
 .bench-handle.guided-control:not(#field-canvas){position:absolute}
 /* The core inlet height slider used the browser's tiny default thumb; give it the same finger-sized thumb as the time slider. */
