@@ -80,6 +80,10 @@
  .run-card,.run-hint,.run-done{max-height:calc(100% - 24px);padding:14px 18px}
  .run-card ul,.run-done ul{font-size:16px}
 }
+/* Leave the direction pad beside the intermediate panel so the causeway can be walked. */
+@media(orientation:landscape) and (min-width:700px) and (max-height:560px){
+ .run-done:not(.is-finale){width:min(560px,calc(100% - 384px));top:var(--run-row);max-height:calc(100% - var(--run-row) - 12px)}
+}
 @media(max-width:650px){
  .run-top{top:var(--run-row);left:12px;right:12px}.run-title h1{font-size:18px}
  .run-more{top:calc(var(--run-row) + 58px)}
