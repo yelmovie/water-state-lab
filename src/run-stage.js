@@ -2,7 +2,7 @@
 // Three.js loads only when this screen opens. Every change of form and every gate is still
 // decided by drop-adventure-model.js through runMove(); this file draws and reports.
 import {expeditions,phaseName,restoreAdventure} from './drop-adventure-model.js';
-import {RUN,runMove,runHint,buildCourse,createRunner,stepRunner,runZone,groundBelow,beginTransit,bounce,moleDepth,transitPoint} from './run-stage-model.js';
+import {RUN,RUN_PLACES,runMove,runHint,buildCourse,createRunner,stepRunner,runZone,groundBelow,beginTransit,bounce,moleDepth,transitPoint} from './run-stage-model.js';
 import {bindDirectionPad,mapKeyDirection} from './map-controls.js';
 import {esc,btn,icon} from './ui.js';
 import {playCue,footstep,stopFootstep} from './sound.js';
@@ -17,7 +17,7 @@ export function cleanupRunStage(){const current=stage;stage=null;current?.dispos
 export function runStageView(state,header,{phaseDescriptions}){
  const s=restoreAdventure(state.dropAdventure),mission=expeditions[s.chapter];
  const arrow=(dir,label,glyph)=>`<button type="button" class="run-dir run-dir-${dir}" data-run-dir="${dir}" aria-label="${label}">${glyph}</button>`;
- return `<div class="drop-adventure run-stage-shell">${header}<main class="run-stage" data-phase="${s.phase}">
+ return `<div class="drop-adventure run-stage-shell">${header}<main class="run-stage" tabindex="-1" data-phase="${s.phase}">
   <div class="run-canvas" role="img" aria-label="방울이가 모습을 바꾸며 달리는 3D 물길"></div>
   <div class="run-labels" aria-hidden="true"></div>
   <header class="run-top"><div class="run-title"><small>자유 탐험 · 변신 모험 ${s.chapter+1} / ${expeditions.length}</small><h1>${esc(mission.title)}</h1></div>
@@ -42,9 +42,10 @@ export function mountRunStage(state,ctx,options){
  loadThree().then(THREE=>{if(!view.stop)start(THREE,root,state,ctx,options,view,disposers);}).catch(()=>{if(view.stop)return;cleanupRunStage();options.onFail();});
 }
 
-function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onFail},view,disposers){
+function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,advance,onFail},view,disposers){
  let adventure=restoreAdventure(state.dropAdventure);
  const mission=expeditions[adventure.chapter],course=buildCourse(adventure.chapter),runner=createRunner(course,adventure);
+ const place=RUN_PLACES[course.chapter],nextPlace=RUN_PLACES[course.chapter+1];
  const host=root.querySelector('.run-canvas'),labelLayer=root.querySelector('.run-labels');
  const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
@@ -65,7 +66,10 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
 
  // Path: plain boxes with a repeating stone top. Piers reach down into the water so nothing floats.
  const stoneTop=tiled(picture('/assets/run-stage/path-tile.webp')),stoneSide=tiled(picture('/assets/run-stage/pier-tile.webp'));
- const topMat=new THREE.MeshLambertMaterial({map:stoneTop}),sideMat=new THREE.MeshLambertMaterial({map:stoneSide}),stepMat=new THREE.MeshLambertMaterial({map:stoneTop,color:0xf3d7a8}),bridgeMat=new THREE.MeshLambertMaterial({map:stoneTop,color:0xc9965f});
+ const topMat=new THREE.MeshLambertMaterial({map:stoneTop,color:place.stone}),sideMat=new THREE.MeshLambertMaterial({map:stoneSide}),stepMat=new THREE.MeshLambertMaterial({map:stoneTop,color:place.stone}),bridgeMat=new THREE.MeshLambertMaterial({map:stoneTop,color:0xc9965f});
+ stepMat.color.multiply(new THREE.Color(0xf3d7a8));
+ const causewayMat=new THREE.MeshLambertMaterial({map:stoneTop,color:0xe4c697});
+ const bankMat=nextPlace?new THREE.MeshLambertMaterial({map:stoneTop,color:nextPlace.stone}):null;
  function block(x0,x1,y0,y1,z0,z1,top=topMat,side=sideMat){
   const w=x1-x0,h=y1-y0,d=z1-z0,geo=new THREE.BoxGeometry(w,h,d),uv=geo.attributes.uv;
   // Face order: +x,-x,+y,-y,+z,-z. Repeat the tile every three units instead of stretching it.
@@ -76,15 +80,44 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   if(b.kind==='gate')continue;
   if(b.kind==='bridge')block(b.x0,b.x1,b.y0,b.y1,b.z0,b.z1,bridgeMat,bridgeMat);
   else if(b.kind==='step')block(b.x0,b.x1,b.y0,b.y1,b.z0,b.z1,stepMat,sideMat);
+  else if(b.kind==='causeway')block(b.x0,b.x1,waterY-.6,b.y1,b.z0,b.z1,causewayMat,sideMat);
+  else if(b.kind==='next-bank')block(b.x0,b.x1,waterY-.6,b.y1,b.z0,b.z1,bankMat,sideMat);
   else block(b.x0,b.x1,waterY-.6,b.y1,b.z0,b.z1);
+ }
+ const railMat=new THREE.MeshLambertMaterial({color:0xa28251});
+ const postGeo=new THREE.BoxGeometry(.22,.9,.22);
+ const chevronTexture=painted(64,64,g=>{g.strokeStyle='#705a37';g.lineCap='round';g.lineJoin='round';g.lineWidth=7;g.beginPath();g.moveTo(23,13);g.lineTo(43,32);g.lineTo(23,51);g.stroke();});
+ const chevronMat=new THREE.MeshBasicMaterial({map:chevronTexture,transparent:true,depthWrite:false});
+ const chevronGeo=new THREE.PlaneGeometry(.8,.86).rotateX(-Math.PI/2);
+ for(const link of [course.entry,course.exit].filter(Boolean)){
+  for(const z of [-2.84,2.84]){
+   block(link.x0,link.x1,link.y+.68,link.y+.8,z-.075,z+.075,railMat,railMat);
+   for(let x=link.x0+.45;x<link.x1;x+=2.35){
+    const post=new THREE.Mesh(postGeo,railMat);post.position.set(x,link.y+.45,z);scene.add(post);
+   }
+  }
+  for(let x=link.x0+1.2;x<link.x1;x+=2.5){
+   const mark=new THREE.Mesh(chevronGeo,chevronMat);mark.position.set(x,link.y+.018,0);scene.add(mark);
+  }
  }
  const ripples=tiled(painted(128,128,(g,w,h)=>{g.fillStyle='#31c8d6';g.fillRect(0,0,w,h);g.strokeStyle='#c9fbff';g.lineWidth=3;g.lineCap='round';for(let i=0;i<7;i++){const x=(i*47)%w,y=(i*29+12)%h;g.globalAlpha=.55;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+14,y-6,x+28,y);g.stroke();}}));
  ripples.repeat.set(70,32);
- const sea=new THREE.Mesh(new THREE.PlaneGeometry(course.length+300,220),new THREE.MeshLambertMaterial({map:ripples}));
+ const sea=new THREE.Mesh(new THREE.PlaneGeometry(course.length+300,220),new THREE.MeshLambertMaterial({map:ripples,color:place.water}));
  sea.rotation.x=-Math.PI/2;sea.position.set(course.length/2,waterY,-12);scene.add(sea);
- const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(114,38),new THREE.MeshBasicMaterial({map:picture('/assets/run-stage/backdrop.webp'),fog:false}));
- // The painting's horizon (74% down) sits on the far edge of the 3D sea.
- backdrop.position.set(0,waterY+8.8,-78);scene.add(backdrop);
+ const horizonMask=painted(2,128,(g,w,h)=>{
+  const fade=g.createLinearGradient(0,h,0,0);
+  fade.addColorStop(.24,'#000');fade.addColorStop(.43,'#fff');
+  g.fillStyle=fade;g.fillRect(0,0,w,h);
+ });
+ horizonMask.colorSpace=THREE.NoColorSpace;
+ function landscape(style,preview=false){
+  const map=picture(style.art);map.repeat.y=style.crop;map.offset.y=1-style.crop;
+  const material=new THREE.MeshBasicMaterial({map,alphaMap:horizonMask,fog:false,transparent:true,depthWrite:false,opacity:preview?0:1});
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(114,38),material);
+  mesh.position.set(0,waterY+8.8,preview?-77.9:-78);scene.add(mesh);return mesh;
+ }
+ const backdrop=landscape(place),nextBackdrop=nextPlace?landscape(nextPlace,true):null;
+ const waterColor=new THREE.Color(place.water),nextWaterColor=nextPlace?new THREE.Color(nextPlace.water):waterColor;
 
  // Labels are HTML placed over the 3D points, so Korean text and names stay crisp.
  const labels=[],point=new THREE.Vector3(),vaporAt={x:-999,y:-999,w:0,h:0};
@@ -165,7 +198,16 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   for(let x=b.x0+1.1;x<b.x1-.9;x+=2.9){if(busy(x)||Math.abs(x-(course.finish.x+4.6))<2.2)continue;decor(planted++%3===1?'planter':'bush',x,b.y1,-2.68,{scale:planted%2?.95:1.1});}
   if(b.x1-b.x0>4)decor('reeds',b.x0+(b.x1-b.x0)*.35,waterY-.12,-3.55,{bob:.03});
  }
- decor('fountain',course.finish.x+4.6,course.finish.y,-1.5);
+ if(course.exit){
+  const {x0,x1,y}=course.exit;
+  decor('lantern',x0+.7,y,-2.56);decor('lantern',x0+.7,y,2.56);
+  decor('planter',x1+.8,y,-2.45);decor('planter',x1+.8,y,2.45);
+  label(`${esc(nextPlace.name)} →`,x0+.9,y+2.15,-2.56,'run-label-goal');
+ }else{
+  decor('fountain',course.finish.x+4.6,course.finish.y,-1.5);
+  label('물길 도착',course.finish.x+4.6,course.finish.y+2.75,-1.5,'run-label-goal');
+ }
+ if(course.entry){decor('lantern',course.entry.x1-.6,course.entry.y,-2.56);label(esc(place.name),course.entry.x1+.5,course.entry.y+2.1,-2.55,'run-label-goal');}
  for(let x=-14,i=0;x<course.length+30;x+=17,i++){
   // Nothing floats right behind a device, where it would look as if it sat on it.
   const clear=at=>!course.segments.some(g=>at>g.gateX-2.5&&at<g.gateX+RUN.deviceSpan+2.5);
@@ -174,7 +216,6 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   if(i%3===1)decor('boat',x,waterY-.2,-24,{bob:.1,drift:1.6});
   if(i%2===1)decor('islet',x+3,waterY-.5,-30-(i%4)*5,{scale:1.25});
  }
- label('물길 도착',course.finish.x+4.6,course.finish.y+2.75,-1.5,'run-label-goal');
 
  // Runner: an upright picture for ice and water. Vapour is invisible, so only a dashed position ring is shown.
  const ringTexture=painted(256,256,(g,w,h)=>{g.setLineDash([22,16]);g.lineWidth=9;g.strokeStyle='#2f5f6b';g.fillStyle='rgba(249,255,255,.28)';g.beginPath();g.ellipse(w/2,h/2,112,98,0,0,Math.PI*2);g.fill();g.stroke();});
@@ -218,9 +259,10 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   hud.act.setAttribute('aria-label',zone?hud.act.textContent:'열판이나 냉각판 위에 서면 쓸 수 있어');
  }
 
- // Pausing: start card, companion hint, arrival panel, any open dialog, or a hidden tab.
+ // Intermediate arrivals leave the connecting path open. Only the finale pauses movement.
  let waiting=true,hinting=false,finished=adventure.done,stops=0,falls=0,flash=0,flashWarm=true,pop=0,flinch=0;
- const paused=()=>waiting||hinting||finished||document.hidden||!!document.querySelector('dialog[open]');
+ let guidedCrossing=false;
+ const paused=()=>waiting||hinting||finished&&!course.exit||document.hidden||!!document.querySelector('dialog[open]');
  // fresh: Bangul has just arrived (celebrate once). Reopening a finished run shows the same panel without the burst or sound.
  function showDone(fresh=false){
   finished=true;hud.done.hidden=false;
@@ -228,7 +270,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   const steps=`<ol class="run-done-steps" aria-label="변신 모험 ${count} / ${total} 완료">${expeditions.map((m,i)=>`<li class="${i<count?'is-done':''}" style="--i:${i}"><b>${i<count?icon('check',18):i+1}</b><span>${esc(m.title)}</span></li>`).join('')}</ol>`;
   hud.done.classList.toggle('is-finale',last);root.classList.toggle('is-finale',last);
   if(!last){
-   hud.done.innerHTML=`<p class="run-done-count">변신 모험 ${count} / ${total} 완료</p><h2>내가 만든 물의 변화</h2>${log}<div class="run-done-actions">${btn('다음 모험으로','drop-next','primary')}${btn('연구섬 지도','map','secondary')}</div>`;
+   hud.done.innerHTML=`<p class="run-done-count">변신 모험 ${count} / ${total} 완료</p><h2>내가 만든 물의 변화</h2>${log}<div class="run-done-actions"><button type="button" class="btn primary" data-run-cross>연결로 건너기 ${icon('arrow',20)}</button>${btn('연구섬 지도','map','secondary')}</div>`;
   }else{
    const mapDone=(state.completed?.length||0)>=5;
    const still=!fresh||state.settings.reduced?' is-still':'';
@@ -266,7 +308,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
  const typing=target=>!!target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
  const control=target=>!!target?.closest?.('button,a,summary,[role="button"]');
  function act(){
-  if(paused())return;
+  if(paused()||finished)return;
   const zone=runZone(course,runner);if(!zone)return;
   const move=runMove(adventure,zone.kind);commit(move.state);shownZone=undefined;
   if(move.phaseChanged){pop=.5;flash=.6;flashWarm=zone.kind==='heat';void playCue('drop');}
@@ -281,12 +323,16 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
  root.addEventListener('click',e=>{
   if(e.target.closest('[data-run-go]'))go();
   if(e.target.closest('[data-run-continue]'))closeHint();
+  if(e.target.closest('[data-run-cross]')&&finished&&course.exit){
+   guidedCrossing=true;release();hud.done.hidden=true;root.focus({preventScroll:true});
+   hud.message.textContent='연결로를 건너는 중이야.';
+  }
  },on);
  document.addEventListener('keydown',e=>{
   if(e.isComposing||e.ctrlKey||e.altKey||e.metaKey||typing(e.target)||document.querySelector('dialog[open]'))return;
   const enter=e.key==='Enter',space=e.code==='Space';
   if(waiting||hinting){if((enter||space)&&!control(e.target)){e.preventDefault();if(waiting){if(hud.card.querySelector('[data-run-go]'))go();}else closeHint();}return;}
-  if(finished)return;
+  if(finished&&!course.exit||guidedCrossing)return;
   const dir=mapKeyDirection(e);
   if(dir){e.preventDefault();keys.set(e.code||e.key,dir);return;}
   if(space){e.preventDefault();if(root.contains(document.activeElement))document.activeElement.blur();if(!e.repeat)jumpQueued=true;return;}
@@ -296,6 +342,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
  const release=()=>{keys.clear();padDir=null;jumpQueued=false;};
  window.addEventListener('blur',release,on);document.addEventListener('visibilitychange',release,on);
  function held(){
+  if(guidedCrossing)return {x:1,z:Math.abs(runner.z)>.15?-Math.sign(runner.z):0,jump:false};
   if(padDir&&tapUntil&&performance.now()>tapUntil){padDir=null;tapUntil=0;}
   const dirs=new Set(keys.values());if(padDir)dirs.add(padDir);
   return {x:(dirs.has('right')?1:0)-(dirs.has('left')?1:0),z:(dirs.has('down')?1:0)-(dirs.has('up')?1:0),jump:jumpQueued};
@@ -314,6 +361,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
    else{bounce(runner);void playCue('error');if(++stops>=3){stops=0;showHint(runHint(adventure));}}
   }
   if(event.type==='arrived'){falls=0;if(adventure.done)showDone(true);}
+  if(event.type==='next-stage')queueMicrotask(()=>{if(!view.stop)advance();});
  }
 
  let width=0,height=0,topSafe=130,frame=0,last=performance.now(),camX=runner.x+1.2,camY=runner.y,step=0;
@@ -329,7 +377,15 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   // Narrow screens step the camera back so a whole station stays in view.
   const back=18*Math.max(1,1.5/camera.aspect);
   camera.position.set(camX,camY+back*.36,back);camera.lookAt(camX,camY+2,0);
-  backdrop.position.x=camX;backdrop.scale.setScalar(Math.max(1,camera.aspect/1.7));sea.position.x=camX;ripples.offset.x=time*.02;
+  const landscapeScale=Math.max(1,camera.aspect/1.7);
+  backdrop.position.x=camX;backdrop.scale.setScalar(landscapeScale);sea.position.x=camX;ripples.offset.x=time*.02;
+  if(nextBackdrop){
+   const start=course.exit.x0-2;
+   const blend=THREE.MathUtils.smoothstep(runner.x,start,course.exit.join);
+   nextBackdrop.position.x=camX;nextBackdrop.scale.setScalar(landscapeScale);
+   nextBackdrop.material.opacity=blend;nextBackdrop.visible=blend>0&&!!nextBackdrop.material.map.image;
+   sea.material.color.copy(waterColor).lerp(nextWaterColor,blend);
+  }
   const moving=Math.hypot(runner.vx,runner.vz)>.6&&runner.grounded&&!runner.transit;
   if(moving)step+=dt*11;
   const vapor=adventure.phase==='vapor';
@@ -358,7 +414,7 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   glow.visible=flash>0||adventure.heat!==0;
   if(glow.visible){const warm=flash>0?flashWarm:adventure.heat>0;glow.material.color.set(warm?0xffa94a:0x74d2ff);glow.position.set(runner.x,runner.y+.65,runner.z-.05);glow.scale.setScalar(flash>0?2.2+(.6-flash)*3:2+Math.sin(time*6)*.15);glow.material.opacity=flash>0?flash/.6:.75;}
   vaporLabel.el.hidden=!vapor;vaporLabel.pos.set(runner.x,runner.y+1.95,runner.z);
-  const zone=paused()?null:runZone(course,runner);syncAction(zone);
+  const zone=paused()||finished?null:runZone(course,runner);syncAction(zone);
   for(const part of parts){
    for(const kind of ['heat','cool']){const on=zone?.kind===kind&&zone.segment===part.seg.index;part[kind].material.emissiveIntensity=on?.5+Math.sin(time*7)*.2:.1;part[kind+'Label'].el.classList.toggle('is-under',on);}
    if(part.wheel)part.wheel.rotation.z=adventure.space?1.2:0;
@@ -394,7 +450,13 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
   const dt=Math.min(RUN.maxDt,Math.max(0,(now-last)/1000));last=now;
   if(document.hidden)return;
   if(paused()){jumpQueued=false;}
-  else{const events=stepRunner(runner,course,adventure,held(),dt);jumpQueued=false;for(const event of events)handle(event);}
+  else{
+   const events=stepRunner(runner,course,adventure,held(),dt);jumpQueued=false;
+   for(const event of events)handle(event);
+   if(finished&&course.exit&&runner.x>=course.exit.x0&&!hud.done.hidden){
+    hud.done.hidden=true;hud.message.textContent='연결로를 건너 다음 장소로 가 보자.';
+   }
+  }
   draw(dt,now/1000);
  }
  disposers.push(()=>cancelAnimationFrame(frame));
@@ -402,8 +464,8 @@ function start(THREE,root,state,ctx,{devices,phaseDescriptions,art,companion,onF
  // Test and review hook: read-only view of the running stage.
  root.runStage={get adventure(){return adventure;},runner,course,paused};
  sync();
- if(finished){hud.card.hidden=true;showDone();}
- else if(adventure.gate===0&&adventure.steps===0&&adventure.mistakes===0)ready();
+ if(finished){go();showDone();}
+ else if(!course.entry&&adventure.gate===0&&adventure.steps===0&&adventure.mistakes===0)ready();
  else go();
  frame=requestAnimationFrame(loop);
 }

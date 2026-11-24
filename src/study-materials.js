@@ -1,5 +1,5 @@
 import {dryTrace} from './activity-model.js';
-import {waterDrawingStyle,waterLayerHeight} from './inquiry-model.js';
+import {waterDrawingColor,waterStrokeWidth} from './inquiry-model.js';
 /** The same optical textures fill the dynamically clipped water and ice shapes. */
 export function materialPattern(id,kind,{x=0,y=0,width,height,base,opacity=.86}){
  return `<pattern id="${id}" patternUnits="userSpaceOnUse" x="${x}" y="${y}" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="${base}"/><image href="/assets/learning/${kind}-texture.webp" width="${width}" height="${height}" opacity="${opacity}" preserveAspectRatio="none"/></pattern>`;
@@ -37,21 +37,16 @@ export function drawRealDrop(ctx,x,y,r=4,alpha=1){
  ctx.restore();
 }
 export function drawWaterStroke(ctx,lines,{left=0,top=0,width=500,height=310,thickness='thin',time=0}){
- const {color,strokeWidth,planScaleY,layerX,layerWidth,floor,floorColor}=waterDrawingStyle;
- const layerHeight=waterLayerHeight(thickness,dryTrace(thickness,time));
+ const strokeWidth=waterStrokeWidth(thickness,dryTrace(thickness,time));
+ if(!strokeWidth)return;
  ctx.save();ctx.translate(left,top);ctx.scale(width/500,height/310);
- if(layerHeight>0){
-  ctx.save();ctx.scale(1,planScaleY);
-  ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=color;ctx.lineWidth=strokeWidth;
-  ctx.beginPath();
-  for(const line of lines){
-   if(line.length<2)continue;
-   line.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));
-  }
-  ctx.stroke();ctx.restore();
-  ctx.fillStyle=color;ctx.fillRect(layerX,floor-layerHeight,layerWidth,layerHeight);
+ ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=waterDrawingColor;ctx.lineWidth=strokeWidth;
+ ctx.beginPath();
+ for(const line of lines){
+  if(line.length<2)continue;
+  line.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));
  }
- ctx.fillStyle=floorColor;ctx.fillRect(layerX-8,floor,layerWidth+16,3);
+ ctx.stroke();
  ctx.restore();
 }
 

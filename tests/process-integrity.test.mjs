@@ -9,28 +9,26 @@ import {targetParts} from '../src/domain.js';
 import {drawingSVG} from '../src/inquiry-model.js';
 import {drawWaterStroke} from '../src/study-materials.js';
 
-test('the water drawings share one footprint and color, and only the side-view height changes',()=>{
+test('live and recorded water drawings share a color and encode water amount by line width',()=>{
  const strokes=[[[20,30],[120,140],[240,40]]];
  const live=(thickness,time)=>{
-  const paths=[],rects=[],ctx={save(){},restore(){},translate(){},scale(){},beginPath(){},moveTo(){},lineTo(){},
-   stroke(){paths.push([this.strokeStyle,this.lineWidth]);},fillRect(x,y,w,h){rects.push([this.fillStyle,x,y,w,h]);}};
-  drawWaterStroke(ctx,strokes,{thickness,time});return {paths,rects};
+  const paths=[],ctx={save(){},restore(){},translate(){},scale(){},beginPath(){},moveTo(){},lineTo(){},
+   stroke(){paths.push([this.strokeStyle,this.lineWidth]);}};
+  drawWaterStroke(ctx,strokes,{thickness,time});return paths[0];
  };
  const thin=live('thin',0),thick=live('thick',0);
- assert.deepEqual(thin.paths,thick.paths);
- assert.deepEqual(thin.rects[1],thick.rects[1]);
- assert.equal(thin.rects[0][3],thick.rects[0][3]);
- assert.ok(thin.rects[0][4]<thick.rects[0][4]);
- assert.ok(Math.abs(live('thick',20).rects[0][4]-live('thin',20).rects[0][4]-(thick.rects[0][4]-thin.rects[0][4]))<1e-9);
+ assert.equal(thin[0],thick[0]);
+ assert.ok(thin[1]<thick[1]);
+ assert.ok(live('thick',20)[1]<thick[1]);
  for(const [amount,thickness] of [[1,'thin'],[2,'thick']]){
-  const [color,x,y,width,height]=live(thickness,0).rects[0];
-  const svg=drawingSVG(strokes,1,amount);
-  assert.ok(svg.includes(`<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${color}"/>`));
-  assert.equal(svg.match(/<g [\s\S]*<\/g>/)[0],drawingSVG(strokes,1,1).match(/<g [\s\S]*<\/g>/)[0]);
+  const [color,width]=live(thickness,20);
+  const svg=drawingSVG(strokes,dryTrace(thickness,20),amount);
+  assert.ok(svg.includes(`stroke="${color}" stroke-width="${width}"`));
+  assert.ok(svg.includes('points="20,30 120,140 240,40"'));
  }
- assert.equal(live('thin',60).paths.length,0);
- assert.equal(live('thick',60).paths.length,1);
- assert.equal(live('thick',110).paths.length,0);
+ assert.equal(live('thin',60),undefined);
+ assert.ok(live('thick',60));
+ assert.equal(live('thick',110),undefined);
  assert.doesNotMatch(drawingSVG(strokes,dryTrace('thin',60)),/<polyline/);
 });
 

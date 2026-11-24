@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {freshAdventure,adventureMove,expeditions} from '../src/drop-adventure-model.js';
-import {RUN,RUN_ACTIONS,runMove,runHint,adventureMode,buildCourse,createRunner,stepRunner,runZone,groundBelow,beginTransit,bounce} from '../src/run-stage-model.js';
+import {RUN,RUN_ACTIONS,RUN_PLACES,runMove,runHint,adventureMode,buildCourse,createRunner,stepRunner,runZone,groundBelow,beginTransit,bounce} from '../src/run-stage-model.js';
 import {initialState,readState} from '../src/state.js';
 
 const rank={ice:0,water:1,vapor:2};
@@ -150,6 +150,26 @@ test('a saved gate restarts at that gate\'s checkpoint and a finished run at the
  assert.equal(s.gate,1);
  const r=createRunner(course,s);assert.deepEqual({x:r.x,y:r.y,z:r.z},course.segments[1].checkpoint);
  assert.deepEqual({x:createRunner(course,{...s,gate:3,done:true}).x},{x:course.finish.x});
+});
+
+test('all four causeways are walkable and line up with the next arrival',()=>{
+ assert.equal(new Set(RUN_PLACES.map(place=>place.art)).size,expeditions.length);
+ assert.equal(buildCourse(0).entry,null);
+ assert.equal(buildCourse(4).exit,null);
+ for(let chapter=0;chapter<4;chapter++){
+  const course=buildCourse(chapter),next=buildCourse(chapter+1);
+  const s={...freshAdventure(chapter),gate:course.segments.length,done:true};
+  const runner=createRunner(course,s),events=[];
+  assert.ok(Math.abs((course.exit.x1-course.exit.x0)-(next.entry.x1-next.entry.x0))<1e-9);
+  assert.ok(Math.abs((course.exit.join-course.exit.x0)-(next.entry.join-next.entry.x0))<1e-9);
+  for(let x=course.finish.x;x<=course.exit.x1;x+=.25)assert.equal(groundBelow(course,x,0),course.finish.y);
+  for(let frame=0;frame<240;frame++)events.push(...stepRunner(runner,course,s,{x:1,z:0},1/60));
+  assert.equal(events.filter(event=>event.type==='next-stage').length,1);
+  assert.equal(runner.falls,0);
+  const arrival=createRunner(next,adventureMove(s,'next'));
+  assert.equal(arrival.x,next.entry.join);
+  assert.equal(arrival.y,groundBelow(next,arrival.x,0));
+ }
 });
 
 test('the third stop names a plate, and the hint follows the model state',()=>{

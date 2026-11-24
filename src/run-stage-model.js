@@ -6,6 +6,13 @@ import {expeditions,restoreAdventure,adventureMove} from './drop-adventure-model
 /** Ice, water and vapour all run and jump with these same numbers. Only the gates tell the forms apart. */
 export const RUN={speed:5.6,depthSpeed:4.2,accel:40,airAccel:26,gravity:26,jump:9.6,halfW:.68,height:1.1,coyote:.1,buffer:.14,substeps:5,maxDt:.05,halfZ:3,fallDepth:3.4,level:3,deviceSpan:5.6,padHalf:1.1,valveReach:1.4};
 export const RUN_ACTIONS={heat:'warm',cool:'cool',valve:'space',gate:'move'};
+export const RUN_PLACES=[
+ {name:'샘터 물길',art:'/assets/run-stage/backdrop.webp',crop:1,stone:0xffffff,water:0xffffff},
+ {name:'얼음 수로',art:'/assets/stages/winter-waterworks.webp',crop:.59,stone:0xc8daf3,water:0xaacaff},
+ {name:'햇살 언덕',art:'/assets/stages/sun-courtyard.webp',crop:.45,stone:0xffe2a6,water:0xd8f1ee},
+ {name:'이슬 온실',art:'/assets/stages/dew-greenhouse.webp',crop:.56,stone:0xb7dfc9,water:0xc0e4d1},
+ {name:'물길 공방',art:'/assets/v2/lab-workshop.webp',crop:.58,stone:0xdbe4ed,water:0xb8dfff}
+];
 const FLOOR=1.2,EDGE=1e-4;
 
 /** Rule connection: one stage event becomes one existing adventure action, nothing more. */
@@ -42,6 +49,7 @@ const PLAN=[
  [['step','gap'],['bridge:back','mole'],['step']]
 ];
 const rise=gate=>gate.scene==='air'?RUN.level:gate.scene==='condenser'?-RUN.level:0;
+const causeway=(x,y)=>({x0:x,x1:x+15,join:x+9,y});
 
 export function buildCourse(chapter){
  const mission=expeditions[chapter],boxes=[],segments=[],moles=[],lanes=[];
@@ -49,6 +57,9 @@ export function buildCourse(chapter){
  y=-low;let x=0;
  const add=(kind,x0,x1,y0,y1,z0=-RUN.halfZ,z1=RUN.halfZ)=>boxes.push({kind,x0,x1,y0,y1,z0,z1});
  const floor=(x0,x1)=>add('floor',x0,x1,y-FLOOR,y);
+ const layCauseway=link=>add('causeway',link.x0,link.x1,link.y-FLOOR,link.y);
+ const entry=chapter>0?causeway(0,y):null;
+ if(entry){layCauseway(entry);x=entry.x1;}
  mission.gates.forEach((gate,index)=>{
   const checkpoint={x:x+1.4,y,z:0};floor(x,x+4);x+=4;
   for(const name of PLAN[chapter][index]){
@@ -67,13 +78,17 @@ export function buildCourse(chapter){
   segments.push({index,gate,level:y,checkpoint,station,pads,valve,gateX:x,exit:{x:x+RUN.deviceSpan+1.4,y:next,z:0}});
   x+=RUN.deviceSpan;y=next;
  });
- floor(x,x+9);
- return {chapter,boxes,segments,moles,lanes,finish:{x:x+1.4,y,z:0},length:x+9,minY:Math.min(...boxes.filter(b=>b.kind!=='gate').map(b=>b.y1))};
+ const exit=chapter<expeditions.length-1?causeway(x+5.5,y):null;
+ let length=x+9;
+ floor(x,exit?.x0??length);
+ if(exit){layCauseway(exit);length=exit.x1+7;add('next-bank',exit.x1,length,y-FLOOR,y);}
+ return {chapter,boxes,segments,moles,lanes,entry,exit,finish:{x:x+1.4,y,z:0},length,minY:Math.min(...boxes.filter(b=>b.kind!=='gate').map(b=>b.y1))};
 }
 
 export function createRunner(course,adventure){
  const s=restoreAdventure(adventure),at=s.done?course.finish:course.segments[s.gate].checkpoint;
- return {x:at.x,y:at.y,z:at.z,vx:0,vy:0,vz:0,grounded:true,coyote:0,buffer:0,facing:1,checkpoint:{...at},armed:true,transit:null,stun:0,safe:0,time:0,falls:0};
+ const x=course.entry&&!s.done&&s.gate===0&&s.steps===0&&s.mistakes===0?course.entry.join:at.x;
+ return {x,y:at.y,z:at.z,vx:0,vy:0,vz:0,grounded:true,coyote:0,buffer:0,facing:1,checkpoint:{...at},armed:true,transit:null,stun:0,safe:0,time:0,falls:0};
 }
 
 const solid=(box,openGates)=>box.kind!=='gate'||box.gate>=openGates;
@@ -153,6 +168,7 @@ export function stepRunner(r,course,adventure,input,dt){
   if(!r.armed&&r.x<seg.gateX-RUN.halfW-1)r.armed=true;
   if(touched&&touched.gate===seg.index&&r.armed){r.armed=false;events.push({type:'gate',segment:seg.index});}
  }
+ if(s.done&&course.exit&&r.armed&&r.grounded&&r.x>=course.exit.join){r.armed=false;events.push({type:'next-stage'});}
  for(const mole of course.moles){
   if(r.safe>0||Math.abs(r.y-mole.y)>1)continue;
   if(Math.abs(r.x-mole.x)<.8&&Math.abs(r.z-moleDepth(mole,r.time))<.8){r.vx=-5.5;r.vy=4.5;r.grounded=false;r.stun=.4;r.safe=1.4;events.push({type:'flinch'});}

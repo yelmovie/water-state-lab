@@ -109,7 +109,7 @@ function alignWaterway(){
 export function mountDropAdventure(state,ctx){
  cleanupDropAdventure();
  if(document.querySelector('.run-stage')){
-  mountRunStage(state,ctx,{devices,phaseDescriptions,art,companion,onFail(){stageFailed=true;ctx.render();toast('3D 물길을 열지 못했어. 기존 화면으로 이어서 할 수 있어.');}});
+  mountRunStage(state,ctx,{devices,phaseDescriptions,art,companion,advance:()=>handleDropAdventure('drop-next',state,ctx),onFail(){stageFailed=true;ctx.render();toast('3D 물길을 열지 못했어. 기존 화면으로 이어서 할 수 있어.');}});
   return;
  }
  alignWaterway();

@@ -142,8 +142,7 @@ export function createWaterDrawing(scene){
  const d=state.activities.draw;
  for(const x of [160,560]){if(scene.textures.exists('drawing-board'))scene.add.image(x,166,'drawing-board').setDisplaySize(290,248);else scene.add.image(x,167,'real-painting','0').setDisplaySize(300,350);}
  scene.text(160,23,'A · 물을 조금 묻힌 붓',18);scene.text(560,23,'B · 물을 많이 묻힌 붓',18);
- scene.text(360,314,'젖은 넓이는 같아. 물층의 두께가 다르면 어느 쪽이 먼저 마를까?',16);
- for(const x of [160,560])scene.text(x,243,'물층 옆모습',12);
+ scene.text(360,314,'선 굵기로 물의 양을 나타냈어. 어느 그림이 먼저 마를까?',16);
  const texture=scene.textures.createCanvas('water-painting',1440,660),g=texture.context;
  scene.add.image(360,165,'water-painting').setDisplaySize(720,330).setDepth(5);
  let lastDrawing='';
