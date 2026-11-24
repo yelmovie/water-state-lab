@@ -70,7 +70,12 @@ export function mountMapCamera(onVillainCleared){
  const view=document.querySelector('.map-viewport'),world=view?.querySelector('.journey-world');if(!world)return;
  const mapView={overview:false,hand:false};
  const root=view.closest('.journey-main'),controller=new AbortController(),{signal}=controller;
- const removeVillains=mountMapVillains(world,{key:MAP_VILLAINS_KEY,onCleared:onVillainCleared,power:'물방울 파동',reduced:state.settings.reduced,preview:state.settings.adminUnlock,stages:missions.map((m,i)=>({name:islandNames[i],x:villainStops[i][0]/MAP_W*100,y:villainStops[i][1]/MAP_H*100,ready:state.completed.includes(m.id),token:mapVillainToken(state,m.id)})),sound:kind=>playCue(kind),notify:toast,fighter:{
+ const stages=missions.map((mission,index)=>({
+  name:islandNames[index],x:villainStops[index][0]/MAP_W*100,y:villainStops[index][1]/MAP_H*100,
+  // The workshop design unlocks the final trial. Restoring the waterway finishes it.
+  ready:state.completed.includes(mission.id)&&(mission.id!==5||state.restored),token:mapVillainToken(state,mission.id)
+ }));
+ const removeVillains=mountMapVillains(world,{key:MAP_VILLAINS_KEY,onCleared:onVillainCleared,power:'물방울 파동',reduced:state.settings.reduced,preview:state.settings.adminUnlock,stages,sound:kind=>playCue(kind),notify:toast,fighter:{
   at:()=>({x:position[0]/MAP_W*100,y:position[1]/MAP_H*100}),
   pose:(frame,flip=false)=>{const on=frame!=null;if(on)stopWalking();actor.classList.toggle('in-combat',on);if(!on){sprite.style.transform='';paintPose();return;}sprite.style.transform=flip?'scaleX(-1)':'';sprite.style.backgroundPosition=`${frame*100/3}% 0`;},
   bounds:()=>departing?null:sprite.getBoundingClientRect(),

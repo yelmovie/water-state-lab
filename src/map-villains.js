@@ -45,10 +45,7 @@ const MOLE={idle:0,step:1,taunt:2,guard:3,lunge:4,hit:5,knocked:6,down:7};
 const BANGUL={ready:0,shoot:1,relief:3};
 const RANGE=24; // % of map width: how close Bangul must be for the attack button or Space key to reach a villain.
 const NEAR=16; // % of map width: Bangul this close makes the villain speak.
-const TAUNTS={
- locked:['흐흐, 이 물길은 내가 막았지!','밸브를 꽉 잠가 버릴 테다!','물 한 방울도 못 지나가게 할 거야~','꼬마 물방울, 저리 가!'],
- ready:['뭐? 과학의 힘을 모았다고?!','그 물방울 파동… 설마 나한테?','덤벼 봐라, 꼬마 물방울!']
-};
+const TAUNTS=['뭐? 과학의 힘을 모았다고?!','그 물방울 파동… 설마 나한테?','덤벼 봐라, 꼬마 물방울!'];
 const SFX=['끼익!','쾅!','꽉!','뿌직!'];
 // Villains wait while a dialog or an achievement card layer (reward-cards.js) is open.
 const paused=()=>document.querySelector('dialog[open],.rc-layer');
@@ -123,14 +120,15 @@ export function mountMapVillains(world, options) {
  };
 
  options.stages.forEach((stage,index)=>{
-  const token=stage.token||'pending';const cleared=stage.ready&&(stored[index]===token||sessionClears.has(index+':'+token));
-  const b=document.createElement('button');b.type='button';b.className='mv-target';b.style.left=stage.x+'%';b.style.top=stage.y+'%';b.dataset.stage=String(index);b.dataset.state=cleared?'cleared':stage.ready?'ready':'locked';
+  if(!stage.ready)return;
+  const token=stage.token||'pending';const cleared=stored[index]===token||sessionClears.has(index+':'+token);
+  const b=document.createElement('button');b.type='button';b.className='mv-target';b.style.left=stage.x+'%';b.style.top=stage.y+'%';b.dataset.stage=String(index);b.dataset.state=cleared?'cleared':'ready';
   b.innerHTML='<span class="mv-murk" aria-hidden="true"><i></i><i></i><i></i></span><span class="mv-wave" aria-hidden="true"></span><span class="mv-say" aria-hidden="true"><b></b><small></small></span><span class="mv-creature" aria-hidden="true"><span class="mv-sprite"></span></span><span class="mv-label"></span><span class="mv-meter" aria-hidden="true">● ● ●</span>';
   const label=b.querySelector('.mv-label'),meter=b.querySelector('.mv-meter'),creature=b.querySelector('.mv-creature'),sprite=b.querySelector('.mv-sprite');
   const say=b.querySelector('.mv-say'),sayText=say.querySelector('b'),sayHint=say.querySelector('small');
   let hits=0,busy=false,dx=0,dy=0,facingRight=false,roamTimer=0,sayTimer=0,wasNear=false,lastSaid=-1e9;
-  const hint=()=>stage.ready?(touch?'공격 버튼을 눌러 봐!':'공격 버튼 · 스페이스!'):'이 구역 탐구를 마치면 물리칠 수 있어';
-  b.setAttribute('aria-label',stage.name+' 물길을 막는 밸브 두더지 · '+(cleared?'퇴치 완료':stage.ready?'물방울 파동으로 세 번 공격':'이 구역 탐구를 마치면 공격할 수 있어요'));
+  const hint=touch?'공격 버튼을 눌러 봐!':'공격 버튼 · 스페이스!';
+  b.setAttribute('aria-label',stage.name+' 물길을 막는 밸브 두더지 · '+(cleared?'퇴치 완료':'물방울 파동으로 세 번 공격'));
   if(cleared){b.disabled=true;label.textContent='물길 정화 완료';meter.textContent='✓';}
 
   // Runs `next` once the bubble's spoken line has finished (+0.2 s), at most 6 s after `since`; at once when it is silent.
@@ -141,7 +139,7 @@ export function mountMapVillains(world, options) {
   };
   const face=right=>{facingRight=right;creature.style.scale=right?'-1 1':'';};
   const speak=(text,withHint=true,ms=2800)=>{
-   sayText.textContent=text;sayHint.textContent=withHint?hint():'';sayHint.hidden=!withHint;
+   sayText.textContent=text;sayHint.textContent=withHint?hint:'';sayHint.hidden=!withHint;
    say.classList.remove('show');void say.offsetWidth;say.classList.add('show');arrangeSpeech();lastSaid=performance.now();
    // The bubble stays while its spoken line is still playing (up to 6 s), so the voice is not cut with it.
    cancel(sayTimer);sayTimer=later(()=>afterLine(()=>say.classList.remove('show'),performance.now()-ms),ms);
@@ -160,7 +158,7 @@ export function mountMapVillains(world, options) {
   // Roaming: wander near the home spot, then stop and wreck the waterway.
   const roam=()=>{
    roamTimer=0;
-   if(reducedNow()||busy||b.dataset.state!=='locked'&&b.dataset.state!=='ready')return;
+   if(reducedNow()||busy||b.dataset.state!=='ready')return;
    if(fighting||document.hidden||paused()){roamTimer=later(roam,1000);return;}
    // 1) mischief at the current spot
    b.classList.remove('mv-walking');b.classList.add('mv-crank');
@@ -182,11 +180,11 @@ export function mountMapVillains(world, options) {
 
   // Speak when Bangul walks past.
   const watch=()=>{
-   if(b.dataset.state==='locked'||b.dataset.state==='ready'){
+   if(b.dataset.state==='ready'){
     const at=fighter?.at?.();
     if(at&&!busy){
      const p=where(),ratio=(world.offsetHeight/world.offsetWidth)||1,near=Math.hypot(p.x-at.x,(p.y-at.y)*ratio)<NEAR;
-     if(near&&!wasNear&&performance.now()-lastSaid>6000)speak(pick(TAUNTS[b.dataset.state]));
+     if(near&&!wasNear&&performance.now()-lastSaid>6000)speak(pick(TAUNTS));
      wasNear=near;
     }
    }
@@ -197,8 +195,7 @@ export function mountMapVillains(world, options) {
   const shake=()=>reducedNow()||creature.animate([{transform:'translateX(0)'},{transform:'translateX(5px)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:260});
 
   const attack=()=>{
-   if(busy||b.dataset.state==='cleared'||b.dataset.state==='leaving')return;
-   if(!stage.ready){speak('아직은 날 못 이겨! 흐흐');status.textContent=stage.name+' 탐구를 먼저 마치고 과학의 힘을 모아 주세요.';return;}
+   if(busy||b.dataset.state!=='ready')return;
    if(fighting||document.hidden||paused())return;
    if(distanceTo(where())>RANGE){tell(stage.name+' 밸브 두더지에게 가까이 가 보자!');return;}
    busy=true;fighting=b;b.dataset.busy='';hits++;const hit=hits,reduced=reducedNow();
@@ -279,7 +276,7 @@ export function mountMapVillains(world, options) {
   if(abort.signal.aborted||fighting||document.hidden||performance.now()<nextHurtAt||paused())return;
   const bounds=fighter?.bounds?.();
   if(!bounds)return;
-  const target=targets.find(t=>['locked','ready'].includes(t.b.dataset.state)&&getComputedStyle(t.b).visibility!=='hidden'&&spritesTouch(bounds,t.creature.getBoundingClientRect()));
+  const target=targets.find(t=>t.b.dataset.state==='ready'&&getComputedStyle(t.b).visibility!=='hidden'&&spritesTouch(bounds,t.creature.getBoundingClientRect()));
   if(target)hitFighter(target.where());
  };
  const watchContact=()=>{cleanup.checkContact();if(!document.hidden)arrangeSpeech();later(watchContact,100);};
@@ -292,7 +289,7 @@ export function mountMapVillains(world, options) {
   const at=fighter?.at?.();
   if(fighting)return;
   const live=targets.filter(t=>t.b.dataset.state==='ready');
-  if(!live.length){tell(targets.some(t=>t.b.dataset.state==='locked')?'탐구를 마치면 밸브 두더지를 물리칠 힘이 생겨요.':'모든 밸브 두더지를 물리쳤어요!');return;}
+  if(!live.length)return;
   const dist=t=>distanceTo(t.where(),at);
   const near=live.reduce((a,t)=>dist(t)<dist(a)?t:a);
   if(dist(near)>RANGE){tell(near.stage.name+' 밸브 두더지 가까이 걸어가서 공격 버튼을 눌러요.');return;}
