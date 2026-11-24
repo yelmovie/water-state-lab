@@ -421,6 +421,7 @@
 .ending-shell .ending-statement .btn{width:100%;min-height:72px;padding:8px;font-size:18px;line-height:1.25;white-space:normal;word-break:keep-all}
 .ending-shell .ending-copy .home-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
 .ending-shell .ending-copy .home-actions .btn{width:100%;min-width:0;min-height:48px;margin:0;padding:8px;font-size:18px;line-height:1.2;white-space:normal}
+#app .ending-shell .home-actions .btn.ending-map{background:#e2f3ec;border-color:#548b79;color:#214f43;font-weight:800}
 .ending-restart{background:#fff5e7;border:2px solid #bb8848;color:#754c28}
 .ending-shell .classroom-making{min-height:44px;margin:0;padding:6px 10px;font-size:18px;line-height:1.25}
 @media(min-width:701px) and (max-height:680px){
@@ -957,7 +958,7 @@
 .journey-node.current>b::after{content:none}
 
 /* 2026-11-19: the main button (certificate) sits at the bottom right of the ending, like every other screen.
-   Markup order is now text → replays → classroom idea → [restart, notebook, island, certificate], so tab order matches. */
+   The actions start with the map, so players can find the achievement cards again after the ending. */
 @media(min-width:701px){
  .ending-shell .ending-copy>.unit-label{margin-top:auto}
  .ending-shell .ending-copy>.ending-replay-actions{margin-top:auto}

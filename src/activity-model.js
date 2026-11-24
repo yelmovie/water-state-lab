@@ -47,7 +47,8 @@ export function pipeAssessment(fill,goal='reserve'){
  return {...trial,fits,extraReserve:trial.safe,goal,met:goal==='capacity'?fits:trial.safe};
 }
 export function pipeFinding(fill){const t=pipeAssessment(fill);return `얼음 ${t.expanded}% · 빈 공간 ${t.space}% · ${t.fits?'넘치지 않음':'통 밖으로 넘침'} · 추가 5% 여유 ${t.extraReserve?'충족':'미달'}`;}
-export function dryTrace(thickness,time){return limit(1-time/(thickness==='thin'?60:110),0,1);}
+export const dryTraceDuration=thickness=>thickness==='thin'?60:110;
+export function dryTrace(thickness,time){return limit(1-time/dryTraceDuration(thickness),0,1);}
 export function dewTrial(time,cold=true){return {time:limit(time),cold,drops:cold?Math.floor(limit(time)/5):0,mass:cold?250+limit(time)/50:250};}
 export const sortCards=[
  {id:'ice',name:'접시 안의 얼음',label:'접시 안의 얼음',type:'solid',art:'ice',proof:'그릇을 바꿔도 모양이 그대로야.',source:'실험 기록'},

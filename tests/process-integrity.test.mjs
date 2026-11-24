@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialActivities,activityReady,validateActivities,prepareHeatingComparison} from '../src/activity-model.js';
+import {initialActivities,activityReady,validateActivities,prepareHeatingComparison,dryTrace} from '../src/activity-model.js';
 import {measureAction,measureStatus} from '../src/freeze-measure.js';
 import {chapterState,fieldAction,fieldReady,cleanFieldwork,initialFieldwork} from '../src/fieldwork-model.js';
 import {nightTrial} from '../src/cold-night-model.js';
@@ -9,13 +9,29 @@ import {targetParts} from '../src/domain.js';
 import {drawingSVG} from '../src/inquiry-model.js';
 import {drawWaterStroke} from '../src/study-materials.js';
 
-test('the little-water brush is thinner and darker in both live and recorded views',()=>{
+test('the water drawings share one footprint and color, and only the side-view height changes',()=>{
  const strokes=[[[20,30],[120,140],[240,40]]];
- const width=amount=>drawingSVG(strokes,1,amount).match(/stroke-width="([^"]+)/)[1];
- assert.ok(Number(width(1))<Number(width(2)));
- const live=amount=>{const passes=[],ctx={save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},stroke(){passes.push({width:this.lineWidth,opacity:this.globalAlpha});}};drawWaterStroke(ctx,strokes,{left:0,top:0,width:320,height:230,amount,time:0});return passes[0];};
- assert.ok(live(1).width<live(2).width);assert.ok(live(1).opacity>live(2).opacity);
- for(const amount of [1,2])assert.equal(live(amount).width,Number(width(amount))*320/500,'recordings use the same scaled stroke width');
+ const live=(thickness,time)=>{
+  const paths=[],rects=[],ctx={save(){},restore(){},translate(){},scale(){},beginPath(){},moveTo(){},lineTo(){},
+   stroke(){paths.push([this.strokeStyle,this.lineWidth]);},fillRect(x,y,w,h){rects.push([this.fillStyle,x,y,w,h]);}};
+  drawWaterStroke(ctx,strokes,{thickness,time});return {paths,rects};
+ };
+ const thin=live('thin',0),thick=live('thick',0);
+ assert.deepEqual(thin.paths,thick.paths);
+ assert.deepEqual(thin.rects[1],thick.rects[1]);
+ assert.equal(thin.rects[0][3],thick.rects[0][3]);
+ assert.ok(thin.rects[0][4]<thick.rects[0][4]);
+ assert.ok(Math.abs(live('thick',20).rects[0][4]-live('thin',20).rects[0][4]-(thick.rects[0][4]-thin.rects[0][4]))<1e-9);
+ for(const [amount,thickness] of [[1,'thin'],[2,'thick']]){
+  const [color,x,y,width,height]=live(thickness,0).rects[0];
+  const svg=drawingSVG(strokes,1,amount);
+  assert.ok(svg.includes(`<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${color}"/>`));
+  assert.equal(svg.match(/<g [\s\S]*<\/g>/)[0],drawingSVG(strokes,1,1).match(/<g [\s\S]*<\/g>/)[0]);
+ }
+ assert.equal(live('thin',60).paths.length,0);
+ assert.equal(live('thick',60).paths.length,1);
+ assert.equal(live('thick',110).paths.length,0);
+ assert.doesNotMatch(drawingSVG(strokes,dryTrace('thin',60)),/<polyline/);
 });
 
 test('heating comparison explicitly prepares a new equal-water trial without erasing the unheated record',()=>{

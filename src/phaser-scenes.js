@@ -53,7 +53,6 @@ function makeScene(P,route,ctx,host,hidden,regions,onReady,onFailure){
     if(route===8){this.load.image('drink-bottle','/assets/stages/drink-bottle.webp');this.load.image('drink-bottle-wet','/assets/learning/condensation-20261108/bottle-wet.webp');}
     if(route===5)this.load.image('drawing-board','/assets/learning/drawing-board.webp');
     if(route===6){this.load.image('hotplate','/assets/learning/heat-plate-guide.webp');this.load.image('pouring-glass','/assets/v2/pouring-glass.webp');}
-    if(route===5)this.load.image('water-material','/assets/learning/water-material.webp');
     if(route===10){this.load.image('water-core','/assets/learning/water-core.webp');this.load.image('core-valve','/assets/learning/experiment-props-20261107/valve.webp');}
    }
   }

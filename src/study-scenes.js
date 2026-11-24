@@ -142,10 +142,9 @@ export function createWaterDrawing(scene){
  const d=state.activities.draw;
  for(const x of [160,560]){if(scene.textures.exists('drawing-board'))scene.add.image(x,166,'drawing-board').setDisplaySize(290,248);else scene.add.image(x,167,'real-painting','0').setDisplaySize(300,350);}
  scene.text(160,23,'A · 물을 조금 묻힌 붓',18);scene.text(560,23,'B · 물을 많이 묻힌 붓',18);
- scene.text(360,314,'같은 그림에 물의 양만 달라. 어느 쪽이 먼저 마르는지 비교해 봐.',16);
+ scene.text(360,314,'젖은 넓이는 같아. 물층의 두께가 다르면 어느 쪽이 먼저 마를까?',16);
+ for(const x of [160,560])scene.text(x,243,'물층 옆모습',12);
  const texture=scene.textures.createCanvas('water-painting',1440,660),g=texture.context;
- const grain=g.createPattern(scene.textures.get('water-material').getSourceImage(),'repeat');
- grain?.setTransform(new DOMMatrix().scale(.26));
  scene.add.image(360,165,'water-painting').setDisplaySize(720,330).setDepth(5);
  let lastDrawing='';
  scene.tick=()=>{
@@ -153,7 +152,11 @@ export function createWaterDrawing(scene){
   if(lastDrawing===revision)return;lastDrawing=revision;
   g.setTransform(2,0,0,2,0,0);g.clearRect(0,0,720,330);
   // Leave the middle clear for the shared time control.
-  for(let i=0;i<2;i++){g.save();g.beginPath();g.rect(27+i*400,55,266,222);g.clip();drawWaterStroke(g,d.strokes,{left:25+i*400,top:50,width:270,height:230,amount:i+1,time,grain});g.restore();}
+  for(const [i,thickness] of ['thin','thick'].entries()){
+   g.save();g.beginPath();g.rect(27+i*400,55,266,222);g.clip();
+   drawWaterStroke(g,d.strokes,{left:25+i*400,top:50,width:270,height:230,thickness,time});
+   g.restore();
+  }
   texture.refresh();
  };
 }
@@ -189,25 +192,27 @@ export function createDewScene(scene,wipe){
  clothTexture.add('wipe-cloth',0,16,108,480,300);
  const cloth=scene.add.image(360,263,'real-cloth','wipe-cloth').setDisplaySize(100,63).setRotation(-.14).setDepth(30).setName('cup-wiping-cloth');
  let ids=[],kind=null,previous='',wiping=null;
+ const parkCloth=()=>cloth.setPosition(360,263).setVisible(d.wiped.length<2);
+ parkCloth();
  const touch=p=>{
   if(!kind)return;
-  cloth.setPosition(p.worldX,p.worldY);
+  cloth.setPosition(p.worldX,p.worldY).setVisible(true);
   ids=wipeDroplets(ids,{x:p.worldX-(kind==='cold'?205:510)+120,y:(p.worldY-38)/.82},36);
  };
- const cancelWipe=()=>{wiping?.stop();wiping=null;kind=null;ids=[];host.removeAttribute('aria-busy');cloth.setPosition(360,263);};
+ const cancelWipe=()=>{wiping?.stop();wiping=null;kind=null;ids=[];host.removeAttribute('aria-busy');parkCloth();};
  const autoWipe=event=>{
   event.preventDefault();if(wiping)return;
   kind=event.detail.kind;ids=[];stopClock();host.setAttribute('aria-busy','true');
   const both=kind==='both',still=reduced();
   const cx=kind==='cold'||both?205:510;
-  cloth.setPosition(cx,165);
+  cloth.setPosition(cx,165).setVisible(true);
   wiping=scene.tweens.addCounter({from:0,to:1,duration:still?350:both?1400:900,onUpdate:tween=>{
    const progress=tween.getValue();
    const part=both?Math.min(1,progress*2%1):progress;
    if(both){const next=progress<.5?'cold':'room';if(kind!==next)ids=[];kind=next;}
    const center=both?(progress<.5?205:510):cx;
    touch({worldX:center+(still?0:Math.sin(part*Math.PI*4)*66),worldY:still?165:85+part*170});
-  },onComplete:()=>{wiping=null;kind=null;ids=[];host.removeAttribute('aria-busy');queueMicrotask(()=>{if(host.isConnected)event.detail.finish();});}});
+  },onComplete:()=>{wiping=null;kind=null;ids=[];parkCloth();host.removeAttribute('aria-busy');queueMicrotask(()=>{if(host.isConnected)event.detail.finish();});}});
  };
  host.addEventListener('cup-wipe',autoWipe);
  document.addEventListener('observation-stop',cancelWipe);
@@ -216,10 +221,11 @@ export function createDewScene(scene,wipe){
  scene.input.on('pointerdown',p=>{
   if(wiping||p.worldY<55||p.worldY>280)return;
   kind=Math.abs(p.worldX-205)<90?'cold':Math.abs(p.worldX-510)<90?'room':null;
+  if(d.wiped.includes(kind)&&(kind==='room'||d.records.length<2)){kind=null;return;}
   if(kind){stopClock();ids=[];touch(p);}
  });
  scene.input.on('pointermove',p=>{if(p.isDown&&!wiping)touch(p);});
- scene.finishPointer=()=>{if(kind&&!wiping){const k=kind,removed=ids;kind=null;ids=[];cloth.setPosition(360,263);queueMicrotask(()=>wipe(k,removed));}};
+ scene.finishPointer=()=>{if(kind&&!wiping){const k=kind,removed=ids;kind=null;ids=[];parkCloth();queueMicrotask(()=>wipe(k,removed));}};
  scene.tick=()=>{
   const time=observationTime(7),revision=[time,kind,ids.join(','),d.wiped.join(','),d.rewiped,q.dewRemoved.join(','),(q.dewRoomRemoved??[]).join(',')].join('|');
   if(revision===previous)return;previous=revision;
@@ -238,6 +244,9 @@ export function createDewScene(scene,wipe){
   texture.refresh();
  };
  // While the prediction question is open, the title bar is the only instruction; the next step appears after the answer.
- if(q.dewHypothesis)scene.text(360,310,d.sealed?'랩과 고무줄로 두 컵 입구를 막았어. 겉면을 닦고 비교해 봐.':'수건으로 두 컵의 겉면을 닦고, 입구를 막아 봐.',16);
+ if(q.dewHypothesis){
+  const caption=d.wiped.length<2?'수건으로 두 컵의 겉면을 닦아 봐.':!d.sealed?'랩과 고무줄로 두 컵의 입구를 막아 봐.':'두 컵의 겉면에 어떤 차이가 생기는지 살펴봐.';
+  scene.text(360,310,caption,16);
+ }
 }
 

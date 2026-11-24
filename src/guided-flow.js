@@ -37,7 +37,7 @@ export function guidedQuestion(n,state,final=null){
   }
  }
  if(n===5&&a.draw.strokes.some(s=>s.length>=3)){
-  if(!q.drawPrediction)return question('draw-prediction','어느 물그림이 먼저 마를까?',choices('ix-draw-predict-',[['thin','A · 물을 조금 묻힌 그림'],['thick','B · 물을 많이 묻힌 그림'],['same','비슷할 것 같아']]),'같은 그림과 바닥에서 물의 양만 달라.');
+  if(!q.drawPrediction)return question('draw-prediction','어느 물그림이 먼저 마를까?',choices('ix-draw-predict-',[['thin','A · 물을 조금 묻힌 그림'],['thick','B · 물을 많이 묻힌 그림'],['same','비슷할 것 같아']]),'젖은 넓이는 같고 물층의 두께만 달라.');
   if(a.draw.time>=110&&a.draw.faster!=='thin')return question('draw-result','관찰했을 때 어느 그림이 먼저 말랐어?',choices('ix-draw-answer-',[['thin','A가 먼저 말랐어'],['thick','B가 먼저 말랐어'],['same','동시에 말랐어']]),'가운데 기록과 마지막 기록을 비교해 봐.');
   if(a.draw.faster==='thin'&&a.draw.destination!=='air')return question('draw-destination','그림에 있던 물은 어디로 갔을까?',choices('ix-draw-where-',where));
  }

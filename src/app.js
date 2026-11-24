@@ -1,6 +1,6 @@
 import {mountCertificateWax} from './certificate-wax.js';
 import {remainingMapVillains} from './map-villains.js';
-import {revealRewardCard,ownedRewardCards} from './map-rewards.js';
+import {revealRewardCard,ownedRewardCards,mapCardStatus} from './map-rewards.js';
 import {dropAdventureView,handleDropAdventure,mountDropAdventure,cleanupDropAdventure} from './drop-adventure.js';
 import {prepareDrawingComparison} from './drawing-records.js';
 import {mountTimeTools} from './time-dial.js';
@@ -318,7 +318,7 @@ export function render(){
    if(state.route!=='map'||!state.restored||state.settings.adminUnlock)return;
    const remaining=remainingMapVillains(state);
    const status=document.querySelector('.map-finale-status');
-   if(status)status.textContent=remaining?`남은 밸브 두더지 ${remaining}마리 · 물리치면 성취 카드를 얻어!`:'물길을 모두 되살렸어!';
+   if(status)status.textContent=mapCardStatus(remaining);
    if(!remaining){
     const button=document.querySelector('.journey-next [data-action="ending"]');
     if(button){button.disabled=false;button.textContent=state.finalePending?'엔딩 보기':'우리의 발견 보기';}

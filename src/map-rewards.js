@@ -12,6 +12,10 @@ export const REWARD_CARDS=CARDS.map(([stage,title],index)=>{
 });
 /** A card is owned once its island's villain is cleared for the current run. Nothing extra is saved. */
 export const ownedRewardCards=(state,storage)=>clearedMapVillains(state,storage);
+export function mapCardStatus(remaining){
+ const total=REWARD_CARDS.length;
+ return `성취 카드 ${total-remaining}/${total} · ${remaining?`남은 밸브 두더지 ${remaining}마리`:'수집 완료'}`;
+}
 
 // Cue names in sound.js, so the cards follow the sound switch and the effects setting.
 const SOUNDS={whoosh:'cardWhoosh',reveal:'cardReveal',epic:'cardEpic',slot:'cardSlot',complete:'cardComplete'};
